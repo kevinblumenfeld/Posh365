@@ -158,13 +158,15 @@ Function Copy-User {
         # UserPrincipalName. If in use, add #'s #
         #           Set name Variable           #
         #########################################
-        $userprincipalname = $LastName.replace(" ", "") + "-" + $FirstName.replace(" ", "") + "@" + $PsBoundParameters[$ParamName_emaildomain]
+        $LastName = $LastName.replace(" ", "")
+        $FirstName = $FirstName.replace(" ", "")
+        $userprincipalname = $LastName + "-" + $FirstName + "@" + $PsBoundParameters[$ParamName_emaildomain]
         
         $i = 2
         $F = $null
         while (get-aduser -LDAPfilter "(userprincipalname=$userprincipalname)") {
             $F = $FirstName + $i
-            $userprincipalname = $LastName.replace(" ", "") + "-" + $F.replace(" ", "") + "@" + $PsBoundParameters[$ParamName_emaildomain]
+            $userprincipalname = $LastName + "-" + $F + "@" + $PsBoundParameters[$ParamName_emaildomain]
             $i++
         }
         if ($F) {
@@ -180,39 +182,21 @@ Function Copy-User {
         #              SamAccountName                #
         ##############################################
         if (!$Prefix) {
-            $samaccountname = if ($LastName.replace(" ", "").length -gt 6) {
-                $LastName.replace(" ", "").Substring(0, 7) + $FirstName[0]
-            }
-            else {
-                $LastName.replace(" ", "") + $FirstName.replace(" ", "").Substring(0, (8 - ($LastName.replace(" ", "").length)))
-            } 
+            $SamAccountName = (($LastName[0..6] -join '') + $FirstName)[0..7] -join ''
             $i = 2
-            while (get-aduser -LDAPfilter "(samaccountname=$samaccountname)") {
-                $samaccountname = if ($LastName.replace(" ", "").length -gt 6) {
-                    $LastName.replace(" ", "").Substring(0, 7) + $FirstName[0] + $i
-                }
-                else {
-                    $LastName.replace(" ", "") + $FirstName.replace(" ", "").Substring(0, ((8 - ([string]$i).length) - ($LastName.replace(" ", "").length))) + $i
-                }
+            while ((get-aduser -LDAPfilter "(samaccountname=$samaccountname)")) {
+                $CharactersUsedForInteration = ([string]$i).Length
+                $SamAccountName = ((($LastName[0..(6 - $CharactersUsedForInteration)] -join '') + $FirstName)[0..(7 - $CharactersUsedForInteration)] -join '') + $i
                 $i++
             }
         }
 
         else {
-            $samaccountname = if ($LastName.replace(" ", "").length -gt 4) {
-                $LastName.replace(" ", "").Substring(0, 5) + $FirstName[0]
-            }
-            else {
-                $LastName.replace(" ", "") + $FirstName.replace(" ", "").Substring(0, (6 - ($LastName.replace(" ", "").length)))
-            } 
+            $SamAccountName = (($Prefix + $LastName[0..6] -join '') + $FirstName)[0..7] -join ''
             $i = 2
-            while (get-aduser -LDAPfilter "(samaccountname=$samaccountname)") {
-                $samaccountname = if ($LastName.replace(" ", "").length -gt 4) {
-                    $LastName.replace(" ", "").Substring(0, 5) + $FirstName[0] + $i
-                }
-                else {
-                    $LastName.replace(" ", "") + $FirstName.replace(" ", "").Substring(0, ((6 - ([string]$i).length) - ($LastName.replace(" ", "").length))) + $i
-                }
+            while ((get-aduser -LDAPfilter "(samaccountname=$samaccountname)")) {
+                $CharactersUsedForInteration = ([string]$i).Length
+                $SamAccountName = (((($Prefix + $LastName)[0..(6 - $CharactersUsedForInteration)] -join '') + $FirstName)[0..(7 - $CharactersUsedForInteration)] -join '') + $i
                 $i++
             }
         }
