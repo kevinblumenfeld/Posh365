@@ -192,7 +192,7 @@ Function Copy-User {
                     $LastName.replace(" ", "").Substring(0, 7) + $FirstName[0] + $i
                 }
                 else {
-                    $LastName.replace(" ", "") + $FirstName.replace(" ", "").Substring(0, ((8 - $i) - ($LastName.replace(" ", "").length))) + $i
+                    $LastName.replace(" ", "") + $FirstName.replace(" ", "").Substring(0, ((8 - ([string]$i).length) - ($LastName.replace(" ", "").length))) + $i
                 }
                 $i++
             }
@@ -200,20 +200,18 @@ Function Copy-User {
 
         else {
             $samaccountname = if ($LastName.replace(" ", "").length -gt 4) {
-                $Prefix + $LastName.replace(" ", "").Substring(0, 5) + $FirstName[0]
-            
+                $LastName.replace(" ", "").Substring(0, 5) + $FirstName[0]
             }
             else {
-                $Prefix + $LastName.replace(" ", "") + $FirstName[0]
-            }
-        
+                $LastName.replace(" ", "") + $FirstName.replace(" ", "").Substring(0, (6 - ($LastName.replace(" ", "").length)))
+            } 
             $i = 2
             while (get-aduser -LDAPfilter "(samaccountname=$samaccountname)") {
                 $samaccountname = if ($LastName.replace(" ", "").length -gt 4) {
-                    $Prefix + $LastName.replace(" ", "").Substring(0, 5) + $FirstName[0] + $i
+                    $LastName.replace(" ", "").Substring(0, 5) + $FirstName[0] + $i
                 }
                 else {
-                    $Prefix + $LastName.replace(" ", "") + $FirstName[0] + $i
+                    $LastName.replace(" ", "") + $FirstName.replace(" ", "").Substring(0, ((6 - ([string]$i).length) - ($LastName.replace(" ", "").length))) + $i
                 }
                 $i++
             }
