@@ -37,25 +37,26 @@ Function Copy-User {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory = $True)]    
-        $UserToCopy,
+        [string] $UserToCopy,
         [Parameter(Mandatory = $True)]
-        $FirstName,
+        [string] $FirstName,
         [Parameter(Mandatory = $True)]
-        $LastName,
+        [string] $LastName,
         [Parameter(Mandatory = $False)]
-        $StorePhone,
+        [string] $StorePhone,
         [Parameter(Mandatory = $False)]
-        $MobilePhone,
+        [string] $MobilePhone,
         [Parameter(Mandatory = $False)]
-        $Description,
+        [string] $Description,
+        [Parameter(Mandatory = $False)]
+        [ValidateLength(1, 2)]
+        [string] $Prefix,
         [Parameter(Mandatory = $False)]    
-        $Prefix,
-        [Parameter(Mandatory = $False)]    
-        [switch]$NoMail,
+        [switch] $NoMail,
         [Parameter(Mandatory = $True)]
-        $Password,
+        [string] $Password,
         [Parameter(Mandatory = $False)]
-        $OUSearch = "Contractors"
+        [string] $OUSearch = "Contractors"
     )
     DynamicParam {
         
@@ -157,12 +158,13 @@ Function Copy-User {
         # UserPrincipalName. If in use, add #'s #
         #           Set name Variable           #
         #########################################
-        $userprincipalname = $LastName.replace(" ", "") + "-" + $FirstName.replace(" ", "") + "@" + $PsBoundParameters[$ParamName_emaildomain]
+        $userprincipalname = $LastName.trim + "-" + $FirstName.trim + "@" + $PsBoundParameters[$ParamName_emaildomain]
         
         $i = 2
+        $F = $null
         while (get-aduser -LDAPfilter "(userprincipalname=$userprincipalname)") {
             $F = $FirstName + $i
-            $userprincipalname = $LastName.replace(" ", "") + "-" + $F.replace(" ", "") + "@" + $PsBoundParameters[$ParamName_emaildomain]
+            $userprincipalname = $LastName.trim + "-" + $F.trim + "@" + $PsBoundParameters[$ParamName_emaildomain]
             $i++
         }
         if ($F) {
@@ -178,41 +180,40 @@ Function Copy-User {
         #              SamAccountName                #
         ##############################################
         if (!$Prefix) {
-            $samaccountname = if ($LastName.replace(" ", "").length -gt 6) {
-                $LastName.replace(" ", "").Substring(0, 7) + $FirstName[0]
+            $samaccountname = if ($LastName.trim.length -gt 6) {
+                $LastName.trim.Substring(0, 7) + $FirstName[0]
             }
             else {
-                $LastName.replace(" ", "") + $FirstName[0]
-            }
-        
+                $LastName.trim + $FirstName.trim.Substring(0, (8 - ($LastName.trim.length)))
+            } 
             $i = 2
             while (get-aduser -LDAPfilter "(samaccountname=$samaccountname)") {
-                $samaccountname = if ($LastName.replace(" ", "").length -gt 6) {
-                    $LastName.replace(" ", "").Substring(0, 7) + $FirstName[0] + $i
+                $samaccountname = if ($LastName.trim.length -gt 6) {
+                    $LastName.trim.Substring(0, 7) + $FirstName[0] + $i
                 }
                 else {
-                    $LastName.replace(" ", "") + $FirstName[0] + $i
+                    $LastName.trim + $FirstName.trim.Substring(0, ((8 - $i) - ($LastName.trim.length))) + $i
                 }
                 $i++
             }
         }
 
         else {
-            $samaccountname = if ($LastName.replace(" ", "").length -gt 4) {
-                $Prefix + $LastName.replace(" ", "").Substring(0, 5) + $FirstName[0]
+            $samaccountname = if ($LastName.trim.length -gt 4) {
+                $Prefix + $LastName.trim.Substring(0, 5) + $FirstName[0]
             
             }
             else {
-                $Prefix + $LastName.replace(" ", "") + $FirstName[0]
+                $Prefix + $LastName.trim + $FirstName[0]
             }
         
             $i = 2
             while (get-aduser -LDAPfilter "(samaccountname=$samaccountname)") {
-                $samaccountname = if ($LastName.replace(" ", "").length -gt 4) {
-                    $Prefix + $LastName.replace(" ", "").Substring(0, 5) + $FirstName[0] + $i
+                $samaccountname = if ($LastName.trim.length -gt 4) {
+                    $Prefix + $LastName.trim.Substring(0, 5) + $FirstName[0] + $i
                 }
                 else {
-                    $Prefix + $LastName.replace(" ", "") + $FirstName[0] + $i
+                    $Prefix + $LastName.trim + $FirstName[0] + $i
                 }
                 $i++
             }
@@ -278,14 +279,12 @@ Function Copy-User {
             ########################################
             #  Out-GridView for License Selection  #
             ########################################
-            [string[]]$optionsToAdd = (. Get-CloudSkuTable -all | Out-GridView -Title "Options to Add" -PassThru)
+            [string[]]$optionsToAdd = (Get-CloudSkuTable -all | Out-GridView -Title "Options to Add" -PassThru)
 
             ########################################
             #  Background Job to Connect & License #
             ########################################
             Start-Job -Name ConnectnLicense {
-                import-module PSCloudConnect -force
-                import-module PSLicense -force
                 $optionsToAdd = $args[0]
                 $userprincipalname = $args[1]
                 try {
@@ -294,7 +293,7 @@ Function Copy-User {
                 catch {
                     Connect-ToCloud Office365 -Exchange -AzureADver2
                 }
-                $userprincipalname | Set-LACloudLicense -ExternalOptionsToAdd $optionsToAdd
+                $userprincipalname | Set-CloudLicense -ExternalOptionsToAdd $optionsToAdd
             } -ArgumentList $optionsToAdd, $userprincipalname | Out-Null
         
         }
