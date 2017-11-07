@@ -15,6 +15,7 @@ Function Convert-ToShared {
     
     Begin {
         [string[]]$skusToRemove = Get-CloudSku
+        write-host "SKUS TO REMOVE: "$skusToRemove
     }
     Process {
         $user = Get-AzureADUser -ObjectId $_
