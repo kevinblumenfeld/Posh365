@@ -212,7 +212,12 @@ Function Convert-ToShared {
         }
 
         [string[]]$skusToRemove = Get-CloudSku
-        write-host "SKUS TO REMOVE: "$skusToRemove
+        try {
+            Get-AzureADDomain -erroraction stop | Out-Null
+        }
+        catch {
+            Connect-ToCloud Office365 -Exchange -MSOnline -AzureADver2
+        }
     }
     Process {
         # Convert Cloud Mailbox to type, Shared.

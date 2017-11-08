@@ -255,7 +255,7 @@ Function Copy-User {
                 Get-AzureADDomain -erroraction stop | Out-Null
             }
             catch {
-                Connect-ToCloud Office365 -Exchange -AzureADver2
+                Connect-ToCloud Office365 -Exchange -MSOnline -AzureADver2
             }
 
             ########################################
