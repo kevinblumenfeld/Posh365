@@ -147,6 +147,27 @@ Function Copy-User {
             Connect-ToExchange -ExchangeServer $ExchangeServer  
         }
 
+        
+        ########################################
+        #         Connect to Office 365        #
+        ########################################
+        if (! $NoMail) {
+            try {
+                Get-AzureADDomain -erroraction stop | Out-Null
+            }
+            catch {
+                Try {
+                    Connect-ToCloud Office365 -Exchange -MSOnline -AzureADver2 -erroraction stop
+
+                } 
+                Catch {
+                    Write-Output "Failed to Connect to Cloud.  Please try again."
+                    Break
+                }
+            }
+    
+        }
+            
         #######################################
         # Copy ADUser (Template) & Create New #
         #######################################
@@ -247,16 +268,6 @@ Function Copy-User {
             #         Sync Azure AD Connect        #
             ########################################
             Sync-ADConnect
-
-            ########################################
-            #         Connect to Office 365        #
-            ########################################
-            try {
-                Get-AzureADDomain -erroraction stop | Out-Null
-            }
-            catch {
-                Connect-ToCloud Office365 -Exchange -MSOnline -AzureADver2
-            }
 
             ########################################
             #  Out-GridView for License Selection  #
