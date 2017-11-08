@@ -221,11 +221,21 @@ Function Convert-ToShared {
     Process {
         # Convert Cloud Mailbox to type, Shared.
         Set-Mailbox -Identity $_ -Type Shared
+        Write-Output "$($_) has been converted to a Shared Mailbox"
 
         # Modify OnPrem AD Attributes to that of a Remote Shared Mailbox
-        Set-ADUser -identity $_ -replace @{msExchRemoteRecipientType = "100";
-            msExchRecipientTypeDetails = "34359738368"
+        if ($($_) -like "*@*") {
+            Get-ADUser -LDAPFilter "(Userprincipalname=$_)" | 
+                Set-ADUser -replace @{msExchRemoteRecipientType = "100";
+                msExchRecipientTypeDetails = "34359738368"
+            }
         }
+        else {
+            Write-Output "Please use email address or UserPrincipalName when calling this script"
+            Write-Output "`"User-Test@contoso.com`" | Convert-ToShared"
+            Break
+        }
+        Write-Output "$($_) has been converted to a Shared Mailbox"
 
         # Remove any Licenses that the mailbox may have had
         $removeSkuGroup = @()
