@@ -1,4 +1,4 @@
-Function Copy-User {
+Function Copy-UserToCloud {
     <#
     .SYNOPSIS
     
@@ -26,12 +26,12 @@ Function Copy-User {
 
     When using the EmailDomain parameter, simply type -EmailDomain, then hit the space-bar, then tab through the available email domains.  The email domains are dynamically acquired from the environment where the script is run.
     
-    Copy-User -UserToCopy SmithJ -FirstName Naomi -LastName Queen -StorePhone "777-222-3333,234" -MobilePhone "404-234-5555" -Description "Naomi's Description" -Prefix NN -Password "Pass1255!!!$" -EmailDomain contoso.com
+    Copy-UserToCloud -UserToCopy SmithJ -FirstName Naomi -LastName Queen -StorePhone "777-222-3333,234" -MobilePhone "404-234-5555" -Description "Naomi's Description" -Prefix NN -Password "Pass1255!!!$" -EmailDomain contoso.com
     
     .EXAMPLE
     Notice the -NoMail switch (below).  This skips the process of creating a mailbox for this user
 
-    Copy-User -NoMail -UserToCopy SmithJ -FirstName Naomi -LastName Queen -StorePhone "777-222-3333,234" -MobilePhone "404-234-5555" -Description "Naomi's Description" -Prefix NN -Password "Pass1255!!!$" -EmailDomain contoso.com
+    Copy-UserToCloud -NoMail -UserToCopy SmithJ -FirstName Naomi -LastName Queen -StorePhone "777-222-3333,234" -MobilePhone "404-234-5555" -Description "Naomi's Description" -Prefix NN -Password "Pass1255!!!$" -EmailDomain contoso.com
     
     #>
     [CmdletBinding()]
@@ -51,10 +51,12 @@ Function Copy-User {
         [Parameter(Mandatory = $False)]
         [ValidateLength(1, 2)]
         [string] $Prefix,
-        [Parameter(Mandatory = $False)]    
-        [switch] $NoMail,
         [Parameter(Mandatory = $True)]
         [string] $Password,
+        [Parameter(Mandatory = $False)]    
+        [switch] $Shared,
+        [Parameter(Mandatory = $False)]    
+        [switch] $NoMail,
         [Parameter(Mandatory = $False)]
         [string] $OUSearch = "Contractors"
     )
@@ -258,17 +260,24 @@ Function Copy-User {
             ########################################
             #  Background Job to Connect & License #
             ########################################
-            Start-Job -Name ConnectnLicense {
-                $optionsToAdd = $args[0]
-                $userprincipalname = $args[1]
-                try {
-                    (Get-AzureADDomain -erroraction stop)[0] | Out-Null
-                }
-                catch {
-                    Connect-ToCloud Office365 -Exchange -AzureADver2
-                }
-                $userprincipalname | Set-CloudLicense -ExternalOptionsToAdd $optionsToAdd
-            } -ArgumentList $optionsToAdd, $userprincipalname | Out-Null
+
+            if (!$Shared) {
+                Start-Job -Name ConnectnLicense {
+                    $optionsToAdd = $args[0]
+                    $userprincipalname = $args[1]
+                    try {
+                        (Get-AzureADDomain -erroraction stop)[0] | Out-Null
+                    }
+                    catch {
+                        Connect-ToCloud Office365 -Exchange -AzureADver2
+                    }
+                    $userprincipalname | Set-CloudLicense -ExternalOptionsToAdd $optionsToAdd
+                } -ArgumentList $optionsToAdd, $userprincipalname | Out-Null
+            }
+            if ($Shared) {
+                $userprincipalname | Convert-ToShared
+            }
+
         
         }
 

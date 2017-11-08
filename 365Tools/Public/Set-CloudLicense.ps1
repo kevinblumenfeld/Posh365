@@ -48,9 +48,6 @@ function Set-CloudLicense {
         [Parameter(Mandatory = $false)]
         [switch] $DisplayTenantsSkusAndOptionsLookup,
 
-        [Parameter(Mandatory = $false)]
-        [string[]] $ExternalOptionsToAdd,
-
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [string[]] $UserPrincipalName
 
@@ -272,71 +269,66 @@ function Set-CloudLicense {
             "Yammer for Academic"                                               = "YAMMER_EDU";
             "Yammer"                                                            = "YAMMER_MIDSIZE"
         }
-        if (!$ExternalOptionsToAdd) {
 
-            # Based on Runtime switches, Out-GridView(s) are presented for user input
-            if ($RemoveSkus) {
-                [string[]]$skusToRemove = (Get-CloudSku | Out-GridView -Title "SKUs to Remove" -PassThru)
+        # Based on Runtime switches, Out-GridView(s) are presented for user input
+        if ($RemoveSkus) {
+            [string[]]$skusToRemove = (Get-CloudSku | Out-GridView -Title "SKUs to Remove" -PassThru)
+        }
+        if ($AddSkus) {
+            $skusToAdd = (Get-CloudSku | Out-GridView -Title "SKUs to Add" -PassThru)
+        }
+        if ($RemoveOptions) {
+            [string[]]$optionsToRemove = (Get-CloudSkuTable -all | Out-GridView -Title "Options to Remove" -PassThru)
+        }
+        if ($AddOptions) {
+            [string[]]$optionsToAdd = (Get-CloudSkuTable -all | Out-GridView -Title "Options to Add" -PassThru)
+        } 
+        if ($MoveOptionsFromOneSkuToAnother) {
+            $swapSource = (Get-CloudSku | Out-GridView -Title "Swap Sku - SOURCE" -PassThru)
+            $swapDest = (Get-CloudSku | Out-GridView -Title "Swap Sku - DESTINATION" -PassThru)
+        }
+        if ($MoveOptionsSourceOptionsToIgnore) {
+            if ($f2uSku.$swapSource) {
+                [string[]]$sourceIgnore = (Get-CloudSkuTable -sIgnore -sourceSku $f2uSku.$swapSource | Out-GridView -Title "SOURCE Options to Ignore" -PassThru)
             }
-            if ($AddSkus) {
-                $skusToAdd = (Get-CloudSku | Out-GridView -Title "SKUs to Add" -PassThru)
+            else {
+                [string[]]$sourceIgnore = (Get-CloudSkuTable -sIgnore -sourceSku $swapSource | Out-GridView -Title "SOURCE Options to Ignore" -PassThru)
             }
-            if ($RemoveOptions) {
-                [string[]]$optionsToRemove = (Get-CloudSkuTable -all | Out-GridView -Title "Options to Remove" -PassThru)
+            if ($sourceIgnore) {
+                $sourceIgnore = $sourceIgnore | % {
+                    if ($f2uOpt[($_).split("*")[1]]) {
+                        $f2uOpt[($_).split("*")[1]]
+                    }
+                    else {
+                        ($_).split("*")[1]
+                    }
+                } 
             }
-            if ($AddOptions) {
-                [string[]]$optionsToAdd = (Get-CloudSkuTable -all | Out-GridView -Title "Options to Add" -PassThru)
-            } 
-            if ($MoveOptionsFromOneSkuToAnother) {
-                $swapSource = (Get-CloudSku | Out-GridView -Title "Swap Sku - SOURCE" -PassThru)
-                $swapDest = (Get-CloudSku | Out-GridView -Title "Swap Sku - DESTINATION" -PassThru)
+        }
+        if ($MoveOptionsDestOptionsToAdd) {
+            if ($f2uSku.$swapDest) {
+                $destOptAdd = (Get-CloudSkuTable -destAdd -destSku $f2uSku.$swapDest | Out-GridView -Title "DESTINATION Options to add" -PassThru)
             }
-            if ($MoveOptionsSourceOptionsToIgnore) {
-                if ($f2uSku.$swapSource) {
-                    [string[]]$sourceIgnore = (Get-CloudSkuTable -sIgnore -sourceSku $f2uSku.$swapSource | Out-GridView -Title "SOURCE Options to Ignore" -PassThru)
-                }
-                else {
-                    [string[]]$sourceIgnore = (Get-CloudSkuTable -sIgnore -sourceSku $swapSource | Out-GridView -Title "SOURCE Options to Ignore" -PassThru)
-                }
-                if ($sourceIgnore) {
-                    $sourceIgnore = $sourceIgnore | % {
-                        if ($f2uOpt[($_).split("*")[1]]) {
-                            $f2uOpt[($_).split("*")[1]]
-                        }
-                        else {
-                            ($_).split("*")[1]
-                        }
-                    } 
-                }
+            else {
+                $destOptAdd = (Get-CloudSkuTable -destAdd -destSku $swapDest | Out-GridView -Title "DESTINATION Options to add" -PassThru)
             }
-            if ($MoveOptionsDestOptionsToAdd) {
-                if ($f2uSku.$swapDest) {
-                    $destOptAdd = (Get-CloudSkuTable -destAdd -destSku $f2uSku.$swapDest | Out-GridView -Title "DESTINATION Options to add" -PassThru)
-                }
-                else {
-                    $destOptAdd = (Get-CloudSkuTable -destAdd -destSku $swapDest | Out-GridView -Title "DESTINATION Options to add" -PassThru)
-                }
-            }
-            if ($TemplateMode) {
-                [string[]]$template = (Get-CloudSkuTable -all | Out-GridView -Title "Create a Template to Apply - All existing Options will be replaced if Sku is selected here" -PassThru)
-            }
-            if ($DisplayTenantsSkusAndOptions) {
-                [string[]]$allSkusOptions = (Get-Sku2Service -ugly | Out-GridView -Title "All Skus and Options")
-            }
-            if ($DisplayTenantsSkusAndOptionsFriendlyNames) {
-                [string[]]$allSkusOptions = (Get-Sku2Service -friendly | Out-GridView -Title "All Skus and Options Friendly Names")
-            }
-            if ($DisplayTenantsSkusAndOptionsLookup) {
-                [string[]]$allSkusOptions = (Get-Sku2Service -both | Out-GridView -Title "All Skus and Options Friendly and Ugly Name Lookup")
-            }
+        }
+        if ($TemplateMode) {
+            [string[]]$template = (Get-CloudSkuTable -all | Out-GridView -Title "Create a Template to Apply - All existing Options will be replaced if Sku is selected here" -PassThru)
+        }
+        if ($DisplayTenantsSkusAndOptions) {
+            [string[]]$allSkusOptions = (Get-Sku2Service -ugly | Out-GridView -Title "All Skus and Options")
+        }
+        if ($DisplayTenantsSkusAndOptionsFriendlyNames) {
+            [string[]]$allSkusOptions = (Get-Sku2Service -friendly | Out-GridView -Title "All Skus and Options Friendly Names")
+        }
+        if ($DisplayTenantsSkusAndOptionsLookup) {
+            [string[]]$allSkusOptions = (Get-Sku2Service -both | Out-GridView -Title "All Skus and Options Friendly and Ugly Name Lookup")
         }
     }
 
     Process {
-        if ($ExternalOptionsToAdd) {
-            $optionsToAdd = $ExternalOptionsToAdd
-            Start-Sleep -Seconds 240
-        }
+
 
         # Define Arrays
         $removeSkuGroup = @() 
@@ -492,7 +484,7 @@ function Set-CloudLicense {
             }
         }
         # Add Option(s). User will be assigned Sku with the options if user has yet to have Sku assigned 
-        if ($optionsToAdd -or $ExternalOptionsToAdd) {
+        if ($optionsToAdd) {
             $hashAdd = @{}
             for ($i = 0; $i -lt $optionsToAdd.count; $i++) {
                 if ($optionsToAdd[$i]) {
