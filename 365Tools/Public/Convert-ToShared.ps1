@@ -215,6 +215,16 @@ Function Convert-ToShared {
         write-host "SKUS TO REMOVE: "$skusToRemove
     }
     Process {
+        # Convert Cloud Mailbox to type, Shared.
+        Set-Mailbox -Identity $_ -Type Shared
+
+        # Modify OnPrem AD Attributes to that of a Remote Shared Mailbox
+        Set-ADUser -identity $_ -replace @{msExchRemoteRecipientType = "100";
+            msExchRecipientTypeDetails = "34359738368"
+        }
+
+        # Remove any Licenses that the mailbox may have had
+        $removeSkuGroup = @()
         $user = Get-AzureADUser -ObjectId $_
         $userLicense = Get-AzureADUserLicenseDetail -ObjectId $_
         if ($skusToRemove) {

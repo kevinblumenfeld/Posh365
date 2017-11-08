@@ -150,7 +150,7 @@ Function Copy-User {
         #######################################
         # Copy ADUser (Template) & Create New #
         #######################################
-        Import-Module ActiveDirectory
+        #Requires -Modules ActiveDirectory
         $template_obj = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties Enabled, StreetAddress, City, State, PostalCode, MemberOf
         $groupMembership = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties memberof | select -ExpandProperty memberof
 
@@ -238,10 +238,10 @@ Function Copy-User {
 
         if (!$NoMail) {
 
-            #######################################
-            # Enable Remote Mailbox in Office 365 #
-            #######################################
-            Enable-RemoteMailbox -DomainController $domainController -Identity $samaccountname -RemoteRoutingAddress ($samaccountname + "@" + $targetAddressSuffix) -Alias $samaccountname 
+            ##################################################
+            # Enable Remote Mailbox in Office 365 Via OnPrem #
+            ##################################################
+            Enable-OnPremRemoteMailbox -DomainController $domainController -Identity $samaccountname -RemoteRoutingAddress ($samaccountname + "@" + $targetAddressSuffix) -Alias $samaccountname 
 
             ########################################
             #         Sync Azure AD Connect        #

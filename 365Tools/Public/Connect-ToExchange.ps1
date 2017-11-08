@@ -77,7 +77,15 @@ function Connect-ToExchange {
         $Credential.UserName | Out-File ($KeyPath + "$($user).uExchangeCred")
     }    
     $Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri ("http://" + $ExchangeServer + "/PowerShell/") -Authentication Kerberos -Credential $Credential
-    Import-Module (Import-PSSession $Session -AllowClobber) -Global | Out-Null   
+    Import-Module (Import-PSSession $Session -AllowClobber -Prefix "OnPrem") -Global | Out-Null
+    Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
+    Write-Host "        You are now connected to On-Premises Exchange               " -foregroundcolor "darkgreen" -backgroundcolor "white"
+    Write-Host "          All commands are pre-pended with OnPrem, for example:     " -foregroundcolor "darkgreen" -backgroundcolor "white"
+    Write-Host "               Get-Mailbox       is      Get-OnPremMailbox          " -foregroundcolor "darkgreen" -backgroundcolor "white"
+    Write-Host " This is to prevent overlap of commands between Office 365 and EXO  " -foregroundcolor "darkgreen" -backgroundcolor "white"
+    Write-Host "   For example, Get-Mailbox would be used for Office 365 while,     " -foregroundcolor "darkgreen" -backgroundcolor "white"
+    Write-Host "     Get-OnPremMailbox would be used for On-Premises Exchange       " -foregroundcolor "darkgreen" -backgroundcolor "white"
+    Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
     if ($ViewEntireForest) {
         Set-ADServerSettings -ViewEntireForest:$True
     }
