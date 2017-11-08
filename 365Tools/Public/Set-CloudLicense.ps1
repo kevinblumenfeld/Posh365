@@ -48,6 +48,9 @@ function Set-CloudLicense {
         [Parameter(Mandatory = $false)]
         [switch] $DisplayTenantsSkusAndOptionsLookup,
 
+        [Parameter(Mandatory = $false)]
+        [string[]] $ExternalOptionsToAdd,
+
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [string[]] $UserPrincipalName
 
@@ -328,7 +331,10 @@ function Set-CloudLicense {
     }
 
     Process {
-
+        if ($ExternalOptionsToAdd) {
+            $optionsToAdd = $ExternalOptionsToAdd
+            Start-Sleep -Seconds 120
+        }
 
         # Define Arrays
         $removeSkuGroup = @() 
@@ -484,7 +490,7 @@ function Set-CloudLicense {
             }
         }
         # Add Option(s). User will be assigned Sku with the options if user has yet to have Sku assigned 
-        if ($optionsToAdd) {
+        if ($optionsToAdd -or $ExternalOptionsToAdd) {
             $hashAdd = @{}
             for ($i = 0; $i -lt $optionsToAdd.count; $i++) {
                 if ($optionsToAdd[$i]) {
