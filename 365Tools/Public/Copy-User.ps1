@@ -192,7 +192,7 @@ Function Copy-User {
         }
 
         else {
-            $SamAccountName = (($Prefix + $LastName[0..4] -join '') + $FirstName)[0..5] -join ''
+            $SamAccountName = ((($Prefix + $LastName)[0..4] -join '') + $FirstName)[0..5] -join ''
             $i = 2
             while ((get-aduser -LDAPfilter "(samaccountname=$samaccountname)")) {
                 $CharactersUsedForInteration = ([string]$i).Length
