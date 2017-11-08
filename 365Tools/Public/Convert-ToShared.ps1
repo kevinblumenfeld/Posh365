@@ -210,14 +210,13 @@ Function Convert-ToShared {
             "Yammer for Academic"                                               = "YAMMER_EDU";
             "Yammer"                                                            = "YAMMER_MIDSIZE"
         }
-
-        [string[]]$skusToRemove = Get-CloudSku
         try {
             Get-AzureADDomain -erroraction stop | Out-Null
         }
         catch {
             Connect-ToCloud Office365 -Exchange -MSOnline -AzureADver2
         }
+        [string[]]$skusToRemove = Get-CloudSku
     }
     Process {
         # Convert Cloud Mailbox to type, Shared.
