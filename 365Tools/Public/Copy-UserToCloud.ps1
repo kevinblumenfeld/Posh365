@@ -261,24 +261,25 @@ Function Copy-UserToCloud {
             #  Background Job to Connect & License #
             ########################################
 
-            if (!$Shared) {
-                Start-Job -Name ConnectnLicense {
-                    $optionsToAdd = $args[0]
-                    $userprincipalname = $args[1]
-                    try {
-                        (Get-AzureADDomain -erroraction stop)[0] | Out-Null
-                    }
-                    catch {
-                        Connect-ToCloud Office365 -Exchange -AzureADver2
-                    }
-                    $userprincipalname | Set-CloudLicense -ExternalOptionsToAdd $optionsToAdd
-                } -ArgumentList $optionsToAdd, $userprincipalname | Out-Null
-            }
-            if ($Shared) {
-                $userprincipalname | Convert-ToShared
-            }
+            Start-Job -Name ConnectnLicense {
+                $optionsToAdd = $args[0]
+                $userprincipalname = $args[1]
+                try {
+                    (Get-AzureADDomain -erroraction stop)[0] | Out-Null
+                }
+                catch {
+                    Connect-ToCloud Office365 -Exchange -AzureADver2
+                }
+                $userprincipalname | Set-CloudLicense -ExternalOptionsToAdd $optionsToAdd
+            } -ArgumentList $optionsToAdd, $userprincipalname | Out-Null
 
-        
+            if ($Shared) {
+                Start-Job -Name ConvertToShared {
+                    Start-Sleep -Seconds 300
+                    $userprincipalname = $args[0]
+                    $userprincipalname | Convert-ToShared
+                } -ArgumentList  $userprincipalname | Out-Null
+            }
         }
 
         ########################################
