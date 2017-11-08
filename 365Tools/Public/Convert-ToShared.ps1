@@ -235,7 +235,7 @@ Function Convert-ToShared {
             Write-Output "`"User-Test@contoso.com`" | Convert-ToShared"
             Break
         }
-        Write-Output "$($_) has been converted to a Shared Mailbox"
+        Write-Output "$($_) has been converted to a Remote Shared Mailbox in Active Directory"
 
         # Remove any Licenses that the mailbox may have had
         $removeSkuGroup = @()
@@ -260,7 +260,7 @@ Function Convert-ToShared {
                 Set-AzureADUserLicense -ObjectId $user.ObjectId -AssignedLicenses $licensesToAssign
             }
             Else {
-                Write-Output "$($_) does not have any of the Skus requested for removal"
+                Write-Output "$($_) Licenses have been removed"
             }
         }
 
