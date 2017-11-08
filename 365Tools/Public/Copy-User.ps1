@@ -206,8 +206,8 @@ Function Copy-User {
             $SamAccountName = (($LastName[0..6] -join '') + $FirstName)[0..7] -join ''
             $i = 2
             while ((get-aduser -LDAPfilter "(samaccountname=$samaccountname)")) {
-                $CharactersUsedForInteration = ([string]$i).Length
-                $SamAccountName = ((($LastName[0..(6 - $CharactersUsedForInteration)] -join '') + $FirstName)[0..(7 - $CharactersUsedForInteration)] -join '') + $i
+                $CharactersUsedForIteration = ([string]$i).Length
+                $SamAccountName = ((($LastName[0..(6 - $CharactersUsedForIteration)] -join '') + $FirstName)[0..(7 - $CharactersUsedForIteration)] -join '') + $i
                 $i++
             }
         }
@@ -216,8 +216,8 @@ Function Copy-User {
             $SamAccountName = ((($Prefix + $LastName)[0..6] -join '') + $FirstName)[0..7] -join ''
             $i = 2
             while ((get-aduser -LDAPfilter "(samaccountname=$samaccountname)")) {
-                $CharactersUsedForInteration = ([string]$i).Length
-                $SamAccountName = (((($Prefix + $LastName)[0..(6 - $CharactersUsedForInteration)] -join '') + $FirstName)[0..(7 - $CharactersUsedForInteration)] -join '') + $i
+                $CharactersUsedForIteration = ([string]$i).Length
+                $SamAccountName = (((($Prefix + $LastName)[0..(6 - $CharactersUsedForIteration)] -join '') + $FirstName)[0..(7 - $CharactersUsedForIteration)] -join '') + $i
                 $i++
             }
         }
