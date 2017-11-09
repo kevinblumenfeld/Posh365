@@ -41,49 +41,51 @@ Function Copy-UserToCloud {
     #>
     [CmdletBinding()]
     Param (
-        [parameter(Mandatory = $True,
-            ParameterSetName = "MBX")]
-        [parameter(Mandatory = $True,
-            ParameterSetName = "Shared")]   
+        [parameter(Mandatory, ParameterSetName = "Copy")]
+        [parameter(ParameterSetName = "Shared")]   
         [string] $UserToCopy,
-        [Parameter(Mandatory = $False,
-            ParameterSetName = "Shared")]   
+        [Parameter(ParameterSetName = "Shared")]   
         [switch] $Shared,
-        [Parameter(Mandatory = $True,
-            ParameterSetName = "MBX")]
+        [Parameter(ParameterSetName = "New")]
+        [switch] $New,
+        [Parameter(Mandatory, ParameterSetName = "Copy")]
+        [Parameter(Mandatory, ParameterSetName = "New")]
         [string] $FirstName,
-        [Parameter(Mandatory = $True,
-            ParameterSetName = "MBX")]
+        [Parameter(Mandatory, ParameterSetName = "Copy")]
+        [Parameter(Mandatory, ParameterSetName = "New")]
         [string] $LastName,
-        [Parameter(Mandatory = $False,
-            ParameterSetName = "MBX")]
+        [Parameter(ParameterSetName = "Copy")]
+        [Parameter(ParameterSetName = "New")]
         [string] $StorePhone,
-        [Parameter(Mandatory = $False,
-            ParameterSetName = "MBX")]
+        [Parameter(ParameterSetName = "Copy")]
+        [Parameter(ParameterSetName = "New")]
         [string] $MobilePhone,
-        [parameter(Mandatory = $False,
-            ParameterSetName = "MBX")]
-        [parameter(Mandatory = $False,
-            ParameterSetName = "Shared")]
+        [parameter(ParameterSetName = "Copy")]
+        [parameter(ParameterSetName = "New")]
         [string] $Description,
-        [parameter(Mandatory = $False,
-            ParameterSetName = "MBX")]
-        [parameter(Mandatory = $False,
-            ParameterSetName = "Shared")]
+        [parameter(ParameterSetName = "New")]
+        [string] $StreetAddress,
+        [parameter(ParameterSetName = "New")]
+        [string] $City,
+        [parameter(ParameterSetName = "New")]
+        [string] $State,
+        [parameter(ParameterSetName = "New")]
+        [string] $Zip,
+        [parameter(ParameterSetName = "Copy")]
+        [parameter(ParameterSetName = "Shared")]
+        [Parameter(ParameterSetName = "New")]
         [ValidateLength(1, 2)]
         [string] $Prefix,
-        [parameter(Mandatory = $True,
-            ParameterSetName = "MBX")]
-        [parameter(Mandatory = $True,
-            ParameterSetName = "Shared")]
+        [parameter(Mandatory, ParameterSetName = "Copy")]
+        [parameter(Mandatory, ParameterSetName = "Shared")]
+        [Parameter(Mandatory, ParameterSetName = "New")]
         [string] $Password,
-        [Parameter(Mandatory = $False,
-            ParameterSetName = "MBX")]
+        [Parameter(ParameterSetName = "Copy")]
+        [Parameter(ParameterSetName = "New")]
         [switch] $NoMail,
-        [parameter(Mandatory = $False,
-            ParameterSetName = "MBX")]
-        [parameter(Mandatory = $False,
-            ParameterSetName = "Shared")]
+        [parameter(ParameterSetName = "Copy")]
+        [parameter(ParameterSetName = "Shared")]
+        [parameter(ParameterSetName = "New")]
         [string] $OUSearch = "Contractors"
     )
     DynamicParam {
