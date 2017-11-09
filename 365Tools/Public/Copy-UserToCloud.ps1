@@ -1,4 +1,4 @@
-Function Copy-UserToCloud {
+Function New-UserToCloud {
     <#
     .SYNOPSIS
     
@@ -26,28 +26,28 @@ Function Copy-UserToCloud {
 
     When using the EmailDomain parameter, simply type -EmailDomain, then hit the space-bar, then tab through the available email domains.  The email domains are dynamically acquired from the environment where the script is run.
     
-    Copy-UserToCloud -UserToCopy SmithJ -FirstName Naomi -LastName Queen -StorePhone "777-222-3333,234" -MobilePhone "404-234-5555" -Description "Naomi's Description" -Prefix NN -Password "Pass1255!!!$" -EmailDomain contoso.com
+    New-UserToCloud -UserToCopy SmithJ -FirstName Naomi -LastName Queen -StorePhone "777-222-3333,234" -MobilePhone "404-234-5555" -Description "Naomi's Description" -Prefix NN -Password "Pass1255!!!$" -EmailDomain contoso.com
     
     .EXAMPLE
     Notice the -NoMail switch (below).  This skips the process of creating a mailbox for this user
 
-    Copy-UserToCloud -NoMail -UserToCopy SmithJ -FirstName Naomi -LastName Queen -StorePhone "777-222-3333,234" -MobilePhone "404-234-5555" -Description "Naomi's Description" -Prefix NN -Password "Pass1255!!!$" -EmailDomain contoso.com
+    New-UserToCloud -NoMail -UserToCopy SmithJ -FirstName Naomi -LastName Queen -StorePhone "777-222-3333,234" -MobilePhone "404-234-5555" -Description "Naomi's Description" -Prefix NN -Password "Pass1255!!!$" -EmailDomain contoso.com
     
     .EXAMPLE
     Notice the -Shared switch (below).  Use this to create a shared mailbox.  An Exchange Online License is needed but is automatically removed after 6 minutes
 
-    Copy-UserToCloud -Shared -UserToCopy SharedTemplate -FirstName Shared -LastName Sales -Description "Shared's Description" -Prefix NN -Password "Pass1255!!!$" -EmailDomain contoso.com
+    New-UserToCloud -Shared -UserToCopy SharedTemplate -FirstName Shared -LastName Sales -Description "Shared's Description" -Prefix NN -Password "Pass1255!!!$" -EmailDomain contoso.com
     
     #>
     [CmdletBinding()]
     Param (
-        [parameter(Mandatory, ParameterSetName = "Copy")]
-        [parameter(ParameterSetName = "Shared")]   
-        [string] $UserToCopy,
         [Parameter(ParameterSetName = "Shared")]   
         [switch] $Shared,
         [Parameter(ParameterSetName = "New")]
         [switch] $New,
+        [parameter(Mandatory, ParameterSetName = "Copy")]
+        [parameter(ParameterSetName = "Shared")]   
+        [string] $UserToCopy,
         [Parameter(Mandatory, ParameterSetName = "Copy")]
         [Parameter(Mandatory, ParameterSetName = "New")]
         [Parameter(Mandatory, ParameterSetName = "Shared")]
@@ -187,9 +187,11 @@ Function Copy-UserToCloud {
         # Copy ADUser (Template) & Create New #
         #######################################
         #Requires -Modules ActiveDirectory
-        $template_obj = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties Enabled, StreetAddress, City, State, PostalCode, MemberOf
-        $groupMembership = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties memberof | select -ExpandProperty memberof
-
+        if ($UserToCopy) {
+            $template_obj = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties Enabled, StreetAddress, City, State, PostalCode, MemberOf
+            $groupMembership = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties memberof | select -ExpandProperty memberof    
+        }
+        
         #########################################
         # UserPrincipalName. If in use, add #'s #
         #           Set name Variable           #
@@ -257,17 +259,24 @@ Function Copy-UserToCloud {
             "OfficePhone"       = $StorePhone
             "mobile"            = $MobilePhone
             "description"       = $Description
+            "streetaddress"     = $StreetAddress
+            "city"              = $City
+            "state"             = $State
+            "postalcode"        = $Zip
             "SamAccountName"    = $samaccountname
             "UserPrincipalName" = $userprincipalname
             "AccountPassword"   = $password_ss
             "Path"              = $ou
         }
-
+        
         #########################################
         #          Create New ADUser            #
         #########################################
         New-ADUser @params -Server $domainController -ChangePasswordAtLogon:$true
-        $groupMembership | Add-ADGroupMember -Server $domainController -Members $samaccountname
+        
+        if (!$UserToCopy) {
+            $groupMembership | Add-ADGroupMember -Server $domainController -Members $samaccountname
+        }
 
         # Purge old jobs
         Get-Job | where {$_.State -ne 'Running'}| Remove-Job
