@@ -257,7 +257,7 @@ Function New-UserToCloud {
                 $i++
             }
             $name = $cn
-            $FirstName = "SharedMailox"
+            $FirstName = "SharedMailbox"
             $LastName = $LastName.replace(" ", "")
             $userprincipalname = $LastName + "@" + $PsBoundParameters[$ParamName_emaildomain]            
             $i = 2
