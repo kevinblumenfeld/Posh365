@@ -58,7 +58,7 @@ Function New-UserToCloud {
         [string] $LastName,
         [Parameter(ParameterSetName = "Copy")]
         [Parameter(ParameterSetName = "New")]
-        [string] $StorePhone,
+        [string] $OfficePhone,
         [Parameter(ParameterSetName = "Copy")]
         [Parameter(ParameterSetName = "New")]
         [string] $MobilePhone,
@@ -250,13 +250,13 @@ Function New-UserToCloud {
             } | Select canonicalname, distinguishedname| sort canonicalname | 
                 Out-GridView -PassThru -Title "Choose the OU in which to create the new user, then click OK").distinguishedname
 
-        $params = @{
+        $hash = @{
             "Instance"          = $template_obj
             "Name"              = $name
             "DisplayName"       = $displayName
             "GivenName"         = $FirstName
             "SurName"           = $LastName
-            "OfficePhone"       = $StorePhone
+            "OfficePhone"       = $OfficePhone
             "mobile"            = $MobilePhone
             "description"       = $Description
             "streetaddress"     = $StreetAddress
@@ -267,6 +267,12 @@ Function New-UserToCloud {
             "UserPrincipalName" = $userprincipalname
             "AccountPassword"   = $password_ss
             "Path"              = $ou
+        }
+        $params = @{}
+        ForEach ($h in $hash.keys) {
+            if ($($hash.item($h))) {
+                $params.add($h, $($hash.item($h)))
+            }
         }
         
         #########################################
