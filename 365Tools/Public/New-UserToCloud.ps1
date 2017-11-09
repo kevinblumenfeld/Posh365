@@ -251,6 +251,7 @@ Function New-UserToCloud {
         #######################
 
         Else {
+            $name = $displayName
             $FirstName = "Shared"
             $LastName = $LastName.replace(" ", "")
             $userprincipalname = $LastName + "@" + $PsBoundParameters[$ParamName_emaildomain]            
