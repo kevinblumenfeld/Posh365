@@ -268,9 +268,9 @@ Function New-UserToCloud {
             "Path"              = $ou
         }
         $params = @{}
-        ForEach ($h in $hash.keys) {
-            if ($($hash.item($h))) {
-                $params.add($h, $($hash.item($h)))
+        ForEach ($key in $hash.keys) {
+            if ($($hash.item($key))) {
+                $params.add($key, $($hash.item($key)))
             }
         }
         
