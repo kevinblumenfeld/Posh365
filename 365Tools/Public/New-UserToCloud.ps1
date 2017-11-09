@@ -242,7 +242,6 @@ Function New-UserToCloud {
                     $i++
                 }
             }
-            $samaccountname = $samaccountname.tolower()
 
         } ###   End: NOT SHARED    ###
 
@@ -252,7 +251,9 @@ Function New-UserToCloud {
 
         Else {
             $name = $displayName
-            $FirstName = "Shared"
+            write-host "name:`t" $name
+            write-host "displayname:`t" $displayName
+            $FirstName = "SharedMailox"
             $LastName = $LastName.replace(" ", "")
             $userprincipalname = $LastName + "@" + $PsBoundParameters[$ParamName_emaildomain]            
             $i = 2
@@ -271,6 +272,9 @@ Function New-UserToCloud {
             }
 
         }
+
+        # SamAccount To Lower
+        $samaccountname = $samaccountname.tolower()
 
         #########################################
         #   Create Parameters for New ADUser    #
