@@ -33,31 +33,47 @@ Function Copy-UserToCloud {
 
     Copy-UserToCloud -NoMail -UserToCopy SmithJ -FirstName Naomi -LastName Queen -StorePhone "777-222-3333,234" -MobilePhone "404-234-5555" -Description "Naomi's Description" -Prefix NN -Password "Pass1255!!!$" -EmailDomain contoso.com
     
+    .EXAMPLE
+    Notice the -Shared switch (below).  Use this to create a shared mailbox.  An Exchange Online License is needed but is automatically removed after 6 minutes
+
+    Copy-UserToCloud -Shared -UserToCopy SharedTemplate -FirstName Shared -LastName Sales -Description "Shared's Description" -Prefix NN -Password "Pass1255!!!$" -EmailDomain contoso.com
+    
     #>
     [CmdletBinding()]
     Param (
-        [Parameter(Mandatory = $True)]    
+        [Parameter(Mandatory = $True,
+            ParameterSetName = "MBX")]    
         [string] $UserToCopy,
-        [Parameter(Mandatory = $True)]
+        [Parameter(Mandatory = $True,
+            ParameterSetName = "Shared")]   
+        [switch] $Shared,
+        [Parameter(Mandatory = $True,
+            ParameterSetName = "MBX")]
         [string] $FirstName,
-        [Parameter(Mandatory = $True)]
+        [Parameter(Mandatory = $True,
+            ParameterSetName = "MBX")]
         [string] $LastName,
-        [Parameter(Mandatory = $False)]
+        [Parameter(Mandatory = $True,
+            ParameterSetName = "MBX")]
         [string] $StorePhone,
-        [Parameter(Mandatory = $False)]
+        [Parameter(Mandatory = $True,
+            ParameterSetName = "MBX")]
         [string] $MobilePhone,
-        [Parameter(Mandatory = $False)]
+        [Parameter(Mandatory = $True,
+            ParameterSetName = "MBX", "Shared")]
         [string] $Description,
-        [Parameter(Mandatory = $False)]
+        [Parameter(Mandatory = $True,
+            ParameterSetName = "MBX", "Shared")]
         [ValidateLength(1, 2)]
         [string] $Prefix,
-        [Parameter(Mandatory = $True)]
+        [Parameter(Mandatory = $True,
+            ParameterSetName = "MBX", "Shared")]
         [string] $Password,
-        [Parameter(Mandatory = $False)]    
-        [switch] $Shared,
-        [Parameter(Mandatory = $False)]    
+        [Parameter(Mandatory = $True,
+            ParameterSetName = "MBX")]
         [switch] $NoMail,
-        [Parameter(Mandatory = $False)]
+        [Parameter(Mandatory = $True,
+            ParameterSetName = "MBX", "Shared")]
         [string] $OUSearch = "Contractors"
     )
     DynamicParam {
@@ -71,6 +87,7 @@ Function Copy-UserToCloud {
         $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
         $ParameterAttribute.Mandatory = $true
         $ParameterAttribute.Position = 1
+        $ParameterAttribute.ParameterSetName = '__AllParameterSets'
         # Add the attributes to the attributes collection
         $AttributeCollection.Add($ParameterAttribute) 
         # Create the dictionary 
