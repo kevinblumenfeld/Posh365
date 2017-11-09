@@ -155,7 +155,7 @@ Function New-UserToCloud {
         #   Connect to On Premises Exchange   #
         #######################################
         try {
-            (Get-ExchangeServer -erroraction stop)[0] | Out-Null
+            (Get-OnPremExchangeServer -erroraction stop)[0] | Out-Null
         }
         catch {
             Connect-ToExchange -ExchangeServer $ExchangeServer  
