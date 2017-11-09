@@ -50,9 +50,11 @@ Function Copy-UserToCloud {
         [switch] $New,
         [Parameter(Mandatory, ParameterSetName = "Copy")]
         [Parameter(Mandatory, ParameterSetName = "New")]
+        [Parameter(Mandatory, ParameterSetName = "Shared")]
         [string] $FirstName,
         [Parameter(Mandatory, ParameterSetName = "Copy")]
         [Parameter(Mandatory, ParameterSetName = "New")]
+        [Parameter(Mandatory, ParameterSetName = "Shared")]
         [string] $LastName,
         [Parameter(ParameterSetName = "Copy")]
         [Parameter(ParameterSetName = "New")]
@@ -62,6 +64,7 @@ Function Copy-UserToCloud {
         [string] $MobilePhone,
         [parameter(ParameterSetName = "Copy")]
         [parameter(ParameterSetName = "New")]
+        [Parameter(ParameterSetName = "Shared")]
         [string] $Description,
         [parameter(ParameterSetName = "New")]
         [string] $StreetAddress,
