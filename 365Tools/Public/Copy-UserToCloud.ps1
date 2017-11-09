@@ -41,10 +41,12 @@ Function Copy-UserToCloud {
     #>
     [CmdletBinding()]
     Param (
-        [Parameter(Mandatory = $True,
-            ParameterSetName = "MBX")]    
+        [parameter(Mandatory = $True,
+            ParameterSetName = "MBX")]
+        [parameter(Mandatory = $True,
+            ParameterSetName = "Shared")]   
         [string] $UserToCopy,
-        [Parameter(Mandatory = $True,
+        [Parameter(Mandatory = $False,
             ParameterSetName = "Shared")]   
         [switch] $Shared,
         [Parameter(Mandatory = $True,
@@ -53,27 +55,35 @@ Function Copy-UserToCloud {
         [Parameter(Mandatory = $True,
             ParameterSetName = "MBX")]
         [string] $LastName,
-        [Parameter(Mandatory = $True,
+        [Parameter(Mandatory = $False,
             ParameterSetName = "MBX")]
         [string] $StorePhone,
-        [Parameter(Mandatory = $True,
+        [Parameter(Mandatory = $False,
             ParameterSetName = "MBX")]
         [string] $MobilePhone,
-        [Parameter(Mandatory = $True,
-            ParameterSetName = "MBX", "Shared")]
+        [parameter(Mandatory = $False,
+            ParameterSetName = "MBX")]
+        [parameter(Mandatory = $False,
+            ParameterSetName = "Shared")]
         [string] $Description,
-        [Parameter(Mandatory = $True,
-            ParameterSetName = "MBX", "Shared")]
+        [parameter(Mandatory = $False,
+            ParameterSetName = "MBX")]
+        [parameter(Mandatory = $False,
+            ParameterSetName = "Shared")]
         [ValidateLength(1, 2)]
         [string] $Prefix,
-        [Parameter(Mandatory = $True,
-            ParameterSetName = "MBX", "Shared")]
+        [parameter(Mandatory = $True,
+            ParameterSetName = "MBX")]
+        [parameter(Mandatory = $True,
+            ParameterSetName = "Shared")]
         [string] $Password,
-        [Parameter(Mandatory = $True,
+        [Parameter(Mandatory = $False,
             ParameterSetName = "MBX")]
         [switch] $NoMail,
-        [Parameter(Mandatory = $True,
-            ParameterSetName = "MBX", "Shared")]
+        [parameter(Mandatory = $False,
+            ParameterSetName = "MBX")]
+        [parameter(Mandatory = $False,
+            ParameterSetName = "Shared")]
         [string] $OUSearch = "Contractors"
     )
     DynamicParam {
