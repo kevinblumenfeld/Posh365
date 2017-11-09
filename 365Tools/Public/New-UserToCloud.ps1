@@ -118,7 +118,6 @@ Function New-UserToCloud {
 
         return $RuntimeParameterDictionary
 
-
     }
     
     Begin {
@@ -280,7 +279,7 @@ Function New-UserToCloud {
         #########################################
         New-ADUser @params -Server $domainController -ChangePasswordAtLogon:$true
         
-        if (!$UserToCopy) {
+        if ($UserToCopy) {
             $groupMembership | Add-ADGroupMember -Server $domainController -Members $samaccountname
         }
 
