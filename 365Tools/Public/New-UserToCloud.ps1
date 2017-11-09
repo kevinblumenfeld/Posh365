@@ -50,12 +50,13 @@ Function New-UserToCloud {
         [string] $UserToCopy,
         [Parameter(Mandatory, ParameterSetName = "Copy")]
         [Parameter(Mandatory, ParameterSetName = "New")]
-        [Parameter(Mandatory, ParameterSetName = "Shared")]
         [string] $FirstName,
         [Parameter(Mandatory, ParameterSetName = "Copy")]
         [Parameter(Mandatory, ParameterSetName = "New")]
         [Parameter(Mandatory, ParameterSetName = "Shared")]
         [string] $LastName,
+        [Parameter(ParameterSetName = "Shared")]
+        [string] $displayName,
         [Parameter(ParameterSetName = "Copy")]
         [Parameter(ParameterSetName = "New")]
         [string] $OfficePhone,
@@ -75,13 +76,12 @@ Function New-UserToCloud {
         [parameter(ParameterSetName = "New")]
         [string] $Zip,
         [parameter(ParameterSetName = "Copy")]
-        [parameter(ParameterSetName = "Shared")]
         [Parameter(ParameterSetName = "New")]
         [ValidateLength(1, 2)]
         [string] $Prefix,
         [parameter(Mandatory, ParameterSetName = "Copy")]
-        [parameter(Mandatory, ParameterSetName = "Shared")]
         [Parameter(Mandatory, ParameterSetName = "New")]
+        [parameter(Mandatory, ParameterSetName = "Shared")]
         [string] $Password,
         [Parameter(ParameterSetName = "Copy")]
         [Parameter(ParameterSetName = "New")]
@@ -161,7 +161,6 @@ Function New-UserToCloud {
             Connect-ToExchange -ExchangeServer $ExchangeServer  
         }
 
-        
         ########################################
         #         Connect to Office 365        #
         ########################################
@@ -181,7 +180,7 @@ Function New-UserToCloud {
             }
     
         }
-            
+                
         #######################################
         # Copy ADUser (Template) & Create New #
         #######################################
@@ -190,54 +189,87 @@ Function New-UserToCloud {
             $template_obj = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties Enabled, StreetAddress, City, State, PostalCode, MemberOf
             $groupMembership = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties memberof | select -ExpandProperty memberof    
         }
-        
-        #########################################
-        # UserPrincipalName. If in use, add #'s #
-        #           Set name Variable           #
-        #########################################
-        $LastName = $LastName.replace(" ", "")
-        $FirstName = $FirstName.replace(" ", "")
-        $userprincipalname = $LastName + "-" + $FirstName + "@" + $PsBoundParameters[$ParamName_emaildomain]
-        
-        $i = 2
-        $F = $null
-        while (get-aduser -LDAPfilter "(userprincipalname=$userprincipalname)") {
-            $F = $FirstName + $i
-            $userprincipalname = $LastName + "-" + $F + "@" + $PsBoundParameters[$ParamName_emaildomain]
-            $i++
-        }
-        if ($F) {
-            $name = $LastName + ", " + $F
-        }
-        else {
-            $name = $LastName + ", " + $FirstName
-        }
-        
-        $displayName = $LastName + ", " + $FirstName
 
-        ##############################################
-        #              SamAccountName                #
-        ##############################################
-        if (!$Prefix) {
-            $SamAccountName = (($LastName[0..6] -join '') + $FirstName)[0..7] -join ''
+        #######################
+        #     NOT SHARED      #
+        #######################
+
+        if (!$Shared) {
+        
+            #########################################
+            # UserPrincipalName. If in use, add #'s #
+            #           Set name Variable           #
+            #########################################
+            $LastName = $LastName.replace(" ", "")
+            $FirstName = $FirstName.replace(" ", "")
+            $userprincipalname = $LastName + "-" + $FirstName + "@" + $PsBoundParameters[$ParamName_emaildomain]
+        
             $i = 2
-            while ((get-aduser -LDAPfilter "(samaccountname=$samaccountname)")) {
-                $CharactersUsedForIteration = ([string]$i).Length
-                $SamAccountName = ((($LastName[0..(6 - $CharactersUsedForIteration)] -join '') + $FirstName)[0..(7 - $CharactersUsedForIteration)] -join '') + $i
+            $F = $null
+            while (Get-ADUser -LDAPfilter "(userprincipalname=$userprincipalname)") {
+                $F = $FirstName + $i
+                $userprincipalname = $LastName + "-" + $F + "@" + $PsBoundParameters[$ParamName_emaildomain]
                 $i++
             }
-        }
+            if ($F) {
+                $name = $LastName + ", " + $F
+            }
+            else {
+                $name = $LastName + ", " + $FirstName
+            }
+        
+            $displayName = $LastName + ", " + $FirstName
 
-        else {
-            $SamAccountName = ((($Prefix + $LastName)[0..6] -join '') + $FirstName)[0..7] -join ''
+            ##############################################
+            #              SamAccountName                #
+            ##############################################
+            if (!$Prefix) {
+                $SamAccountName = (($LastName[0..6] -join '') + $FirstName)[0..7] -join ''
+                $i = 2
+                while ((Get-ADUser -LDAPfilter "(samaccountname=$samaccountname)")) {
+                    $CharactersUsedForIteration = ([string]$i).Length
+                    $SamAccountName = ((($LastName[0..(6 - $CharactersUsedForIteration)] -join '') + $FirstName)[0..(7 - $CharactersUsedForIteration)] -join '') + $i
+                    $i++
+                }
+            }
+
+            else {
+                $SamAccountName = ((($Prefix + $LastName)[0..6] -join '') + $FirstName)[0..7] -join ''
+                $i = 2
+                while ((Get-ADUser -LDAPfilter "(samaccountname=$samaccountname)")) {
+                    $CharactersUsedForIteration = ([string]$i).Length
+                    $SamAccountName = (((($Prefix + $LastName)[0..(6 - $CharactersUsedForIteration)] -join '') + $FirstName)[0..(7 - $CharactersUsedForIteration)] -join '') + $i
+                    $i++
+                }
+            }
+            $samaccountname = $samaccountname.tolower()
+
+        } ###   End: NOT SHARED    ###
+
+        #######################
+        #  SHARED  UPN & SAM  #
+        #######################
+
+        Else {
+            $FirstName = "Shared"
+            $LastName = $LastName.replace(" ", "")
+            $userprincipalname = $LastName + "@" + $PsBoundParameters[$ParamName_emaildomain]            
             $i = 2
-            while ((get-aduser -LDAPfilter "(samaccountname=$samaccountname)")) {
-                $CharactersUsedForIteration = ([string]$i).Length
-                $SamAccountName = (((($Prefix + $LastName)[0..(6 - $CharactersUsedForIteration)] -join '') + $FirstName)[0..(7 - $CharactersUsedForIteration)] -join '') + $i
+            $F = $null
+            while (Get-ADUser -LDAPfilter "(userprincipalname=$userprincipalname)") {
+                $F = $LastName + $i
+                $userprincipalname = $F + "@" + $PsBoundParameters[$ParamName_emaildomain]
                 $i++
             }
+            $SamAccountName = $LastName[0..7] -join ''
+            $i = 2
+            while ((Get-ADUser -LDAPfilter "(samaccountname=$samaccountname)")) {
+                $CharactersUsedForIteration = ([string]$i).Length
+                $SamAccountName = ($LastName[0..(7 - $CharactersUsedForIteration)] -join '') + $i
+                $i++
+            }
+
         }
-        $samaccountname = $samaccountname.tolower()
 
         #########################################
         #   Create Parameters for New ADUser    #
@@ -300,12 +332,13 @@ Function New-UserToCloud {
 
             ########################################
             #  Out-GridView for License Selection  #
-            ########################################
+            #                                      #
+
             [string[]]$optionsToAdd = (Get-CloudSkuTable -all | Out-GridView -Title "Options to Add" -PassThru)
 
-            ########################################
+            #                                      #
             #  Background Job to Connect & License #
-            ########################################
+            ###############        #################
 
             Start-Job -Name ConnectnLicense {
                 $optionsToAdd = $args[0]
@@ -318,7 +351,10 @@ Function New-UserToCloud {
                 }
                 $userprincipalname | Set-CloudLicense -ExternalOptionsToAdd $optionsToAdd
             } -ArgumentList $optionsToAdd, $userprincipalname | Out-Null
-
+            
+            ########################################
+            #          Convert To Shared           #
+            ########################################
             if ($Shared) {
                 Start-Job -Name ConvertToShared {
                     Start-Sleep -Seconds 300
@@ -359,7 +395,7 @@ Function New-UserToCloud {
             @{n = "SIP" ; e = {( $_.proxyAddresses | ? {$_ -match "SIP:*"}).Substring(4) -join ";" }}
         )   
 
-        get-aduser -LDAPfilter "(samaccountname=$samaccountname)" -Properties $Properties -searchBase (Get-ADDomain).distinguishedname -SearchScope SubTree |
+        Get-ADUser -LDAPfilter "(samaccountname=$samaccountname)" -Properties $Properties -searchBase (Get-ADDomain).distinguishedname -SearchScope SubTree |
             select ($Selectproperties + $CalculatedProps) | FL
     }
 
