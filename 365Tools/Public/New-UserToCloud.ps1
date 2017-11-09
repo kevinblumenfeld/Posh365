@@ -226,7 +226,7 @@ Function New-UserToCloud {
             if (!$Prefix) {
                 $SamAccountName = (($LastName[0..6] -join '') + $FirstName)[0..7] -join ''
                 $i = 2
-                while ((Get-ADUser -LDAPfilter "(samaccountname=$samaccountname)")) {
+                while (Get-ADUser -LDAPfilter "(samaccountname=$samaccountname)") {
                     $CharactersUsedForIteration = ([string]$i).Length
                     $SamAccountName = ((($LastName[0..(6 - $CharactersUsedForIteration)] -join '') + $FirstName)[0..(7 - $CharactersUsedForIteration)] -join '') + $i
                     $i++
@@ -236,7 +236,7 @@ Function New-UserToCloud {
             else {
                 $SamAccountName = ((($Prefix + $LastName)[0..6] -join '') + $FirstName)[0..7] -join ''
                 $i = 2
-                while ((Get-ADUser -LDAPfilter "(samaccountname=$samaccountname)")) {
+                while (Get-ADUser -LDAPfilter "(samaccountname=$samaccountname)") {
                     $CharactersUsedForIteration = ([string]$i).Length
                     $SamAccountName = (((($Prefix + $LastName)[0..(6 - $CharactersUsedForIteration)] -join '') + $FirstName)[0..(7 - $CharactersUsedForIteration)] -join '') + $i
                     $i++
@@ -250,9 +250,13 @@ Function New-UserToCloud {
         #######################
 
         Else {
-            $name = $displayName
-            write-host "name:`t" $name
-            write-host "displayname:`t" $displayName
+            $cn = $displayName
+            $i = 2
+            while (Get-ADUser -LDAPFilter "(cn=$cn)") {
+                $cn = $displayname + $i
+                $i++
+            }
+            $name = $cn
             $FirstName = "SharedMailox"
             $LastName = $LastName.replace(" ", "")
             $userprincipalname = $LastName + "@" + $PsBoundParameters[$ParamName_emaildomain]            
@@ -265,7 +269,7 @@ Function New-UserToCloud {
             }
             $SamAccountName = $LastName[0..7] -join ''
             $i = 2
-            while ((Get-ADUser -LDAPfilter "(samaccountname=$samaccountname)")) {
+            while (Get-ADUser -LDAPfilter "(samaccountname=$samaccountname)") {
                 $CharactersUsedForIteration = ([string]$i).Length
                 $SamAccountName = ($LastName[0..(7 - $CharactersUsedForIteration)] -join '') + $i
                 $i++
