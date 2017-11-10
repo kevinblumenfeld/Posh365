@@ -200,7 +200,7 @@ Function New-UserToCloud {
         $DisplayName = $LastName + ", " + $FirstName
         $cn = $DisplayName
         $i = 2
-        while (Get-ADUser -LDAPFilter "(cn=$cn)") {
+        while (Get-ADUser -Server $domainController -LDAPFilter "(cn=$cn)") {
             $cn = $DisplayName + $i
             $i++
         }
@@ -217,7 +217,7 @@ Function New-UserToCloud {
             if (!$SAMPrefix) {
                 $SamAccountName = (($Last[0..6] -join '') + $First)[0..7] -join ''
                 $i = 2
-                while (Get-ADUser -LDAPfilter "(samaccountname=$samaccountname)") {
+                while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
                     $CharactersUsedForIteration = ([string]$i).Length
                     $SamAccountName = ((($Last[0..(6 - $CharactersUsedForIteration)] -join '') + $First)[0..(7 - $CharactersUsedForIteration)] -join '') + $i
                     $i++
@@ -227,7 +227,7 @@ Function New-UserToCloud {
             else {
                 $SamAccountName = ((($SAMPrefix + $LastName)[0..6] -join '') + $First)[0..7] -join ''
                 $i = 2
-                while (Get-ADUser -LDAPfilter "(samaccountname=$samaccountname)") {
+                while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
                     $CharactersUsedForIteration = ([string]$i).Length
                     $SamAccountName = (((($SAMPrefix + $LastName)[0..(6 - $CharactersUsedForIteration)] -join '') + $First)[0..(7 - $CharactersUsedForIteration)] -join '') + $i
                     $i++
@@ -245,7 +245,7 @@ Function New-UserToCloud {
 
             $SamAccountName = $Last[0..7] -join ''
             $i = 2
-            while (Get-ADUser -LDAPfilter "(samaccountname=$samaccountname)") {
+            while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
                 $CharactersUsedForIteration = ([string]$i).Length
                 $SamAccountName = ($Last[0..(7 - $CharactersUsedForIteration)] -join '') + $i
                 $i++
@@ -311,7 +311,7 @@ Function New-UserToCloud {
             Enable-OnPremRemoteMailbox -DomainController $domainController -Identity $samaccountname -RemoteRoutingAddress ($samaccountname + "@" + $targetAddressSuffix) -Alias $samaccountname 
             
             # After Email Address Policy, Set UPN to same as PrimarySMTP #
-            $userprincipalname = (get-aduser -Identity $SamAccountName -Properties proxyaddresses | Select @{
+            $userprincipalname = (Get-ADUser -Server $domainController -Identity $SamAccountName -Properties proxyaddresses | Select @{
                     n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses | ? {$_ -cmatch "SMTP:*"}).Substring(5)}
                 }).primarysmtpaddress
             Set-ADUser -Identity $SamAccountName -userprincipalname $userprincipalname
@@ -390,7 +390,7 @@ Function New-UserToCloud {
             @{n = "SIP" ; e = {( $_.proxyAddresses | ? {$_ -match "SIP:*"}).Substring(4) -join ";" }}
         )   
 
-        Get-ADUser -LDAPfilter "(samaccountname=$samaccountname)" -Properties $Properties -searchBase (Get-ADDomain).distinguishedname -SearchScope SubTree |
+        Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)" -Properties $Properties -searchBase (Get-ADDomain).distinguishedname -SearchScope SubTree |
             select ($Selectproperties + $CalculatedProps) | FL
     }
 
