@@ -333,7 +333,10 @@ Function New-UserToCloud {
             # Enable Remote Mailbox in Office 365 Via OnPrem #
             ##################################################
             Enable-OnPremRemoteMailbox -DomainController $domainController -Identity $samaccountname -RemoteRoutingAddress ($samaccountname + "@" + $targetAddressSuffix) -Alias $samaccountname 
-
+            
+            # After Email Address Policy, Set UPN to same as PrimarySMTP #
+            Set-ADUser -Identity $SamAccountName -userprincipalname (get-aduser -Identity $SamAccountName -Properties proxyaddresses | Select @{n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses | ? {$_ -cmatch "SMTP:*"}).Substring(5)}}).primarysmtpaddress
+            
             ########################################
             #         Sync Azure AD Connect        #
             ########################################
