@@ -53,10 +53,12 @@ Function New-UserToCloud {
         [string] $FirstName,
         [Parameter(Mandatory, ParameterSetName = "Copy")]
         [Parameter(Mandatory, ParameterSetName = "New")]
-        [Parameter(Mandatory, ParameterSetName = "Shared")]
         [string] $LastName,
+        [Parameter(Mandatory, ParameterSetName = "Shared")]
+        [ValidateScript( {if ($_ -match " ") {Throw "SharedMailboxEmailAlias cannot contain spaces"}})]
+        [string] $SharedMailboxEmailAlias,
         [Parameter(ParameterSetName = "Shared")]
-        [string] $displayName,
+        [string] $DisplayName,
         [Parameter(ParameterSetName = "Copy")]
         [Parameter(ParameterSetName = "New")]
         [string] $OfficePhone,
@@ -78,7 +80,7 @@ Function New-UserToCloud {
         [parameter(ParameterSetName = "Copy")]
         [Parameter(ParameterSetName = "New")]
         [ValidateLength(1, 2)]
-        [string] $Prefix,
+        [string] $SAMPrefix,
         [parameter(Mandatory, ParameterSetName = "Copy")]
         [Parameter(Mandatory, ParameterSetName = "New")]
         [parameter(Mandatory, ParameterSetName = "Shared")]
@@ -87,9 +89,10 @@ Function New-UserToCloud {
         [Parameter(ParameterSetName = "New")]
         [switch] $NoMail,
         [parameter(ParameterSetName = "Copy")]
-        [parameter(ParameterSetName = "Shared")]
         [parameter(ParameterSetName = "New")]
-        [string] $OUSearch = "Contractors"
+        [parameter(ParameterSetName = "Shared")]        
+        [parameter(ParameterSetName = "NoMail")]        
+        [string] $OUSearch = "Resources"
     )
     DynamicParam {
         
@@ -102,7 +105,7 @@ Function New-UserToCloud {
         $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
         $ParameterAttribute.Mandatory = $true
         $ParameterAttribute.Position = 1
-        $ParameterAttribute.ParameterSetName = '__AllParameterSets'
+        $ParameterAttribute.ParameterSetName = 'NoMail'
         # Add the attributes to the attributes collection
         $AttributeCollection.Add($ParameterAttribute) 
         # Create the dictionary 
@@ -185,60 +188,48 @@ Function New-UserToCloud {
         # Copy ADUser (Template) & Create New #
         #######################################
         #Requires -Modules ActiveDirectory
+        if ($SharedMailboxEmailAlias) {
+            $LastName = $SharedMailboxEmailAlias
+        }
         if ($UserToCopy) {
             $template_obj = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties Enabled, StreetAddress, City, State, PostalCode, MemberOf
             $groupMembership = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties memberof | select -ExpandProperty memberof    
         }
+        $Last = $LastName -replace (" ", "")
+        $First = $FirstName -replace (" ", "")
+        $DisplayName = $LastName + ", " + $FirstName
+        $cn = $DisplayName
+        $i = 2
+        while (Get-ADUser -LDAPFilter "(cn=$cn)") {
+            $cn = $DisplayName + $i
+            $i++
+        }
+        $name = $cn
 
         #######################
         #     NOT SHARED      #
         #######################
-
         if (!$Shared) {
-        
-            #########################################
-            # UserPrincipalName. If in use, add #'s #
-            #           Set name Variable           #
-            #########################################
-            $LastName = $LastName.replace(" ", "")
-            $FirstName = $FirstName.replace(" ", "")
-            $userprincipalname = $LastName + "-" + $FirstName + "@" + $PsBoundParameters[$ParamName_emaildomain]
-        
-            $i = 2
-            $F = $null
-            while (Get-ADUser -LDAPfilter "(userprincipalname=$userprincipalname)") {
-                $F = $FirstName + $i
-                $userprincipalname = $LastName + "-" + $F + "@" + $PsBoundParameters[$ParamName_emaildomain]
-                $i++
-            }
-            if ($F) {
-                $name = $LastName + ", " + $F
-            }
-            else {
-                $name = $LastName + ", " + $FirstName
-            }
-        
-            $displayName = $LastName + ", " + $FirstName
-
+   
             ##############################################
             #              SamAccountName                #
             ##############################################
-            if (!$Prefix) {
-                $SamAccountName = (($LastName[0..6] -join '') + $FirstName)[0..7] -join ''
+            if (!$SAMPrefix) {
+                $SamAccountName = (($Last[0..6] -join '') + $First)[0..7] -join ''
                 $i = 2
                 while (Get-ADUser -LDAPfilter "(samaccountname=$samaccountname)") {
                     $CharactersUsedForIteration = ([string]$i).Length
-                    $SamAccountName = ((($LastName[0..(6 - $CharactersUsedForIteration)] -join '') + $FirstName)[0..(7 - $CharactersUsedForIteration)] -join '') + $i
+                    $SamAccountName = ((($Last[0..(6 - $CharactersUsedForIteration)] -join '') + $First)[0..(7 - $CharactersUsedForIteration)] -join '') + $i
                     $i++
                 }
             }
 
             else {
-                $SamAccountName = ((($Prefix + $LastName)[0..6] -join '') + $FirstName)[0..7] -join ''
+                $SamAccountName = ((($SAMPrefix + $LastName)[0..6] -join '') + $First)[0..7] -join ''
                 $i = 2
                 while (Get-ADUser -LDAPfilter "(samaccountname=$samaccountname)") {
                     $CharactersUsedForIteration = ([string]$i).Length
-                    $SamAccountName = (((($Prefix + $LastName)[0..(6 - $CharactersUsedForIteration)] -join '') + $FirstName)[0..(7 - $CharactersUsedForIteration)] -join '') + $i
+                    $SamAccountName = (((($SAMPrefix + $LastName)[0..(6 - $CharactersUsedForIteration)] -join '') + $First)[0..(7 - $CharactersUsedForIteration)] -join '') + $i
                     $i++
                 }
             }
@@ -250,28 +241,13 @@ Function New-UserToCloud {
         #######################
 
         Else {
-            $cn = $displayName
-            $i = 2
-            while (Get-ADUser -LDAPFilter "(cn=$cn)") {
-                $cn = $displayname + $i
-                $i++
-            }
-            $name = $cn
-            $FirstName = "SharedMailbox"
             $LastName = $LastName.replace(" ", "")
-            $userprincipalname = $LastName + "@" + $PsBoundParameters[$ParamName_emaildomain]            
-            $i = 2
-            $F = $null
-            while (Get-ADUser -LDAPfilter "(userprincipalname=$userprincipalname)") {
-                $F = $LastName + $i
-                $userprincipalname = $F + "@" + $PsBoundParameters[$ParamName_emaildomain]
-                $i++
-            }
-            $SamAccountName = $LastName[0..7] -join ''
+
+            $SamAccountName = $Last[0..7] -join ''
             $i = 2
             while (Get-ADUser -LDAPfilter "(samaccountname=$samaccountname)") {
                 $CharactersUsedForIteration = ([string]$i).Length
-                $SamAccountName = ($LastName[0..(7 - $CharactersUsedForIteration)] -join '') + $i
+                $SamAccountName = ($Last[0..(7 - $CharactersUsedForIteration)] -join '') + $i
                 $i++
             }
 
@@ -293,7 +269,7 @@ Function New-UserToCloud {
         $hash = @{
             "Instance"          = $template_obj
             "Name"              = $name
-            "DisplayName"       = $displayName
+            "DisplayName"       = $DisplayName
             "GivenName"         = $FirstName
             "SurName"           = $LastName
             "OfficePhone"       = $OfficePhone
@@ -330,13 +306,26 @@ Function New-UserToCloud {
         if (!$NoMail) {
 
             ##################################################
-            # Enable Remote Mailbox in Office 365 Via OnPrem #
+            # Enable Remote Mailbox in Office 365 & set UPN  #
             ##################################################
             Enable-OnPremRemoteMailbox -DomainController $domainController -Identity $samaccountname -RemoteRoutingAddress ($samaccountname + "@" + $targetAddressSuffix) -Alias $samaccountname 
             
             # After Email Address Policy, Set UPN to same as PrimarySMTP #
-            Set-ADUser -Identity $SamAccountName -userprincipalname (get-aduser -Identity $SamAccountName -Properties proxyaddresses | Select @{n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses | ? {$_ -cmatch "SMTP:*"}).Substring(5)}}).primarysmtpaddress
-            
+            $userprincipalname = (get-aduser -Identity $SamAccountName -Properties proxyaddresses | Select @{
+                    n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses | ? {$_ -cmatch "SMTP:*"}).Substring(5)}
+                }).primarysmtpaddress
+            Set-ADUser -Identity $SamAccountName -userprincipalname $userprincipalname
+           
+            ########################################
+            #          Convert To Shared           #
+            ########################################
+            if ($Shared) {
+                Start-Job -Name ConvertToShared {
+                    Start-Sleep -Seconds 300
+                    $userprincipalname = $args[0]
+                    $userprincipalname | Convert-ToShared
+                } -ArgumentList  $userprincipalname | Out-Null
+            }
             ########################################
             #         Sync Azure AD Connect        #
             ########################################
@@ -364,16 +353,10 @@ Function New-UserToCloud {
                 $userprincipalname | Set-CloudLicense -ExternalOptionsToAdd $optionsToAdd
             } -ArgumentList $optionsToAdd, $userprincipalname | Out-Null
             
-            ########################################
-            #          Convert To Shared           #
-            ########################################
-            if ($Shared) {
-                Start-Job -Name ConvertToShared {
-                    Start-Sleep -Seconds 300
-                    $userprincipalname = $args[0]
-                    $userprincipalname | Convert-ToShared
-                } -ArgumentList  $userprincipalname | Out-Null
-            }
+        }
+        Else {
+            $userprincipalname = $LastName + "-" + $FirstName + "@" + $PsBoundParameters[$ParamName_emaildomain]
+            Set-ADUser -Identity $SamAccountName -userprincipalname $userprincipalname
         }
 
         ########################################

@@ -14,7 +14,7 @@ function Select-DomainController {
     }
 
     while (! $DomainController) {
-        $DomainController = (([system.directoryservices.activedirectory.domain]::GetComputerDomain()).domaincontrollers).name |  
+        $DomainController = [System.DirectoryServices.ActiveDirectory.Forest]::GetCurrentForest().domains.DomainControllers.Name |  
             Out-GridView -PassThru -Title "SELECT A DOMAIN CONTROLLER AND CLICK OK"
     }
     $DomainController |  Out-File ($RootPath + "$($user).DomainController") -Force
