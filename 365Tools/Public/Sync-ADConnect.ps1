@@ -46,6 +46,7 @@ Function Sync-ADConnect {
             Invoke-Command -Session $session -ScriptBlock {
                 $Sleep = $args[0]
                 Import-Module -Name 'ADSync'
+                $Synced = $False
                 while (!$Synced) {
                     Try {
                         Start-ADSyncSyncCycle -PolicyType Initial -erroraction Stop
@@ -70,6 +71,7 @@ Function Sync-ADConnect {
             Invoke-Command -Session $session -ScriptBlock {
                 $Sleep = $args[0]
                 Import-Module -Name 'ADSync'
+                $Synced = $False
                 while (!$Synced) {
                     Try {
                         Start-ADSyncSyncCycle -PolicyType Delta -erroraction Stop
