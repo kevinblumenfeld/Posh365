@@ -3,7 +3,7 @@ Function Sync-ADConnect {
         [Parameter(Mandatory = $False)]    
         [switch] $Initial,
         [Parameter(Mandatory = $False)]
-        [int]$Sleep = 60
+        [int]$Sleep = 10
     )
     <#
     .SYNOPSIS
@@ -46,21 +46,22 @@ Function Sync-ADConnect {
             Invoke-Command -Session $session -ScriptBlock {
                 $Sleep = $args[0]
                 Import-Module -Name 'ADSync'
-                Try {
-                    Start-ADSyncSyncCycle -PolicyType Initial -erroraction Stop
-                }
-                Catch {
-                    while (Get-ADSyncConnectorRunStatus) {
-                        Start-Sleep -Seconds $Sleep
+                while (!$Synced) {
+                    Try {
+                        Start-ADSyncSyncCycle -PolicyType Initial -erroraction Stop
+                        $Synced = $True
                     }
-                    Sync-ADConnect
+                    Catch {
+                        while (Get-ADSyncConnectorRunStatus) {
+                            Start-Sleep -Seconds $Sleep
+                        }
+                    }
                 }
             } -ArgumentList $Sleep
             Remove-PSSession $session
         } -ArgumentList $aadComputer, $Sleep | Out-Null
     }
     else {
-
         Start-Job -Name ADConnectSync -ScriptBlock {
             $aadcomputer = $args[0]
             $Sleep = $args[1]
@@ -69,14 +70,16 @@ Function Sync-ADConnect {
             Invoke-Command -Session $session -ScriptBlock {
                 $Sleep = $args[0]
                 Import-Module -Name 'ADSync'
-                Try {
-                    Start-ADSyncSyncCycle -PolicyType Delta -erroraction Stop
-                }
-                Catch {
-                    while (Get-ADSyncConnectorRunStatus) {
-                        Start-Sleep -Seconds $Sleep
+                while (!$Synced) {
+                    Try {
+                        Start-ADSyncSyncCycle -PolicyType Delta -erroraction Stop
+                        $Synced = $True
                     }
-                    Sync-ADConnect
+                    Catch {
+                        while (Get-ADSyncConnectorRunStatus) {
+                            Start-Sleep -Seconds $Sleep
+                        }
+                    }
                 }
             } -ArgumentList $Sleep
             Remove-PSSession $session
