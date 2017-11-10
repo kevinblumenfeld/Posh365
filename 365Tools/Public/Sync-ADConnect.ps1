@@ -3,7 +3,7 @@ Function Sync-ADConnect {
         [Parameter(Mandatory = $False)]    
         [switch] $Initial,
         [Parameter(Mandatory = $False)]
-        $Sleep = "60"
+        [int]$Sleep = 60
     )
     <#
     .SYNOPSIS
@@ -40,6 +40,7 @@ Function Sync-ADConnect {
     if ($initial) {
         Start-Job -Name ADConnectSync -ScriptBlock {
             $aadcomputer = $args[0]
+            $Sleep = $args[1]
             Start-Sleep -Seconds 10
             $session = New-PSSession -ComputerName $aadComputer
             Invoke-Command -Session $session -ScriptBlock {
@@ -53,12 +54,13 @@ Function Sync-ADConnect {
                 }
             }
             Remove-PSSession $session
-        } -ArgumentList $aadComputer | Out-Null
+        } -ArgumentList $aadComputer, $Sleep | Out-Null
     }
     else {
 
         Start-Job -Name ADConnectSync -ScriptBlock {
             $aadcomputer = $args[0]
+            $Sleep = $args[1]
             Start-Sleep -Seconds 10
             $session = New-PSSession -ComputerName $aadComputer
             Invoke-Command -Session $session -ScriptBlock {
@@ -72,7 +74,7 @@ Function Sync-ADConnect {
                 }
             }
             Remove-PSSession $session
-        } -ArgumentList $aadComputer | Out-Null
+        } -ArgumentList $aadComputer, $Sleep | Out-Null
     }
 }
 
