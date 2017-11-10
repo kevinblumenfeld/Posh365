@@ -11,7 +11,7 @@ function Select-ADConnectServer {
             throw $_.Exception.Message
         }           
     }
-    $PDCEmulator = ( [System.DirectoryServices.ActiveDirectory.Forest]::GetCurrentForest() ).Domains.PdcRoleOwner.Name
+    $PDCEmulator = [System.DirectoryServices.ActiveDirectory.Domain]::GetComputerDomain().PdcRoleOwner.name
     while (! $ADConnect) {
         $ADConnect = Invoke-Command -ComputerName $PDCEmulator -ScriptBlock { ( Get-ADComputer -Filter { ( OperatingSystem -Like 'Windows*' ) -AND ( OperatingSystem -Like '*Server*' ) } ).DNSHostName } |
             Sort | Out-GridView -PassThru -Title "SELECT THE AD CONNECT SERVER AND CLICK OK"
