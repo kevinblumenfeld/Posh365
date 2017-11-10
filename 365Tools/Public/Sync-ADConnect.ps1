@@ -50,8 +50,10 @@ Function Sync-ADConnect {
                     Start-ADSyncSyncCycle -PolicyType Initial -erroraction Stop
                 }
                 Catch {
-                    Start-Sleep -Seconds $Sleep
-                    Start-ADSyncSyncCycle -PolicyType Initial
+                    while (Get-ADSyncConnectorRunStatus) {
+                        Start-Sleep -Seconds $Sleep
+                    }
+                    Sync-ADConnect
                 }
             } -ArgumentList $Sleep
             Remove-PSSession $session
@@ -71,8 +73,10 @@ Function Sync-ADConnect {
                     Start-ADSyncSyncCycle -PolicyType Delta -erroraction Stop
                 }
                 Catch {
-                    Start-Sleep -Seconds $Sleep
-                    Start-ADSyncSyncCycle -PolicyType Delta
+                    while (Get-ADSyncConnectorRunStatus) {
+                        Start-Sleep -Seconds $Sleep
+                    }
+                    Sync-ADConnect
                 }
             } -ArgumentList $Sleep
             Remove-PSSession $session
