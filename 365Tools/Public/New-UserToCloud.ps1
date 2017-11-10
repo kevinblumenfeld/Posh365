@@ -263,7 +263,7 @@ Function New-UserToCloud {
         $password_ss = ConvertTo-SecureString -String $Password -AsPlainText -Force
         $ou = (Get-ADOrganizationalUnit -Server $domainController -filter * -SearchBase (Get-ADDomain -Server $domainController).distinguishedname -Properties canonicalname | 
                 where {$_.canonicalname -match $OUSearch -or $_.canonicalname -match $OUSearch2
-            } | Select canonicalname, distinguishedname| sort canonicalname) | 
+            } | Select canonicalname, distinguishedname| sort canonicalname | 
                 Out-GridView -PassThru -Title "Choose the OU in which to create the new user, then click OK").distinguishedname
 
         $hash = @{
