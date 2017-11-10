@@ -44,6 +44,7 @@ Function Sync-ADConnect {
             Start-Sleep -Seconds 10
             $session = New-PSSession -ComputerName $aadComputer
             Invoke-Command -Session $session -ScriptBlock {
+                $Sleep = $args[0]
                 Import-Module -Name 'ADSync'
                 Try {
                     Start-ADSyncSyncCycle -PolicyType Initial -erroraction Stop
@@ -52,7 +53,7 @@ Function Sync-ADConnect {
                     Start-Sleep -Seconds $Sleep
                     Start-ADSyncSyncCycle -PolicyType Initial
                 }
-            }
+            } -ArgumentList $Sleep
             Remove-PSSession $session
         } -ArgumentList $aadComputer, $Sleep | Out-Null
     }
@@ -64,6 +65,7 @@ Function Sync-ADConnect {
             Start-Sleep -Seconds 10
             $session = New-PSSession -ComputerName $aadComputer
             Invoke-Command -Session $session -ScriptBlock {
+                $Sleep = $args[0]
                 Import-Module -Name 'ADSync'
                 Try {
                     Start-ADSyncSyncCycle -PolicyType Delta -erroraction Stop
@@ -72,7 +74,7 @@ Function Sync-ADConnect {
                     Start-Sleep -Seconds $Sleep
                     Start-ADSyncSyncCycle -PolicyType Delta
                 }
-            }
+            } -ArgumentList $Sleep
             Remove-PSSession $session
         } -ArgumentList $aadComputer, $Sleep | Out-Null
     }
