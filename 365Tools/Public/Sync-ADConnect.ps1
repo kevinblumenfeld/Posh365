@@ -3,7 +3,7 @@ Function Sync-ADConnect {
         [Parameter(Mandatory = $False)]    
         [switch] $Initial,
         [Parameter(Mandatory = $False)]
-        [string]$Sleep = "60"
+        $Sleep = "60"
     )
     <#
     .SYNOPSIS
