@@ -55,7 +55,7 @@ Function New-UserToCloud {
         [Parameter(Mandatory, ParameterSetName = "New")]
         [string] $LastName,
         [Parameter(Mandatory, ParameterSetName = "Shared")]
-        [ValidateScript( {if ($_ -notmatch " ") {Return $True} else {Write-Output "Please choose an SharedMailboxEmailAlias without spaces"}})]
+        [ValidateScript( {if ($_ -notlike "* *"){Return $True} else {Write-Host "Please choose an SharedMailboxEmailAlias without spaces"}})]
         [string] $SharedMailboxEmailAlias,
         [Parameter(ParameterSetName = "Shared")]
         [string] $DisplayName,
