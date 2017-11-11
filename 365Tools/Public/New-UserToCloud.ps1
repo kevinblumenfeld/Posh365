@@ -192,7 +192,8 @@ Function New-UserToCloud {
             $LastName = $SharedMailboxEmailAlias
         }
         if ($UserToCopy) {
-            $template_obj = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties Enabled, StreetAddress, City, State, PostalCode, MemberOf
+            $template = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties Enabled, StreetAddress, City, State, PostalCode
+            $template = $template | Select Enabled, StreetAddress, City, State, PostalCode
             $groupMembership = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties memberof | select -ExpandProperty memberof    
         }
         $Last = $LastName -replace (" ", "")
@@ -267,7 +268,7 @@ Function New-UserToCloud {
                 Out-GridView -PassThru -Title "Choose the OU in which to create the new user, then click OK").distinguishedname
 
         $hash = @{
-            "Instance"          = $template_obj
+            "Instance"          = $template
             "Name"              = $name
             "DisplayName"       = $DisplayName
             "GivenName"         = $FirstName
