@@ -1,10 +1,8 @@
-Function New-UserToCloud {
+Function Rename-User {
     <#
     .SYNOPSIS
-   
 
     .EXAMPLE
-
     
     #>
     [CmdletBinding()]
