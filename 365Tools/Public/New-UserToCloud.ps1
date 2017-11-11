@@ -356,7 +356,7 @@ Function New-UserToCloud {
         }
         Else {
             $userprincipalname = $LastName + "-" + $FirstName + "@" + $PsBoundParameters[$ParamName_emaildomain]
-            Set-ADUser -Identity $SamAccountName -userprincipalname $userprincipalname
+            Set-ADUser -Server $domainController -Identity $SamAccountName -userprincipalname $userprincipalname
         }
 
         ########################################
