@@ -151,7 +151,11 @@ Function New-UserToCloud {
         While (!(Get-Content ($RootPath + "$($user).DomainController") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-DomainController
         }
-        $domainController = Get-Content ($RootPath + "$($user).DomainController")     
+        $DisplayNameFormat = Get-Content ($RootPath + "$($user).DisplayNameFormat")   
+        While (!(Get-Content ($RootPath + "$($user).DisplayNameFormat") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+            Select-DisplayNameFormat
+        }
+        $DisplayNameFormat = Get-Content ($RootPath + "$($user).DisplayNameFormat")     
 
         #######################################
         #   Connect to On Premises Exchange   #
@@ -203,7 +207,7 @@ Function New-UserToCloud {
         #######################
         if (!$Shared) {
 
-            $DisplayName = $LastName + ", " + $FirstName
+            $DisplayName = "$DisplayNameFormat"
    
             ##############################################
             #              SamAccountName                #
