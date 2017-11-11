@@ -17,10 +17,10 @@ function Select-DisplayNameFormat {
         $DisplayNameFormat = "FirstName LastName", "LastName, FirstName" | Out-GridView -PassThru -Title "SELECT `"DISPLAY NAME`" FORMAT"
     }
     if ($DisplayNameFormat -eq "FirstName LastName") {
-        '"$FirstName" + " " + $LastName"' |  Out-File ($RootPath + "$($user).DisplayNameFormat") -Force
+        '"$FirstName" + " " + "$LastName"' |  Out-File ($RootPath + "$($user).DisplayNameFormat") -Force
     }
     if ($DisplayNameFormat -eq "LastName, FirstName") {
-        '"$LastName" + ", " + $FirstName"' |  Out-File ($RootPath + "$($user).DisplayNameFormat") -Force
+        '"$LastName" + ", " + "$FirstName"' |  Out-File ($RootPath + "$($user).DisplayNameFormat") -Force
     }
     
 }
