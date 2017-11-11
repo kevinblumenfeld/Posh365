@@ -314,7 +314,7 @@ Function New-UserToCloud {
             $userprincipalname = (Get-ADUser -Server $domainController -Identity $SamAccountName -Properties proxyaddresses | Select @{
                     n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses | ? {$_ -cmatch "SMTP:*"}).Substring(5)}
                 }).primarysmtpaddress
-            Set-ADUser -Identity $SamAccountName -userprincipalname $userprincipalname
+            Set-ADUser -Server $domainController -Identity $SamAccountName -userprincipalname $userprincipalname
            
             ########################################
             #          Convert To Shared           #
