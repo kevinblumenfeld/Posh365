@@ -208,7 +208,7 @@ Function New-UserToCloud {
         #######################
         if (!$Shared) {
 
-            $DisplayName = $ExecutionContext.InvokeCommand.ExpandString($DisplayNameFormat)
+            $DisplayName = $DisplayNameFormat
    
             ##############################################
             #              SamAccountName                #
