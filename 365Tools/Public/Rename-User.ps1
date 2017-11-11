@@ -92,12 +92,21 @@ Function Rename-User {
         $LastName = $FutureLastName
         $DisplayName = $ExecutionContext.InvokeCommand.ExpandString($DisplayNameFormat)
 
+        $cn = $DisplayName
+        $i = 2
+        while (Get-ADUser -Server $domainController -LDAPFilter "(cn=$cn)") {
+            $cn = $DisplayName + $i
+            $i++
+        }
+        $name = $cn
+
         #########################################
         #  Create Parameters ADUser Name Change #
         #########################################
 
         $hash = @{
             "DisplayName" = $DisplayName
+            "Name"        = $name
             "GivenName"   = $FirstName
             "SurName"     = $LastName
         }
@@ -116,12 +125,13 @@ Function Rename-User {
         
         # Purge old jobs
         Get-Job | where {$_.State -ne 'Running'}| Remove-Job
-            
-        # After Email Address Policy, Set UPN to same as PrimarySMTP #
-        $userprincipalname = (Get-OnPremRemoteMailbox $UsersSamAccount | select primarysmtpaddress).primarysmtpaddress
-        Set-ADUser -Identity $UsersSamAccount -Server $domainController -userprincipalname $userprincipalname
 
         Set-OnPremRemoteMailbox -Identity $UsersSamAccount -EmailAddressPolicyEnabled:$true
+            
+        # After Email Address Policy, Set UPN to same as PrimarySMTP
+        $userprincipalname = (Get-OnPremRemoteMailbox $UsersSamAccount | select primarysmtpaddress).primarysmtpaddress
+
+        Set-ADUser -Identity $UsersSamAccount -Server $domainController -userprincipalname $userprincipalname
 
         ########################################
         #         Sync Azure AD Connect        #
