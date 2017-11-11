@@ -118,9 +118,7 @@ Function Rename-User {
         Get-Job | where {$_.State -ne 'Running'}| Remove-Job
             
         # After Email Address Policy, Set UPN to same as PrimarySMTP #
-        $userprincipalname = (Get-ADUser -Server $domainController -Identity $UsersSamAccount -Properties proxyaddresses | Select @{
-                n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses | ? {$_ -cmatch "SMTP:*"}).Substring(5)}
-            }).primarysmtpaddress
+        $userprincipalname = (Get-OnPremRemoteMailbox $UsersSamAccount | select primarysmtpaddress).primarysmtpaddress
         Set-ADUser -Identity $UsersSamAccount -Server $domainController -userprincipalname $userprincipalname
 
         Set-OnPremRemoteMailbox -Identity $UsersSamAccount -EmailAddressPolicyEnabled:$true
