@@ -20,7 +20,7 @@ function Select-DisplayNameFormat {
         '$FirstName $LastName' |  Out-File ($RootPath + "$($user).DisplayNameFormat") -Force
     }
     if ($DisplayNameFormat -eq "LastName, FirstName") {
-        '"$LastName" + ", " + "$FirstName"' |  Out-File ($RootPath + "$($user).DisplayNameFormat") -Force
+        '$LastName, $FirstName' |  Out-File ($RootPath + "$($user).DisplayNameFormat") -Force
     }
     
 }
