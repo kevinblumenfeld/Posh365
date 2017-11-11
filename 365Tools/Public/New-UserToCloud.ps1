@@ -41,8 +41,7 @@ Function New-UserToCloud {
     #>
     [CmdletBinding()]
     Param (
-        [parameter(Mandatory, ParameterSetName = "Copy")]
-        [parameter(ParameterSetName = "Shared")]   
+        [parameter(Mandatory, ParameterSetName = "Copy")]  
         [string] $UserToCopy,
         [Parameter(ParameterSetName = "Shared")]   
         [switch] $Shared,
