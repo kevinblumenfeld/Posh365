@@ -151,7 +151,8 @@ Function New-UserToCloud {
         While (!(Get-Content ($RootPath + "$($user).DomainController") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-DomainController
         }
-        $DisplayNameFormat = Get-Content ($RootPath + "$($user).DisplayNameFormat")   
+        $DomainController = Get-Content ($RootPath + "$($user).DomainController")   
+        
         While (!(Get-Content ($RootPath + "$($user).DisplayNameFormat") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-DisplayNameFormat
         }
