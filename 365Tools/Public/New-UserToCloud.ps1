@@ -55,7 +55,7 @@ Function New-UserToCloud {
         [Parameter(Mandatory, ParameterSetName = "New")]
         [string] $LastName,
         [Parameter(Mandatory, ParameterSetName = "Shared")]
-        [ValidateScript( {if ($_ -match " ") {Throw "SharedMailboxEmailAlias cannot contain spaces"}})]
+        [ValidateScript( {if ($_ -notmatch " ") {Throw "SharedMailboxEmailAlias cannot contain spaces"}})]
         [string] $SharedMailboxEmailAlias,
         [Parameter(ParameterSetName = "Shared")]
         [string] $DisplayName,
@@ -198,19 +198,13 @@ Function New-UserToCloud {
         }
         $Last = $LastName -replace (" ", "")
         $First = $FirstName -replace (" ", "")
-        $DisplayName = $LastName + ", " + $FirstName
-        $cn = $DisplayName
-        $i = 2
-        while (Get-ADUser -Server $domainController -LDAPFilter "(cn=$cn)") {
-            $cn = $DisplayName + $i
-            $i++
-        }
-        $name = $cn
 
         #######################
         #     NOT SHARED      #
         #######################
         if (!$Shared) {
+
+            $DisplayName = $LastName + ", " + $FirstName
    
             ##############################################
             #              SamAccountName                #
@@ -256,6 +250,15 @@ Function New-UserToCloud {
 
         # SamAccount To Lower
         $samaccountname = $samaccountname.tolower()
+        
+        # cn
+        $cn = $DisplayName
+        $i = 2
+        while (Get-ADUser -Server $domainController -LDAPFilter "(cn=$cn)") {
+            $cn = $DisplayName + $i
+            $i++
+        }
+        $name = $cn
 
         #########################################
         #   Create Parameters for New ADUser    #
