@@ -106,7 +106,6 @@ Function Rename-User {
 
         $hash = @{
             "DisplayName" = $DisplayName
-            "Name"        = $name
             "GivenName"   = $FirstName
             "SurName"     = $LastName
         }
