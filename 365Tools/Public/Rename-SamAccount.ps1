@@ -52,7 +52,7 @@ Function Rename-SamAccount {
         ##############################################
         $SamAccountName = $FutureSamAccountName
         $i = 2
-        while (get-aduser -LDAPfilter "(samaccountname=$SamAccountName)") {
+        while (get-aduser -Server $domainController -LDAPfilter "(samaccountname=$SamAccountName)") {
             $SamAccountName = ($FutureSamAccountName + $i)
             $i++
         }
@@ -64,7 +64,7 @@ Function Rename-SamAccount {
                 Set-ADUser -Identity $CurrentSamAccountName -remove @{proxyaddresses = "$($_)"} -Server $domainController
                 Set-ADUser -Identity $CurrentSamAccountName -add @{proxyaddresses = ("smtp:" + $($_).substring(5))} -Server $domainController
                 Set-ADUser -Identity $CurrentSamAccountName -add @{proxyaddresses = ("SMTP:" + $SamAccountName + "@" + ($($_).substring(5).split("@"))[1])} -Server $domainController
-                Set-ADUser -Identity $CurrentSamAccountName -replace @{mail = ($SamAccountName + "@" + ($($_).substring(5).split("@"))[1]); UserPrincipalName = $SamAccountName + "@" + ($($_).substring(5).split("@"))[1]}
+                Set-ADUser -Identity $CurrentSamAccountName -Server $domainController -replace @{mail = ($SamAccountName + "@" + ($($_).substring(5).split("@"))[1]); UserPrincipalName = $SamAccountName + "@" + ($($_).substring(5).split("@"))[1]}
             } 
             if (($_ -cmatch "smtp:*") -and ($($_).substring(5).split("@"))[0] -eq $CurrentSamAccountName) {
                 Set-ADUser -Identity $CurrentSamAccountName -add @{proxyaddresses = ("smtp:" + $SamAccountName + "@" + ($($_).substring(5).split("@"))[1])} -Server $domainController
@@ -74,7 +74,7 @@ Function Rename-SamAccount {
             }
         }
         Set-ADUser -Identity $CurrentSamAccountName -replace @{mailnickname = $samaccountname; targetaddress = ($samaccountname + "@" + $targetAddressSuffix)} -Server $domainController
-        Set-ADUser -Identity $CurrentSamAccountName -SamAccountName $SamAccountName
+        Set-ADUser -Identity $CurrentSamAccountName -SamAccountName $SamAccountName -Server $domainController
         ########################################
         #         Sync Azure AD Connect        #
         ########################################
@@ -111,7 +111,7 @@ Function Rename-SamAccount {
             @{n = "SIP" ; e = {( $_.proxyAddresses | ? {$_ -match "SIP:*"}).Substring(4) -join ";" }}
         )   
 
-        get-aduser -LDAPfilter "(samaccountname=$samaccountname)" -Properties $Properties -searchBase (Get-ADDomain).distinguishedname -SearchScope SubTree |
+        Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)" -Properties $Properties -searchBase (Get-ADDomain -Server $domainController).distinguishedname -SearchScope SubTree |
             select ($Selectproperties + $CalculatedProps) | FL
     }
     Process {
