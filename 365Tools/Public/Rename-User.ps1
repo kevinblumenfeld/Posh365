@@ -88,6 +88,8 @@ Function Rename-User {
         Set-OnPremRemoteMailbox -Identity $UsersSamAccount -EmailAddressPolicyEnabled:$false
 
         # DisplayName
+        $FirstName = $FutureFirstName
+        $LastName = $FutureLastName
         $DisplayName = $ExecutionContext.InvokeCommand.ExpandString($DisplayNameFormat)
 
         #########################################
