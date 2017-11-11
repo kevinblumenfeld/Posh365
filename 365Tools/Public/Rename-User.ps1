@@ -10,10 +10,10 @@ Function Rename-User {
         [parameter(Position = 0, Mandatory = $true)]
         [string] $UsersSamAccount,
         
-        [parameter(Position = 0, Mandatory = $true)]
+        [parameter(Position = 1, Mandatory = $true)]
         [string] $FutureFirstName,
 
-        [parameter(Position = 0, Mandatory = $true)]
+        [parameter(Position = 2, Mandatory = $true)]
         [string] $FutureLastName
     )
     
@@ -90,21 +90,11 @@ Function Rename-User {
         # DisplayName
         $DisplayName = $ExecutionContext.InvokeCommand.ExpandString($DisplayNameFormat)
 
-        # Name
-        $cn = $DisplayName
-        $i = 2
-        while (Get-ADUser -Server $domainController -LDAPFilter "(cn=$cn)") {
-            $cn = $DisplayName + $i
-            $i++
-        }
-        $name = $cn
-
         #########################################
         #  Create Parameters ADUser Name Change #
         #########################################
 
         $hash = @{
-            "Name"        = $name
             "DisplayName" = $DisplayName
             "GivenName"   = $FirstName
             "SurName"     = $LastName
