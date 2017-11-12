@@ -83,6 +83,7 @@ Function New-UserToCloud {
         [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
+        [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
         [string] $Password,
         [Parameter(ParameterSetName = "Copy")]
         [Parameter(ParameterSetName = "New")]
@@ -90,7 +91,7 @@ Function New-UserToCloud {
         [parameter(ParameterSetName = "Copy")]
         [parameter(ParameterSetName = "New")]
         [parameter(ParameterSetName = "Shared")]        
-        [parameter(ParameterSetName = "NoMail")]        
+        [parameter(ParameterSetName = "NoMail")]       
         [string] $OUSearch = "Resources"
     )
     DynamicParam {
@@ -186,8 +187,8 @@ Function New-UserToCloud {
                 }
             }
         }
+        
         $OUSearch2 = "Users"
-        $password_ss = ConvertTo-SecureString -String $Password -AsPlainText -Force
         $ou = (Get-ADOrganizationalUnit -Server $domainController -filter * -SearchBase (Get-ADDomain -Server $domainController).distinguishedname -Properties canonicalname | 
                 where {$_.canonicalname -match $OUSearch -or $_.canonicalname -match $OUSearch2
             } | Select canonicalname, distinguishedname| sort canonicalname | 
