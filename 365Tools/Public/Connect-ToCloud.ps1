@@ -15,7 +15,7 @@ function Connect-ToCloud {
         [string] $User,
                            
         [Parameter(Mandatory = $false)]
-        [switch] $Exchange,
+        [switch] $ExchangeOnline,
                               
         [Parameter(Mandatory = $false)]
         [switch] $MSOnline,
@@ -86,7 +86,7 @@ function Connect-ToCloud {
                 throw $_.Exception.Message
             }           
         }
-        if ($Exchange -or $MSOnline -or $All365 -or $Skype -or $SharePoint -or $Compliance -or $AzureADver2) {
+        if ($ExchangeOnline -or $MSOnline -or $All365 -or $Skype -or $SharePoint -or $Compliance -or $AzureADver2) {
             if (Test-Path ($KeyPath + "$($Tenant).$($user).cred")) {
                 $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).$($user).cred") | ConvertTo-SecureString
                 $UsernameString = Get-Content ($KeyPath + "$($Tenant).$($user).ucred")
@@ -154,11 +154,11 @@ function Connect-ToCloud {
                 }
             }
         }
-        if ($Exchange -or $All365) {
+        if ($ExchangeOnline -or $All365) {
             if (! $MFA) {
                 # Exchange Online
-                $exchangeSession = New-PSSession -Name "EXO" -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell -Credential $Credential -Authentication Basic -AllowRedirection 
-                Import-Module (Import-PSSession $exchangeSession -AllowClobber -WarningAction SilentlyContinue) -Global | Out-Null
+                $EXOSession = New-PSSession -Name "EXO" -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell -Credential $Credential -Authentication Basic -AllowRedirection 
+                Import-Module (Import-PSSession $EXOSession -AllowClobber -WarningAction SilentlyContinue) -Global | Out-Null
                 Write-Output "**************************************************"
                 Write-Output "You have successfully connected to Exchange Online"
                 Write-Output "**************************************************"
@@ -166,9 +166,9 @@ function Connect-ToCloud {
             else {
                 Try {
                     Connect-EXOPSSession -UserPrincipalName $Credential.UserName -ErrorAction Stop
-                    Write-Output "*******************************************"
-                    Write-Output "You have successfully connected to Exchange"
-                    Write-Output "*******************************************"
+                    Write-Output "********************************************************"
+                    Write-Output "You have successfully connected to Exchange Online (MFA)"
+                    Write-Output "********************************************************"
                 } 
                 Catch [System.Management.Automation.CommandNotFoundException] {
                     Write-Output "Exchange Online MFA module is required"

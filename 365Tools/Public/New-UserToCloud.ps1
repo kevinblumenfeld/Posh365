@@ -127,6 +127,10 @@ Function New-UserToCloud {
 
         $RootPath = $env:USERPROFILE + "\ps\"
         $User = $env:USERNAME
+        $GuidFolder = Join-Path $env:TEMP ([Guid]::NewGuid().tostring())
+        New-Item -Path $GuidFolder -ItemType Directory
+       
+
         if (!(Test-Path $RootPath)) {
             try {
                 New-Item -ItemType Directory -Path $RootPath -ErrorAction STOP | Out-Null
@@ -168,31 +172,22 @@ Function New-UserToCloud {
         catch {
             Connect-ToExchange -ExchangeServer $ExchangeServer  
         }
-
-        ########################################
-        #         Connect to Office 365        #
-        ########################################
-        if (! $NoMail) {
-            try {
-                Get-AzureADDomain -erroraction stop | Out-Null
-            }
-            catch {
-                Try {
-                    Connect-ToCloud Office365 -Exchange -MSOnline -AzureADver2 -erroraction stop
-
-                } 
-                Catch {
-                    Write-Output "Failed to Connect to Cloud.  Please try again."
-                    Break
-                }
-            }
+        try {
+            Get-AzureADTenantDetail -erroraction stop | Out-Null
         }
-        
+        catch {
+            Connect-ToCloud Office365 -AzureADver2
+        }
+
         $OUSearch2 = "Users"
         $ou = (Get-ADOrganizationalUnit -Server $domainController -filter * -SearchBase (Get-ADDomain -Server $domainController).distinguishedname -Properties canonicalname | 
                 where {$_.canonicalname -match $OUSearch -or $_.canonicalname -match $OUSearch2
             } | Select canonicalname, distinguishedname| sort canonicalname | 
                 Out-GridView -PassThru -Title "Choose the OU in which to create the new user, then click OK").distinguishedname
+                
+        [string[]]$optionsToAdd = (Get-CloudSkuTable -all | Out-GridView -Title "Options to Add" -PassThru)
+
+        Connect-WaitandLicense -GuidFolder $GuidFolder -optionsToAdd $optionsToAdd
     }
 
     Process {
@@ -336,35 +331,33 @@ Function New-UserToCloud {
                     $userprincipalname | Convert-ToShared
                 } -ArgumentList  $userprincipalname | Out-Null
             }
-            ########################################
-            #         Sync Azure AD Connect        #
-            ########################################
-            Sync-ADConnect
 
             ########################################
-            #  Out-GridView for License Selection  #
-            #                                      #
+            #     Write UPNs to Temp GUID file     # 
+            ########################################
 
-            [string[]]$optionsToAdd = (Get-CloudSkuTable -all | Out-GridView -Title "Options to Add" -PassThru)
-
-            #                                      #
-            #  Background Job to Connect & License #
-            ###############        #################
-
-            Start-Job -Name ConnectnLicense {
-                $optionsToAdd = $args[0]
-                $userprincipalname = $args[1]
-                try {
-                    (Get-AzureADDomain -erroraction stop)[0] | Out-Null
-                }
-                catch {
-                    Connect-ToCloud Office365 -Exchange -AzureADver2
-                }
-                $userprincipalname | Set-CloudLicense -ExternalOptionsToAdd $optionsToAdd
-            } -ArgumentList $optionsToAdd, $userprincipalname | Out-Null
-            
+            $tempfile = Join-Path $GuidFolder ([Guid]::NewGuid().tostring())
+            $UserPrincipalName | Set-Content $tempfile
+    
         }
         Else {
+            $LastName = $LastName.replace(" ", "")
+            $FirstName = $FirstName.replace(" ", "")
+            $userprincipalname = $LastName + "-" + $FirstName + "@" + $PsBoundParameters[$ParamName_emaildomain]
+            
+            $i = 2
+            $F = $null
+            while (get-aduser -LDAPfilter "(userprincipalname=$userprincipalname)") {
+                $F = $FirstName + $i
+                $userprincipalname = $LastName + "-" + $F + "@" + $PsBoundParameters[$ParamName_emaildomain]
+                $i++
+            }
+            if ($F) {
+                $name = $LastName + ", " + $F
+            }
+            else {
+                $name = $LastName + ", " + $FirstName
+            }
             $userprincipalname = $LastName + "-" + $FirstName + "@" + $PsBoundParameters[$ParamName_emaildomain]
             Set-ADUser -Server $domainController -Identity $SamAccountName -userprincipalname $userprincipalname
         }
@@ -405,6 +398,20 @@ Function New-UserToCloud {
     }
 
     End {
-    
+        ########################################
+        #         Sync Azure AD Connect        #
+        ########################################
+        Sync-ADConnect
+
+        ########################################
+        #   Stop Licensing Watcher Function    #
+        ########################################
+        Try {
+            Remove-Item -Path $GuidFolder -Confirm:$False -ErrorAction Stop
+            Write-Output "Licensing Complete"
+        }
+        Catch {
+            Write-Output "There was an issue completing the licensing tasks.  Please verify all users were licensed properly"
+        }
     }
 }    
