@@ -157,7 +157,7 @@ function Connect-ToCloud {
         if ($Exchange -or $All365) {
             if (! $MFA) {
                 # Exchange Online
-                $exchangeSession = New-PSSession -Name EXO -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell -Credential $Credential -Authentication Basic -AllowRedirection 
+                $exchangeSession = New-PSSession -Name "EXO" -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell -Credential $Credential -Authentication Basic -AllowRedirection 
                 Import-Module (Import-PSSession $exchangeSession -AllowClobber -WarningAction SilentlyContinue) -Global | Out-Null
                 Write-Output "**************************************************"
                 Write-Output "You have successfully connected to Exchange Online"
@@ -179,7 +179,7 @@ function Connect-ToCloud {
         }
         # Security and Compliance Center
         if ($Compliance -or $All365 -and (! $MFA)) {
-            $ccSession = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri https://ps.compliance.protection.outlook.com/powershell-liveid/ -Credential $credential -Authentication Basic -AllowRedirection
+            $ccSession = New-PSSession -Name "Compliance" -ConfigurationName Microsoft.Exchange -ConnectionUri https://ps.compliance.protection.outlook.com/powershell-liveid/ -Credential $credential -Authentication Basic -AllowRedirection
             Import-Module (Import-PSSession $ccSession -AllowClobber) -Global | Out-Null
             Write-Output "*********************************************"
             Write-Output "You have successfully connected to Compliance"
