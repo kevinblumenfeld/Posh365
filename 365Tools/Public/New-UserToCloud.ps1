@@ -187,7 +187,7 @@ Function New-UserToCloud {
                 
         [string[]]$optionsToAdd = (Get-CloudSkuTable -all | Out-GridView -Title "Options to Add" -PassThru)
 
-        Connect-WaitandLicense -GuidFolder $GuidFolder -optionsToAdd $optionsToAdd
+        Watch-ToLicense -GuidFolder $GuidFolder -optionsToAdd $optionsToAdd
     }
 
     Process {
