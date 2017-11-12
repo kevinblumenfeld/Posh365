@@ -10,7 +10,7 @@ Function Watch-ToLicense {
         [Parameter()]
         [string] $GuidFolder,        
         [Parameter()]
-        [string] $optionsToAdd
+        [string[]] $optionsToAdd
     )
 
     Start-Job -Name WatchToLicense {
