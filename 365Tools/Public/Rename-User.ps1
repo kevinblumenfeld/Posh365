@@ -92,14 +92,6 @@ Function Rename-User {
         $LastName = $FutureLastName
         $DisplayName = $ExecutionContext.InvokeCommand.ExpandString($DisplayNameFormat)
 
-        $cn = $DisplayName
-        $i = 2
-        while (Get-ADUser -Server $domainController -LDAPFilter "(cn=$cn)") {
-            $cn = $DisplayName + $i
-            $i++
-        }
-        $name = $cn
-
         #########################################
         #  Create Parameters ADUser Name Change #
         #########################################
@@ -128,9 +120,9 @@ Function Rename-User {
         Set-OnPremRemoteMailbox -Identity $UsersSamAccount -EmailAddressPolicyEnabled:$true
             
         # After Email Address Policy, Set UPN to same as PrimarySMTP
-        $userprincipalname = (Get-OnPremRemoteMailbox $UsersSamAccount | select primarysmtpaddress).primarysmtpaddress
-
-        Set-ADUser -Identity $UsersSamAccount -Server $domainController -userprincipalname $userprincipalname
+        $CurrentUser = Get-OnPremRemoteMailbox $UsersSamAccount | select DistinguishedName,primarysmtpaddress
+        Set-ADUser -Identity $UsersSamAccount -Server $domainController -userprincipalname $CurrentUser.primarysmtpaddress
+        Rename-ADObject $CurrentUser.Distinguished -NewName $DisplayName
 
         ########################################
         #         Sync Azure AD Connect        #
