@@ -42,7 +42,7 @@ function Connect-ToCloud {
         [switch] $MFA,
 
         [parameter(Mandatory = $false)]
-        [switch] $Delete365Creds
+        [switch] $DeleteCreds
         
     )
 
@@ -62,7 +62,7 @@ function Connect-ToCloud {
         $KeyPath = $Rootpath + "creds\"
 
         # Delete invalid or unwanted credentials
-        if ($Delete365Creds) {
+        if ($DeleteCreds) {
             Remove-Item ($KeyPath + "$($Tenant).$($user).cred") 
             Remove-Item ($KeyPath + "$($Tenant).$($user).ucred")
         }
@@ -95,7 +95,7 @@ function Connect-ToCloud {
                 }
                 Catch {
                     if ($_.exception.Message -match '"userName" is not valid. Change the value of the "userName" argument and run the operation again') {
-                        Connect-ToCloud $Tenant -Delete365Creds
+                        Connect-ToCloud $Tenant -DeleteCreds
                         Write-Host "********************************************************************" -foregroundcolor "darkblue" -backgroundcolor "white"
                         Write-Host "                    Bad Username                                    " -foregroundcolor "darkblue" -backgroundcolor "white"
                         Write-Host "          Please try your last command again...                     " -foregroundcolor "darkblue" -backgroundcolor "white"
@@ -111,7 +111,7 @@ function Connect-ToCloud {
                     $Credential.Password | ConvertFrom-SecureString | Out-File ($KeyPath + "$($Tenant).$($user).cred") -Force
                 }
                 else {
-                    Connect-ToCloud $Tenant -Delete365Creds
+                    Connect-ToCloud $Tenant -DeleteCreds
                     Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
                     Write-Host "                 No Password Present                                " -foregroundcolor "darkgreen" -backgroundcolor "white"
                     Write-Host "          Please try your last command again...                     " -foregroundcolor "darkgreen" -backgroundcolor "white"
@@ -144,7 +144,7 @@ function Connect-ToCloud {
             }
             Catch {
                 if ($_.exception.Message -match "Bad username or password") {
-                    Connect-ToCloud $Tenant -Delete365Creds
+                    Connect-ToCloud $Tenant -DeleteCreds
                     Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
                     Write-Host "           Bad Username or Password.                                " -foregroundcolor "darkgreen" -backgroundcolor "white"
                     Write-Host "          Please try your last command again...                     " -foregroundcolor "darkgreen" -backgroundcolor "white"
@@ -157,7 +157,7 @@ function Connect-ToCloud {
         if ($Exchange -or $All365) {
             if (! $MFA) {
                 # Exchange Online
-                $exchangeSession = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell -Credential $Credential -Authentication Basic -AllowRedirection 
+                $exchangeSession = New-PSSession -Name EXO -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell -Credential $Credential -Authentication Basic -AllowRedirection 
                 Import-Module (Import-PSSession $exchangeSession -AllowClobber -WarningAction SilentlyContinue) -Global | Out-Null
                 Write-Output "**************************************************"
                 Write-Output "You have successfully connected to Exchange Online"
