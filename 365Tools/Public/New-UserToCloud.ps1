@@ -41,17 +41,17 @@ Function New-UserToCloud {
     #>
     [CmdletBinding()]
     Param (
-        [parameter(Mandatory, ParameterSetName = "Copy")]  
+        [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]  
         [string] $UserToCopy,
         [Parameter(ParameterSetName = "Shared")]   
         [switch] $Shared,
         [Parameter(ParameterSetName = "New")]
         [switch] $New,
-        [Parameter(Mandatory, ParameterSetName = "Copy")]
-        [Parameter(Mandatory, ParameterSetName = "New")]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [string] $FirstName,
-        [Parameter(Mandatory, ParameterSetName = "Copy")]
-        [Parameter(Mandatory, ParameterSetName = "New")]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [string] $LastName,
         [Parameter(Mandatory, ParameterSetName = "Shared")]
         [ValidateScript( {if ($_ -notlike "* *") {Return $True} else {Write-Host "Please choose an SharedMailboxEmailAlias without spaces"}})]
@@ -80,9 +80,9 @@ Function New-UserToCloud {
         [Parameter(ParameterSetName = "New")]
         [ValidateLength(1, 2)]
         [string] $SAMPrefix,
-        [parameter(Mandatory, ParameterSetName = "Copy")]
-        [Parameter(Mandatory, ParameterSetName = "New")]
-        [parameter(Mandatory, ParameterSetName = "Shared")]
+        [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
         [string] $Password,
         [Parameter(ParameterSetName = "Copy")]
         [Parameter(ParameterSetName = "New")]
@@ -192,9 +192,7 @@ Function New-UserToCloud {
                 where {$_.canonicalname -match $OUSearch -or $_.canonicalname -match $OUSearch2
             } | Select canonicalname, distinguishedname| sort canonicalname | 
                 Out-GridView -PassThru -Title "Choose the OU in which to create the new user, then click OK").distinguishedname
-
     }
-        
 
     Process {
         #######################################
