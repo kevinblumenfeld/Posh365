@@ -198,6 +198,9 @@ Function New-UserToCloud {
         if ($SharedMailboxEmailAlias) {
             $LastName = $SharedMailboxEmailAlias
         }
+
+        $password_ss = ConvertTo-SecureString -String $Password -AsPlainText -Force
+        
         if ($UserToCopy) {
             $template = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties Enabled, StreetAddress, City, State, PostalCode
             $template = $template | Select Enabled, StreetAddress, City, State, PostalCode
