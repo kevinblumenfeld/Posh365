@@ -122,7 +122,7 @@ Function Rename-User {
         # After Email Address Policy, Set UPN to same as PrimarySMTP
         $CurrentUser = Get-OnPremRemoteMailbox $UsersSamAccount | select DistinguishedName,primarysmtpaddress
         Set-ADUser -Identity $UsersSamAccount -Server $domainController -userprincipalname $CurrentUser.primarysmtpaddress
-        Rename-ADObject $CurrentUser.Distinguished -NewName $DisplayName
+        Rename-ADObject $CurrentUser.DistinguishedName -NewName $DisplayName
 
         ########################################
         #         Sync Azure AD Connect        #
