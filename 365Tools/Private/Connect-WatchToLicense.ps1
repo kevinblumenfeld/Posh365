@@ -8,7 +8,7 @@ Function Watch-ToLicense {
     [CmdletBinding()]
     Param (
         [Parameter()]
-        [string] $GuidFolder,        
+        [System.IO.FileInfo] $GuidFolder,        
         [Parameter()]
         [string[]] $optionsToAdd
     )

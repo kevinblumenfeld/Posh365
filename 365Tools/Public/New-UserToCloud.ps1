@@ -200,7 +200,7 @@ Function New-UserToCloud {
         }
 
         $password_ss = ConvertTo-SecureString -String $Password -AsPlainText -Force
-        
+
         if ($UserToCopy) {
             $template = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties Enabled, StreetAddress, City, State, PostalCode
             $template = $template | Select Enabled, StreetAddress, City, State, PostalCode
@@ -342,7 +342,9 @@ Function New-UserToCloud {
             $tempfile = Join-Path $GuidFolder ([Guid]::NewGuid().tostring())
             $UserPrincipalName | Set-Content $tempfile
     
-        }
+        } # End of IF MAIL (ABOVE)
+
+        # IF "NO MAIL" FOR THIS USER (BELOW)
         Else {
             $LastName = $LastName.replace(" ", "")
             $FirstName = $FirstName.replace(" ", "")
