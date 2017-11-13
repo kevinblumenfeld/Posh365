@@ -417,7 +417,7 @@ Function New-UserToCloud {
             $GuidFolder = $args[0]
             Set-Location $GuidFolder
             while ($GuidFolder -or $j -gt "3") {
-                Remove-Item -Path $GuidFolder -Confirm:$False -ErrorAction SilentlyContinue
+                Remove-Item -Path $GuidFolder -Confirm:$False -ErrorAction SilentlyContinue -verbose
                 $j++
                 Start-Sleep -Seconds 30
             }
@@ -425,8 +425,8 @@ Function New-UserToCloud {
         if ($GuidFolder) {
             Write-Output "There was a problem licensing some or all of the users"
             Write-Output "Please manually verify the proper licenses are installed"
-            Remove-Item -Path $GuidFolder -Recurse -Confirm:$False -Force
+            Remove-Item -Path $GuidFolder -Recurse -Confirm:$False -Force verbose
         }
-        Get-Job -Name DeleteGuidFolder | Stop-Job | Remove-Job
+        Get-Job -Name DeleteGuidFolder | Stop-Job | Remove-Job -verbose
     }
 }    

@@ -20,14 +20,14 @@ Function Watch-ToLicense {
 
         Connect-ToCloud Office365 -AzureADver2
         while ($GuidFolder) {
-            Get-ChildItem -Path $GuidFolder -File | ForEach {
+            Get-ChildItem -Path $GuidFolder -File -Verbose | ForEach {
                 write-host "PIPELINE:  " $GuidFolder
                 Get-Content $_ | Set-CloudLicense -ExternalOptionsToAdd $optionsToAdd
-                Remove-Item $_
+                Remove-Item $_ -verbose
             }
         }
         Disconnect-AzureAD
-        Remove-Job -Name WatchToLicense
+        Remove-Job -Name WatchToLicense -verbose
     } -ArgumentList $optionsToAdd, $GuidFolder | Out-Null
     
     
