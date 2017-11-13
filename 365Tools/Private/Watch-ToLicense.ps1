@@ -18,10 +18,11 @@ Function Watch-ToLicense {
         $GuidFolder = $args[1]
         Set-Location $GuidFolder
         Connect-ToCloud Office365 -AzureADver2
+        Start-Sleep -Seconds 120
         while (Test-Path $GuidFolder) {
             Get-ChildItem -Path $GuidFolder -File -Verbose | ForEach {
                 if ($_ -and !($_.name -eq 'ALLDONE'))  {
-                    Get-Content $_.VersionInfo.filename | Set-CloudLicense -ExternalOptionsToAdd $optionsToAdd
+                    Get-Content $_.VersionInfo.filename | Set-CloudLicense -optionsToAdd $optionsToAdd
                     Remove-Item $_.VersionInfo.filename -verbose
                 }
                     if ($_.name -eq "ALLDONE") {
