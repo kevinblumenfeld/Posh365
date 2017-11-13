@@ -38,7 +38,7 @@ Function Watch-ToLicense {
         }
         Disconnect-AzureAD
     } -ArgumentList $optionsToAdd, $GuidFolder | Out-Null 
-    while (!$DelFolder) {
+    while ($DelFolder) {
         Start-Sleep -Seconds 2
         Remove-Item -Path $GuidFolder -Confirm:$False -force
     }
