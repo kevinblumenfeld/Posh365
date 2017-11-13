@@ -416,6 +416,7 @@ Function New-UserToCloud {
             $GuidFolder = $args[0]
             Set-Location $GuidFolder            
             while (test-path $GuidFolder) {
+                (test-path $GuidFolder)
                 Remove-Item -Path $GuidFolder -Confirm:$False -ErrorAction SilentlyContinue
                 Start-Sleep -Seconds 5
             }
