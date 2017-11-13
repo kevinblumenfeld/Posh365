@@ -130,7 +130,6 @@ Function New-UserToCloud {
         $GuidFolder = Join-Path $env:TEMP ([Guid]::NewGuid().tostring())
         New-Item -Path $GuidFolder -ItemType Directory
        
-
         if (!(Test-Path $RootPath)) {
             try {
                 New-Item -ItemType Directory -Path $RootPath -ErrorAction STOP | Out-Null
@@ -203,6 +202,9 @@ Function New-UserToCloud {
         $password_ss = ConvertTo-SecureString -String $Password -AsPlainText -Force
 
         if ($UserToCopy) {
+            if ($UserToCopy -like "*@*") {
+                $UserToCopy = (Get-ADUser -LDAPfilter "(userprincipalname=$UserToCopy)").samaccountname
+            }
             $template = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties Enabled, StreetAddress, City, State, PostalCode
             $template = $template | Select Enabled, StreetAddress, City, State, PostalCode
             $groupMembership = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties memberof | select -ExpandProperty memberof    
@@ -353,7 +355,7 @@ Function New-UserToCloud {
             
             $i = 2
             $F = $null
-            while (get-aduser -LDAPfilter "(userprincipalname=$userprincipalname)") {
+            while (Get-ADUser -LDAPfilter "(userprincipalname=$userprincipalname)") {
                 $F = $FirstName + $i
                 $userprincipalname = $LastName + "-" + $F + "@" + $PsBoundParameters[$ParamName_emaildomain]
                 $i++
