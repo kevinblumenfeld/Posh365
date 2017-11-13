@@ -21,8 +21,8 @@ Function Watch-ToLicense {
         while (Test-Path $GuidFolder) {
             Get-ChildItem -Path $GuidFolder -File -Verbose | ForEach {
                 if ($_) {
-                    Get-Content $_.VersionInfo.filename| Set-CloudLicense -ExternalOptionsToAdd $optionsToAdd
-                    Remove-Item $_.VersionInfo.filename
+                    Get-Content $_.VersionInfo.filename | Set-CloudLicense -ExternalOptionsToAdd $optionsToAdd
+                    Remove-Item $_.VersionInfo.filename -verbose
                 }
             }
         }

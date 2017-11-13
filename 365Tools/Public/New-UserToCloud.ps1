@@ -415,14 +415,9 @@ Function New-UserToCloud {
         Start-Job -Name DeleteGuidFolder {
             $GuidFolder = $args[0]
             Set-Location $GuidFolder  
-            write-host "GUID:  " $GuidFolder          
-            while (test-path $GuidFolder) {
-                (test-path $GuidFolder)
-                Remove-Item -Path $GuidFolder -Confirm:$False -ErrorAction SilentlyContinue
-                Start-Sleep -Seconds 5
+            while ((Get-ChildItem -Path $GuidFolder).count -lt 1) {
+                Remove-Item -Path $GuidFolder -Confirm:$False -force
             }
-            Remove-Job -Name WatchToLicense -verbose
         } -ArgumentList $GuidFolder
-        Get-Job -Name DeleteGuidFolder | Stop-Job | Remove-Job
     }
 }    
