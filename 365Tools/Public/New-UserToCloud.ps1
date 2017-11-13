@@ -419,6 +419,7 @@ Function New-UserToCloud {
                 Remove-Item -Path $GuidFolder -Confirm:$False -ErrorAction SilentlyContinue
                 Start-Sleep -Seconds 5
             }
+            Remove-Job -Name WatchToLicense -verbose
         } -ArgumentList $GuidFolder
         Get-Job -Name DeleteGuidFolder | Stop-Job | Remove-Job
     }
