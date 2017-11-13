@@ -414,7 +414,8 @@ Function New-UserToCloud {
         ########################################
         Start-Job -Name DeleteGuidFolder {
             $GuidFolder = $args[0]
-            Set-Location $GuidFolder            
+            Set-Location $GuidFolder  
+            write-host "GUID:  " $GuidFolder          
             while (test-path $GuidFolder) {
                 (test-path $GuidFolder)
                 Remove-Item -Path $GuidFolder -Confirm:$False -ErrorAction SilentlyContinue
