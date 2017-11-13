@@ -29,7 +29,7 @@ Function Watch-ToLicense {
                         $ExitOnZero = $True
                         Remove-Item $_.VersionInfo.filename -verbose
                     }
-                    if ((Get-ChildItem -Path $GuidFolder).count -gt 0 -and $ExitOnZero) {
+                    if ((Get-ChildItem -Path $GuidFolder).count -lt 1 -and $ExitOnZero) {
                         WRITE-HOST "SHOULD EXIT HERE"
                         Stop-Job WatchToLicense
                         Remove-Job WatchToLicense
