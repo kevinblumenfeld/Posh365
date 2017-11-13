@@ -14,9 +14,10 @@ Function Watch-ToLicense {
     )
 
     Start-Job -Name WatchToLicense {
+        Set-Location $GuidFolder
+        write-host $GuidFolder
         $optionsToAdd = $args[0]
         $GuidFolder = $args[1]
-        Set-Location $GuidFolder
 
         Connect-ToCloud Office365 -AzureADver2
         while ($GuidFolder) {
