@@ -413,13 +413,11 @@ Function New-UserToCloud {
         #   Stop Licensing Watcher Function    #
         ########################################
         Start-Job -Name DeleteGuidFolder {
-            $j = 0
             $GuidFolder = $args[0]
             Set-Location $GuidFolder            
-            while ((test-path $GuidFolder) -or ($j -lt "3")) {
+            while (test-path $GuidFolder) {
                 Remove-Item -Path $GuidFolder -Confirm:$False -ErrorAction SilentlyContinue
-                $j++
-                Start-Sleep -Seconds 30
+                Start-Sleep -Seconds 5
             }
         } -ArgumentList $GuidFolder
         Get-Job -Name DeleteGuidFolder | Stop-Job | Remove-Job
