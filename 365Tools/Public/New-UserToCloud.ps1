@@ -417,8 +417,8 @@ Function New-UserToCloud {
             $j = 0
             $GuidFolder = $args[0]
             
-            while (test-path $GuidFolder -or $j -lt "3") {
-                Remove-Item -Path $GuidFolder -Confirm:$False -ErrorAction SilentlyContinue -verbose
+            while ((test-path $GuidFolder) -or ($j -lt "3")) {
+                Remove-Item -Path $GuidFolder -Confirm:$False -ErrorAction SilentlyContinue
                 $j++
                 Start-Sleep -Seconds 30
             }
