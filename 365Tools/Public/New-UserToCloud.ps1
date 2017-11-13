@@ -418,7 +418,7 @@ Function New-UserToCloud {
             ((Get-ChildItem -Path $GuidFolder).count -gt 0)
             while ((Get-ChildItem -Path $GuidFolder).count -gt 0) {
                 if ((Get-ChildItem -Path $GuidFolder).count -lt 1) {
-                    Remove-Item -Path $GuidFolder -Confirm:$False -force
+                    Remove-Item -Path $GuidFolder -Confirm:$False -force -verbpse
                 }
             }
         } -ArgumentList $GuidFolder
