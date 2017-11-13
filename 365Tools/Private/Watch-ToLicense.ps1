@@ -23,6 +23,12 @@ Function Watch-ToLicense {
                 if ($_) {
                     Get-Content $_.VersionInfo.filename | Set-CloudLicense -ExternalOptionsToAdd $optionsToAdd
                     Remove-Item $_.VersionInfo.filename -verbose
+                    if ($_.name -eq "ALLDONE") {
+                        $ExitOnZero = $True
+                    }
+                    if ((Get-ChildItem -Path $GuidFolder).count -gt 0 -and $ExitOnZero) {
+                        Exit
+                    }
                 }
             }
         }

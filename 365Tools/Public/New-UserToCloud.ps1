@@ -417,9 +417,7 @@ Function New-UserToCloud {
             Set-Location $GuidFolder
             while ((Get-ChildItem -Path $GuidFolder).count -gt 0) {
             }
-            Remove-Item -Path $GuidFolder -Recurse -Confirm:$False -force
-            Stop-Job WatchToLicense
-            Remove-Job WatchToLicense
+            Remove-Item -Path $GuidFolder -Confirm:$False -force
         } -ArgumentList $GuidFolder
     }
 }    
