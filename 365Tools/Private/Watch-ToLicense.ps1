@@ -26,7 +26,8 @@ Function Watch-ToLicense {
             }
         }
         Disconnect-AzureAD
+        Remove-Job -Name WatchToLicense
     } -ArgumentList $optionsToAdd, $GuidFolder | Out-Null
-    Remove-Job -Name WatchToLicense
+    
     
 }    
