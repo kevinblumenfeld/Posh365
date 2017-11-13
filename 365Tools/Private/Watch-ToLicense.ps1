@@ -13,10 +13,9 @@ Function Watch-ToLicense {
         [string[]] $optionsToAdd
     )
 
-    Start-Job -Name WatchToLicense {
+    $WatcherJob = Start-Job -Name WatchToLicense {
         $optionsToAdd = $args[0]
         $GuidFolder = $args[1]
-        $DelFolder = $False
         Set-Location $GuidFolder
         Connect-ToCloud Office365 -AzureADver2
         Start-Sleep -Seconds 120
@@ -30,16 +29,10 @@ Function Watch-ToLicense {
                     $ExitOnZero = $True
                     Remove-Item $_.VersionInfo.filename -verbose
                 }
-                if ((Get-ChildItem -Path $GuidFolder).count -lt 1 -and $ExitOnZero) {
-                    $DelFolder = $True
-                    Exit
-                }
             }
         }
         Disconnect-AzureAD
     } -ArgumentList $optionsToAdd, $GuidFolder | Out-Null 
-    while ($DelFolder) {
-        Start-Sleep -Seconds 2
-        Remove-Item -Path $GuidFolder -Confirm:$False -force
-    }
+    $WatcherJob | Wait-Job
+    $WatcherJob | Remove-Job
 }    
