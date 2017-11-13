@@ -423,11 +423,6 @@ Function New-UserToCloud {
                 Start-Sleep -Seconds 30
             }
         } -ArgumentList $GuidFolder
-        if ($GuidFolder) {
-            Write-Output "There was a problem licensing some or all of the users"
-            Write-Output "Please manually verify the proper licenses are installed"
-            Remove-Item -Path $GuidFolder -Recurse -Confirm:$False -Force verbose
-        }
         Get-Job -Name DeleteGuidFolder | Stop-Job | Remove-Job
     }
 }    
