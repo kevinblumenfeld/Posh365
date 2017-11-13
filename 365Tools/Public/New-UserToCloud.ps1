@@ -420,6 +420,7 @@ Function New-UserToCloud {
                 if ((Get-ChildItem -Path $GuidFolder).count -lt 1) {
                     Remove-Item -Path $GuidFolder -Confirm:$False -force
                 }
-            } -ArgumentList $GuidFolder
-        }
-    }    
+            }
+        } -ArgumentList $GuidFolder
+    }
+}    
