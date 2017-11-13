@@ -16,6 +16,7 @@ Function Watch-ToLicense {
     Start-Job -Name WatchToLicense {
         $optionsToAdd = $args[0]
         $GuidFolder = $args[1]
+        Set-Location $GuidFolder
 
         Connect-ToCloud Office365 -AzureADver2
         while ($GuidFolder) {
@@ -26,5 +27,6 @@ Function Watch-ToLicense {
         }
         Disconnect-AzureAD
     } -ArgumentList $optionsToAdd, $GuidFolder | Out-Null
+    Remove-Job -Name WatchToLicense
     
 }    

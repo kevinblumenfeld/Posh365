@@ -191,6 +191,7 @@ Function New-UserToCloud {
     }
 
     Process {
+
         #######################################
         # Copy ADUser (Template) & Create New #
         #######################################
@@ -411,12 +412,16 @@ Function New-UserToCloud {
         ########################################
         #   Stop Licensing Watcher Function    #
         ########################################
-        Try {
-            Remove-Item -Path $GuidFolder -Confirm:$False -ErrorAction Stop
-            Write-Output "Licensing Complete"
-        }
-        Catch {
-            Write-Output "There was an issue completing the licensing tasks.  Please verify all users were licensed properly"
-        }
+        Start-Job -Name DeleteGuidFolder {
+            $j = 0
+            $GuidFolder = $args[0]
+            Set-Location $GuidFolder
+            while ($GuidFolder -or $j -gt "3") {
+                Remove-Item -Path $GuidFolder -Confirm:$False -ErrorAction SilentlyContinue
+                $j++
+                Start-Sleep -Seconds 30
+            }
+        } -ArgumentList $GuidFolder
+        Get-Job -Name DeleteGuidFolder | Stop-Job | Remove-Job
     }
 }    
