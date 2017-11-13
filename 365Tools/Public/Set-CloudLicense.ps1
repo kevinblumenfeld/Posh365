@@ -333,7 +333,6 @@ function Set-CloudLicense {
     Process {
         if ($ExternalOptionsToAdd) {
             $optionsToAdd = $ExternalOptionsToAdd
-            Start-Sleep -Seconds 120
         }
 
         # Define Arrays
