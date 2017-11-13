@@ -30,11 +30,11 @@ Function Watch-ToLicense {
                         Remove-Item $_.VersionInfo.filename -verbose
                     }
                     if ((Get-ChildItem -Path $GuidFolder).count -lt 1 -and $ExitOnZero) {
-                        Remove-Item -Path $GuidFolder -Confirm:$False -force
                         Exit
                     }
             }
         }
         Disconnect-AzureAD
     } -ArgumentList $optionsToAdd, $GuidFolder | Out-Null 
+    Remove-Item -Path $GuidFolder -Confirm:$False -force
 }    
