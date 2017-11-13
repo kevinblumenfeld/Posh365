@@ -410,15 +410,15 @@ Function New-UserToCloud {
         Sync-ADConnect
 
         ########################################
-        #   Stop Licensing Watcher Function    #
+        # Stop the Licensing Watcher Function  #
         ########################################
         Start-Job -Name DeleteGuidFolder {
             $GuidFolder = $args[0]
             Set-Location $GuidFolder
             while ((Get-ChildItem -Path $GuidFolder).count -gt 0) {
             }
+            Remove-Item -Path $GuidFolder -Recurse -Confirm:$False -force
             Stop-Job WatchToLicense
-            Remove-Item -Path $GuidFolder -Confirm:$False -force
             Remove-Job WatchToLicense
         } -ArgumentList $GuidFolder
     }

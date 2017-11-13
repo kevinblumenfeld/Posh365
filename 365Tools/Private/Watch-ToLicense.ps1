@@ -27,7 +27,5 @@ Function Watch-ToLicense {
             }
         }
         Disconnect-AzureAD
-    } -ArgumentList $optionsToAdd, $GuidFolder | Out-Null
-    
-    
+    } -ArgumentList $optionsToAdd, $GuidFolder | Out-Null 
 }    
