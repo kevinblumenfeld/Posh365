@@ -20,16 +20,20 @@ Function Watch-ToLicense {
         Connect-ToCloud Office365 -AzureADver2
         while (Test-Path $GuidFolder) {
             Get-ChildItem -Path $GuidFolder -File -Verbose | ForEach {
-                if ($_) {
+                if ($_ -and !($_.name -eq 'ALLDONE'))  {
                     Get-Content $_.VersionInfo.filename | Set-CloudLicense -ExternalOptionsToAdd $optionsToAdd
                     Remove-Item $_.VersionInfo.filename -verbose
+                }
                     if ($_.name -eq "ALLDONE") {
+                        WRITE-HOST "EXITONZERO"
                         $ExitOnZero = $True
+                        Remove-Item $_.VersionInfo.filename -verbose
                     }
                     if ((Get-ChildItem -Path $GuidFolder).count -gt 0 -and $ExitOnZero) {
+                        Stop-Job WatchToLicense
+                        Remove-Job WatchToLicense
                         Exit
                     }
-                }
             }
         }
         Disconnect-AzureAD
