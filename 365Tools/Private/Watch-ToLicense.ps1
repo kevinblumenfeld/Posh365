@@ -21,6 +21,7 @@ Function Watch-ToLicense {
 
         Connect-ToCloud Office365 -AzureADver2
         while (Test-Path $GuidFolder) {
+            Test-Path $GuidFolder
             Get-ChildItem -Path $GuidFolder -File -Verbose | ForEach {
                 write-host "PIPELINE:  " $GuidFolder
                 Get-Content $_ | Set-CloudLicense -ExternalOptionsToAdd $optionsToAdd
