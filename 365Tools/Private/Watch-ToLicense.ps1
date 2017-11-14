@@ -23,10 +23,12 @@ Function Watch-ToLicense {
             Get-ChildItem -Path $GuidFolder -File -Verbose | ForEach {
                 if ($_ -and !($_.name -eq 'ALLDONE')) {
                     Get-Content $_.VersionInfo.filename | Set-CloudLicense -ExternalOptionsToAdd $optionsToAdd
+                    WRITE-HOST "REMOVING:  " $($_.VersionInfo.filename)
                     Remove-Item $_.VersionInfo.filename -verbose
                 }
                 if ($_.name -eq "ALLDONE") {
                     $ExitOnZero = $True
+                    WRITE-HOST "REMOVING_AD:  " $($_.VersionInfo.filename)
                     Remove-Item $_.VersionInfo.filename -verbose
                 }
             }
