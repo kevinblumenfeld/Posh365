@@ -25,7 +25,7 @@ Function Watch-ToLicense {
                     Get-Content $_.VersionInfo.filename | Set-CloudLicense -ExternalOptionsToAdd $optionsToAdd
                     Remove-Item $_.VersionInfo.filename -verbose
                 }
-                if ($_.name -eq "ALLDONE" -and (Get-ChildItem -Path $GuidFolder).count -lt 1) {
+                if ($_.name -eq "ALLDONE" -and (Get-ChildItem -Path $GuidFolder).count -eq 1) {
                     Remove-Item $_.VersionInfo.filename -verbose
                 }
             }
