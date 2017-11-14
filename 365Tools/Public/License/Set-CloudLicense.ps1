@@ -1,6 +1,3 @@
-<#
-.EXTERNALHELP PSLicense-help.xml
-#>
 function Set-CloudLicense {
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
     Param

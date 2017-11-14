@@ -1,6 +1,3 @@
-<#
-.EXTERNALHELP PSCloudConnect-help.xml
-#>
 function Connect-ToCloud {
     
  

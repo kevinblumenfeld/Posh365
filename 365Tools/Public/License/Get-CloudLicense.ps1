@@ -1,7 +1,4 @@
-﻿<#
-.EXTERNALHELP PSLicense-help.xml
-#>
-function Get-CloudLicense { 
+﻿function Get-CloudLicense { 
 
     Begin {
 
