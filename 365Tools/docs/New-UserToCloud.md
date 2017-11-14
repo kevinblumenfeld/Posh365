@@ -17,22 +17,22 @@ Syncs changes to Office 365 with Azure AD Connect (AADC)
 4.
 Grid of licenses are presented to user of script to select from and then applied to 365 User
 
-##########
-# Must be run on PowerShell 5+ (run as administrator) with the following tools installed:
-# Windows 10/2016 comes pre-installed with PowerShell 5.1
-#
-#  1) RSAT(Active Directory tools including AD Module for PowerShell
-#  2) Exchange Management Tools - Ensure the version matches exactly the version of Exchange installed onprem. 
-#  3) Run Select-Servers once, to choose an AD Connect Server, Domain Controller, Exchange Server & Target Address Suffix
-#       this allows the scripts to lock in specifics server names. 
+
+Must be run on PowerShell 5+ (run as administrator) with the following tools installed:
+Windows 10/2016 comes pre-installed with PowerShell 5.1
+
+  1) RSAT(Active Directory tools including AD Module for PowerShell
+  2) Exchange Management Tools - Ensure the version matches exactly the version of Exchange installed onprem. 
+  3) Run Select-Servers once, to choose an AD Connect Server, Domain Controller, Exchange Server & Target Address Suffix
+       this allows the scripts to lock in specifics server names. 
 This should only be changed should the servers chosen are changed
-#       It is best to choose the domain controller with which AD Connect is connected.
-#       Need be, domain controllers can be hard coded to use a list of DCs (in order), so that the first in the list is typically the only DC used:
-#       This is the process:
-#          https://vanhybrid.com/2016/01/25/force-azure-ad-connect-to-connect-to-specific-domain-controllers-only/
-#  4) Be sure to enclose in "Double Quotes" anything with special characters, for example, spaces, commas, hyphens etc.
+       It is best to choose the domain controller with which AD Connect is connected.
+       Need be, domain controllers can be hard coded to use a list of DCs (in order), so that the first in the list is typically the only DC used:
+       This is the process:
+          https://vanhybrid.com/2016/01/25/force-azure-ad-connect-to-connect-to-specific-domain-controllers-only/
+  4) Be sure to enclose in "Double Quotes" anything with special characters, for example, spaces, commas, hyphens etc.
 The examples below, illustrate this well.
-##########
+
 
 ## SYNTAX
 
