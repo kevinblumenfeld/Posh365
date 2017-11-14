@@ -23,18 +23,15 @@ Function Watch-ToLicense {
             Get-ChildItem -Path $GuidFolder -File -Verbose | ForEach {
                 if ($_ -and !($_.name -eq 'ALLDONE')) {
                     Get-Content $_.VersionInfo.filename | Set-CloudLicense -ExternalOptionsToAdd $optionsToAdd
-                    WRITE-HOST "REMOVING:  " $($_.VersionInfo.filename)
                     Remove-Item $_.VersionInfo.filename -verbose
                 }
-                if ($_.name -eq "ALLDONE") {
-                    WRITE-HOST "REMOVING_AD:  " $($_.VersionInfo.filename)
+                if ($_.name -eq "ALLDONE" -and (Get-ChildItem -Path $GuidFolder).count -lt 1) {
                     Remove-Item $_.VersionInfo.filename -verbose
                 }
             }
         }
         Disconnect-AzureAD
     } -ArgumentList $optionsToAdd, $GuidFolder | Out-Null 
-    $WatcherJob | Wait-Job -Verbose
-    New-Item -Path $GuidFolder -Name "DELETEME" -Type File
-    $WatcherJob | Remove-Job -Verbose
+    $WatcherJob | Wait-Job
+    $WatcherJob | Remove-Job
 }    

@@ -416,10 +416,12 @@ Function New-UserToCloud {
         ########################################
         Start-Job -Name DeleteGuidFolder {
             $GuidFolder = $args[0]
+            Set-Location $GuidFolder
             New-Item -Path $GuidFolder -Name "ALLDONE" -Type File
-            while ((Get-ChildItem -Path $GuidFolder).count -eq 1 -and (Test-Path (Join-Path $GuidFolder "DELETEME"))) {
+            while ((Get-ChildItem -Path $GuidFolder).count -gt 0) {
             }
-            Remove-Item -Path $GuidFolder -Recurse -Confirm:$False -force
+            Start-Sleep -Seconds 3
+            Remove-Item -Path $GuidFolder -Confirm:$False -force
         } -ArgumentList $GuidFolder
     }
 }    
