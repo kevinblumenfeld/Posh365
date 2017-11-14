@@ -35,6 +35,7 @@ Windows 10/2016 comes pre-installed with PowerShell 5.1
 ```
 New-UserToCloud -UserToCopy <String> -FirstName <String> -LastName <String> [-OfficePhone <String>]
  [-MobilePhone <String>] [-Description <String>] [-SAMPrefix <String>] -Password <String> [-NoMail]
+ [-Country <String>] [-Office <String>] [-Title <String>] [-Department <String>] [-Company <String>]
  [-OUSearch <String>] [<CommonParameters>]
 ```
 
@@ -48,12 +49,14 @@ New-UserToCloud [-Shared] -SharedMailboxEmailAlias <String> -DisplayName <String
 ```
 New-UserToCloud [-New] -FirstName <String> -LastName <String> [-OfficePhone <String>] [-MobilePhone <String>]
  [-Description <String>] [-StreetAddress <String>] [-City <String>] [-State <String>] [-Zip <String>]
- [-SAMPrefix <String>] -Password <String> [-NoMail] [-OUSearch <String>] [<CommonParameters>]
+ [-SAMPrefix <String>] -Password <String> [-NoMail] [-Country <String>] [-Office <String>] [-Title <String>]
+ [-Department <String>] [-Company <String>] [-OUSearch <String>] [<CommonParameters>]
 ```
 
 ### NoMail
 ```
-New-UserToCloud -Password <String> [-OUSearch <String>] -EmailDomain <String> [<CommonParameters>]
+New-UserToCloud -Password <String> [-Country <String>] [-Office <String>] [-Title <String>]
+ [-Department <String>] [-Company <String>] [-OUSearch <String>] -EmailDomain <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -360,6 +363,81 @@ Required: True
 Position: Named
 Default value: None
 Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Company
+{{Fill Company Description}}
+
+```yaml
+Type: String
+Parameter Sets: Copy, New, NoMail
+Aliases: 
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -Country
+{{Fill Country Description}}
+
+```yaml
+Type: String
+Parameter Sets: Copy, New, NoMail
+Aliases: 
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -Department
+{{Fill Department Description}}
+
+```yaml
+Type: String
+Parameter Sets: Copy, New, NoMail
+Aliases: 
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -Office
+{{Fill Office Description}}
+
+```yaml
+Type: String
+Parameter Sets: Copy, New, NoMail
+Aliases: 
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -Title
+{{Fill Title Description}}
+
+```yaml
+Type: String
+Parameter Sets: Copy, New, NoMail
+Aliases: 
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 

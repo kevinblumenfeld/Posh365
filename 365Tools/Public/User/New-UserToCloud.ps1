@@ -49,6 +49,26 @@ Function New-UserToCloud {
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [switch] $NoMail,
+        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
+        [string] $Country,
+        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
+        [string] $Office,
+        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
+        [string] $Title,
+        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
+        [string] $Department,
+        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
+        [string] $Company,
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]        
@@ -251,6 +271,11 @@ Function New-UserToCloud {
             "city"              = $City
             "state"             = $State
             "postalcode"        = $Zip
+            "country"           = $Country
+            "office"            = $Office
+            "title"             = $Title
+            "department"        = $Department
+            "company"           = $Company                                    
             "SamAccountName"    = $samaccountname
             "UserPrincipalName" = $userprincipalname
             "AccountPassword"   = $password_ss
