@@ -45,7 +45,6 @@ Function Sync-ADConnect {
             $session = New-PSSession -ComputerName $aadComputer
             Invoke-Command -Session $session -ScriptBlock {
                 $Sleep = $args[0]
-                Import-Module -Name 'ADSync'
                 $Synced = $False
                 while (!$Synced) {
                     Try {
@@ -70,7 +69,6 @@ Function Sync-ADConnect {
             $session = New-PSSession -ComputerName $aadComputer
             Invoke-Command -Session $session -ScriptBlock {
                 $Sleep = $args[0]
-                Import-Module -Name 'ADSync'
                 $Synced = $False
                 while (!$Synced) {
                     Try {

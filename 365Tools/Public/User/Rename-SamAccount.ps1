@@ -45,7 +45,7 @@ Function Rename-SamAccount {
         }
         $domainController = Get-Content ($RootPath + "$($user).DomainController")     
 
-        Import-Module ActiveDirectory
+        #Requires -Modules ActiveDirectory
 
         ##############################################
         #              SamAccountName                #
