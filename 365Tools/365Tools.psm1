@@ -1,5 +1,3 @@
-#Module vars
-$ModulePath = $PSScriptRoot
 
 # Thank you to https://github.com/ramblingcookiemonster for this module and methodology
 # Get public and private function definition files.
@@ -28,15 +26,5 @@ else {
         Catch {
             Write-Error "Failed to import function $($import.fullname): $_"
         }
-    }
-}
-
-# Load up dependency modules
-foreach ($Module in $PrivateModules) {
-    Try {
-        Import-Module $Module -ErrorAction Stop
-    }
-    Catch {
-        Write-Error "Failed to import module $Module`: $_"
     }
 }
