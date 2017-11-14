@@ -4,9 +4,9 @@ Function New-UserToCloud {
     Param (
         [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]  
         [string] $UserToCopy,
-        [Parameter(ParameterSetName = "Shared")]   
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]   
         [switch] $Shared,
-        [Parameter(ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [switch] $New,
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "New")]
@@ -14,31 +14,31 @@ Function New-UserToCloud {
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [string] $LastName,
-        [Parameter(Mandatory, ParameterSetName = "Shared")]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
         [ValidateScript( {if ($_ -notlike "* *") {Return $True} else {Write-Host "Please choose an SharedMailboxEmailAlias without spaces"}})]
         [string] $SharedMailboxEmailAlias,
-        [Parameter(ParameterSetName = "Shared")]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
         [string] $DisplayName,
-        [Parameter(ParameterSetName = "Copy")]
-        [Parameter(ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [string] $OfficePhone,
-        [Parameter(ParameterSetName = "Copy")]
-        [Parameter(ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [string] $MobilePhone,
-        [parameter(ParameterSetName = "Copy")]
-        [parameter(ParameterSetName = "New")]
-        [Parameter(ParameterSetName = "Shared")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
         [string] $Description,
-        [parameter(ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [string] $StreetAddress,
-        [parameter(ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [string] $City,
-        [parameter(ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [string] $State,
-        [parameter(ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [string] $Zip,
-        [parameter(ParameterSetName = "Copy")]
-        [Parameter(ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [ValidateLength(1, 2)]
         [string] $SAMPrefix,
         [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
@@ -46,13 +46,13 @@ Function New-UserToCloud {
         [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
         [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
         [string] $Password,
-        [Parameter(ParameterSetName = "Copy")]
-        [Parameter(ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [switch] $NoMail,
-        [parameter(ParameterSetName = "Copy")]
-        [parameter(ParameterSetName = "New")]
-        [parameter(ParameterSetName = "Shared")]        
-        [parameter(ParameterSetName = "NoMail")]       
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]        
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]       
         [string] $OUSearch = "Resources"
     )
     DynamicParam {
