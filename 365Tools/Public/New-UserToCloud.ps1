@@ -419,7 +419,6 @@ Function New-UserToCloud {
             New-Item -Path $GuidFolder -Name "ALLDONE" -Type File
             while ((Get-ChildItem -Path $GuidFolder).count -gt 0) {
             }
-            Start-Sleep -Seconds 3
             Remove-Item -Path $GuidFolder -Confirm:$False -force -verbose
         } -ArgumentList $GuidFolder
     }
