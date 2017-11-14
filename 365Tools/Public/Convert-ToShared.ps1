@@ -10,7 +10,7 @@ Function Convert-ToShared {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
-        [string[]] $UserPrincipalName
+        [string[]] $User
     )
     
     Begin {
@@ -253,7 +253,7 @@ Function Convert-ToShared {
 
             # Remove any Licenses that the mailbox may have had
             $removeSkuGroup = @()
-            $user = Get-AzureADUser -ObjectId $CurUser
+            $userL = Get-AzureADUser -ObjectId $CurUser
             $userLicense = Get-AzureADUserLicenseDetail -ObjectId $CurUser
             if ($skusToRemove) {
                 Foreach ($removeSku in $skusToRemove) {
@@ -271,7 +271,7 @@ Function Convert-ToShared {
                 if ($removeSkuGroup) {
                     Write-Output "$CurUser has the following Skus, removing these Sku now: $removeSkuGroup "
                     $licensesToAssign = Set-SkuChange -remove -skus $removeSkuGroup
-                    Set-AzureADUserLicense -ObjectId $user.ObjectId -AssignedLicenses $licensesToAssign
+                    Set-AzureADUserLicense -ObjectId $UserL.ObjectId -AssignedLicenses $licensesToAssign
                 }
                 Else {
                     Write-Output "$CurUser Licenses have been removed"
