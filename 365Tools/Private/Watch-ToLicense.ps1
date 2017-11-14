@@ -27,7 +27,6 @@ Function Watch-ToLicense {
                     Remove-Item $_.VersionInfo.filename -verbose
                 }
                 if ($_.name -eq "ALLDONE") {
-                    $ExitOnZero = $True
                     WRITE-HOST "REMOVING_AD:  " $($_.VersionInfo.filename)
                     Remove-Item $_.VersionInfo.filename -verbose
                 }
@@ -35,6 +34,7 @@ Function Watch-ToLicense {
         }
         Disconnect-AzureAD
     } -ArgumentList $optionsToAdd, $GuidFolder | Out-Null 
-    $WatcherJob | Wait-Job
-    $WatcherJob | Remove-Job
+    $WatcherJob | Wait-Job -Verbose
+    New-Item -Path $GuidFolder -Name "DELETEME" -Type File
+    $WatcherJob | Remove-Job -Verbose
 }    

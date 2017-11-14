@@ -417,9 +417,9 @@ Function New-UserToCloud {
         Start-Job -Name DeleteGuidFolder {
             $GuidFolder = $args[0]
             New-Item -Path $GuidFolder -Name "ALLDONE" -Type File
-            while ((Get-ChildItem -Path $GuidFolder).count -gt 0) {
+            while ((Get-ChildItem -Path $GuidFolder).count -eq 1 -and (Test-Path (Join-Path $GuidFolder "DELETEME"))) {
             }
-            Remove-Item -Path $GuidFolder -Confirm:$False -force
+            Remove-Item -Path $GuidFolder -Recurse -Confirm:$False -force
         } -ArgumentList $GuidFolder
     }
 }    
