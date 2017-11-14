@@ -238,16 +238,14 @@ Function Convert-ToShared {
                 }
             }
             else {
-                try {
-                    Get-ADUser -LDAPFilter "(samaccountname=$CurUser)" -erroraction stop | 
-                        Set-ADUser -replace @{msExchRemoteRecipientType = "100";
-                        msExchRecipientTypeDetails = "34359738368"
-                        $CurUser = (Get-ADUser -LDAPFilter "(samaccountname=$CurUser)").samaccountname
-                    }
+                
+                Get-ADUser -LDAPFilter "(samaccountname=$CurUser)" -erroraction stop | 
+                    Set-ADUser -replace @{msExchRemoteRecipientType = "100";
+                    msExchRecipientTypeDetails = "34359738368"
                 }
-                catch {
-                    Write-Output "Error finding User. Please verify user name is correct and of type, UPN or SamAccountName"
-                }
+                $CurUser = (Get-ADUser -LDAPFilter "(samaccountname=$CurUser)").userprincipalname
+                
+                
             }
             Write-Output "$CurUser has been converted to a Remote Shared Mailbox in Active Directory"
 
