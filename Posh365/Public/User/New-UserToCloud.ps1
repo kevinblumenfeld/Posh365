@@ -53,11 +53,6 @@ Function New-UserToCloud {
             [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
             [ValidateLength(1, 2)]
             [string] $SAMPrefix,
-            [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-            [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-            [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
-            [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
-            [string] $Password,
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
             [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
@@ -118,7 +113,7 @@ Function New-UserToCloud {
         }
         
         Begin {
-    
+            $password_ss = Read-Host "Enter a Password for the User" -AsSecureString
             $RootPath = $env:USERPROFILE + "\ps\"
             $User = $env:USERNAME
     
@@ -193,8 +188,6 @@ Function New-UserToCloud {
             if ($SharedMailboxEmailAlias) {
                 $LastName = $SharedMailboxEmailAlias
             }
-    
-            $password_ss = ConvertTo-SecureString -String $Password -AsPlainText -Force
     
             if ($UserToCopy) {
                 if ($UserToCopy -like "*@*") {

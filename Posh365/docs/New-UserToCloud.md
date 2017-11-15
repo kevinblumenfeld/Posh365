@@ -35,30 +35,29 @@ Windows 10/2016 comes pre-installed with PowerShell 5.1
 ```
 New-UserToCloud [-UserToCopy <String>] [-New] -FirstName <String> -LastName <String> [-OfficePhone <String>]
  [-MobilePhone <String>] [-Description <String>] [-StreetAddress <String>] [-City <String>] [-State <String>]
- [-Zip <String>] [-SAMPrefix <String>] -Password <String> [-NoMail] [-Country <String>] [-Office <String>]
- [-Title <String>] [-Department <String>] [-Company <String>] [-OUSearch <String>] -UPNSuffix <String>
- [<CommonParameters>]
+ [-Zip <String>] [-SAMPrefix <String>] [-NoMail] [-Country <String>] [-Office <String>] [-Title <String>]
+ [-Department <String>] [-Company <String>] [-OUSearch <String>] -UPNSuffix <String> [<CommonParameters>]
 ```
 
 ### Copy
 ```
 New-UserToCloud -UserToCopy <String> -FirstName <String> -LastName <String> [-OfficePhone <String>]
- [-MobilePhone <String>] [-Description <String>] [-SAMPrefix <String>] -Password <String> [-NoMail]
- [-Country <String>] [-Office <String>] [-Title <String>] [-Department <String>] [-Company <String>]
- [-OUSearch <String>] [<CommonParameters>]
+ [-MobilePhone <String>] [-Description <String>] [-SAMPrefix <String>] [-NoMail] [-Country <String>]
+ [-Office <String>] [-Title <String>] [-Department <String>] [-Company <String>] [-OUSearch <String>]
+ [<CommonParameters>]
 ```
 
 ### Shared
 ```
 New-UserToCloud [-Shared] -SharedMailboxEmailAlias <String> -DisplayName <String> [-Description <String>]
- -Password <String> [-OUSearch <String>] [<CommonParameters>]
+ [-OUSearch <String>] [<CommonParameters>]
 ```
 
 ### New
 ```
 New-UserToCloud [-New] -FirstName <String> -LastName <String> [-OfficePhone <String>] [-MobilePhone <String>]
  [-Description <String>] [-StreetAddress <String>] [-City <String>] [-State <String>] [-Zip <String>]
- [-SAMPrefix <String>] -Password <String> [-NoMail] [-Country <String>] [-Office <String>] [-Title <String>]
+ [-SAMPrefix <String>] [-NoMail] [-Country <String>] [-Office <String>] [-Title <String>]
  [-Department <String>] [-Company <String>] [-OUSearch <String>] [<CommonParameters>]
 ```
 
@@ -68,19 +67,32 @@ New-UserToCloud [-New] -FirstName <String> -LastName <String> [-OfficePhone <Str
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
-```
-When using the EmailDomain parameter, simply type -EmailDomain, then hit the space-bar, then tab through the available email domains.  The email domains are dynamically acquired from the environment where the script is run.
-This is only available/needed when using the NoMail switch.
-```
+New-UserToCloud -UserToCopy SmithJ -FirstName Joe -LastName Parker -StorePhone "(777)222-3333" -MobilePhone "(404)234-5555" -Description "Joe's Description"
 
-New-UserToCloud -UserToCopy SmithJ -NoMail -FirstName Naomi -LastName Queen -StorePhone "777-222-3333,234" -MobilePhone "404-234-5555" -Description "Naomi's Description" -Prefix NN -Password "Pass1255!!!$" -EmailDomain contoso.com
+Once complete, hit enter and you will be prompted for the password for the user.  Please enter a network password and hit enter when you are prompted like so,
+Enter a Password for the User:
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```
-Notice the -Shared switch (below).  Use this to create a shared mailbox.  An Exchange Online License is needed but is automatically removed after 6 minutes
+When using the UPNSuffix parameter, simply type -UPNSuffix, then hit the space-bar, then tab through the available email domains.  The email domains are dynamically acquired from the environment where the script is run.  They 
+This is only available/needed when using the *NoMail* switch.
 ```
 
-New-UserToCloud -Shared -SharedMailboxEmailAlias Shared -Description "Shared's Description" -Password "Pass1255!!!$"
+New-UserToCloud -UserToCopy SmithJ -NoMail -FirstName Naomi -LastName Queen -StorePhone "777-222-3333,234" -MobilePhone "404-234-5555" -Description "Naomi's Description" -Prefix NN -UPNSuffix contoso.com
+
+Once complete, hit enter and you will be prompted for the password for the user.  Please enter a network password and hit enter when you are prompted like so,
+Enter a Password for the User:
+
+### -------------------------- EXAMPLE 3 --------------------------
+```
+Notice the -Shared switch (below).  Use this to create a shared mailbox.  An Exchange Online License is needed but is automatically removed after 6 minutes
+The SharedMailboxEmailAlias creates the email address.  In this example SalesDept@contoso.com is the desired email address, there for you would enter "SalesDept"
+```
+
+New-UserToCloud -Shared -SharedMailboxEmailAlias "SalesDept" -DisplayName "Sales Dept Shared Mailbox" -Description "Sales Department"
+
+Once complete, hit enter and you will be prompted for the password for the user.  Please enter a network password and hit enter when you are prompted like so,
+Enter a Password for the User:
 
 ## PARAMETERS
 
@@ -288,21 +300,6 @@ Parameter Sets: NoMail, Copy, New
 Aliases: 
 
 Required: False
-Position: Named
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -Password
-{{Fill Password Description}}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases: 
-
-Required: True
 Position: Named
 Default value: None
 Accept pipeline input: True (ByPropertyName)

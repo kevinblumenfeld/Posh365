@@ -876,8 +876,18 @@
         <maml:para>1) Copies the properties of an existing AD User to a new AD User 2) Enables the ADUser as a Remote Mailbox in Exchange/Office 365 (can select -noMail switch to assign no mailbox) 3) Syncs changes to Office 365 with Azure AD Connect (AADC) 4) Grid of licenses are presented to user of script to select from and then applied to 365 User</maml:para>
         <maml:para></maml:para>
         <maml:para>Must be run on PowerShell 5+ (run as administrator) with the following tools installed: Windows 10/2016 comes pre-installed with PowerShell 5.1</maml:para>
-        <maml:para>  1) RSAT (Active Directory tools including AD Module for PowerShell)   2) Exchange Management Tools - Ensure the version matches exactly the version of Exchange installed onprem.    3) Run Select-Options once, to choose an initial options        this allows the scripts to lock in your specific options.    This should only need to be changed should any options need to be changed        It is best to choose the domain controller with which AD Connect is connected.        Need be, domain controllers can be hard coded (within AD Connect) to use a list of DCs (in order), so that the first in the list is typically the only DC used:        This is the process:           https://vanhybrid.com/2016/01/25/force-azure-ad-connect-to-connect-to-specific-domain-controllers-only/   4) Be sure to enclose in "Double Quotes" anything with special characters, for example, spaces, commas, hyphens etc.
-The examples below, illustrate this well.</maml:para>
+        <maml:para>  1) RSAT (Active Directory tools including AD Module for PowerShell)
+2) Exchange Management Tools - Ensure the version matches exactly the version of Exchange installed onprem.
+3) Run Select-Options once, to choose an initial options
+this allows the scripts to lock in your specific options.
+This should only need to be changed should any options need to be changed
+It is best to choose the domain controller with which AD Connect is connected.
+Need be, domain controllers can be hard coded (within AD Connect) to use a list of DCs (in order), so that the first in the list is typically the only DC used:
+This is the process:
+https://vanhybrid.com/2016/01/25/force-azure-ad-connect-to-connect-to-specific-domain-controllers-only/
+4) Be sure to enclose in "Double Quotes" anything with special characters, for example, spaces, commas, hyphens etc.
+The examples below, illustrate this well.
+</maml:para>
       </maml:description>
     </command:details>
     <maml:description>
@@ -1032,18 +1042,6 @@ The examples below, illustrate this well.</maml:para>
           <maml:name>OfficePhone</maml:name>
           <maml:Description>
             <maml:para>{{Fill OfficePhone Description}}</maml:para>
-          </maml:Description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
-          <dev:type>
-            <maml:name>String</maml:name>
-            <maml:uri />
-          </dev:type>
-          <dev:defaultValue>None</dev:defaultValue>
-        </command:parameter>
-        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
-          <maml:name>Password</maml:name>
-          <maml:Description>
-            <maml:para>{{Fill Password Description}}</maml:para>
           </maml:Description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
@@ -1293,18 +1291,6 @@ The examples below, illustrate this well.</maml:para>
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
-          <maml:name>Password</maml:name>
-          <maml:Description>
-            <maml:para>{{Fill Password Description}}</maml:para>
-          </maml:Description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
-          <dev:type>
-            <maml:name>String</maml:name>
-            <maml:uri />
-          </dev:type>
-          <dev:defaultValue>None</dev:defaultValue>
-        </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
           <maml:name>SAMPrefix</maml:name>
           <maml:Description>
@@ -1499,18 +1485,6 @@ The examples below, illustrate this well.</maml:para>
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
-          <maml:name>Password</maml:name>
-          <maml:Description>
-            <maml:para>{{Fill Password Description}}</maml:para>
-          </maml:Description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
-          <dev:type>
-            <maml:name>String</maml:name>
-            <maml:uri />
-          </dev:type>
-          <dev:defaultValue>None</dev:defaultValue>
-        </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
           <maml:name>SAMPrefix</maml:name>
           <maml:Description>
@@ -1585,18 +1559,6 @@ The examples below, illustrate this well.</maml:para>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>Resources</dev:defaultValue>
-        </command:parameter>
-        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
-          <maml:name>Password</maml:name>
-          <maml:Description>
-            <maml:para>{{Fill Password Description}}</maml:para>
-          </maml:Description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
-          <dev:type>
-            <maml:name>String</maml:name>
-            <maml:uri />
-          </dev:type>
-          <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
           <maml:name>Shared</maml:name>
@@ -1792,18 +1754,6 @@ The examples below, illustrate this well.</maml:para>
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
-        <maml:name>Password</maml:name>
-        <maml:Description>
-          <maml:para>{{Fill Password Description}}</maml:para>
-        </maml:Description>
-        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
-        <dev:type>
-          <maml:name>String</maml:name>
-          <maml:uri />
-        </dev:type>
-        <dev:defaultValue>None</dev:defaultValue>
-      </command:parameter>
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="True (ByPropertyName)" position="named" aliases="none">
         <maml:name>SAMPrefix</maml:name>
         <maml:Description>
@@ -1923,17 +1873,27 @@ The examples below, illustrate this well.</maml:para>
     <command:examples>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
-        <dev:code>When using the EmailDomain parameter, simply type -EmailDomain, then hit the space-bar, then tab through the available email domains.  The email domains are dynamically acquired from the environment where the script is run.
-This is only available/needed when using the NoMail switch.</dev:code>
+        <dev:code />
         <dev:remarks>
-          <maml:para>New-UserToCloud -UserToCopy SmithJ -NoMail -FirstName Naomi -LastName Queen -StorePhone "777-222-3333,234" -MobilePhone "404-234-5555" -Description "Naomi's Description" -Prefix NN -Password "Pass1255!!!$" -EmailDomain contoso.com</maml:para>
+          <maml:para></maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
-        <dev:code>Notice the -Shared switch (below).  Use this to create a shared mailbox.  An Exchange Online License is needed but is automatically removed after 6 minutes</dev:code>
+        <dev:code>When using the UPNSuffix parameter, simply type -UPNSuffix, then hit the space-bar, then tab through the available email domains.  The email domains are dynamically acquired from the environment where the script is run.  They 
+This is only available/needed when using the *NoMail* switch.</dev:code>
         <dev:remarks>
-          <maml:para>New-UserToCloud -Shared -SharedMailboxEmailAlias Shared -Description "Shared's Description" -Password "Pass1255!!!$"</maml:para>
+          <maml:para>New-UserToCloud -UserToCopy SmithJ -NoMail -FirstName Naomi -LastName Queen -StorePhone "777-222-3333,234" -MobilePhone "404-234-5555" -Description "Naomi's Description" -Prefix NN -UPNSuffix contoso.com</maml:para>
+          <maml:para>Once complete, hit enter and you will be prompted for the password for the user.  Please enter a network password and hit enter when you are prompted like so, Enter a Password for the User:</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
+        <dev:code>Notice the -Shared switch (below).  Use this to create a shared mailbox.  An Exchange Online License is needed but is automatically removed after 6 minutes
+The SharedMailboxEmailAlias creates the email address.  In this example SalesDept@contoso.com is the desired email address, there for you would enter "SalesDept"</dev:code>
+        <dev:remarks>
+          <maml:para>New-UserToCloud -Shared -SharedMailboxEmailAlias "SalesDept" -DisplayName "Sales Dept Shared Mailbox" -Description "Sales Department"</maml:para>
+          <maml:para>Once complete, hit enter and you will be prompted for the password for the user.  Please enter a network password and hit enter when you are prompted like so, Enter a Password for the User:</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
