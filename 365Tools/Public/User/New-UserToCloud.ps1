@@ -144,7 +144,7 @@ Function New-UserToCloud {
         $DisplayNameFormat = Get-Content ($RootPath + "$($user).DisplayNameFormat")     
 
         #######################################
-        #   Connect to On Premises Exchange   #
+        #              Connect                #
         #######################################
         try {
             (Get-OnPremExchangeServer -erroraction stop)[0] | Out-Null
