@@ -27,7 +27,7 @@ Detailed help with examples can be found here:
 https://github.com/kevinblumenfeld/365Tools/blob/master/365Tools/docs/Set-CloudLicense.md  
 
 # New-UserToCloud  
-Creates new AD user and coresponding 365 mailbox with one command  
+Creates new AD user and corresponding 365 mailbox with one command  
 Shared mailboxes can be created in the same manner with (with -shared switch)  
 Alternatively, can copy the properties of an existing AD User to a new AD User and creates its Office 365 Mailbox  
 Syncs changes to Office 365 with Azure AD Connect (AADC)  
