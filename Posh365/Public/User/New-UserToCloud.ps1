@@ -366,7 +366,6 @@ Function New-UserToCloud {
             else {
                 $name = $LastName + ", " + $FirstName
             }
-            $userprincipalname = $LastName + "-" + $FirstName + "@" + $PsBoundParameters[$ParamName_UPNSuffix]
             Set-ADUser -Server $domainController -Identity $SamAccountName -userprincipalname $userprincipalname
         }
 
