@@ -36,7 +36,7 @@ Grid of licenses are presented to user of script to select from and then applied
 Detailed help with examples can be found here:  
 https://github.com/kevinblumenfeld/365Tools/blob/master/365Tools/docs/New-UserToCloud.md  
 
-#SYNOPSIS  
+# SYNOPSIS  
 
 1.	Connect-ToExchange - on premise connections to on prem Exchange   
 2.	Connect-ToCloud – connects to all 365 services incl support for mfa also azure  
