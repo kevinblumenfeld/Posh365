@@ -36,4 +36,33 @@ Grid of licenses are presented to user of script to select from and then applied
 Detailed help with examples can be found here:  
 https://github.com/kevinblumenfeld/365Tools/blob/master/365Tools/docs/New-UserToCloud.md  
 
+#SYNOPSIS  
+
+1.	Connect-ToExchange - on premise connections to on prem Exchange   
+2.	Connect-ToCloud – connects to all 365 services incl support for mfa also azure  
+3.	Convert-ToShared – Converts a cloud user mailbox/ad attributes to a shared mailbox then removes licences  
+4.	Set-CloudLicense – fairly sophisticated licensing function to license one, many or all mailbox in 365.  Can migrate licenses between skus also  
+5.	Get-CloudLicense – Breakdown of a user’s license by SKU and respective options and if enabled or disabled for said user.  
+6.	Rename-SamAccount – If a SamAccountName needs to be renamed of a mail-enabled user, this adjusts all the proper attributes  
+7.	Rename-User – When a person’s name changes due to marriage etc. this properly adjusts attributes and unchecks and rechecks email address policy (auto apply) to force email address addition.  
+8.	Sync-ADConnect – Forces a sync of AD Connect from any computer on the network  
+9.	Sync-AD – Replicates AD from each domain controller in the forest.  
+10.	New-UserToCloud – One command does this..  
+a.	Creates an AD User either newly or by copying an existing users attributes (similar to “Copy” in ADUC – all group memberships and the like)
+b.	User is prompted to select an OU from Out-GridView 
+c.	Creates connected mailbox for said user in Office 365  
+d.	User is prompted with Out-GridView with all SKUs & Options that is assigned to the user  
+e.	Forces a Sync of AD Connect – if busy it waits till AD Connect will accept a sync command and does so  
+f.	With -Shared switch the mailbox is created/converted to a shared mailbox and licenses are removed 
+g.	The first time the user uses New-UserToCloud this script they are auto-prompted to select options with these commands:  
+i.	Select-ADConnectServer - self explanatory  
+ii.	Select-DisplayNameFormat – where they choose Firstname Lastname or Lastname, Firstname for displayname in ADUC (what you see looking at a user in ADUC without opening them)  
+iii.	Select-DomainController – It is recommended to select the DC that AD Connect looks too.. AD Connect can be set to look in order and this is explained in HELP of New-UserToCloud  
+iv.	Select-ExchangeServer – self explanatory  
+v.	Select-TargetAddressSuffix – this is here just in case the companies accepted domains contains more than one targetaddress suffix for example, contoso.mail.onmicrosoft.com & fabrikam.mail.onmicrosoft.com  
+vi.	All choices are saved to text files and can be called again by function name or by simply calling Select-Options, which will allow the user to run thru each of the above’s Out-Gridviews  
+11.	Get-MfaStats – Will take pipeline input of upn(s) and reveal the last time the Managed Folder Assistant serviced their mailbox (or archive mailbox), count of what in mailbox was tagged/deleted what in dumpster was tagged/deleted – can also request MFA to process the mailbox.  This data is usually hard to interpret as it is in XML.. this renders nicely for export or screenviewing  
+12.	Get-RetentionLinks – This gets all RetentionPolicies and their respective Retention Tags (linked) shows tag linked, age, action, type enabled and comment  
+
+
 **Several more functions are included and their help will be detailed here in the near future.**
