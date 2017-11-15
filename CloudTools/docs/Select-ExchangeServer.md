@@ -1,11 +1,11 @@
 ---
-external help file: 365Tools-help.xml
-Module Name: 365Tools
+external help file: CloudTools-help.xml
+Module Name: CloudTools
 online version: 
 schema: 2.0.0
 ---
 
-# Select-DisplayNameFormat
+# Select-ExchangeServer
 
 ## SYNOPSIS
 {{Fill in the Synopsis}}
@@ -13,7 +13,7 @@ schema: 2.0.0
 ## SYNTAX
 
 ```
-Select-DisplayNameFormat [<CommonParameters>]
+Select-ExchangeServer [<CommonParameters>]
 ```
 
 ## DESCRIPTION

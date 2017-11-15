@@ -1,19 +1,19 @@
 ---
-external help file: 365Tools-help.xml
-Module Name: 365Tools
+external help file: CloudTools-help.xml
+Module Name: CloudTools
 online version: 
 schema: 2.0.0
 ---
 
-# Rename-User
+# Get-MfaStats
 
 ## SYNOPSIS
+{{Fill in the Synopsis}}
 
 ## SYNTAX
 
 ```
-Rename-User [-UsersSamAccount] <String> [-FutureFirstName] <String> [-FutureLastName] <String>
- [<CommonParameters>]
+Get-MfaStats [-userprincipalname] <String[]> [-Archive] [-StartMFA] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -21,55 +21,57 @@ Rename-User [-UsersSamAccount] <String> [-FutureFirstName] <String> [-FutureLast
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
+### Example 1
+```
+PS C:\> {{ Add example code here }}
 ```
 
-```
+{{ Add example description here }}
 
 ## PARAMETERS
 
-### -UsersSamAccount
-{{Fill UsersSamAccount Description}}
+### -Archive
+{{Fill Archive Description}}
 
 ```yaml
-Type: String
+Type: SwitchParameter
 Parameter Sets: (All)
 Aliases: 
 
-Required: True
-Position: 1
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -FutureFirstName
-{{Fill FutureFirstName Description}}
+### -StartMFA
+{{Fill StartMFA Description}}
 
 ```yaml
-Type: String
+Type: SwitchParameter
 Parameter Sets: (All)
 Aliases: 
 
-Required: True
-Position: 2
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -FutureLastName
-{{Fill FutureLastName Description}}
+### -userprincipalname
+{{Fill userprincipalname Description}}
 
 ```yaml
-Type: String
+Type: String[]
 Parameter Sets: (All)
 Aliases: 
 
 Required: True
-Position: 3
+Position: 0
 Default value: None
-Accept pipeline input: False
+Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
 ```
 
@@ -78,7 +80,11 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
+### System.String[]
+
 ## OUTPUTS
+
+### System.Object
 
 ## NOTES
 

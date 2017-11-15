@@ -1,19 +1,18 @@
 ---
-external help file: 365Tools-help.xml
-Module Name: 365Tools
+external help file: CloudTools-help.xml
+Module Name: CloudTools
 online version: 
 schema: 2.0.0
 ---
 
-# Sync-AD
+# Convert-ToShared
 
 ## SYNOPSIS
-{{Fill in the Synopsis}}
 
 ## SYNTAX
 
 ```
-Sync-AD [<CommonParameters>]
+Convert-ToShared [-User] <String[]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -21,25 +20,39 @@ Sync-AD [<CommonParameters>]
 
 ## EXAMPLES
 
-### Example 1
-```
-PS C:\> {{ Add example code here }}
+### -------------------------- EXAMPLE 1 --------------------------
 ```
 
-{{ Add example description here }}
+```
+
+### -------------------------- EXAMPLE 2 --------------------------
+```
+
+```
 
 ## PARAMETERS
+
+### -User
+{{Fill User Description}}
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases: 
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: True (ByValue)
+Accept wildcard characters: False
+```
 
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
-
-### System.Object
 
 ## NOTES
 

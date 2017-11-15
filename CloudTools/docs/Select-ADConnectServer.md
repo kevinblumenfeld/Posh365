@@ -1,11 +1,11 @@
 ---
-external help file: 365Tools-help.xml
-Module Name: 365Tools
+external help file: CloudTools-help.xml
+Module Name: CloudTools
 online version: 
 schema: 2.0.0
 ---
 
-# Select-ExchangeServer
+# Select-ADConnectServer
 
 ## SYNOPSIS
 {{Fill in the Synopsis}}
@@ -13,7 +13,7 @@ schema: 2.0.0
 ## SYNTAX
 
 ```
-Select-ExchangeServer [<CommonParameters>]
+Select-ADConnectServer [<CommonParameters>]
 ```
 
 ## DESCRIPTION

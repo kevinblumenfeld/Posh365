@@ -1,6 +1,6 @@
 ---
-external help file: 365Tools-help.xml
-Module Name: 365Tools
+external help file: CloudTools-help.xml
+Module Name: CloudTools
 online version: 
 schema: 2.0.0
 ---
@@ -56,7 +56,7 @@ New-UserToCloud [-New] -FirstName <String> -LastName <String> [-OfficePhone <Str
 ### NoMail
 ```
 New-UserToCloud -Password <String> [-Country <String>] [-Office <String>] [-Title <String>]
- [-Department <String>] [-Company <String>] [-OUSearch <String>] -EmailDomain <String> [<CommonParameters>]
+ [-Department <String>] [-Company <String>] [-OUSearch <String>] [-EmailDomain] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -81,171 +81,6 @@ New-UserToCloud -Shared -SharedMailboxEmailAlias Shared -Description "Shared's D
 
 ## PARAMETERS
 
-### -UserToCopy
-{{Fill UserToCopy Description}}
-
-```yaml
-Type: String
-Parameter Sets: Copy
-Aliases: 
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -Shared
-{{Fill Shared Description}}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: Shared
-Aliases: 
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -New
-{{Fill New Description}}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: New
-Aliases: 
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -FirstName
-{{Fill FirstName Description}}
-
-```yaml
-Type: String
-Parameter Sets: Copy, New
-Aliases: 
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -LastName
-{{Fill LastName Description}}
-
-```yaml
-Type: String
-Parameter Sets: Copy, New
-Aliases: 
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -SharedMailboxEmailAlias
-{{Fill SharedMailboxEmailAlias Description}}
-
-```yaml
-Type: String
-Parameter Sets: Shared
-Aliases: 
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -DisplayName
-{{Fill DisplayName Description}}
-
-```yaml
-Type: String
-Parameter Sets: Shared
-Aliases: 
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -OfficePhone
-{{Fill OfficePhone Description}}
-
-```yaml
-Type: String
-Parameter Sets: Copy, New
-Aliases: 
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -MobilePhone
-{{Fill MobilePhone Description}}
-
-```yaml
-Type: String
-Parameter Sets: Copy, New
-Aliases: 
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -Description
-{{Fill Description Description}}
-
-```yaml
-Type: String
-Parameter Sets: Copy, Shared, New
-Aliases: 
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -StreetAddress
-{{Fill StreetAddress Description}}
-
-```yaml
-Type: String
-Parameter Sets: New
-Aliases: 
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
 ### -City
 {{Fill City Description}}
 
@@ -258,111 +93,6 @@ Required: False
 Position: Named
 Default value: None
 Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -State
-{{Fill State Description}}
-
-```yaml
-Type: String
-Parameter Sets: New
-Aliases: 
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -Zip
-{{Fill Zip Description}}
-
-```yaml
-Type: String
-Parameter Sets: New
-Aliases: 
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -SAMPrefix
-{{Fill SAMPrefix Description}}
-
-```yaml
-Type: String
-Parameter Sets: Copy, New
-Aliases: 
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -Password
-{{Fill Password Description}}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases: 
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -NoMail
-{{Fill NoMail Description}}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: Copy, New
-Aliases: 
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -OUSearch
-{{Fill OUSearch Description}}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases: 
-
-Required: False
-Position: Named
-Default value: Resources
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -EmailDomain
-{{Fill EmailDomain Description}}
-
-```yaml
-Type: String
-Parameter Sets: NoMail
-Aliases: 
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
@@ -411,6 +141,141 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
+### -Description
+{{Fill Description Description}}
+
+```yaml
+Type: String
+Parameter Sets: Copy, Shared, New
+Aliases: 
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -DisplayName
+{{Fill DisplayName Description}}
+
+```yaml
+Type: String
+Parameter Sets: Shared
+Aliases: 
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -EmailDomain
+{{Fill EmailDomain Description}}
+
+```yaml
+Type: String
+Parameter Sets: NoMail
+Aliases: 
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -FirstName
+{{Fill FirstName Description}}
+
+```yaml
+Type: String
+Parameter Sets: Copy, New
+Aliases: 
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -LastName
+{{Fill LastName Description}}
+
+```yaml
+Type: String
+Parameter Sets: Copy, New
+Aliases: 
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -MobilePhone
+{{Fill MobilePhone Description}}
+
+```yaml
+Type: String
+Parameter Sets: Copy, New
+Aliases: 
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -New
+{{Fill New Description}}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: New
+Aliases: 
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -NoMail
+{{Fill NoMail Description}}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: Copy, New
+Aliases: 
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -OUSearch
+{{Fill OUSearch Description}}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: Named
+Default value: Resources
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
 ### -Office
 {{Fill Office Description}}
 
@@ -426,12 +291,147 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
+### -OfficePhone
+{{Fill OfficePhone Description}}
+
+```yaml
+Type: String
+Parameter Sets: Copy, New
+Aliases: 
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -Password
+{{Fill Password Description}}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases: 
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -SAMPrefix
+{{Fill SAMPrefix Description}}
+
+```yaml
+Type: String
+Parameter Sets: Copy, New
+Aliases: 
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -Shared
+{{Fill Shared Description}}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: Shared
+Aliases: 
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -SharedMailboxEmailAlias
+{{Fill SharedMailboxEmailAlias Description}}
+
+```yaml
+Type: String
+Parameter Sets: Shared
+Aliases: 
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -State
+{{Fill State Description}}
+
+```yaml
+Type: String
+Parameter Sets: New
+Aliases: 
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -StreetAddress
+{{Fill StreetAddress Description}}
+
+```yaml
+Type: String
+Parameter Sets: New
+Aliases: 
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
 ### -Title
 {{Fill Title Description}}
 
 ```yaml
 Type: String
 Parameter Sets: Copy, New, NoMail
+Aliases: 
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -UserToCopy
+{{Fill UserToCopy Description}}
+
+```yaml
+Type: String
+Parameter Sets: Copy
+Aliases: 
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -Zip
+{{Fill Zip Description}}
+
+```yaml
+Type: String
+Parameter Sets: New
 Aliases: 
 
 Required: False

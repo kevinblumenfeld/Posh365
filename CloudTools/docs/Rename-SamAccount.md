@@ -1,19 +1,18 @@
 ---
-external help file: 365Tools-help.xml
-Module Name: 365Tools
+external help file: CloudTools-help.xml
+Module Name: CloudTools
 online version: 
 schema: 2.0.0
 ---
 
-# Sync-ADConnect
+# Rename-SamAccount
 
 ## SYNOPSIS
-{{Fill in the Synopsis}}
 
 ## SYNTAX
 
 ```
-Sync-ADConnect [-Initial] [[-Sleep] <Int32>] [<CommonParameters>]
+Rename-SamAccount [-CurrentSamAccountName] <Object> [-FutureSamAccountName] <Object> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -21,40 +20,38 @@ Sync-ADConnect [-Initial] [[-Sleep] <Int32>] [<CommonParameters>]
 
 ## EXAMPLES
 
-### Example 1
-```
-PS C:\> {{ Add example code here }}
+### -------------------------- EXAMPLE 1 --------------------------
 ```
 
-{{ Add example description here }}
+```
 
 ## PARAMETERS
 
-### -Initial
-{{Fill Initial Description}}
+### -CurrentSamAccountName
+{{Fill CurrentSamAccountName Description}}
 
 ```yaml
-Type: SwitchParameter
+Type: Object
 Parameter Sets: (All)
 Aliases: 
 
-Required: False
-Position: Named
+Required: True
+Position: 1
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Sleep
-{{Fill Sleep Description}}
+### -FutureSamAccountName
+{{Fill FutureSamAccountName Description}}
 
 ```yaml
-Type: Int32
+Type: Object
 Parameter Sets: (All)
 Aliases: 
 
-Required: False
-Position: 0
+Required: True
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -65,11 +62,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
-
-### System.Object
 
 ## NOTES
 

@@ -1,18 +1,19 @@
 ---
-external help file: 365Tools-help.xml
-Module Name: 365Tools
+external help file: CloudTools-help.xml
+Module Name: CloudTools
 online version: 
 schema: 2.0.0
 ---
 
-# Rename-SamAccount
+# Rename-User
 
 ## SYNOPSIS
 
 ## SYNTAX
 
 ```
-Rename-SamAccount [-CurrentSamAccountName] <Object> [-FutureSamAccountName] <Object> [<CommonParameters>]
+Rename-User [-UsersSamAccount] <String> [-FutureFirstName] <String> [-FutureLastName] <String>
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -27,11 +28,11 @@ Rename-SamAccount [-CurrentSamAccountName] <Object> [-FutureSamAccountName] <Obj
 
 ## PARAMETERS
 
-### -CurrentSamAccountName
-{{Fill CurrentSamAccountName Description}}
+### -UsersSamAccount
+{{Fill UsersSamAccount Description}}
 
 ```yaml
-Type: Object
+Type: String
 Parameter Sets: (All)
 Aliases: 
 
@@ -42,16 +43,31 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -FutureSamAccountName
-{{Fill FutureSamAccountName Description}}
+### -FutureFirstName
+{{Fill FutureFirstName Description}}
 
 ```yaml
-Type: Object
+Type: String
 Parameter Sets: (All)
 Aliases: 
 
 Required: True
 Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -FutureLastName
+{{Fill FutureLastName Description}}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases: 
+
+Required: True
+Position: 3
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
