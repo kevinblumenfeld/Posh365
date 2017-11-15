@@ -17,17 +17,17 @@ schema: 2.0.0
 Must be run on PowerShell 5+ (run as administrator) with the following tools installed:
 Windows 10/2016 comes pre-installed with PowerShell 5.1
 
-  1) RSAT (Active Directory tools including AD Module for PowerShell)
-  2) Exchange Management Tools - Ensure the version matches exactly the version of Exchange installed onprem. 
-  3) Run Select-Options once, to choose an initial options
-       this allows the scripts to lock in your specific options. 
-  This should only need to be changed should any options need to be changed
-       It is best to choose the domain controller with which AD Connect is connected.
-       Need be, domain controllers can be hard coded (within AD Connect) to use a list of DCs (in order), so that the first in the list is typically the only DC used:
-       This is the process:
-          https://vanhybrid.com/2016/01/25/force-azure-ad-connect-to-connect-to-specific-domain-controllers-only/
+  1) RSAT (Active Directory tools including AD Module for PowerShell)  
+  2) Exchange Management Tools - Ensure the version matches exactly the version of Exchange installed onprem.   
+  3) Run Select-Options once, to choose an initial options  
+       this allows the scripts to lock in your specific options.   
+  This should only need to be changed should any options need to be changed  
+       It is best to choose the domain controller with which AD Connect is connected.   
+       Need be, domain controllers can be hard coded (within AD Connect) to use a list of DCs (in order), so that the first in the list is typically the only DC used:  
+       This is the process:  
+          https://vanhybrid.com/2016/01/25/force-azure-ad-connect-to-connect-to-specific-domain-controllers-only/  
   4) Be sure to enclose in "Double Quotes" anything with special characters, for example, spaces, commas, hyphens etc.  
-  The examples below, illustrate this well.
+  The examples below, illustrate this well.  
 
 ## SYNTAX
 
