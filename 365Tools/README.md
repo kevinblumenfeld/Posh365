@@ -36,4 +36,4 @@ Grid of licenses are presented to user of script to select from and then applied
 Detailed help with examples can be found here:  
 https://github.com/kevinblumenfeld/365Tools/blob/master/365Tools/docs/New-UserToCloud.md  
 
-**Several more functions are included and will be detailed in the near future.**
+**Several more functions are included and their help will be detailed here in the near future.**
