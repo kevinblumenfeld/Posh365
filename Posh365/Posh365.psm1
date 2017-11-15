@@ -1,4 +1,4 @@
-
+#.ExternalHelp Posh365-help.xml
 # Thank you to https://github.com/ramblingcookiemonster for this module and methodology
 # Get public and private function definition files.
 $Public = Get-ChildItem $PSScriptRoot\Public\*.ps1 -Recurse -ErrorAction SilentlyContinue
