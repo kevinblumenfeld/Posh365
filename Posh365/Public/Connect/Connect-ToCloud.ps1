@@ -1,6 +1,3 @@
-<#
-.EXTERNALHELP 365Tools-help.xml
-#>
 function Connect-ToCloud {
     
  

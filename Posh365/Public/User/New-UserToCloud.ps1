@@ -2,17 +2,21 @@ Function New-UserToCloud {
 
     [CmdletBinding()]
     Param (
-        [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]  
+        [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
+        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]  
         [string] $UserToCopy,
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]   
         [switch] $Shared,
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
         [switch] $New,
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
         [string] $FirstName,
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
         [string] $LastName,
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
         [ValidateScript( {if ($_ -notlike "* *") {Return $True} else {Write-Host "Please choose an SharedMailboxEmailAlias without spaces"}})]
@@ -21,24 +25,32 @@ Function New-UserToCloud {
         [string] $DisplayName,
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
         [string] $OfficePhone,
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
         [string] $MobilePhone,
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
+        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
         [string] $Description,
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
         [string] $StreetAddress,
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
         [string] $City,
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
         [string] $State,
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
         [string] $Zip,
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
         [ValidateLength(1, 2)]
         [string] $SAMPrefix,
         [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
@@ -48,6 +60,7 @@ Function New-UserToCloud {
         [string] $Password,
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
         [switch] $NoMail,
         [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
@@ -79,7 +92,7 @@ Function New-UserToCloud {
         
         
         # Set the dynamic parameters' name
-        $ParamName_emaildomain = 'EmailDomain'
+        $ParamName_UPNSuffix = 'UPNSuffix'
         # Create the collection of attributes
         $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
         # Create and set the parameters' attributes
@@ -97,8 +110,8 @@ Function New-UserToCloud {
         # Add the ValidateSet to the attributes collection
         $AttributeCollection.Add($ValidateSetAttribute)
         # Create and return the dynamic parameter
-        $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParamName_emaildomain, [string], $AttributeCollection)
-        $RuntimeParameterDictionary.Add($ParamName_emaildomain, $RuntimeParameter)
+        $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParamName_UPNSuffix, [string], $AttributeCollection)
+        $RuntimeParameterDictionary.Add($ParamName_UPNSuffix, $RuntimeParameter)
 
         return $RuntimeParameterDictionary
 
@@ -108,9 +121,7 @@ Function New-UserToCloud {
 
         $RootPath = $env:USERPROFILE + "\ps\"
         $User = $env:USERNAME
-        $GuidFolder = Join-Path $env:TEMP ([Guid]::NewGuid().tostring())
-        New-Item -Path $GuidFolder -ItemType Directory
-       
+
         if (!(Test-Path $RootPath)) {
             try {
                 New-Item -ItemType Directory -Path $RootPath -ErrorAction STOP | Out-Null
@@ -164,10 +175,13 @@ Function New-UserToCloud {
                 where {$_.canonicalname -match $OUSearch -or $_.canonicalname -match $OUSearch2
             } | Select canonicalname, distinguishedname| sort canonicalname | 
                 Out-GridView -PassThru -Title "Choose the OU in which to create the new user, then click OK").distinguishedname
-                
-        [string[]]$optionsToAdd = (Get-CloudSkuTable -all | Out-GridView -Title "Options to Add" -PassThru)
+        if (!$NoMail) {
+            $GuidFolder = Join-Path $env:TEMP ([Guid]::NewGuid().tostring())
+            New-Item -Path $GuidFolder -ItemType Directory
+            [string[]]$optionsToAdd = (Get-CloudSkuTable -all | Out-GridView -Title "Options to Add" -PassThru)
+            Watch-ToLicense -GuidFolder $GuidFolder -optionsToAdd $optionsToAdd
+        }        
 
-        Watch-ToLicense -GuidFolder $GuidFolder -optionsToAdd $optionsToAdd
     }
 
     Process {
@@ -337,13 +351,13 @@ Function New-UserToCloud {
         Else {
             $LastName = $LastName.replace(" ", "")
             $FirstName = $FirstName.replace(" ", "")
-            $userprincipalname = $LastName + "-" + $FirstName + "@" + $PsBoundParameters[$ParamName_emaildomain]
+            $userprincipalname = $LastName + "-" + $FirstName + "@" + $PsBoundParameters[$ParamName_UPNSuffix]
             
             $i = 2
             $F = $null
             while (Get-ADUser -LDAPfilter "(userprincipalname=$userprincipalname)") {
                 $F = $FirstName + $i
-                $userprincipalname = $LastName + "-" + $F + "@" + $PsBoundParameters[$ParamName_emaildomain]
+                $userprincipalname = $LastName + "-" + $F + "@" + $PsBoundParameters[$ParamName_UPNSuffix]
                 $i++
             }
             if ($F) {
@@ -352,7 +366,7 @@ Function New-UserToCloud {
             else {
                 $name = $LastName + ", " + $FirstName
             }
-            $userprincipalname = $LastName + "-" + $FirstName + "@" + $PsBoundParameters[$ParamName_emaildomain]
+            $userprincipalname = $LastName + "-" + $FirstName + "@" + $PsBoundParameters[$ParamName_UPNSuffix]
             Set-ADUser -Server $domainController -Identity $SamAccountName -userprincipalname $userprincipalname
         }
 
@@ -400,12 +414,14 @@ Function New-UserToCloud {
         ########################################
         # Stop the Licensing Watcher Function  #
         ########################################
-        Start-Job -Name DeleteGuidFolder {
-            $GuidFolder = $args[0]
-            New-Item -Path $GuidFolder -Name "ALLDONE" -Type File
-            while ((Get-ChildItem -Path $GuidFolder).count -gt 0) {
-            }
-            Remove-Item -Path $GuidFolder -Confirm:$False -force -verbose
-        } -ArgumentList $GuidFolder
+        if (!$NoMail) {
+            Start-Job -Name DeleteGuidFolder {
+                $GuidFolder = $args[0]
+                New-Item -Path $GuidFolder -Name "ALLDONE" -Type File
+                while ((Get-ChildItem -Path $GuidFolder).count -gt 0) {
+                }
+                Remove-Item -Path $GuidFolder -Confirm:$False -force -verbose
+            } -ArgumentList $GuidFolder
+        }
     }
 }    
