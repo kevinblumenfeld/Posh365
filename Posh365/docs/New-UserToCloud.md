@@ -31,6 +31,15 @@ Windows 10/2016 comes pre-installed with PowerShell 5.1
 
 ## SYNTAX
 
+### NoMail
+```
+New-UserToCloud [-UserToCopy <String>] [-New] -FirstName <String> -LastName <String> [-OfficePhone <String>]
+ [-MobilePhone <String>] [-Description <String>] [-StreetAddress <String>] [-City <String>] [-State <String>]
+ [-Zip <String>] [-SAMPrefix <String>] -Password <String> [-NoMail] [-Country <String>] [-Office <String>]
+ [-Title <String>] [-Department <String>] [-Company <String>] [-OUSearch <String>] -UPNSuffix <String>
+ [<CommonParameters>]
+```
+
 ### Copy
 ```
 New-UserToCloud -UserToCopy <String> -FirstName <String> -LastName <String> [-OfficePhone <String>]
@@ -51,12 +60,6 @@ New-UserToCloud [-New] -FirstName <String> -LastName <String> [-OfficePhone <Str
  [-Description <String>] [-StreetAddress <String>] [-City <String>] [-State <String>] [-Zip <String>]
  [-SAMPrefix <String>] -Password <String> [-NoMail] [-Country <String>] [-Office <String>] [-Title <String>]
  [-Department <String>] [-Company <String>] [-OUSearch <String>] [<CommonParameters>]
-```
-
-### NoMail
-```
-New-UserToCloud -Password <String> [-Country <String>] [-Office <String>] [-Title <String>]
- [-Department <String>] [-Company <String>] [-OUSearch <String>] [-EmailDomain] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -86,7 +89,7 @@ New-UserToCloud -Shared -SharedMailboxEmailAlias Shared -Description "Shared's D
 
 ```yaml
 Type: String
-Parameter Sets: New
+Parameter Sets: NoMail, New
 Aliases: 
 
 Required: False
@@ -101,7 +104,7 @@ Accept wildcard characters: False
 
 ```yaml
 Type: String
-Parameter Sets: Copy, New, NoMail
+Parameter Sets: NoMail, Copy, New
 Aliases: 
 
 Required: False
@@ -116,7 +119,7 @@ Accept wildcard characters: False
 
 ```yaml
 Type: String
-Parameter Sets: Copy, New, NoMail
+Parameter Sets: NoMail, Copy, New
 Aliases: 
 
 Required: False
@@ -131,7 +134,7 @@ Accept wildcard characters: False
 
 ```yaml
 Type: String
-Parameter Sets: Copy, New, NoMail
+Parameter Sets: NoMail, Copy, New
 Aliases: 
 
 Required: False
@@ -146,7 +149,7 @@ Accept wildcard characters: False
 
 ```yaml
 Type: String
-Parameter Sets: Copy, Shared, New
+Parameter Sets: (All)
 Aliases: 
 
 Required: False
@@ -171,27 +174,12 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
-### -EmailDomain
-{{Fill EmailDomain Description}}
-
-```yaml
-Type: String
-Parameter Sets: NoMail
-Aliases: 
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -FirstName
 {{Fill FirstName Description}}
 
 ```yaml
 Type: String
-Parameter Sets: Copy, New
+Parameter Sets: NoMail, Copy, New
 Aliases: 
 
 Required: True
@@ -206,7 +194,7 @@ Accept wildcard characters: False
 
 ```yaml
 Type: String
-Parameter Sets: Copy, New
+Parameter Sets: NoMail, Copy, New
 Aliases: 
 
 Required: True
@@ -221,7 +209,7 @@ Accept wildcard characters: False
 
 ```yaml
 Type: String
-Parameter Sets: Copy, New
+Parameter Sets: NoMail, Copy, New
 Aliases: 
 
 Required: False
@@ -236,7 +224,7 @@ Accept wildcard characters: False
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: New
+Parameter Sets: NoMail, New
 Aliases: 
 
 Required: False
@@ -251,7 +239,7 @@ Accept wildcard characters: False
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: Copy, New
+Parameter Sets: NoMail, Copy, New
 Aliases: 
 
 Required: False
@@ -281,7 +269,7 @@ Accept wildcard characters: False
 
 ```yaml
 Type: String
-Parameter Sets: Copy, New, NoMail
+Parameter Sets: NoMail, Copy, New
 Aliases: 
 
 Required: False
@@ -296,7 +284,7 @@ Accept wildcard characters: False
 
 ```yaml
 Type: String
-Parameter Sets: Copy, New
+Parameter Sets: NoMail, Copy, New
 Aliases: 
 
 Required: False
@@ -326,7 +314,7 @@ Accept wildcard characters: False
 
 ```yaml
 Type: String
-Parameter Sets: Copy, New
+Parameter Sets: NoMail, Copy, New
 Aliases: 
 
 Required: False
@@ -371,7 +359,7 @@ Accept wildcard characters: False
 
 ```yaml
 Type: String
-Parameter Sets: New
+Parameter Sets: NoMail, New
 Aliases: 
 
 Required: False
@@ -386,7 +374,7 @@ Accept wildcard characters: False
 
 ```yaml
 Type: String
-Parameter Sets: New
+Parameter Sets: NoMail, New
 Aliases: 
 
 Required: False
@@ -401,7 +389,7 @@ Accept wildcard characters: False
 
 ```yaml
 Type: String
-Parameter Sets: Copy, New, NoMail
+Parameter Sets: NoMail, Copy, New
 Aliases: 
 
 Required: False
@@ -413,6 +401,18 @@ Accept wildcard characters: False
 
 ### -UserToCopy
 {{Fill UserToCopy Description}}
+
+```yaml
+Type: String
+Parameter Sets: NoMail
+Aliases: 
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
 
 ```yaml
 Type: String
@@ -431,13 +431,28 @@ Accept wildcard characters: False
 
 ```yaml
 Type: String
-Parameter Sets: New
+Parameter Sets: NoMail, New
 Aliases: 
 
 Required: False
 Position: Named
 Default value: None
 Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -UPNSuffix
+{{Fill UPNSuffix Description}}
+
+```yaml
+Type: String
+Parameter Sets: NoMail
+Aliases: 
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
