@@ -1,19 +1,18 @@
 ---
-external help file: CloudTools-help.xml
-Module Name: CloudTools
+external help file: Posh365-help.xml
+Module Name: Posh365
 online version: 
 schema: 2.0.0
 ---
 
-# Connect-ToExchange
+# Rename-SamAccount
 
 ## SYNOPSIS
-{{Fill in the Synopsis}}
 
 ## SYNTAX
 
 ```
-Connect-ToExchange [[-ExchangeServer] <Object>] [-DeleteExchangeCreds] [-ViewEntireForest] [<CommonParameters>]
+Rename-SamAccount [-CurrentSamAccountName] <Object> [-FutureSamAccountName] <Object> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -21,55 +20,38 @@ Connect-ToExchange [[-ExchangeServer] <Object>] [-DeleteExchangeCreds] [-ViewEnt
 
 ## EXAMPLES
 
-### Example 1
-```
-PS C:\> {{ Add example code here }}
+### -------------------------- EXAMPLE 1 --------------------------
 ```
 
-{{ Add example description here }}
+```
 
 ## PARAMETERS
 
-### -DeleteExchangeCreds
-{{Fill DeleteExchangeCreds Description}}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: 
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ExchangeServer
-{{Fill ExchangeServer Description}}
+### -CurrentSamAccountName
+{{Fill CurrentSamAccountName Description}}
 
 ```yaml
 Type: Object
 Parameter Sets: (All)
 Aliases: 
 
-Required: False
-Position: 0
+Required: True
+Position: 1
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ViewEntireForest
-{{Fill ViewEntireForest Description}}
+### -FutureSamAccountName
+{{Fill FutureSamAccountName Description}}
 
 ```yaml
-Type: SwitchParameter
+Type: Object
 Parameter Sets: (All)
 Aliases: 
 
-Required: False
-Position: Named
+Required: True
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -80,11 +62,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
-
-### System.Object
 
 ## NOTES
 

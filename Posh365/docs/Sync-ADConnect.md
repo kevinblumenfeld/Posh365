@@ -1,11 +1,11 @@
 ---
-external help file: CloudTools-help.xml
-Module Name: CloudTools
+external help file: Posh365-help.xml
+Module Name: Posh365
 online version: 
 schema: 2.0.0
 ---
 
-# Select-ExchangeServer
+# Sync-ADConnect
 
 ## SYNOPSIS
 {{Fill in the Synopsis}}
@@ -13,7 +13,7 @@ schema: 2.0.0
 ## SYNTAX
 
 ```
-Select-ExchangeServer [<CommonParameters>]
+Sync-ADConnect [-Initial] [[-Sleep] <Int32>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -29,6 +29,36 @@ PS C:\> {{ Add example code here }}
 {{ Add example description here }}
 
 ## PARAMETERS
+
+### -Initial
+{{Fill Initial Description}}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Sleep
+{{Fill Sleep Description}}
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: 0
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).

@@ -1,11 +1,11 @@
 ---
-external help file: CloudTools-help.xml
-Module Name: CloudTools
+external help file: Posh365-help.xml
+Module Name: Posh365
 online version: 
 schema: 2.0.0
 ---
 
-# Get-RetentionLinks
+# Select-ADConnectServer
 
 ## SYNOPSIS
 {{Fill in the Synopsis}}
@@ -13,7 +13,7 @@ schema: 2.0.0
 ## SYNTAX
 
 ```
-Get-RetentionLinks [<CommonParameters>]
+Select-ADConnectServer [<CommonParameters>]
 ```
 
 ## DESCRIPTION

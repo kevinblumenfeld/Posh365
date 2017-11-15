@@ -1,6 +1,6 @@
 ---
-external help file: CloudTools-help.xml
-Module Name: CloudTools
+external help file: Posh365-help.xml
+Module Name: Posh365
 online version: 
 schema: 2.0.0
 ---
