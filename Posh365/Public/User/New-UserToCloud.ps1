@@ -71,6 +71,7 @@ Function New-UserToCloud {
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "CopyNoMail")]
         [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NewNoMail")]
+        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "UPN")]
         [switch] $NoMail,
         [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
@@ -116,23 +117,9 @@ Function New-UserToCloud {
         $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
         $ParameterAttribute.Mandatory = $true
         $ParameterAttribute.Position = 1
-        $ParameterAttribute.ParameterSetName = 'CopyNoMail'
+        $ParameterAttribute.ParameterSetName = 'UPN'
         # Add the attributes to the attributes collection
-        $AttributeCollection.Add($ParameterAttribute) 
-        # ParameterSet 2
-        $ParameterAttribute2 = New-Object System.Management.Automation.ParameterAttribute
-        $ParameterAttribute2.Mandatory = $true
-        $ParameterAttribute2.Position = 1
-        $ParameterAttribute2.ParameterSetName = 'NewNoMail'
-        # Add the attributes to the attributes collection
-        $AttributeCollection.Add($ParameterAttribute2) 
-        # ParameterSet 3
-        $ParameterAttribute3 = New-Object System.Management.Automation.ParameterAttribute
-        $ParameterAttribute3.Mandatory = $true
-        $ParameterAttribute3.Position = 1
-        $ParameterAttribute3.ParameterSetName = 'NoMail'
-        # Add the attributes to the attributes collection
-        $AttributeCollection.Add($ParameterAttribute3) 
+        $AttributeCollection.Add($ParameterAttribute)  
         # Create the dictionary 
         $RuntimeParameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
         # Generate and set the ValidateSet 
