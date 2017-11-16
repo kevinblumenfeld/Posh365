@@ -3,10 +3,12 @@ Function New-UserToCloud {
     [CmdletBinding()]
     Param (
         [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
+        [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "UPN")]
         [string] $UserToCopy,
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]   
         [switch] $Shared,
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "UPN")]
         [switch] $New,
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "New")]
@@ -45,8 +47,6 @@ Function New-UserToCloud {
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [ValidateLength(1, 2)]
         [string] $SAMPrefix,
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "UPN")]
         [switch] $NoMail,
         [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
