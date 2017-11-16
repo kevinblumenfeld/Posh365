@@ -47,7 +47,7 @@ Function New-UserToCloud {
         [string] $SAMPrefix,
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "UPN")]
+        [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "UPN")]
         [switch] $NoMail,
         [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
