@@ -3,6 +3,8 @@ function Connect-ToExchange {
         [Parameter(Mandatory = $False)]
         $ExchangeServer,
         [Parameter(Mandatory = $False)]
+        [Switch] $NoPrefix,
+        [Parameter(Mandatory = $False)]
         [Switch] $DeleteExchangeCreds,
         [Parameter(Mandatory = $False)]
         [Switch] $ViewEntireForest
@@ -77,8 +79,15 @@ function Connect-ToExchange {
         $Credential.UserName | Out-File ($KeyPath + "$($user).uExchangeCred")
     }    
     $Session = New-PSSession -Name "OnPremExchange" -ConfigurationName Microsoft.Exchange -ConnectionUri ("http://" + $ExchangeServer + "/PowerShell/") -Authentication Kerberos -Credential $Credential
-    $SessionModule = Import-PSSession -AllowClobber -DisableNameChecking -Prefix 'OnPrem' -Session $Session
-    $Null = Import-Module $SessionModule -Global -Prefix "OnPrem" -DisableNameChecking -Force
+    $ (!$NoPrefix) {
+        $SessionModule = Import-PSSession -AllowClobber -DisableNameChecking -Prefix 'OnPrem' -Session $Session
+        $Null = Import-Module $SessionModule -Global -DisableNameChecking -Force
+    }
+    else {
+        $SessionModule = Import-PSSession -AllowClobber -DisableNameChecking -Prefix 'OnPrem' -Session $Session
+        $Null = Import-Module $SessionModule -Global -DisableNameChecking -Force
+    }
+    
     Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
     Write-Host "        You are now connected to On-Premises Exchange               " -foregroundcolor "darkgreen" -backgroundcolor "white"
     Write-Host "          All commands are pre-pended with OnPrem, for example:     " -foregroundcolor "darkgreen" -backgroundcolor "white"
