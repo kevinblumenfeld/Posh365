@@ -115,7 +115,8 @@ Function New-UserToCloud {
             $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
             $ParameterAttribute.Mandatory = $true
             $ParameterAttribute.Position = 1
-            $ParameterAttribute.ParameterSetName = 'NoMail'
+            $ParameterAttribute.ParameterSetName = 'CopyNoMail'
+            $ParameterAttribute.ParameterSetName = 'NewNoMail'
             # Add the attributes to the attributes collection
             $AttributeCollection.Add($ParameterAttribute) 
             # Create the dictionary 
