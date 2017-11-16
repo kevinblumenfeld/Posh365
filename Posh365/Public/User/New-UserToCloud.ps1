@@ -86,14 +86,14 @@ Function New-UserToCloud {
         # Create and set the parameters' attributes
         $ParameterAttribute2 = New-Object System.Management.Automation.ParameterAttribute
         $ParameterAttribute2.Mandatory = $false
-        $ParameterAttribute2.Position = 2
+        $ParameterAttribute2.Position = 1
         $ParameterAttribute2.ParameterSetName = 'New'
         # Add the attributes to the attributes collection
         $AttributeCollection.Add($ParameterAttribute2)  
         # Create and set the parameters' attributes
         $ParameterAttribute3 = New-Object System.Management.Automation.ParameterAttribute
         $ParameterAttribute3.Mandatory = $true
-        $ParameterAttribute3.Position = 3
+        $ParameterAttribute3.Position = 1
         $ParameterAttribute3.ParameterSetName = 'UPN'
         # Add the attributes to the attributes collection
         $AttributeCollection.Add($ParameterAttribute3)  
