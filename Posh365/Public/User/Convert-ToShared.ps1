@@ -210,6 +210,8 @@ Function Convert-ToShared {
             "Yammer for Academic" = "YAMMER_EDU";
             "Yammer" = "YAMMER_MIDSIZE"
         }
+        $RootPath = $env:USERPROFILE + "\ps\"
+        $User = $env:USERNAME
         While (!(Get-Content ($RootPath + "$($user).TargetAddressSuffix") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-TargetAddressSuffix
         }
@@ -225,7 +227,7 @@ Function Convert-ToShared {
             (Get-AcceptedDomain -erroraction stop)[0] | Out-Null
         }
         catch {
-            Connect-ToCloud ($targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")) -ExchangeOnline
+            Connect-ToCloud Office365 -ExchangeOnline
         }
         [string[]]$skusToRemove = Get-CloudSku
     }
