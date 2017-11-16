@@ -45,7 +45,9 @@ Function New-UserToCloud {
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [ValidateLength(1, 2)]
         [string] $SAMPrefix,
-        [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "UPN")]
+        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "UPN")]
         [switch] $NoMail,
         [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
@@ -76,11 +78,25 @@ Function New-UserToCloud {
         $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
         # Create and set the parameters' attributes
         $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
-        $ParameterAttribute.Mandatory = $true
+        $ParameterAttribute.Mandatory = $false
         $ParameterAttribute.Position = 1
-        $ParameterAttribute.ParameterSetName = 'UPN'
+        $ParameterAttribute.ParameterSetName = 'Copy'
         # Add the attributes to the attributes collection
         $AttributeCollection.Add($ParameterAttribute)  
+        # Create and set the parameters' attributes
+        $ParameterAttribute2 = New-Object System.Management.Automation.ParameterAttribute
+        $ParameterAttribute2.Mandatory = $false
+        $ParameterAttribute2.Position = 2
+        $ParameterAttribute2.ParameterSetName = 'New'
+        # Add the attributes to the attributes collection
+        $AttributeCollection.Add($ParameterAttribute2)  
+        # Create and set the parameters' attributes
+        $ParameterAttribute3 = New-Object System.Management.Automation.ParameterAttribute
+        $ParameterAttribute3.Mandatory = $true
+        $ParameterAttribute3.Position = 3
+        $ParameterAttribute3.ParameterSetName = 'UPN'
+        # Add the attributes to the attributes collection
+        $AttributeCollection.Add($ParameterAttribute3)  
         # Create the dictionary 
         $RuntimeParameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
         # Generate and set the ValidateSet 
