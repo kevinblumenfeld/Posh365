@@ -3,20 +3,22 @@ Function New-UserToCloud {
         [CmdletBinding()]
         Param (
             [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]  
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "CopyNoMail")]  
             [string] $UserToCopy,
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]   
             [switch] $Shared,
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NewNoMail")]
             [switch] $New,
             [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
             [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-            [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
+            [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "CopyNoMail")]
+            [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "NewNoMail")]
             [string] $FirstName,
             [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
             [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-            [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
+            [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "CopyNoMail")]
+            [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "NewNoMail")]
             [string] $LastName,
             [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
             [ValidateScript( {if ($_ -notlike "* *") {Return $True} else {Write-Host "Please choose an SharedMailboxEmailAlias without spaces"}})]
@@ -25,62 +27,81 @@ Function New-UserToCloud {
             [string] $DisplayName,
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "CopyNoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NewNoMail")]
             [string] $OfficePhone,
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "CopyNoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NewNoMail")]
             [string] $MobilePhone,
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
-            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "CopyNoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NewNoMail")]
             [string] $Description,
+            [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "CopyNoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NewNoMail")]
             [string] $StreetAddress,
+            [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "CopyNoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NewNoMail")]
             [string] $City,
+            [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "CopyNoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NewNoMail")]
             [string] $State,
+            [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "CopyNoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NewNoMail")]
             [string] $Zip,
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "CopyNoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NewNoMail")]
             [ValidateLength(1, 2)]
             [string] $SAMPrefix,
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "CopyNoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NewNoMail")]
             [switch] $NoMail,
             [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "CopyNoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NewNoMail")]
             [string] $Country,
             [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "CopyNoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NewNoMail")]
             [string] $Office,
             [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "CopyNoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NewNoMail")]
             [string] $Title,
             [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "CopyNoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NewNoMail")]
             [string] $Department,
             [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "CopyNoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NewNoMail")]
             [string] $Company,
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
             [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]        
-            [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NoMail")]       
+            [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "CopyNoMail")]
+            [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "NewNoMail")]
             [string] $OUSearch = "Resources"
         )
         DynamicParam {
