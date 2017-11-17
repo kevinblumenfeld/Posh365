@@ -81,7 +81,7 @@ function Connect-ToExchange {
     $Session = New-PSSession -Name "OnPremExchange" -ConfigurationName Microsoft.Exchange -ConnectionUri ("http://" + $ExchangeServer + "/PowerShell/") -Authentication Kerberos -Credential $Credential
     If (!$NoPrefix) {
         $SessionModule = Import-PSSession -AllowClobber -DisableNameChecking -Prefix 'OnPrem' -Session $Session
-        $Null = Import-Module $SessionModule -Global -DisableNameChecking -Force
+        $Null = Import-Module $SessionModule -Global -Prefix "OnPrem" -DisableNameChecking -Force
 
         Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
         Write-Host "        You are now connected to On-Premises Exchange               " -foregroundcolor "darkgreen" -backgroundcolor "white"
