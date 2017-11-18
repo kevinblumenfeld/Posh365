@@ -185,7 +185,6 @@ Function New-UserToCloud {
         # Copy ADUser (Template) & Create New #
         #######################################
         #Requires -Modules ActiveDirectory
-        #Requires -RunAsAdministrator
         if ($SharedMailboxEmailAlias) {
             $LastName = $SharedMailboxEmailAlias
         }

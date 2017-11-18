@@ -76,10 +76,10 @@ function Connect-ToCloud {
         }
         # Create KeyPath Directory
         if (!(Test-Path $KeyPath)) {
-            try {
+            Try {
                 New-Item -ItemType Directory -Path $KeyPath -ErrorAction STOP | Out-Null
             }
-            catch {
+            Catch {
                 throw $_.Exception.Message
             }           
         }
@@ -95,7 +95,7 @@ function Connect-ToCloud {
                         Connect-ToCloud $Tenant -DeleteCreds
                         Write-Host "********************************************************************" -foregroundcolor "darkblue" -backgroundcolor "white"
                         Write-Host "                    Bad Username                                    " -foregroundcolor "darkblue" -backgroundcolor "white"
-                        Write-Host "          Please try your last command again...                     " -foregroundcolor "darkblue" -backgroundcolor "white"
+                        Write-Host "          Please Try your last command again...                     " -foregroundcolor "darkblue" -backgroundcolor "white"
                         Write-Host "...you will be prompted to enter your Office 365 credentials again. " -foregroundcolor "darkblue" -backgroundcolor "white"
                         Write-Host "********************************************************************" -foregroundcolor "darkblue" -backgroundcolor "white"
                         Break
@@ -111,7 +111,7 @@ function Connect-ToCloud {
                     Connect-ToCloud $Tenant -DeleteCreds
                     Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
                     Write-Host "                 No Password Present                                " -foregroundcolor "darkgreen" -backgroundcolor "white"
-                    Write-Host "          Please try your last command again...                     " -foregroundcolor "darkgreen" -backgroundcolor "white"
+                    Write-Host "          Please Try your last command again...                     " -foregroundcolor "darkgreen" -backgroundcolor "white"
                     Write-Host "...you will be prompted to enter your Office 365 credentials again. " -foregroundcolor "darkgreen" -backgroundcolor "white"
                     Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
                     Break
@@ -122,9 +122,12 @@ function Connect-ToCloud {
         if ($MSOnline -or $All365) {
             # Office 365 Tenant
             Try {
-                if (!(Get-Module -ListAvailable MSOnline)) {
-                    Install-Module -Name MSOnline -Scope CurrentUser -ErrorAction SilentlyContinue   
-                }
+                Get-Module -ListAvailable MSOnline -ErrorAction Stop
+            }
+            Catch {
+                Install-Module -Name MSOnline -Scope CurrentUser
+            }
+            Try {
                 Import-Module MsOnline -ErrorAction Stop
             }
             Catch {
@@ -144,7 +147,7 @@ function Connect-ToCloud {
                     Connect-ToCloud $Tenant -DeleteCreds
                     Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
                     Write-Host "           Bad Username or Password.                                " -foregroundcolor "darkgreen" -backgroundcolor "white"
-                    Write-Host "          Please try your last command again...                     " -foregroundcolor "darkgreen" -backgroundcolor "white"
+                    Write-Host "          Please Try your last command again...                     " -foregroundcolor "darkgreen" -backgroundcolor "white"
                     Write-Host "...you will be prompted to enter your Office 365 credentials again. " -foregroundcolor "darkgreen" -backgroundcolor "white"
                     Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
                     Break
@@ -226,16 +229,26 @@ function Connect-ToCloud {
                 Write-Output "Ensure it is installed, Download it from here: https://www.microsoft.com/en-us/download/details.aspx?id=35588"
             }
             if (! $MFA) {
-                Connect-SPOService -Url ("https://" + $Tenant + "-admin.sharepoint.com") -credential $Credential
-                Write-Output "*********************************************"
-                Write-Output "You have successfully connected to SharePoint"
-                Write-Output "*********************************************"
+                Try {
+                    Connect-SPOService -Url ("https://" + $Tenant + "-admin.sharepoint.com") -credential $Credential -ErrorAction stop
+                    Write-Output "*********************************************"
+                    Write-Output "You have successfully connected to SharePoint"
+                    Write-Output "*********************************************"
+                }
+                Catch {
+                    Write-Host "Unable to Connect to SharePoint Online."
+                }
             }
             else {
-                Connect-SPOService -Url ("https://" + $Tenant + "-admin.sharepoint.com")
-                Write-Output "*********************************************"
-                Write-Output "You have successfully connected to SharePoint"
-                Write-Output "*********************************************"
+                Try {
+                    Connect-SPOService -Url ("https://" + $Tenant + "-admin.sharepoint.com") -ErrorAction stop
+                    Write-Output "*********************************************"
+                    Write-Output "You have successfully connected to SharePoint"
+                    Write-Output "*********************************************"
+                }
+                Catch {
+                    Write-Host "Unable to Connect to SharePoint Online."
+                }
             }
         }
         # Azure
@@ -244,37 +257,45 @@ function Connect-ToCloud {
         }
         # Azure AD
         If ($AzureADver2 -or $All365) {
-            if (! $MFA) {
+            if (! $MFA) {  
                 Try {
-                    if (!(get-module AzureAD -listavailable)) {
-                        Install-Module AzureAD -scope CurrentUser -ErrorAction Stop
-                    }
-                    if (!(Get-AzureADTenantDetail)) {
-                        Import-Module -Name AzureAD -MinimumVersion '2.0.0.131' -ErrorAction Stop
-                        Connect-AzureAD -Credential $Credential -ErrorAction Stop
-                        Write-Output "**********************************************"
-                        Write-Output "You have successfully connected to AzureADver2"
-                        Write-Output "**********************************************"
-                    }
-                    else {
-                        Write-Output "**********************************************"
-                        Write-Output "You have successfully connected to AzureADver2"
-                        Write-Output "**********************************************" 
-                    }
-                        
-
+                    Get-Module AzureAD -listavailable -ErrorAction Stop
+                }
+                Catch {
+                    Install-Module AzureAD -scope CurrentUser
+                }
+                Try {
+                    Get-AzureADTenantDetail -ErrorAction Stop
+                }
+                Catch {
+                    Import-Module -Name AzureAD -MinimumVersion '2.0.0.131' -ErrorAction Stop
+                }
+                Try {
+                    Connect-AzureAD -Credential $Credential -ErrorAction Stop
+                    Write-Output "**********************************************"
+                    Write-Output "You have successfully connected to AzureADver2"
+                    Write-Output "**********************************************"
                 }
                 Catch {
                     Write-Output "There was an error Connecting to Azure Ad - Ensure the module is installed"
                     Write-Output "Download PowerShell 5 or PowerShellGet"
                     Write-Output "https://msdn.microsoft.com/en-us/powershell/wmf/5.1/install-configure"
                 }
-                
             }
             else {
                 Try {
-                    Install-Module -Name AzureAD -MinimumVersion '2.0.0.131' -Scope CurrentUser -ErrorAction Stop
+                    Get-Module AzureAD -listavailable -ErrorAction Stop
+                }
+                Catch {
+                    Install-Module AzureAD -scope CurrentUser
+                }
+                Try {
+                    Get-AzureADTenantDetail -ErrorAction Stop
+                }
+                Catch {
                     Import-Module -Name AzureAD -MinimumVersion '2.0.0.131' -ErrorAction Stop
+                }
+                Try {
                     Connect-AzureAD -Credential $Credential -ErrorAction Stop
                     Write-Output "**********************************************"
                     Write-Output "You have successfully connected to AzureADver2"
@@ -293,10 +314,18 @@ function Connect-ToCloud {
 }
 
 function Get-LAAzureConnected {
-    if (!(Get-AzureRmTenant)) {
+    Try {
+        Get-AzureRmTenant -erroraction stop 
+    }
+    Catch {
         Install-Module -Name AzureRM -Scope CurrentUser
     }
-    Import-Module -Name AzureRM -MinimumVersion '4.2.1'
+    Try {
+        Get-AzureRmTenant -erroraction stop
+    }
+    Catch {
+        Import-Module -Name AzureRM -MinimumVersion '4.2.1'
+    }
     if (! $MFA) {
         $json = Get-ChildItem -Recurse -Include '*@*.json' -Path $KeyPath
         if ($json) {
@@ -312,7 +341,7 @@ function Get-LAAzureConnected {
             Try {
                 $azLogin = Login-AzureRmAccount -ErrorAction Stop
             }
-            catch [System.Management.Automation.CommandNotFoundException] {
+            Catch [System.Management.Automation.CommandNotFoundException] {
                 Write-Output "Download and install PowerShell 5.1 or PowerShellGet so the AzureRM module can be automatically installed"
                 Write-Output "https://docs.microsoft.com/en-us/powershell/azure/install-azurerm-ps?view=azurermps-4.2.0#how-to-get-powershellget"
                 Write-Output "or download the MSI installer and install from here: https://github.com/Azure/azure-powershell/releases"
@@ -350,7 +379,7 @@ function Get-LAAzureConnected {
         Try {
             Login-AzureRmAccount -ErrorAction Stop
         }
-        catch [System.Management.Automation.CommandNotFoundException] {
+        Catch [System.Management.Automation.CommandNotFoundException] {
             Write-Output "Download and install PowerShell 5.1 or PowerShellGet so the AzureRM module can be automatically installed"
             Write-Output "https://docs.microsoft.com/en-us/powershell/azure/install-azurerm-ps?view=azurermps-4.2.0#how-to-get-powershellget"
             Write-Output "or download the MSI installer and install from here: https://github.com/Azure/azure-powershell/releases"
