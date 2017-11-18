@@ -123,7 +123,7 @@ function Connect-ToCloud {
             # Office 365 Tenant
             Try {
                 if (!(Get-Module -ListAvailable MSOnline)) {
-                    Install-Module -Name MSOnline -ErrorAction SilentlyContinue   
+                    Install-Module -Name MSOnline -Scope CurrentUser -ErrorAction SilentlyContinue   
                 }
                 Import-Module MsOnline -ErrorAction Stop
             }
@@ -246,12 +246,23 @@ function Connect-ToCloud {
         If ($AzureADver2 -or $All365) {
             if (! $MFA) {
                 Try {
-                    Install-Module -Name AzureAD -MinimumVersion '2.0.0.131' -ErrorAction Stop
-                    Import-Module -Name AzureAD -MinimumVersion '2.0.0.131' -ErrorAction Stop
-                    Connect-AzureAD -Credential $Credential -ErrorAction Stop
-                    Write-Output "**********************************************"
-                    Write-Output "You have successfully connected to AzureADver2"
-                    Write-Output "**********************************************"
+                    if (!(get-module AzureAD -listavailable)) {
+                        Install-Module AzureAD -scope CurrentUser -ErrorAction Stop
+                    }
+                    if (!(Get-AzureADTenantDetail)) {
+                        Import-Module -Name AzureAD -MinimumVersion '2.0.0.131' -ErrorAction Stop
+                        Connect-AzureAD -Credential $Credential -ErrorAction Stop
+                        Write-Output "**********************************************"
+                        Write-Output "You have successfully connected to AzureADver2"
+                        Write-Output "**********************************************"
+                    }
+                    else {
+                        Write-Output "**********************************************"
+                        Write-Output "You have successfully connected to AzureADver2"
+                        Write-Output "**********************************************" 
+                    }
+                        
+
                 }
                 Catch {
                     Write-Output "There was an error Connecting to Azure Ad - Ensure the module is installed"
@@ -262,7 +273,7 @@ function Connect-ToCloud {
             }
             else {
                 Try {
-                    Install-Module -Name AzureAD -MinimumVersion '2.0.0.131' -ErrorAction Stop
+                    Install-Module -Name AzureAD -MinimumVersion '2.0.0.131' -Scope CurrentUser -ErrorAction Stop
                     Import-Module -Name AzureAD -MinimumVersion '2.0.0.131' -ErrorAction Stop
                     Connect-AzureAD -Credential $Credential -ErrorAction Stop
                     Write-Output "**********************************************"
@@ -282,7 +293,9 @@ function Connect-ToCloud {
 }
 
 function Get-LAAzureConnected {
-    Install-Module -Name AzureRM -MinimumVersion '4.2.1'
+    if (!(Get-AzureRmTenant)) {
+        Install-Module -Name AzureRM -Scope CurrentUser
+    }
     Import-Module -Name AzureRM -MinimumVersion '4.2.1'
     if (! $MFA) {
         $json = Get-ChildItem -Recurse -Include '*@*.json' -Path $KeyPath
@@ -348,7 +361,7 @@ function Get-LAAzureConnected {
         Write-Output "   Select Subscription and Click `"OK`" in lower right-hand corner"
         Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
         Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
-        $subscription = Get-AzureRmSubscription | Out-GridView -PassThru -Title "Choose Azure Subscription"| Select id
+        $subscription = Get-AzureRmSubscription | Out-GridView -PassThru -Title "Choose Azure Subscription" | Select id
         Try {
             Select-AzureRmSubscription -SubscriptionId $subscription.id -ErrorAction Stop
             Write-Output "****************************************"
