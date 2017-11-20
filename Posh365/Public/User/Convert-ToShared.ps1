@@ -274,6 +274,7 @@ Function Convert-ToShared {
                 Set-ADUser -Enabled:$False -replace @{msExchRemoteRecipientType = "100";
                 msExchRecipientTypeDetails = "34359738368"
             }
+            $UPN = (Get-ADUser -LDAPFilter "(Userprincipalname=$UserToConvert)" -Server $domainController).userprincipalname
         }
         else {
                 
