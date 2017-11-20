@@ -256,7 +256,7 @@ Function Convert-ToShared {
             Connect-ToCloud ($targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")) -AzureADver2
         }
         try {
-            (Get-AcceptedDomain -erroraction stop)[0] | Out-Null
+            (Get-CloudAcceptedDomain -erroraction stop)[0] | Out-Null
         }
         catch {
             Connect-ToCloud ($targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")) -ExchangeOnline -EXOPrefix
@@ -277,15 +277,12 @@ Function Convert-ToShared {
             $UPN = (Get-ADUser -LDAPFilter "(Userprincipalname=$UserToConvert)" -Server $domainController).userprincipalname
         }
         else {
-                
             Get-ADUser -LDAPFilter "(samaccountname=$UserToConvert)" -erroraction stop -Server $domainController | 
                 Set-ADUser -Enabled:$False -replace @{msExchRemoteRecipientType = "100";
                 msExchRecipientTypeDetails = "34359738368"
             }
 
-            $UPN = (Get-ADUser -LDAPFilter "(samaccountname=$UserToConvert)" -Server $domainController).userprincipalname
-                
-                
+            $UPN = (Get-ADUser -LDAPFilter "(samaccountname=$UserToConvert)" -Server $domainController).userprincipalname  
         }
         Write-Output "$UserToConvert is being converted to a Remote Shared Mailbox in Active Directory"
 
