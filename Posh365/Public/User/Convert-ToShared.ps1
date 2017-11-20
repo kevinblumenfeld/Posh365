@@ -1,10 +1,13 @@
 Function Convert-ToShared {
     <#
     .SYNOPSIS
+    Converts a Cloud User Mailbox to a Shared Mailbox, Disables the AD User & Removes any licenses
 
     .EXAMPLE
+    Convert-ToShared -UserToConvert JSMITH
 
     .EXAMPLE
+    Convert-ToShared -UserToConvert JSMITH@CONTOSO.COM
    
     #>
     [CmdletBinding()]
@@ -279,7 +282,7 @@ Function Convert-ToShared {
                 msExchRecipientTypeDetails = "34359738368"
             }
 
-            $UserToConvert = (Get-ADUser -LDAPFilter "(samaccountname=$UserToConvert)" -Server $domainController).userprincipalname
+            $UPN = (Get-ADUser -LDAPFilter "(samaccountname=$UserToConvert)" -Server $domainController).userprincipalname
                 
                 
         }
@@ -287,17 +290,17 @@ Function Convert-ToShared {
 
         # Remove any Licenses that the mailbox may have had
         $removeSkuGroup = @()
-        $userL = Get-AzureADUser -ObjectId $UserToConvert
-        $userLicense = Get-AzureADUserLicenseDetail -ObjectId $UserToConvert
+        $userL = Get-AzureADUser -ObjectId $UPN
+        $userLicense = Get-AzureADUserLicenseDetail -ObjectId $UPN
         if ($skusToRemove) {
             Foreach ($removeSku in $skusToRemove) {
                 if ($f2uSku.$removeSku) {
-                    if ($f2uSku.$removeSku -in (Get-AzureADUserLicenseDetail -ObjectId $UserToConvert).skupartnumber) {
+                    if ($f2uSku.$removeSku -in (Get-AzureADUserLicenseDetail -ObjectId $UPN).skupartnumber) {
                         $removeSkuGroup += $f2uSku.$removeSku 
                     } 
                 }
                 else {
-                    if ($removeSku -in (Get-AzureADUserLicenseDetail -ObjectId $UserToConvert).skupartnumber) {
+                    if ($removeSku -in (Get-AzureADUserLicenseDetail -ObjectId $UPN).skupartnumber) {
                         $removeSkuGroup += $removeSku 
                     } 
                 }
