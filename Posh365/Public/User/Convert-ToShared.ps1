@@ -9,8 +9,8 @@ Function Convert-ToShared {
     #>
     [CmdletBinding()]
     Param (
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
-        [string[]] $User
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName)]
+        [string] $UserToConvert
     )
     
     Begin {
@@ -212,75 +212,103 @@ Function Convert-ToShared {
         }
         $RootPath = $env:USERPROFILE + "\ps\"
         $User = $env:USERNAME
+    
+        if (!(Test-Path $RootPath)) {
+            try {
+                New-Item -ItemType Directory -Path $RootPath -ErrorAction STOP | Out-Null
+            }
+            catch {
+                throw $_.Exception.Message
+            }           
+        }        
+        While (!(Get-Content ($RootPath + "$($user).ADConnectServer") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+            Select-ADConnectServer
+        }
+            
+        While (!(Get-Content ($RootPath + "$($user).EXCHServer") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+            Select-ExchangeServer
+        }
+        $ExchangeServer = Get-Content ($RootPath + "$($user).EXCHServer")
+    
         While (!(Get-Content ($RootPath + "$($user).TargetAddressSuffix") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-TargetAddressSuffix
         }
         $targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")
-        
+              
+        While (!(Get-Content ($RootPath + "$($user).DomainController") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+            Select-DomainController
+        }
+        $DomainController = Get-Content ($RootPath + "$($user).DomainController")   
+
+        try {
+            (Get-OnPremExchangeServer -erroraction stop)[0] | Out-Null
+        }
+        catch {
+            Connect-ToExchange -ExchangeServer $ExchangeServer  
+        }
         try {
             Get-AzureADTenantDetail -erroraction stop | Out-Null
         }
         catch {
-            Connect-ToCloud Office365 -AzureADver2
+            Connect-ToCloud ($targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")) -AzureADver2
         }
         try {
             (Get-AcceptedDomain -erroraction stop)[0] | Out-Null
         }
         catch {
-            Connect-ToCloud Office365 -ExchangeOnline
+            Connect-ToCloud ($targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")) -ExchangeOnline -EXOPrefix
         }
         [string[]]$skusToRemove = Get-CloudSku
     }
     Process {
-        ForEach ($CurUser in $User) {
-            # Convert Cloud Mailbox to type, Shared.
-            Set-Mailbox -Identity $CurUser -Type Shared
-            Write-Output "$CurUser has been converted to a Shared Mailbox"
+        # Convert Cloud Mailbox to type, Shared.
+        Set-CloudMailbox -Identity $UserToConvert -Type Shared -DomainController $domainController
+        Write-Output "$UserToConvert is being converted to a Shared Mailbox"
 
-            # Modify OnPrem AD Attributes to that of a Remote Shared Mailbox
-            if ($CurUser -like "*@*") {
-                Get-ADUser -LDAPFilter "(Userprincipalname=$CurUser)" | 
-                    Set-ADUser -replace @{msExchRemoteRecipientType = "100";
-                    msExchRecipientTypeDetails = "34359738368"
+        # Modify OnPrem AD Attributes to that of a Remote Shared Mailbox
+        if ($UserToConvert -like "*@*") {
+            Get-ADUser -LDAPFilter "(Userprincipalname=$UserToConvert)" -Server $domainController | 
+                Set-ADUser -replace @{msExchRemoteRecipientType = "100";
+                msExchRecipientTypeDetails = "34359738368"
+            }
+        }
+        else {
+                
+            Get-ADUser -LDAPFilter "(samaccountname=$UserToConvert)" -erroraction stop -Server $domainController | 
+                Set-ADUser -replace @{msExchRemoteRecipientType = "100";
+                msExchRecipientTypeDetails = "34359738368"
+            }
+
+            $UserToConvert = (Get-ADUser -LDAPFilter "(samaccountname=$UserToConvert)" -Server $domainController).userprincipalname
+                
+                
+        }
+        Write-Output "$UserToConvert is being converted to a Remote Shared Mailbox in Active Directory"
+
+        # Remove any Licenses that the mailbox may have had
+        $removeSkuGroup = @()
+        $userL = Get-AzureADUser -ObjectId $UserToConvert
+        $userLicense = Get-AzureADUserLicenseDetail -ObjectId $UserToConvert
+        if ($skusToRemove) {
+            Foreach ($removeSku in $skusToRemove) {
+                if ($f2uSku.$removeSku) {
+                    if ($f2uSku.$removeSku -in (Get-AzureADUserLicenseDetail -ObjectId $UserToConvert).skupartnumber) {
+                        $removeSkuGroup += $f2uSku.$removeSku 
+                    } 
+                }
+                else {
+                    if ($removeSku -in (Get-AzureADUserLicenseDetail -ObjectId $UserToConvert).skupartnumber) {
+                        $removeSkuGroup += $removeSku 
+                    } 
                 }
             }
-            else {
-                
-                Get-ADUser -LDAPFilter "(samaccountname=$CurUser)" -erroraction stop | 
-                    Set-ADUser -replace @{msExchRemoteRecipientType = "100";
-                    msExchRecipientTypeDetails = "34359738368"
-                }
-                $CurUser = (Get-ADUser -LDAPFilter "(samaccountname=$CurUser)").userprincipalname
-                
-                
+            if ($removeSkuGroup) {
+                Write-Output "$UserToConvert has the following Skus, removing these Sku now: $removeSkuGroup "
+                $licensesToAssign = Set-SkuChange -remove -skus $removeSkuGroup
+                Set-AzureADUserLicense -ObjectId $UserL.ObjectId -AssignedLicenses $licensesToAssign
             }
-            Write-Output "$CurUser has been converted to a Remote Shared Mailbox in Active Directory"
-
-            # Remove any Licenses that the mailbox may have had
-            $removeSkuGroup = @()
-            $userL = Get-AzureADUser -ObjectId $CurUser
-            $userLicense = Get-AzureADUserLicenseDetail -ObjectId $CurUser
-            if ($skusToRemove) {
-                Foreach ($removeSku in $skusToRemove) {
-                    if ($f2uSku.$removeSku) {
-                        if ($f2uSku.$removeSku -in (Get-AzureADUserLicenseDetail -ObjectId $CurUser).skupartnumber) {
-                            $removeSkuGroup += $f2uSku.$removeSku 
-                        } 
-                    }
-                    else {
-                        if ($removeSku -in (Get-AzureADUserLicenseDetail -ObjectId $CurUser).skupartnumber) {
-                            $removeSkuGroup += $removeSku 
-                        } 
-                    }
-                }
-                if ($removeSkuGroup) {
-                    Write-Output "$CurUser has the following Skus, removing these Sku now: $removeSkuGroup "
-                    $licensesToAssign = Set-SkuChange -remove -skus $removeSkuGroup
-                    Set-AzureADUserLicense -ObjectId $UserL.ObjectId -AssignedLicenses $licensesToAssign
-                }
-                Else {
-                    Write-Output "$CurUser Licenses have been removed"
-                }
+            Else {
+                Write-Output "$UserToConvert licenses have been removed"
             }
         }
     }

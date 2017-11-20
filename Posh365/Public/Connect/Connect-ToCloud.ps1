@@ -39,7 +39,10 @@ function Connect-ToCloud {
         [switch] $MFA,
 
         [parameter(Mandatory = $false)]
-        [switch] $DeleteCreds
+        [switch] $DeleteCreds,
+        
+        [parameter(Mandatory = $false)]
+        [switch] $EXOPrefix
         
     )
 
@@ -155,13 +158,23 @@ function Connect-ToCloud {
             }
         }
         if ($ExchangeOnline -or $All365) {
-            if (! $MFA) {
-                # Exchange Online
-                $EXOSession = New-PSSession -Name "EXO" -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell -Credential $Credential -Authentication Basic -AllowRedirection 
-                Import-Module (Import-PSSession $EXOSession -AllowClobber -WarningAction SilentlyContinue) -Global | Out-Null
-                Write-Output "**************************************************"
-                Write-Output "You have successfully connected to Exchange Online"
-                Write-Output "**************************************************"
+            if (!$MFA) {
+                if (!$EXOPrefix) {
+                    # Exchange Online
+                    $EXOSession = New-PSSession -Name "EXO" -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell -Credential $Credential -Authentication Basic -AllowRedirection 
+                    Import-Module (Import-PSSession $EXOSession -AllowClobber -WarningAction SilentlyContinue) -Global | Out-Null
+                    Write-Output "**************************************************"
+                    Write-Output "You have successfully connected to Exchange Online"
+                    Write-Output "**************************************************"
+                }
+                else {
+                    $EXOSession = New-PSSession -Name "EXO" -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell -Credential $Credential -Authentication Basic -AllowRedirection 
+                    Import-Module (Import-PSSession $EXOSession -AllowClobber -WarningAction SilentlyContinue -Prefix "Cloud") -Global -Prefix "Cloud" | Out-Null
+                    Write-Output "**************************************************"
+                    Write-Output "You have successfully connected to Exchange Online"
+                    Write-Output "**************************************************"
+                }
+                
             }
             else {
                 Try {

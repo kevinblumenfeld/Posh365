@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-RetentionLinks
 
 ## SYNOPSIS
-{{Fill in the Synopsis}}
+Reports on RetentionPolicies and their Tags, links & respective descriptions
 
 ## SYNTAX
 
@@ -17,17 +17,21 @@ Get-RetentionLinks [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{Fill in the Description}}
+Reports on Exchange and Exchange Online Retention Policies, Retention Policy Tags and Retention Policy Tag Links
+
+This function will display all Retention Policy Tags and to which Retention Policy they are linked
 
 ## EXAMPLES
 
-### Example 1
+### -------------------------- EXAMPLE 1 --------------------------
 ```
-PS C:\> {{ Add example code here }}
+Get-RetentionLinks | Export-Csv ./Retention.csv -NoTypeInformation
 ```
 
-{{ Add example description here }}
-
+### -------------------------- EXAMPLE 2 --------------------------
+```
+Get-RetentionLinks | Out-GridView
+```
 ## PARAMETERS
 
 ### CommonParameters

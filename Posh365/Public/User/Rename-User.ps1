@@ -60,7 +60,7 @@ Function Rename-User {
             (Get-OnPremExchangeServer -erroraction stop)[0] | Out-Null
         }
         catch {
-            Connect-ToExchange -ExchangeServer $ExchangeServer  
+            Connect-ToExchange -ExchangeServer $ExchangeServer
         }
 
         ########################################
@@ -72,7 +72,7 @@ Function Rename-User {
             }
             catch {
                 Try {
-                    Connect-ToCloud Office365 -Exchange -MSOnline -AzureADver2 -erroraction stop
+                    Connect-ToCloud ($targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")) -MSOnline -AzureADver2 -erroraction stop
 
                 } 
                 Catch {
