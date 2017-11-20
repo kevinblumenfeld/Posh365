@@ -271,14 +271,14 @@ Function Convert-ToShared {
         # Modify OnPrem AD Attributes to that of a Remote Shared Mailbox
         if ($UserToConvert -like "*@*") {
             Get-ADUser -LDAPFilter "(Userprincipalname=$UserToConvert)" -Server $domainController | 
-                Set-ADUser -replace @{msExchRemoteRecipientType = "100";
+                Set-ADUser -Enabled:$False -replace @{msExchRemoteRecipientType = "100";
                 msExchRecipientTypeDetails = "34359738368"
             }
         }
         else {
                 
             Get-ADUser -LDAPFilter "(samaccountname=$UserToConvert)" -erroraction stop -Server $domainController | 
-                Set-ADUser -replace @{msExchRemoteRecipientType = "100";
+                Set-ADUser -Enabled:$False -replace @{msExchRemoteRecipientType = "100";
                 msExchRecipientTypeDetails = "34359738368"
             }
 
