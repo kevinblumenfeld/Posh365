@@ -262,7 +262,7 @@ Function Convert-ToShared {
     }
     Process {
         # Convert Cloud Mailbox to type, Shared.
-        Set-CloudMailbox -Identity $UserToConvert -Type Shared -DomainController $domainController
+        Set-CloudMailbox -Identity $UserToConvert -Type Shared
         Write-Output "$UserToConvert is being converted to a Shared Mailbox"
 
         # Modify OnPrem AD Attributes to that of a Remote Shared Mailbox
