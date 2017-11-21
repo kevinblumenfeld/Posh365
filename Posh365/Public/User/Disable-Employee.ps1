@@ -51,7 +51,7 @@ Function Disable-Employee {
             Get-ADUser -LDAPFilter "(samaccountname=$UserToDisable)" -Server $domainController |
             Set-ADAccountPassword -NewPassword (ConvertTo-SecureString -AsPlainText $NewP -Force)
         }
-        $UsersToGiveFullAccess | Add-FullAccessToMailbox -Mailbox $UserToDisable
+        $UsersToGiveFullAccess | Grant-FullAccessToMailbox -Mailbox $UserToDisable
     }
     
     End {

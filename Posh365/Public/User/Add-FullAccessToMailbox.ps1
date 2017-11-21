@@ -1,10 +1,10 @@
-Function Add-FullAccessToMailbox {
+Function Grant-FullAccessToMailbox {
     <#
     .SYNOPSIS
     Adds fullaccess mailbox permissions for one or more users
 
     .EXAMPLE
-    "fred.smith@contoso.com","frank.jones@contoso.com" | Add-FullAccessToMailbox -Mailbox "john.smith@contoso.com"
+    "fred.smith@contoso.com","frank.jones@contoso.com" | Grant-FullAccessToMailbox -Mailbox "john.smith@contoso.com"
    
     #>
     [CmdletBinding()]
