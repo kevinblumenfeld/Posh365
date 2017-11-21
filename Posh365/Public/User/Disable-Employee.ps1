@@ -8,6 +8,7 @@ Function Disable-Employee {
    
     #>
     [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "")]
     Param (
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName)]
         [string] $UserToDisable,
@@ -27,8 +28,10 @@ Function Disable-Employee {
         $DomainController = Get-Content ($RootPath + "$($user).DomainController")   
     }
     Process {
+        
+        $NewP = New-Password
+        
         # Convert Cloud Mailbox to type, Shared.
-
         Convert-ToShared -UserToConvert $UserToDisable
 
         # Hide from Address List
@@ -37,12 +40,16 @@ Function Disable-Employee {
                 Set-ADUser -replace @{
                 msExchHideFromAddressLists = $True
             }
+            Get-ADUser -LDAPFilter "(Userprincipalname=$UserToDisable)" -Server $domainController |
+                Set-ADAccountPassword -NewPassword (ConvertTo-SecureString -AsPlainText $NewP -Force)
         }
         else {
             Get-ADUser -LDAPFilter "(samaccountname=$UserToDisable)" -erroraction stop -Server $domainController | 
                 Set-ADUser -replace @{
                 msExchHideFromAddressLists = $True
             }
+            Get-ADUser -LDAPFilter "(samaccountname=$UserToDisable)" -Server $domainController |
+            Set-ADAccountPassword -NewPassword (ConvertTo-SecureString -AsPlainText $NewP -Force)
         }
         $UsersToGiveFullAccess | Add-FullAccessToMailbox -Mailbox $UserToDisable
     }
