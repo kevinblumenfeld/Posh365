@@ -1,7 +1,7 @@
 Function Grant-FullAccessToMailbox {
     <#
     .SYNOPSIS
-    Adds fullaccess mailbox permissions for one or more users
+    Grants Full Access mailbox permissions for one or more users over another mailbox
 
     .EXAMPLE
     "fred.smith@contoso.com","frank.jones@contoso.com" | Grant-FullAccessToMailbox -Mailbox "john.smith@contoso.com"
