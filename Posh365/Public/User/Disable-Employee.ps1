@@ -2,7 +2,7 @@ Function Disable-Employee {
     <#
     .SYNOPSIS
     Resets AD password to a random complex password, disables the AD User & Removes any Office 365 licenses.  Also converts mailbox to a Shared Mailbox.
-    Also allows for full access permissions to be given to one more users to the shared mailbox.
+    Lastly,allows for full access permissions to be granted to one more users over the shared mailbox.
 
 
     .EXAMPLE
