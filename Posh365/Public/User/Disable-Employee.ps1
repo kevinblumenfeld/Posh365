@@ -4,10 +4,7 @@ Function Disable-Employee {
     Disables the AD User & Removes any licenses.  Also coverts mailbox to a Shared Mailbox when requested
 
     .EXAMPLE
-    Disable-Employee -UserToDisable JSMITH
-
-    .EXAMPLE
-    Disable-Employee -UserToDisable JSMITH@CONTOSO.COM
+    Disable-Employee -UserToDisable rtodd@contoso.com -UsersToGiveFullAccess @("fred.smith@contoso.com","sal.jones@contoso.com")
    
     #>
     [CmdletBinding()]
