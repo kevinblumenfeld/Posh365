@@ -13,11 +13,16 @@ Function Watch-ToLicense {
         [string[]] $optionsToAdd
     )
 
+    $RootPath = $env:USERPROFILE + "\ps\"
+    $KeyPath = $Rootpath + "creds\"
+    
+    $targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")
+
     $WatcherJob = Start-Job -Name WatchToLicense {
         $optionsToAdd = $args[0]
         $GuidFolder = $args[1]
         Set-Location $GuidFolder
-        Connect-ToCloud Office365 -AzureADver2
+        Connect-ToCloud $targetAddressSuffix -AzureADver2
         Start-Sleep -Seconds 120
         while (Test-Path $GuidFolder) {
             Get-ChildItem -Path $GuidFolder -File -Verbose -ErrorAction SilentlyContinue | ForEach {
