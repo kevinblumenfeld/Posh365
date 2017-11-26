@@ -46,6 +46,12 @@ Function Disable-Employee {
         catch {
             Connect-Cloud $targetAddressSuffix -EXOPrefix -ExchangeOnline
         }
+        try {
+            Get-AzureADTenantDetail -erroraction stop | Out-Null
+        }
+        catch {
+            Connect-Cloud $targetAddressSuffix -AzureADver2
+        }
     }
     Process {
         
@@ -80,6 +86,9 @@ Function Disable-Employee {
 
         # Remove ActiveSync and OWA for Mobile Devices
         Set-CloudCASMailbox $PrimarySMTP -ActiveSyncEnabled:$False -OWAforDevicesEnabled:$False
+
+        # Revoke AzureAD
+        Revoke-AzureADUserAllRefreshToken -ObjectId $PrimarySMTP
 
         # Convert Cloud Mailbox to type, Shared.
         if (!$DontConvertToShared) {
