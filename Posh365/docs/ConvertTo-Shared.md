@@ -8,11 +8,12 @@ schema: 2.0.0
 # ConvertTo-Shared
 
 ## SYNOPSIS
+Converts a Cloud User Mailbox to a Shared Mailbox, Disables the AD User & Removes any licenses
 
 ## SYNTAX
 
 ```
-ConvertTo-Shared [[-UserToConvert] <String>] [<CommonParameters>]
+ConvertTo-Shared [[-UserToConvert] <String>]
 ```
 
 ## DESCRIPTION
@@ -22,12 +23,12 @@ ConvertTo-Shared [[-UserToConvert] <String>] [<CommonParameters>]
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-
+ConvertTo-Shared -UserToConvert JSMITH
 ```
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```
-
+ConvertTo-Shared -UserToConvert JSMITH@CONTOSO.COM
 ```
 
 ## PARAMETERS
@@ -46,9 +47,6 @@ Default value: None
 Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
-
-### CommonParameters
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

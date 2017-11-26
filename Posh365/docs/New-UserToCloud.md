@@ -8,26 +8,10 @@ schema: 2.0.0
 # New-UserToCloud
 
 ## SYNOPSIS
-1) Copies the properties of an existing AD User to a new AD User
-2) Enables the ADUser as a Remote Mailbox in Exchange/Office 365 (can select -noMail switch to assign no mailbox)
-3) Syncs changes to Office 365 with Azure AD Connect (AADC)
+1) Copies the properties of an existing AD User to a new AD User  
+2) Enables the ADUser as a Remote Mailbox in Exchange/Office 365 (can select -noMail switch to assign no mailbox)  
+3) Syncs changes to Office 365 with Azure AD Connect (AADC)  
 4) Grid of licenses are presented to user of script to select from and then applied to 365 User
-
-
-Must be run on PowerShell 5+ (run as administrator) with the following tools installed:
-Windows 10/2016 comes pre-installed with PowerShell 5.1
-
-  1) RSAT (Active Directory tools including AD Module for PowerShell)  
-  2) Exchange Management Tools - Ensure the version matches exactly the version of Exchange installed onprem.   
-  3) Run Select-Options once, to choose an initial options  
-       this allows the scripts to lock in your specific options.   
-  This should only need to be changed should any options need to be changed  
-       It is best to choose the domain controller with which AD Connect is connected.   
-       Need be, domain controllers can be hard coded (within AD Connect) to use a list of DCs (in order), so that the first in the list is typically the only DC used:  
-       This is the process:  
-          https://vanhybrid.com/2016/01/25/force-azure-ad-connect-to-connect-to-specific-domain-controllers-only/  
-  4) Be sure to enclose in "Double Quotes" anything with special characters, for example, spaces, commas, hyphens etc.  
-  The examples below, illustrate this well.  
 
 ## SYNTAX
 
@@ -36,13 +20,13 @@ Windows 10/2016 comes pre-installed with PowerShell 5.1
 New-UserToCloud -UserToCopy <String> -FirstName <String> -LastName <String> [-OfficePhone <String>]
  [-MobilePhone <String>] [-Description <String>] [-StreetAddress <String>] [-City <String>] [-State <String>]
  [-Zip <String>] [-SAMPrefix <String>] [-NoMail] [-Country <String>] [-Office <String>] [-Title <String>]
- [-Department <String>] [-Company <String>] [-OUSearch <String>] [-UPNSuffix <String>] [<CommonParameters>]
+ [-Department <String>] [-Company <String>] [-OUSearch <String>] [-UPNSuffix <String>]
 ```
 
 ### Shared
 ```
 New-UserToCloud [-Shared] -SharedMailboxEmailAlias <String> -DisplayName <String> [-Description <String>]
- [-OUSearch <String>] [<CommonParameters>]
+ [-OUSearch <String>]
 ```
 
 ### New
@@ -50,12 +34,12 @@ New-UserToCloud [-Shared] -SharedMailboxEmailAlias <String> -DisplayName <String
 New-UserToCloud [-New] -FirstName <String> -LastName <String> [-OfficePhone <String>] [-MobilePhone <String>]
  [-Description <String>] [-StreetAddress <String>] [-City <String>] [-State <String>] [-Zip <String>]
  [-SAMPrefix <String>] [-NoMail] [-Country <String>] [-Office <String>] [-Title <String>]
- [-Department <String>] [-Company <String>] [-OUSearch <String>] [-UPNSuffix <String>] [<CommonParameters>]
+ [-Department <String>] [-Company <String>] [-OUSearch <String>] [-UPNSuffix <String>]
 ```
 
 ### UPN
 ```
-New-UserToCloud [-NoMail] -UPNSuffix <String> [<CommonParameters>]
+New-UserToCloud [-NoMail] -UPNSuffix <String>
 ```
 
 ## DESCRIPTION
@@ -64,10 +48,9 @@ New-UserToCloud [-NoMail] -UPNSuffix <String> [<CommonParameters>]
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
-New-UserToCloud -UserToCopy SmithJ -FirstName Joe -LastName Parker -StorePhone "(777)222-3333" -MobilePhone "(404)234-5555" -Description "Joe's Description"
-
-Once complete, hit enter and you will be prompted for the password for the user.  Please enter a network password and hit enter when you are prompted like so,
-Enter a Password for the User:
+```
+New-UserToCloud -New -FirstName Kevin -LastName Todd
+```
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```
@@ -77,8 +60,8 @@ This is only available/needed when using the *NoMail* switch.
 
 New-UserToCloud -UserToCopy SmithJ -NoMail -FirstName Naomi -LastName Queen -StorePhone "777-222-3333,234" -MobilePhone "404-234-5555" -Description "Naomi's Description" -Prefix NN -UPNSuffix contoso.com
 
-Once complete, hit enter and you will be prompted for the password for the user.  Please enter a network password and hit enter when you are prompted like so,
-Enter a Password for the User:
+Once complete, hit enter and you will be prompted for the password for the user. 
+Please enter a network password and hit enter when you are prompted like so, Enter a Password for the User:
 
 ### -------------------------- EXAMPLE 3 --------------------------
 ```
@@ -88,8 +71,8 @@ The SharedMailboxEmailAlias creates the email address.  In this example SalesDep
 
 New-UserToCloud -Shared -SharedMailboxEmailAlias "SalesDept" -DisplayName "Sales Dept Shared Mailbox" -Description "Sales Department"
 
-Once complete, hit enter and you will be prompted for the password for the user.  Please enter a network password and hit enter when you are prompted like so,
-Enter a Password for the User:
+Once complete, hit enter and you will be prompted for the password for the user. 
+Please enter a network password and hit enter when you are prompted like so, Enter a Password for the User:
 
 ## PARAMETERS
 
@@ -461,9 +444,6 @@ Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
-
-### CommonParameters
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
