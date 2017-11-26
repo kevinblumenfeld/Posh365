@@ -23,7 +23,7 @@ Function Watch-ToLicense {
         $GuidFolder = $args[1]
         $targetAddressSuffix = $args[2]
         Set-Location $GuidFolder
-        Connect-ToCloud $targetAddressSuffix -AzureADver2
+        Connect-Cloud $targetAddressSuffix -AzureADver2
         Start-Sleep -Seconds 120
         while (Test-Path $GuidFolder) {
             Get-ChildItem -Path $GuidFolder -File -Verbose -ErrorAction SilentlyContinue | ForEach {

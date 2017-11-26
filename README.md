@@ -1,4 +1,4 @@
-# Connect-ToCloud
+# Connect-Cloud
 Allows for easy connecting to Office 365 and Azure services while saving and encrypting your passwords locally.  
 This prevents having to constantly type in credentials each session.  
   
@@ -6,7 +6,7 @@ Office 365 tenant name, for example, either contoso or contoso.onmicrosoft.com m
 Use anything unique to that username so the credential can be uniquely saved.  -User parameter is no mandatory.
 
 Detailed help with examples can be found here:
-https://github.com/kevinblumenfeld/365Tools/blob/master/365Tools/docs/Connect-ToCloud.md
+https://github.com/kevinblumenfeld/365Tools/blob/master/365Tools/docs/Connect-Cloud.md
 # Set-CloudLicense
 
 The person running the script uses the switch(es) provided at runtime to select an action(s). The script will then present a GUI (Out-GridView) from which the person running the script will select. Depending on the switch(es), the GUI will contain Skus and/or Options - all specific to their Office 365 tenant.
@@ -38,9 +38,9 @@ https://github.com/kevinblumenfeld/365Tools/blob/master/365Tools/docs/New-UserTo
 
 # SYNOPSIS  
 
-1.	Connect-ToExchange - on premise connections to on prem Exchange   
-2.	Connect-ToCloud – connects to all 365 services incl support for mfa also azure  
-3.	Convert-ToShared – Converts a cloud user mailbox/ad attributes to a shared mailbox then removes licences  
+1.	Connect-Exchange - on premise connections to on prem Exchange   
+2.	Connect-Cloud – connects to all 365 services incl support for mfa also azure  
+3.	ConvertTo-Shared – Converts a cloud user mailbox/ad attributes to a shared mailbox then removes licences  
 4.	Set-CloudLicense – fairly sophisticated licensing function to license one, many or all mailbox in 365.  Can migrate licenses between skus also  
 5.	Get-CloudLicense – Breakdown of a user’s license by SKU and respective options and if enabled or disabled for said user.  
 6.	Rename-SamAccount – If a SamAccountName needs to be renamed of a mail-enabled user, this adjusts all the proper attributes  

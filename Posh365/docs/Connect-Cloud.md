@@ -5,7 +5,7 @@ online version:
 schema: 2.0.0
 ---
 
-# Connect-ToCloud
+# Connect-Cloud
 
 ## SYNOPSIS
 {{Fill in the Synopsis}}
@@ -13,7 +13,7 @@ schema: 2.0.0
 ## SYNTAX
 
 ```
-Connect-ToCloud [-Tenant] <String> [[-User] <String>] [-ExchangeOnline] [-MSOnline] [-All365] [-Azure] [-Skype]
+Connect-Cloud [-Tenant] <String> [[-User] <String>] [-ExchangeOnline] [-MSOnline] [-All365] [-Azure] [-Skype]
  [-SharePoint] [-Compliance] [-AzureADver2] [-MFA] [-DeleteCreds] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
@@ -25,7 +25,7 @@ Connects to some or all of the Office 365/Azure services based on switches provi
 Office 365 tenant name, for example, either contoso or contoso.onmicrosoft.com must be provided with -Tenant parameter.
 Additionally, if more than one username will be used against a single tenant, use the -User parameter (for the second username and on).  Use anything unique to that username so the credential can be properly saved.  Both the -Tenant and -User parameters are positional so it's not necessary to type -Tenant or -User.  The -Tenant parameter is mandatory while the -User parameter is optional.
 
-For example, _Connect-ToCloud Contoso -Exchange_ demonstrates how it is not necessary to use the -User parameter and how the -Tenant parameter is positional.  However, say I want to connect to the Contoso tenant as _frank@contoso.com_  I could use _Connect-ToCloud Contoso Frank -Exchange_
+For example, _Connect-Cloud Contoso -Exchange_ demonstrates how it is not necessary to use the -User parameter and how the -Tenant parameter is positional.  However, say I want to connect to the Contoso tenant as _frank@contoso.com_  I could use _Connect-Cloud Contoso Frank -Exchange_
 
 When just connecting to Azure, it is still required to provide a Tenant, anything that uniquely identifies it.
 
@@ -33,7 +33,7 @@ There is a switch to use Multi-Factor Authentication.  For Exchange Online MFA, 
 To download the Exchange Online Remote PowerShell Module for multi-factor authentication, in the EAC (https://outlook.office365.com/ecp/), go to Hybrid > Setup and click the appropriate Configure button.  When using Multi-Factor Authentication the saving of credentials is not available currently - thus each service will prompt independently for credentials.  Also the Security and Compliance Center does not currently support multi-factor authentication.
 
 Locally saves and encrypts to a file the username and password.
-The encrypted file...can only be used on the computer and within the user's profile from which it was created, is the same .txt file for all the Office 365 services and is a separate .json file for Azure.  If a username or password becomes corrupt or is entered incorrectly, it can be deleted using -DeleteCreds.  For example, _Connect-ToCloud Contoso -DeleteCreds_
+The encrypted file...can only be used on the computer and within the user's profile from which it was created, is the same .txt file for all the Office 365 services and is a separate .json file for Azure.  If a username or password becomes corrupt or is entered incorrectly, it can be deleted using -DeleteCreds.  For example, _Connect-Cloud Contoso -DeleteCreds_
 
 If Azure switch is used **for first time**:
 
@@ -60,7 +60,7 @@ Transcript is started and kept in $env:USERPROFILE\ps\<tenantspecified\>
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-Connect-ToCloud -Tenant Contoso -ExchangeOnline -MSOnline
+Connect-Cloud -Tenant Contoso -ExchangeOnline -MSOnline
 ```
 
 Connects to MS Online Service (MSOL) and Exchange Online
@@ -69,7 +69,7 @@ The tenant must be specified, for example either contoso or contoso.onmicrosoft.
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```
-Connect-ToCloud Contoso -Skype -Azure -ExchangeOnline -MSOnline
+Connect-Cloud Contoso -Skype -Azure -ExchangeOnline -MSOnline
 ```
 
 Connects to Azure, MS Online Service (MSOL), Exchange Online & Skype
@@ -78,14 +78,14 @@ This is to illustrate that any number of individual services can be used to conn
 
 ### -------------------------- EXAMPLE 3 --------------------------
 ```
-Connect-ToCloud -Tenant Contoso -SharePoint
+Connect-Cloud -Tenant Contoso -SharePoint
 ```
 
 Connects to SharePoint Online
 
 ### -------------------------- EXAMPLE 4 --------------------------
 ```
-Connect-ToCloud -Tenant Contoso -DeleteCreds
+Connect-Cloud -Tenant Contoso -DeleteCreds
 ```
 
 The switch, DeleteCreds can be used if invalid credentials were inadvertently entered.
@@ -95,28 +95,28 @@ Credentials will then be saved on the following login.
 
 ### -------------------------- EXAMPLE 5 --------------------------
 ```
-Connect-ToCloud -Tenant Contoso -Compliance
+Connect-Cloud -Tenant Contoso -Compliance
 ```
 
 Connects to Compliance & Security Center
 
 ### -------------------------- EXAMPLE 6 --------------------------
 ```
-Connect-ToCloud -Tenant Contoso -All365
+Connect-Cloud -Tenant Contoso -All365
 ```
 
 Connects to MS Online Service (MSOL), Exchange Online, Skype, SharePoint & Compliance
 
 ### -------------------------- EXAMPLE 7 --------------------------
 ```
-Connect-ToCloud -Tenant Contoso -All365 -Azure
+Connect-Cloud -Tenant Contoso -All365 -Azure
 ```
 
 Connects to Azure, MS Online Service (MSOL), Exchange Online, Skype, SharePoint & Compliance
 
 ### -------------------------- EXAMPLE 8 --------------------------
 ```
-Connect-ToCloud -Tenant Contoso -Skype -ExchangeOnline -MSOnline
+Connect-Cloud -Tenant Contoso -Skype -ExchangeOnline -MSOnline
 ```
 
 Connects to MS Online Service (MSOL) and Exchange Online and Skype Online

@@ -1,4 +1,4 @@
-function Connect-ToExchange {
+function Connect-Exchange {
     param (
         [Parameter(Mandatory = $False)]
         $ExchangeServer,
@@ -52,7 +52,7 @@ function Connect-ToExchange {
         }
         Catch {
             if ($_.exception.Message -match '"userName" is not valid. Change the value of the "userName" argument and run the operation again') {
-                Connect-ToExchange -DeleteExchangeCreds
+                Connect-Exchange -DeleteExchangeCreds
                 Write-Host "********************************************************************" -foregroundcolor "darkblue" -backgroundcolor "white"
                 Write-Host "                    Bad Username                                    " -foregroundcolor "darkblue" -backgroundcolor "white"
                 Write-Host "          Please try your last command again...                     " -foregroundcolor "darkblue" -backgroundcolor "white"
@@ -68,7 +68,7 @@ function Connect-ToExchange {
             $Credential.Password | ConvertFrom-SecureString | Out-File ($KeyPath + "$($user).ExchangeCred") -Force
         }
         else {
-            Connect-ToExchange -DeleteExchangeCreds
+            Connect-Exchange -DeleteExchangeCreds
             Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
             Write-Host "                 No Password Present.                               " -foregroundcolor "darkgreen" -backgroundcolor "white"
             Write-Host "          Please try your last command again...                     " -foregroundcolor "darkgreen" -backgroundcolor "white"

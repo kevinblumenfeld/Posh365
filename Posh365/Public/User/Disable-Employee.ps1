@@ -44,7 +44,7 @@ Function Disable-Employee {
             Get-CloudAcceptedDomain -erroraction stop | Out-Null
         }
         catch {
-            Connect-ToCloud $targetAddressSuffix -EXOPrefix -ExchangeOnline
+            Connect-Cloud $targetAddressSuffix -EXOPrefix -ExchangeOnline
         }
     }
     Process {
@@ -78,7 +78,7 @@ Function Disable-Employee {
 
         # Convert Cloud Mailbox to type, Shared.
         if (!$DontConvertToShared) {
-            Convert-ToShared -UserToConvert $UserToDisable
+            ConvertTo-Shared -UserToConvert $UserToDisable
         }
 
         # Grant Full Access to mailbox if needed

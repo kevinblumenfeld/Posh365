@@ -5,7 +5,7 @@ online version:
 schema: 2.0.0
 ---
 
-# Connect-ToExchange
+# Connect-Exchange
 
 ## SYNOPSIS
 {{Fill in the Synopsis}}
@@ -13,7 +13,7 @@ schema: 2.0.0
 ## SYNTAX
 
 ```
-Connect-ToExchange [[-ExchangeServer] <Object>] [-DeleteExchangeCreds] [-ViewEntireForest] [<CommonParameters>]
+Connect-Exchange [[-ExchangeServer] <Object>] [-DeleteExchangeCreds] [-ViewEntireForest] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

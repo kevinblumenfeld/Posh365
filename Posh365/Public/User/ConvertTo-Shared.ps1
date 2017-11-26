@@ -1,13 +1,13 @@
-Function Convert-ToShared {
+Function ConvertTo-Shared {
     <#
     .SYNOPSIS
     Converts a Cloud User Mailbox to a Shared Mailbox, Disables the AD User & Removes any licenses
 
     .EXAMPLE
-    Convert-ToShared -UserToConvert JSMITH
+    ConvertTo-Shared -UserToConvert JSMITH
 
     .EXAMPLE
-    Convert-ToShared -UserToConvert JSMITH@CONTOSO.COM
+    ConvertTo-Shared -UserToConvert JSMITH@CONTOSO.COM
    
     #>
     [CmdletBinding()]
@@ -247,19 +247,19 @@ Function Convert-ToShared {
             (Get-OnPremExchangeServer -erroraction stop)[0] | Out-Null
         }
         catch {
-            Connect-ToExchange -ExchangeServer $ExchangeServer  
+            Connect-Exchange -ExchangeServer $ExchangeServer  
         }
         try {
             Get-AzureADTenantDetail -erroraction stop | Out-Null
         }
         catch {
-            Connect-ToCloud $targetAddressSuffix -AzureADver2
+            Connect-Cloud $targetAddressSuffix -AzureADver2
         }
         try {
             (Get-CloudAcceptedDomain -erroraction stop)[0] | Out-Null
         }
         catch {
-            Connect-ToCloud $targetAddressSuffix -ExchangeOnline -EXOPrefix
+            Connect-Cloud $targetAddressSuffix -ExchangeOnline -EXOPrefix
         }
         [string[]]$skusToRemove = Get-CloudSku
     }

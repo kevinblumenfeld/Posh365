@@ -1,4 +1,4 @@
-function Connect-ToCloud {
+function Connect-Cloud {
     
  
     [CmdletBinding(SupportsShouldProcess = $true)]
@@ -95,7 +95,7 @@ function Connect-ToCloud {
                 }
                 Catch {
                     if ($_.exception.Message -match '"userName" is not valid. Change the value of the "userName" argument and run the operation again') {
-                        Connect-ToCloud $Tenant -DeleteCreds
+                        Connect-Cloud $Tenant -DeleteCreds
                         Write-Host "********************************************************************" -foregroundcolor "darkblue" -backgroundcolor "white"
                         Write-Host "                    Bad Username                                    " -foregroundcolor "darkblue" -backgroundcolor "white"
                         Write-Host "          Please Try your last command again...                     " -foregroundcolor "darkblue" -backgroundcolor "white"
@@ -111,7 +111,7 @@ function Connect-ToCloud {
                     $Credential.Password | ConvertFrom-SecureString | Out-File ($KeyPath + "$($Tenant).$($user).cred") -Force
                 }
                 else {
-                    Connect-ToCloud $Tenant -DeleteCreds
+                    Connect-Cloud $Tenant -DeleteCreds
                     Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
                     Write-Host "                 No Password Present                                " -foregroundcolor "darkgreen" -backgroundcolor "white"
                     Write-Host "          Please Try your last command again...                     " -foregroundcolor "darkgreen" -backgroundcolor "white"
@@ -147,7 +147,7 @@ function Connect-ToCloud {
             }
             Catch {
                 if ($_.exception.Message -match "Bad username or password") {
-                    Connect-ToCloud $Tenant -DeleteCreds
+                    Connect-Cloud $Tenant -DeleteCreds
                     Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
                     Write-Host "           Bad Username or Password.                                " -foregroundcolor "darkgreen" -backgroundcolor "white"
                     Write-Host "          Please Try your last command again...                     " -foregroundcolor "darkgreen" -backgroundcolor "white"

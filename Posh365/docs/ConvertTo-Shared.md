@@ -5,14 +5,14 @@ online version:
 schema: 2.0.0
 ---
 
-# Convert-ToShared
+# ConvertTo-Shared
 
 ## SYNOPSIS
 
 ## SYNTAX
 
 ```
-Convert-ToShared [-User] <String[]> [<CommonParameters>]
+ConvertTo-Shared [-User] <String[]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION

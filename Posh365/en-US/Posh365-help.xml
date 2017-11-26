@@ -2,7 +2,7 @@
 <helpItems schema="maml" xmlns="http://msh">
   <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
     <command:details>
-      <command:name>Connect-ToCloud</command:name>
+      <command:name>Connect-Cloud</command:name>
       <command:verb>Connect</command:verb>
       <command:noun>ToCloud</command:noun>
       <maml:description>
@@ -13,9 +13,9 @@
       <maml:para>Connects to Office 365 services and/or Azure.</maml:para>
       <maml:para>Connects to some or all of the Office 365/Azure services based on switches provided at runtime.</maml:para>
       <maml:para>Office 365 tenant name, for example, either contoso or contoso.onmicrosoft.com must be provided with -Tenant parameter. Additionally, if more than one username will be used against a single tenant, use the -User parameter (for the second username and on).  Use anything unique to that username so the credential can be properly saved.  Both the -Tenant and -User parameters are positional so it's not necessary to type -Tenant or -User.  The -Tenant parameter is mandatory while the -User parameter is optional.</maml:para>
-      <maml:para>For example, Connect-ToCloud Contoso -Exchange demonstrates how it is not necessary to use the -User parameter and how the -Tenant parameter is positional.  However, say I want to connect to the Contoso tenant as frank@contoso.com I could use Connect-ToCloud Contoso Frank -Exchange When just connecting to Azure, it is still required to provide a Tenant, anything that uniquely identifies it.</maml:para>
+      <maml:para>For example, Connect-Cloud Contoso -Exchange demonstrates how it is not necessary to use the -User parameter and how the -Tenant parameter is positional.  However, say I want to connect to the Contoso tenant as frank@contoso.com I could use Connect-Cloud Contoso Frank -Exchange When just connecting to Azure, it is still required to provide a Tenant, anything that uniquely identifies it.</maml:para>
       <maml:para>There is a switch to use Multi-Factor Authentication.  For Exchange Online MFA, you are required to download and use the Exchange Online Remote PowerShell Module. To download the Exchange Online Remote PowerShell Module for multi-factor authentication, in the EAC (https://outlook.office365.com/ecp/), go to Hybrid &gt; Setup and click the appropriate Configure button.  When using Multi-Factor Authentication the saving of credentials is not available currently - thus each service will prompt independently for credentials.  Also the Security and Compliance Center does not currently support multi-factor authentication.</maml:para>
-      <maml:para>Locally saves and encrypts to a file the username and password. The encrypted file...can only be used on the computer and within the user's profile from which it was created, is the same .txt file for all the Office 365 services and is a separate .json file for Azure.  If a username or password becomes corrupt or is entered incorrectly, it can be deleted using -DeleteCreds.  For example, Connect-ToCloud Contoso -DeleteCreds If Azure switch is used for first time :</maml:para>
+      <maml:para>Locally saves and encrypts to a file the username and password. The encrypted file...can only be used on the computer and within the user's profile from which it was created, is the same .txt file for all the Office 365 services and is a separate .json file for Azure.  If a username or password becomes corrupt or is entered incorrectly, it can be deleted using -DeleteCreds.  For example, Connect-Cloud Contoso -DeleteCreds If Azure switch is used for first time :</maml:para>
       <maml:para>1.  User will login as normal when prompted by Azure 2.  User will be prompted to select which Azure Subscription 3.  Select the subscription and click "OK"</maml:para>
       <maml:para>If Azure switch is used after first time:</maml:para>
       <maml:para>1.  User will be prompted to pick username used previously 2.  If a new username is to be used (e.g. username not found when prompted), click Cancel to be prompted to login. 3.  User will be prompted to select which Azure Subscription 4.  Select the subscription and click "OK"</maml:para>
@@ -25,7 +25,7 @@
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
-        <maml:name>Connect-ToCloud</maml:name>
+        <maml:name>Connect-Cloud</maml:name>
         <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="none">
           <maml:name>Tenant</maml:name>
           <maml:Description>
@@ -382,7 +382,7 @@
     <command:examples>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
-        <dev:code>Connect-ToCloud -Tenant Contoso -ExchangeOnline -MSOnline</dev:code>
+        <dev:code>Connect-Cloud -Tenant Contoso -ExchangeOnline -MSOnline</dev:code>
         <dev:remarks>
           <maml:para>Connects to MS Online Service (MSOL) and Exchange Online</maml:para>
           <maml:para>The tenant must be specified, for example either contoso or contoso.onmicrosoft.com</maml:para>
@@ -390,7 +390,7 @@
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
-        <dev:code>Connect-ToCloud Contoso -Skype -Azure -ExchangeOnline -MSOnline</dev:code>
+        <dev:code>Connect-Cloud Contoso -Skype -Azure -ExchangeOnline -MSOnline</dev:code>
         <dev:remarks>
           <maml:para>Connects to Azure, MS Online Service (MSOL), Exchange Online &amp; Skype</maml:para>
           <maml:para>This is to illustrate that any number of individual services can be used to connect. Also that the -Tenant parameter is positional</maml:para>
@@ -398,42 +398,42 @@
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
-        <dev:code>Connect-ToCloud -Tenant Contoso -SharePoint</dev:code>
+        <dev:code>Connect-Cloud -Tenant Contoso -SharePoint</dev:code>
         <dev:remarks>
           <maml:para>Connects to SharePoint Online</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 4 --------------------------</maml:title>
-        <dev:code>Connect-ToCloud -Tenant Contoso -DeleteCreds</dev:code>
+        <dev:code>Connect-Cloud -Tenant Contoso -DeleteCreds</dev:code>
         <dev:remarks>
           <maml:para>The switch, DeleteCreds can be used if invalid credentials were inadvertently entered. Typically, the symptom would be a user would be prompted each time for credentials, as the saved credential is invalid. Use this switch with the mandatory Tenant parameter to delete the appropriate credentials. Credentials will then be saved on the following login.</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 5 --------------------------</maml:title>
-        <dev:code>Connect-ToCloud -Tenant Contoso -Compliance</dev:code>
+        <dev:code>Connect-Cloud -Tenant Contoso -Compliance</dev:code>
         <dev:remarks>
           <maml:para>Connects to Compliance &amp; Security Center</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 6 --------------------------</maml:title>
-        <dev:code>Connect-ToCloud -Tenant Contoso -All365</dev:code>
+        <dev:code>Connect-Cloud -Tenant Contoso -All365</dev:code>
         <dev:remarks>
           <maml:para>Connects to MS Online Service (MSOL), Exchange Online, Skype, SharePoint &amp; Compliance</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 7 --------------------------</maml:title>
-        <dev:code>Connect-ToCloud -Tenant Contoso -All365 -Azure</dev:code>
+        <dev:code>Connect-Cloud -Tenant Contoso -All365 -Azure</dev:code>
         <dev:remarks>
           <maml:para>Connects to Azure, MS Online Service (MSOL), Exchange Online, Skype, SharePoint &amp; Compliance</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 8 --------------------------</maml:title>
-        <dev:code>Connect-ToCloud -Tenant Contoso -Skype -ExchangeOnline -MSOnline</dev:code>
+        <dev:code>Connect-Cloud -Tenant Contoso -Skype -ExchangeOnline -MSOnline</dev:code>
         <dev:remarks>
           <maml:para>Connects to MS Online Service (MSOL) and Exchange Online and Skype Online</maml:para>
         </dev:remarks>
@@ -443,7 +443,7 @@
   </command:command>
   <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
     <command:details>
-      <command:name>Connect-ToExchange</command:name>
+      <command:name>Connect-Exchange</command:name>
       <command:verb>Connect</command:verb>
       <command:noun>ToExchange</command:noun>
       <maml:description>
@@ -455,7 +455,7 @@
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
-        <maml:name>Connect-ToExchange</maml:name>
+        <maml:name>Connect-Exchange</maml:name>
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="none">
           <maml:name>ExchangeServer</maml:name>
           <maml:Description>
@@ -568,7 +568,7 @@
   </command:command>
   <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
     <command:details>
-      <command:name>Convert-ToShared</command:name>
+      <command:name>ConvertTo-Shared</command:name>
       <command:verb>Convert</command:verb>
       <command:noun>ToShared</command:noun>
       <maml:description>
@@ -580,7 +580,7 @@
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
-        <maml:name>Convert-ToShared</maml:name>
+        <maml:name>ConvertTo-Shared</maml:name>
         <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue)" position="1" aliases="none">
           <maml:name>User</maml:name>
           <maml:Description>
@@ -3147,7 +3147,7 @@ No matter which switch is used, the person running the script will be presented 
     <command:examples>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
-        <dev:code>Connect-ToCloud -Tenant Contoso -AzureADver2
+        <dev:code>Connect-Cloud -Tenant Contoso -AzureADver2
 
 (Get-AzureADUser -SearchString cloud0).userprincipalname | Set-CloudLicense -MoveOptionsFromOneSkuToAnother</dev:code>
         <dev:remarks>
@@ -3160,7 +3160,7 @@ the person running the script will be presented with 2 GUIs to select the Source
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
-        <dev:code>Connect-ToCloud -Tenant Contoso -AzureADver2
+        <dev:code>Connect-Cloud -Tenant Contoso -AzureADver2
 
 Get-Content .\upns.txt | Set-CloudLicense -MoveOptionsFromOneSkuToAnother -MoveOptionsSourceOptionsToIgnore -MoveOptionsDestOptionsToAdd</dev:code>
         <dev:remarks>
@@ -3169,7 +3169,7 @@ Get-Content .\upns.txt | Set-CloudLicense -MoveOptionsFromOneSkuToAnother -MoveO
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
-        <dev:code>Connect-ToCloud -Tenant Contoso -AzureADver2
+        <dev:code>Connect-Cloud -Tenant Contoso -AzureADver2
 
 Get-Content .\upns.txt | Set-CloudLicense -MoveOptionsFromOneSkuToAnother -MoveOptionsSourceOptionsToIgnore -MoveOptionsDestOptionsToAdd 
 
@@ -3183,7 +3183,7 @@ user02@contoso.com</dev:code>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 4 --------------------------</maml:title>
-        <dev:code>Connect-ToCloud -Tenant Contoso -AzureADver2
+        <dev:code>Connect-Cloud -Tenant Contoso -AzureADver2
 
 (Get-AzureADUser -ObjectID "foo@contoso.com").userprincipalname | Set-CloudLicense -AddSku</dev:code>
         <dev:remarks>
@@ -3192,7 +3192,7 @@ user02@contoso.com</dev:code>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 5 --------------------------</maml:title>
-        <dev:code>Connect-ToCloud -Tenant Contoso -AzureADver2
+        <dev:code>Connect-Cloud -Tenant Contoso -AzureADver2
 
 (Get-AzureADUser -SearchString cloud01).userprincipalname | Set-CloudLicense -AddOptions</dev:code>
         <dev:remarks>
@@ -3201,7 +3201,7 @@ user02@contoso.com</dev:code>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 6 --------------------------</maml:title>
-        <dev:code>Connect-ToCloud -Tenant Contoso -AzureADver2
+        <dev:code>Connect-Cloud -Tenant Contoso -AzureADver2
 
 (Get-AzureADUser -Department 'Human Resources').userprincipalname| Set-CloudLicense -RemoveSku</dev:code>
         <dev:remarks>
@@ -3210,7 +3210,7 @@ user02@contoso.com</dev:code>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 7 --------------------------</maml:title>
-        <dev:code>Connect-ToCloud -Tenant Contoso -AzureADver2
+        <dev:code>Connect-Cloud -Tenant Contoso -AzureADver2
 
 Get-Content .\upns.txt | Set-CloudLicense -RemoveOptions</dev:code>
         <dev:remarks>
@@ -3219,7 +3219,7 @@ Get-Content .\upns.txt | Set-CloudLicense -RemoveOptions</dev:code>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 8 --------------------------</maml:title>
-        <dev:code>Connect-ToCloud -Tenant Contoso -AzureADver2
+        <dev:code>Connect-Cloud -Tenant Contoso -AzureADver2
 
 (Get-AzureADUser -Filter "JobTitle eq 'CEO'").userprincipalname   | Set-CloudLicense -ReportUserLicenses
 (Get-AzureADUser -SearchString "John Smith").userprincipalname    | Set-CloudLicense -ReportUserLicensesEnabled
@@ -3230,7 +3230,7 @@ Get-Content .\upns.txt | Set-CloudLicense -RemoveOptions</dev:code>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 9 --------------------------</maml:title>
-        <dev:code>Connect-ToCloud -Tenant Contoso -AzureADver2
+        <dev:code>Connect-Cloud -Tenant Contoso -AzureADver2
 
 (Get-AzureADUser -SearchString foo).userprincipalname | Set-CloudLicense -DisplayTenantsSkusAndOptionsLookup</dev:code>
         <dev:remarks>
@@ -3239,7 +3239,7 @@ Get-Content .\upns.txt | Set-CloudLicense -RemoveOptions</dev:code>
       </command:example>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 10 --------------------------</maml:title>
-        <dev:code>Connect-ToCloud -Tenant Contoso -AzureADver2
+        <dev:code>Connect-Cloud -Tenant Contoso -AzureADver2
 
 Get-Content .\upns.txt | Set-CloudLicense -TemplateMode</dev:code>
         <dev:remarks>

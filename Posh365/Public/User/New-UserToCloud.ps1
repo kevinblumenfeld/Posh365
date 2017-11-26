@@ -156,13 +156,13 @@ Function New-UserToCloud {
             (Get-OnPremExchangeServer -erroraction stop)[0] | Out-Null
         }
         catch {
-            Connect-ToExchange -ExchangeServer $ExchangeServer  
+            Connect-Exchange -ExchangeServer $ExchangeServer  
         }
         try {
             Get-AzureADTenantDetail -erroraction stop | Out-Null
         }
         catch {
-            Connect-ToCloud $targetAddressSuffix -AzureADver2
+            Connect-Cloud $targetAddressSuffix -AzureADver2
         }
     
         $OUSearch2 = "Users"
@@ -327,7 +327,7 @@ Function New-UserToCloud {
                 Start-Job -Name ConvertToShared {
                     Start-Sleep -Seconds 300
                     $userprincipalname = $args[0]
-                    $userprincipalname | Convert-ToShared
+                    $userprincipalname | ConvertTo-Shared
                 } -ArgumentList  $userprincipalname | Out-Null
             }
     
