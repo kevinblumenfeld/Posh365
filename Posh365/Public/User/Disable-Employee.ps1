@@ -54,7 +54,10 @@ Function Disable-Employee {
         # Hide from Address List, Set User's Password to Random Complex Password
 
         if ($UserToDisable -like "*@*") {
-            $PrimarySMTP = (Get-ADUser -LDAPFilter "(Userprincipalname=$UserToDisable)" -Server $domainController | select @{n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses | ? {$_ -cmatch "SMTP:*"}).Substring(5)}}).PrimarySMTPAddress
+            $PrimarySMTP = (Get-ADUser -LDAPFilter "(Userprincipalname=$UserToDisable)" -Properties Proxyaddresses -Server $domainController |
+                    select @{n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses |
+                                ? {$_ -cmatch "SMTP:*"}).Substring(5)}
+                }).PrimarySMTPAddress
             Get-ADUser -LDAPFilter "(Userprincipalname=$UserToDisable)" -Server $domainController | 
                 Set-ADUser -replace @{
                 msExchHideFromAddressLists = $True
@@ -63,8 +66,10 @@ Function Disable-Employee {
                 Set-ADAccountPassword -NewPassword (ConvertTo-SecureString -AsPlainText $NewP -Force)
         }
         else {
-            $PrimarySMTP = (Get-ADUser -LDAPFilter "(samaccountname=$UserToDisable)" -Server $domainController | 
-                    select @{n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses | ? {$_ -cmatch "SMTP:*"}).Substring(5)}}).PrimarySMTPAddress
+            $PrimarySMTP = (Get-ADUser -LDAPFilter "(samaccountname=$UserToDisable)" -Properties Proxyaddresses -Server $domainController | 
+                    select @{n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses |
+                                ? {$_ -cmatch "SMTP:*"}).Substring(5)}
+                }).PrimarySMTPAddress
             Get-ADUser -LDAPFilter "(samaccountname=$UserToDisable)" -erroraction stop -Server $domainController | 
                 Set-ADUser -replace @{
                 msExchHideFromAddressLists = $True
