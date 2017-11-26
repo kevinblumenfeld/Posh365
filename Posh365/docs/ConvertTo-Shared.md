@@ -12,7 +12,7 @@ schema: 2.0.0
 ## SYNTAX
 
 ```
-ConvertTo-Shared [-User] <String[]> [<CommonParameters>]
+ConvertTo-Shared [[-UserToConvert] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -32,18 +32,18 @@ ConvertTo-Shared [-User] <String[]> [<CommonParameters>]
 
 ## PARAMETERS
 
-### -User
-{{Fill User Description}}
+### -UserToConvert
+{{Fill UserToConvert Description}}
 
 ```yaml
-Type: String[]
+Type: String
 Parameter Sets: (All)
 Aliases: 
 
-Required: True
+Required: False
 Position: 1
 Default value: None
-Accept pipeline input: True (ByValue)
+Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 

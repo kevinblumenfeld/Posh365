@@ -32,6 +32,7 @@ Get-RetentionLinks | Export-Csv ./Retention.csv -NoTypeInformation
 ```
 Get-RetentionLinks | Out-GridView
 ```
+
 ## PARAMETERS
 
 ### CommonParameters

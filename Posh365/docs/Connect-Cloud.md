@@ -14,7 +14,8 @@ schema: 2.0.0
 
 ```
 Connect-Cloud [-Tenant] <String> [[-User] <String>] [-ExchangeOnline] [-MSOnline] [-All365] [-Azure] [-Skype]
- [-SharePoint] [-Compliance] [-AzureADver2] [-MFA] [-DeleteCreds] [-WhatIf] [-Confirm] [<CommonParameters>]
+ [-SharePoint] [-Compliance] [-AzureADver2] [-MFA] [-DeleteCreds] [-EXOPrefix] [-WhatIf] [-Confirm]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -326,6 +327,21 @@ The cmdlet is not run.
 Type: SwitchParameter
 Parameter Sets: (All)
 Aliases: wi
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -EXOPrefix
+{{Fill EXOPrefix Description}}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: 
 
 Required: False
 Position: Named

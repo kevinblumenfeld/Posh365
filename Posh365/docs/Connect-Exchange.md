@@ -13,7 +13,8 @@ schema: 2.0.0
 ## SYNTAX
 
 ```
-Connect-Exchange [[-ExchangeServer] <Object>] [-DeleteExchangeCreds] [-ViewEntireForest] [<CommonParameters>]
+Connect-Exchange [[-ExchangeServer] <Object>] [-NoPrefix] [-DeleteExchangeCreds] [-ViewEntireForest]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -62,6 +63,21 @@ Accept wildcard characters: False
 
 ### -ViewEntireForest
 {{Fill ViewEntireForest Description}}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -NoPrefix
+{{Fill NoPrefix Description}}
 
 ```yaml
 Type: SwitchParameter
