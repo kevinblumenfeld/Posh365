@@ -21,6 +21,7 @@ Function Watch-ToLicense {
     $WatcherJob = Start-Job -Name WatchToLicense {
         $optionsToAdd = $args[0]
         $GuidFolder = $args[1]
+        $targetAddressSuffix = $args[2]
         Set-Location $GuidFolder
         Connect-ToCloud $targetAddressSuffix -AzureADver2
         Start-Sleep -Seconds 120
@@ -36,5 +37,5 @@ Function Watch-ToLicense {
             }
         }
         Disconnect-AzureAD
-    } -ArgumentList $optionsToAdd, $GuidFolder | Out-Null 
+    } -ArgumentList $optionsToAdd, $GuidFolder, $targetAddressSuffix | Out-Null 
 }    
