@@ -14,8 +14,8 @@ Function Watch-ToLicense {
     )
 
     $RootPath = $env:USERPROFILE + "\ps\"
-    $KeyPath = $Rootpath + "creds\"
-    
+    $User = $env:USERNAME
+
     $targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")
 
     $WatcherJob = Start-Job -Name WatchToLicense {

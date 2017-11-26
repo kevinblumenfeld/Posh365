@@ -253,13 +253,13 @@ Function Convert-ToShared {
             Get-AzureADTenantDetail -erroraction stop | Out-Null
         }
         catch {
-            Connect-ToCloud ($targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")) -AzureADver2
+            Connect-ToCloud $targetAddressSuffix -AzureADver2
         }
         try {
             (Get-CloudAcceptedDomain -erroraction stop)[0] | Out-Null
         }
         catch {
-            Connect-ToCloud ($targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")) -ExchangeOnline -EXOPrefix
+            Connect-ToCloud $targetAddressSuffix -ExchangeOnline -EXOPrefix
         }
         [string[]]$skusToRemove = Get-CloudSku
     }

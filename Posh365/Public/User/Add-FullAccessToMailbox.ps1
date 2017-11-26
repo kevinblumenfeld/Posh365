@@ -29,7 +29,7 @@ Function Grant-FullAccessToMailbox {
             (Get-CloudAcceptedDomain -erroraction stop)[0] | Out-Null
         }
         catch {
-            Connect-ToCloud ($targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")) -ExchangeOnline -EXOPrefix
+            Connect-ToCloud $targetAddressSuffix -ExchangeOnline -EXOPrefix
         }
 
     }

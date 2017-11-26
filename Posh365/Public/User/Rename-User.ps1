@@ -72,7 +72,7 @@ Function Rename-User {
             }
             catch {
                 Try {
-                    Connect-ToCloud ($targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")) -MSOnline -AzureADver2 -erroraction stop
+                    Connect-ToCloud $targetAddressSuffix -MSOnline -AzureADver2 -erroraction stop
 
                 } 
                 Catch {

@@ -44,7 +44,7 @@ Function Disable-Employee {
             Get-CloudAcceptedDomain -erroraction stop | Out-Null
         }
         catch {
-            Connect-ToCloud ($targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")) -EXOPrefix -ExchangeOnline
+            Connect-ToCloud $targetAddressSuffix -EXOPrefix -ExchangeOnline
         }
     }
     Process {
