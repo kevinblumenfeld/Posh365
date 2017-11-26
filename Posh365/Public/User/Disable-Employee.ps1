@@ -74,7 +74,7 @@ Function Disable-Employee {
         }
 
         # Remove ActiveSync and OWA for Mobile Devices
-        Set-CASMailbox $PrimarySMTP -ActiveSyncEnabled:$False -OWAforDevicesEnabled:$False
+        Set-CloudCASMailbox $PrimarySMTP -ActiveSyncEnabled:$False -OWAforDevicesEnabled:$False
 
         # Convert Cloud Mailbox to type, Shared.
         if (!$DontConvertToShared) {
