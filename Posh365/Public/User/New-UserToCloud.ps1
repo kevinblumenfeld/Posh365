@@ -162,7 +162,7 @@ Function New-UserToCloud {
             Get-AzureADTenantDetail -erroraction stop | Out-Null
         }
         catch {
-            Connect-ToCloud ($targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")) -AzureADver2
+            Connect-ToCloud $targetAddressSuffix -AzureADver2
         }
     
         $OUSearch2 = "Users"

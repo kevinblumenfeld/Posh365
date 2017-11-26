@@ -381,10 +381,12 @@ function Get-LAAzureConnected {
         Catch {
             Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
             Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
-            Write-Output "   Azure credentials have expired. Authenticate again please."
+            Write-Output " Azure credentials are invalid or expired. Authenticate again please."
             Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
             Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
-            Remove-Item ($KeyPath + $json.name)
+            if ($json.name) {
+                Remove-Item ($KeyPath + $json.name)
+            }
             Get-LAAzureConnected
         }
     }
