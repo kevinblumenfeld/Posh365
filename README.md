@@ -37,7 +37,7 @@ Allows for easy connecting to Office 365 and Azure services while saving and enc
 This prevents having to constantly type in credentials each session.  
   
 Office 365 tenant name, for example, either contoso or contoso.onmicrosoft.com must be provided with -Tenant parameter. Additionally, if more than one username will be used against a single tenant, use the -User parameter (for the second username and so on).  
-Use anything unique to that username so the credential can be uniquely saved.  -User parameter is no mandatory.
+Use anything unique to that username so the credential can be uniquely saved.  -User parameter is **not** mandatory.
 
 ## Set-CloudLicense
 
