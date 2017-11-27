@@ -9,7 +9,7 @@ Posh365 is a Toolbox for Office 365 Environments
 
 Creates a new Active Directory user in an OU of your choosing.  The user is given an Office 365 mailbox and licensed by you.  Once the command is run you will be presented with grids to select the OU and the license for the user.  
 
-    New-UserToCloud -New -FirstName John -LastName Smith -StreetAddress "100 Industry Ln" -City "New York" -State "NY" -Zip "30002" -OfficePhone "(404)555-1212" -Description "Lexington Warehouse" -Department "Warehouse" -Title "Forklift Operator"
+    New-UserToCloud -New -FirstName John -LastName Smith -StreetAddress "100 Industry Ln" -City "New York" -State "NY" -Zip "10004" -OfficePhone "(212)555-1212" -Description "Manhattan Warehouse" -Department "Warehouse" -Title "Forklift Operator"
 
 
 
