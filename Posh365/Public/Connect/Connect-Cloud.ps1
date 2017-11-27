@@ -4,46 +4,33 @@ function Connect-Cloud {
     [CmdletBinding(SupportsShouldProcess = $true)]
     Param
     (
-
         [parameter(Position = 0, Mandatory = $true)]
         [string] $Tenant,
 
-        [parameter(Position = 1, Mandatory = $false)]
+        [parameter(Position = 1)]
         [string] $User,
                            
-        [Parameter(Mandatory = $false)]
         [switch] $ExchangeOnline,
                               
-        [Parameter(Mandatory = $false)]
         [switch] $MSOnline,
                        
-        [Parameter(Mandatory = $false)]
         [switch] $All365,
                 
-        [Parameter(Mandatory = $false)]
         [switch] $Azure,    
 
-        [parameter(Mandatory = $false)]
         [switch] $Skype,
           
-        [parameter(Mandatory = $false)]
         [switch] $SharePoint,
-         
-        [parameter(Mandatory = $false)]
+        
         [switch] $Compliance,
 
-        [parameter(Mandatory = $false)]
-        [switch] $AzureADver2,
-               
-        [Parameter(Mandatory = $false)]
+        [switch] $AzureADver2,               
+
         [switch] $MFA,
 
-        [parameter(Mandatory = $false)]
         [switch] $DeleteCreds,
-        
-        [parameter(Mandatory = $false)]
+
         [switch] $EXOPrefix
-        
     )
 
     Begin {
@@ -125,25 +112,17 @@ function Connect-Cloud {
         if ($MSOnline -or $All365) {
             # Office 365 Tenant
             Try {
-                Get-Module -ListAvailable MSOnline -ErrorAction Stop
+                Get-MsolAccountSku -ErrorAction Stop | Out-Null
             }
             Catch {
+                Write-Output "The MSOnline module will now be installed.  Please select [Y] Yes when prompted"
                 Install-Module -Name MSOnline -Scope CurrentUser
-            }
-            Try {
-                Import-Module MsOnline -ErrorAction Stop
-            }
-            Catch {
-                Write-Output "MSOnline module is required"
-                Write-Output "To download the prerequisite and MSOnline module:"
-                Write-Output "https://technet.microsoft.com/en-us/library/dn975125.aspx"
             }
             Try {
                 Connect-MsolService -Credential $Credential -ErrorAction Stop
                 Write-Output "*******************************************"
                 Write-Output "You have successfully connected to MSONLINE"
                 Write-Output "*******************************************"
-                
             }
             Catch {
                 if ($_.exception.Message -match "Bad username or password") {
@@ -272,16 +251,11 @@ function Connect-Cloud {
         If ($AzureADver2 -or $All365) {
             if (! $MFA) {  
                 Try {
-                    Get-Module AzureAD -listavailable -ErrorAction Stop
-                }
-                Catch {
-                    Install-Module AzureAD -scope CurrentUser
-                }
-                Try {
                     Get-AzureADTenantDetail -ErrorAction Stop
                 }
                 Catch {
-                    Import-Module -Name AzureAD -MinimumVersion '2.0.0.131' -ErrorAction Stop
+                    Write-Output "The AzureAD module will now be installed.  Please select [Y] Yes when prompted"
+                    Install-Module AzureAD -scope CurrentUser
                 }
                 Try {
                     Connect-AzureAD -Credential $Credential -ErrorAction Stop
@@ -297,16 +271,11 @@ function Connect-Cloud {
             }
             else {
                 Try {
-                    Get-Module AzureAD -listavailable -ErrorAction Stop
+                    Get-AzureADTenantDetail -ErrorAction Stop | Out-Null
                 }
                 Catch {
+                    Write-Output "The AzureAD module will now be installed.  Please select [Y] Yes when prompted"
                     Install-Module AzureAD -scope CurrentUser
-                }
-                Try {
-                    Get-AzureADTenantDetail -ErrorAction Stop
-                }
-                Catch {
-                    Import-Module -Name AzureAD -MinimumVersion '2.0.0.131' -ErrorAction Stop
                 }
                 Try {
                     Connect-AzureAD -Credential $Credential -ErrorAction Stop
@@ -331,13 +300,8 @@ function Get-LAAzureConnected {
         Get-AzureRmTenant -erroraction stop 
     }
     Catch {
+        Write-Output "The Azure module will now be installed.  Please select [Y] Yes when prompted"
         Install-Module -Name AzureRM -Scope CurrentUser
-    }
-    Try {
-        Get-AzureRmTenant -erroraction stop
-    }
-    Catch {
-        Import-Module -Name AzureRM -MinimumVersion '4.2.1'
     }
     if (! $MFA) {
         $json = Get-ChildItem -Recurse -Include '*@*.json' -Path $KeyPath
