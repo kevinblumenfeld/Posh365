@@ -1,13 +1,45 @@
-# Connect-Cloud
+# Posh365
+Connect.  Provision.  Maintain.  
+Posh365 is a Toolbox for Office 365 Environments
+
+
+## New-UserToCloud
+
+**-New**
+
+Creates a new Active Directory user in an OU of your choosing.  The user is given an Office 365 mailbox and licensed by you.  Once the command is run you will be presented with grids to select the OU and the license for the user.  
+
+    New-UserToCloud -New -FirstName John -LastName Smith -StreetAddress "100 Industry Ln" -City "New York" -State "NY" -Zip "30002" -OfficePhone "(404)555-1212" -Description "Lexington Warehouse" -Department "Warehouse" -Title "Forklift Operator"
+
+
+
+> **Note:**
+>
+> - The **only mandatory parameters** are **Firstname** and **Lastname**
+> - After entering the command you will be prompted to enter a new password for the user
+
+**-UserToCopy**
+
+Creates a new Active Directory user in an OU of your choosing, while copying these attributes of another AD user: *StreetAddress, City, State & PostalCode*.  The user is given an Office 365 mailbox and licensed by you.  Once the command is run you will be presented with grids to select the OU and the license for the user.  
+
+    New-UserToCloud -UserToCopy FJones -FirstName John -LastName Smith
+
+**-Shared**
+
+Creates a disabled Active Directory user in an OU of your choosing.  A shared mailbox is created and is associated with the AD User.  Once the command is run you will be presented with grids to select the OU and the license for the user.  After a few minutes the license will be removed as Shared Mailboxes do not require a license.
+
+     New-UserToCloud -Shared -SharedMailboxEmailAlias "Sales" -DisplayName "Sales Department" -Description "Shared Mailbox for Sales Department"
+     
+
+## Connect-Cloud
+
 Allows for easy connecting to Office 365 and Azure services while saving and encrypting your passwords locally.  
 This prevents having to constantly type in credentials each session.  
   
 Office 365 tenant name, for example, either contoso or contoso.onmicrosoft.com must be provided with -Tenant parameter. Additionally, if more than one username will be used against a single tenant, use the -User parameter (for the second username and so on).  
 Use anything unique to that username so the credential can be uniquely saved.  -User parameter is no mandatory.
 
-Detailed help with examples can be found here:
-https://github.com/kevinblumenfeld/365Tools/blob/master/365Tools/docs/Connect-Cloud.md
-# Set-CloudLicense
+## Set-CloudLicense
 
 The person running the script uses the switch(es) provided at runtime to select an action(s). The script will then present a GUI (Out-GridView) from which the person running the script will select. Depending on the switch(es), the GUI will contain Skus and/or Options - all specific to their Office 365 tenant.
 
@@ -22,21 +54,11 @@ For example, the person running the script could choose to remove a Sku, add a d
 It is more simple to use "Add Options" anyway.
 
 No matter which switch is used, the person running the script will be presented with a GUI(s) for any selections that need to be made.  
+ 
 
-Detailed help with examples can be found here:
-https://github.com/kevinblumenfeld/365Tools/blob/master/365Tools/docs/Set-CloudLicense.md  
+ 
 
-# New-UserToCloud  
-Creates new AD user and corresponding 365 mailbox with one command  
-Shared mailboxes can be created in the same manner with (with -shared switch)  
-Alternatively, can copy the properties of an existing AD User to a new AD User and creates its Office 365 Mailbox  
-Syncs changes to Office 365 with Azure AD Connect (AADC)  
-Grid of licenses are presented to user of script to select from and then applied to 365 User  
-
-Detailed help with examples can be found here:  
-https://github.com/kevinblumenfeld/365Tools/blob/master/365Tools/docs/New-UserToCloud.md  
-
-# SYNOPSIS  
+# SYNOPSIS (under construction)  
 
 1.	Connect-Exchange - on premise connections to on prem Exchange   
 2.	Connect-Cloud – connects to all 365 services incl support for mfa also azure  
