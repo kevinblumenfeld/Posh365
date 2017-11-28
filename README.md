@@ -1,15 +1,16 @@
 # Posh365
+
 Connect.  Provision.  Maintain.  
 Posh365 is a Toolbox for Office 365 Environments
 
 
 ## New-UserToCloud
 
-**-New**
+##### -New
 
 Creates a new Active Directory user in an OU of your choosing.  The user is given an Office 365 mailbox and licensed by you.  Once the command is run you will be presented with grids to select the OU and the license for the user.  
 
-    New-UserToCloud -New -FirstName John -LastName Smith -StreetAddress "100 Industry Ln" -City "New York" -State "NY" -Zip "10004" -OfficePhone "(212)555-1212" -Description "Manhattan Warehouse" -Department "Warehouse" -Title "Forklift Operator"
+    New-UserToCloud -New -FirstName John -LastName Smith -StreetAddress "100 Industry Ln" -City "New York" -State "NY" -Zip "30002" -OfficePhone "(404)555-1212" -Description "Manhattan Warehouse" -Department "Warehouse" -Title "Forklift Operator"
 
 
 
@@ -17,20 +18,20 @@ Creates a new Active Directory user in an OU of your choosing.  The user is give
 >
 > - The **only mandatory parameters** are **Firstname** and **Lastname**
 > - After entering the command you will be prompted to enter a new password for the user
-
-**-UserToCopy**
+> - User will be required to enter a new password at first login
+  
+##### -UserToCopy
 
 Creates a new Active Directory user in an OU of your choosing, while copying these attributes of another AD user: *StreetAddress, City, State & PostalCode*.  The user is given an Office 365 mailbox and licensed by you.  Once the command is run you will be presented with grids to select the OU and the license for the user.  
 
     New-UserToCloud -UserToCopy FJones -FirstName John -LastName Smith
 
-**-Shared**
+##### -Shared
 
 Creates a disabled Active Directory user in an OU of your choosing.  A shared mailbox is created and is associated with the AD User.  Once the command is run you will be presented with grids to select the OU and the license for the user.  After a few minutes the license will be removed as Shared Mailboxes do not require a license.
 
      New-UserToCloud -Shared -SharedMailboxEmailAlias "Sales" -DisplayName "Sales Department" -Description "Shared Mailbox for Sales Department"
      
-
 ## Connect-Cloud
 
 Allows for easy connecting to Office 365 and Azure services while saving and encrypting your passwords locally.  
