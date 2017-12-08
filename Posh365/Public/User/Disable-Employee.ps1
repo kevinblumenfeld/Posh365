@@ -30,12 +30,12 @@ Function Disable-Employee {
         $RootPath = $env:USERPROFILE + "\ps\"
         $User = $env:USERNAME
     
-        While (!(Get-Content ($RootPath + "$($user).DomainController") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        While (!(Get-Content ($RootPath + "$($user).DomainController") -ErrorAction SilentlyContinue | Where-Object {$_.count -gt 0})) {
             Select-DomainController
         }
         $DomainController = Get-Content ($RootPath + "$($user).DomainController")  
 
-        While (!(Get-Content ($RootPath + "$($user).TargetAddressSuffix") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+        While (!(Get-Content ($RootPath + "$($user).TargetAddressSuffix") -ErrorAction SilentlyContinue | Where-Object {$_.count -gt 0})) {
             Select-TargetAddressSuffix
         }
         $targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")
@@ -60,44 +60,52 @@ Function Disable-Employee {
         # Hide from Address List, Set User's Password to Random Complex Password
 
         if ($UserToDisable -like "*@*") {
+            Write-Output "Hiding mailbox from address lists"
             $PrimarySMTP = (Get-ADUser -LDAPFilter "(Userprincipalname=$UserToDisable)" -Properties Proxyaddresses -Server $domainController |
                     select @{n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses |
-                                ? {$_ -cmatch "SMTP:*"}).Substring(5)}
+                                Where-Object {$_ -cmatch "SMTP:*"}).Substring(5)}
                 }).PrimarySMTPAddress
             Get-ADUser -LDAPFilter "(Userprincipalname=$UserToDisable)" -Server $domainController | 
                 Set-ADUser -replace @{
                 msExchHideFromAddressLists = $True
-            }
+            }  
+            Write-Output "Resetting password to complex random password"
             Get-ADUser -LDAPFilter "(Userprincipalname=$UserToDisable)" -Server $domainController |
                 Set-ADAccountPassword -NewPassword (ConvertTo-SecureString -AsPlainText $NewP -Force)
         }
         else {
+            Write-Output "Hiding mailbox from address lists"  
             $PrimarySMTP = (Get-ADUser -LDAPFilter "(samaccountname=$UserToDisable)" -Properties Proxyaddresses -Server $domainController | 
                     select @{n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses |
-                                ? {$_ -cmatch "SMTP:*"}).Substring(5)}
+                                Where-Object {$_ -cmatch "SMTP:*"}).Substring(5)}
                 }).PrimarySMTPAddress
             Get-ADUser -LDAPFilter "(samaccountname=$UserToDisable)" -erroraction stop -Server $domainController | 
                 Set-ADUser -replace @{
                 msExchHideFromAddressLists = $True
             }
+            Write-Output "Resetting password to complex random password"
             Get-ADUser -LDAPFilter "(samaccountname=$UserToDisable)" -Server $domainController |
                 Set-ADAccountPassword -NewPassword (ConvertTo-SecureString -AsPlainText $NewP -Force)
         }
 
         # Remove ActiveSync and OWA for Mobile Devices
+        Write-Output "Disabling ActiveSync and OWA for mobile devices"  
         Set-CloudCASMailbox $PrimarySMTP -ActiveSyncEnabled:$False -OWAforDevicesEnabled:$False
 
         # Revoke AzureAD
+        Write-Output "Revoking Azure Token"  
         Revoke-AzureADUserAllRefreshToken -ObjectId $PrimarySMTP
 
         # Convert Cloud Mailbox to type, Shared.
         if (!$DontConvertToShared) {
+            Write-Output "Converting to Shared Mailbox"  
             ConvertTo-Shared -UserToConvert $UserToDisable
-        }
-
-        # Grant Full Access to mailbox if needed
-        if ($UsersToGiveFullAccess) {
-            $UsersToGiveFullAccess | Grant-FullAccessToMailbox -Mailbox $UserToDisable
+        
+            # Grant Full Access to mailbox if needed
+            if ($UsersToGiveFullAccess) {
+                Write-Output "Granting Full Access to Shared Mailbox" 
+                $UsersToGiveFullAccess | Grant-FullAccessToMailbox -Mailbox $UserToDisable
+            }
         }
 
         # Move disabled OUIf no conversion to a shared mailbox is needed
@@ -106,7 +114,8 @@ Function Disable-Employee {
             $ou = (Get-ADOrganizationalUnit -Server $domainController -filter * -SearchBase (Get-ADDomain -Server $domainController).distinguishedname -Properties canonicalname | 
                     where {$_.canonicalname -match $OUSearch -or $_.canonicalname -match $OUSearch2
                 } | Select canonicalname, distinguishedname| sort canonicalname | 
-                    Out-GridView -PassThru -Title "Choose the OU in which to Move the Disabled User, then click OK").distinguishedname
+                    Out-GridView -PassThru -Title "Choose the OU in which to Move the Disabled User, then click OK").distinguishedname 
+            Write-Output "Disabling AD User and moving user to chosen OU"                 
             if ($UserToDisable -like "*@*") {
                 Get-ADUser -LDAPFilter "(Userprincipalname=$UserToDisable)" -Server $domainController | % {
                     Move-ADObject $_.distinguishedname -TargetPath $ou
@@ -118,7 +127,7 @@ Function Disable-Employee {
                 Get-ADUser -LDAPFilter "(samaccountname=$UserToDisable)" -Server $domainController | % {
                     Move-ADObject $_.distinguishedname -TargetPath $ou
                 }  
-                Get-ADUser -LDAPFilter "(Userprincipalname=$UserToDisable)" -Server $domainController | 
+                Get-ADUser -LDAPFilter "(samaccountname=$UserToDisable)" -Server $domainController | 
                     Set-ADUser -Enabled:$False         
             }
         }

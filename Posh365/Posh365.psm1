@@ -3,9 +3,6 @@
 # Get public and private function definition files.
 $Public = Get-ChildItem $PSScriptRoot\Public\*.ps1 -Recurse -ErrorAction SilentlyContinue
 $Private = Get-ChildItem $PSScriptRoot\Private\*.ps1 -Recurse -ErrorAction SilentlyContinue
-[string[]]$PrivateModules = Get-ChildItem $PSScriptRoot\Private -ErrorAction SilentlyContinue |
-    Where-Object {$_.PSIsContainer} |
-    Select -ExpandProperty FullName
 
 # Dot source the files
 if ($Private) {

@@ -85,7 +85,7 @@ function Connect-Cloud {
                         Connect-Cloud $Tenant -DeleteCreds
                         Write-Host "********************************************************************" -foregroundcolor "darkblue" -backgroundcolor "white"
                         Write-Host "                    Bad Username                                    " -foregroundcolor "darkblue" -backgroundcolor "white"
-                        Write-Host "          Please Try your last command again...                     " -foregroundcolor "darkblue" -backgroundcolor "white"
+                        Write-Host "          Please try your last command again...                     " -foregroundcolor "darkblue" -backgroundcolor "white"
                         Write-Host "...you will be prompted to enter your Office 365 credentials again. " -foregroundcolor "darkblue" -backgroundcolor "white"
                         Write-Host "********************************************************************" -foregroundcolor "darkblue" -backgroundcolor "white"
                         Break
@@ -112,11 +112,10 @@ function Connect-Cloud {
         if ($MSOnline -or $All365) {
             # Office 365 Tenant
             Try {
-                Get-MsolAccountSku -ErrorAction Stop | Out-Null
+                $null = Get-Command "Get-MsolAccountSku" -ErrorAction Stop
             }
             Catch {
-                Write-Output "The MSOnline module will now be installed.  Please select [Y] Yes when prompted"
-                Install-Module -Name MSOnline -Scope CurrentUser
+                Install-Module -Name MSOnline -Scope CurrentUser -Force
             }
             Try {
                 Connect-MsolService -Credential $Credential -ErrorAction Stop
@@ -251,11 +250,10 @@ function Connect-Cloud {
         If ($AzureADver2 -or $All365) {
             if (! $MFA) {  
                 Try {
-                    Get-AzureADTenantDetail -ErrorAction Stop
+                    $null = Get-Command "Get-AzureADTenantDetail" -ErrorAction Stop
                 }
                 Catch {
-                    Write-Output "The AzureAD module will now be installed.  Please select [Y] Yes when prompted"
-                    Install-Module AzureAD -scope CurrentUser
+                    Install-Module AzureAD -scope CurrentUser -force
                 }
                 Try {
                     Connect-AzureAD -Credential $Credential -ErrorAction Stop
@@ -271,11 +269,10 @@ function Connect-Cloud {
             }
             else {
                 Try {
-                    Get-AzureADTenantDetail -ErrorAction Stop | Out-Null
+                    $null = Get-Command "Get-AzureADTenantDetail" -ErrorAction Stop
                 }
                 Catch {
-                    Write-Output "The AzureAD module will now be installed.  Please select [Y] Yes when prompted"
-                    Install-Module AzureAD -scope CurrentUser
+                    Install-Module AzureAD -scope CurrentUser -force
                 }
                 Try {
                     Connect-AzureAD -Credential $Credential -ErrorAction Stop
@@ -297,11 +294,10 @@ function Connect-Cloud {
 
 function Get-LAAzureConnected {
     Try {
-        Get-AzureRmTenant -erroraction stop 
+        $null = Get-Command "Get-AzureRmTenant" -ErrorAction Stop
     }
     Catch {
-        Write-Output "The Azure module will now be installed.  Please select [Y] Yes when prompted"
-        Install-Module -Name AzureRM -Scope CurrentUser
+        Install-Module -Name AzureRM -Scope CurrentUser -force
     }
     if (! $MFA) {
         $json = Get-ChildItem -Recurse -Include '*@*.json' -Path $KeyPath
