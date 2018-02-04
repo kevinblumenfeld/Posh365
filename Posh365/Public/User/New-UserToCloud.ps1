@@ -167,7 +167,14 @@ Function New-UserToCloud {
         }
         catch {
             If ($SpecifyRetentionPolicy) {
-                Connect-Cloud $targetAddressSuffix -AzureADver2 -ExchangeOnline -EXOPrefix
+                Connect-Cloud $targetAddressSuffix -AzureADver2
+                try {
+                    Get-CloudMsolAccountSku -ErrorAction stop | Out-Null
+                }
+                Catch {
+                    Connect-Cloud $targetAddressSuffix -ExchangeOnline -EXOPrefix    
+                }
+                
                 while ($RetentionPolicyToAdd.count -ne "1") {
                     [string[]]$RetentionPolicyToAdd = ((Get-CloudRetentionPolicy).name | Out-GridView -Title "Choose a single Retention Policy and Click OK" -PassThru)
                 }
