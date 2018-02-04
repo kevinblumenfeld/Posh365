@@ -169,7 +169,6 @@ Function New-UserToCloud {
             Connect-Cloud $targetAddressSuffix -AzureADver2
         }
         If ($SpecifyRetentionPolicy) {
-            write-host "test in Specify IF"
             try {
                 Get-CloudMsolAccountSku -ErrorAction stop | Out-Null
             }
