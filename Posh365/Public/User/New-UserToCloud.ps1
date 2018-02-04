@@ -14,6 +14,10 @@ Function New-UserToCloud {
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [string] $LastName,
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
+        [string] $SpecifyRetentionPolicy,
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
         [ValidateScript( {if ($_ -notlike "* *") {Return $True} else {Write-Host "Please choose an SharedMailboxEmailAlias without spaces"}})]
         [string] $SharedMailboxEmailAlias,
@@ -162,7 +166,15 @@ Function New-UserToCloud {
             Get-AzureADTenantDetail -erroraction stop | Out-Null
         }
         catch {
-            Connect-Cloud $targetAddressSuffix -AzureADver2
+            If ($SpecifyRetentionPolicy) {
+                Connect-Cloud $targetAddressSuffix -AzureADver2 -ExchangeOnline -EXOPrefix
+                while ($RetentionPolicyToAdd.count -ne "1") {
+                    [string[]]$RetentionPolicyToAdd = ((Get-CloudRetentionPolicy).name | Out-GridView -Title "Choose a single Retention Policy and Click OK" -PassThru)
+                }
+            }
+            else {
+                Connect-Cloud $targetAddressSuffix -AzureADver2
+            }
         }
     
         $OUSearch2 = "Users"
@@ -173,7 +185,6 @@ Function New-UserToCloud {
         if (!$NoMail) {
             $GuidFolder = Join-Path $env:TEMP ([Guid]::NewGuid().tostring())
             New-Item -Path $GuidFolder -ItemType Directory
-            [string[]]$RetentionPolicyToAdd = ((Get-CloudRetentionPolicy).name | Out-GridView -Title "Choose a Retention Policy" -PassThru)
             [string[]]$optionsToAdd = (Get-CloudSkuTable -all | Out-GridView -Title "Choose License Options, with Control + Click" -PassThru)
             Watch-ToLicense -GuidFolder $GuidFolder -optionsToAdd $optionsToAdd
         }        
