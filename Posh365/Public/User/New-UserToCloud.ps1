@@ -173,7 +173,8 @@ Function New-UserToCloud {
         if (!$NoMail) {
             $GuidFolder = Join-Path $env:TEMP ([Guid]::NewGuid().tostring())
             New-Item -Path $GuidFolder -ItemType Directory
-            [string[]]$optionsToAdd = (Get-CloudSkuTable -all | Out-GridView -Title "Options to Add" -PassThru)
+            [string[]]$RetentionPolicyToAdd = ((Get-RetentionPolicy).name | Out-GridView -Title "Choose a Retention Policy" -PassThru)
+            [string[]]$optionsToAdd = (Get-CloudSkuTable -all | Out-GridView -Title "Choose License Options, with Control + Click" -PassThru)
             Watch-ToLicense -GuidFolder $GuidFolder -optionsToAdd $optionsToAdd
         }        
     
@@ -337,6 +338,12 @@ Function New-UserToCloud {
     
             $tempfile = Join-Path $GuidFolder ([Guid]::NewGuid().tostring())
             $UserPrincipalName | Set-Content $tempfile
+            
+            ###################################################
+            #    Set Retention Policy Once Mailbox is seen    # 
+            ###################################################
+    
+            Set-Retention -UserPrincipalName $UserPrincipalName -RetentionPolicyToAdd $RetentionPolicyToAdd
         
         } # End of IF MAIL (ABOVE)
     
