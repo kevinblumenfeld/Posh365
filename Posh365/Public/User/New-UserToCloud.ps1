@@ -170,7 +170,7 @@ Function New-UserToCloud {
                 Connect-Cloud $targetAddressSuffix -AzureADver2 -ExchangeOnline -EXOPrefix
                 while ($RetentionPolicyToAdd.count -ne "1") {
                     [string[]]$RetentionPolicyToAdd = ((Get-CloudRetentionPolicy).name | Out-GridView -Title "Choose a single Retention Policy and Click OK" -PassThru)
-                }
+                 }
             }
             else {
                 Connect-Cloud $targetAddressSuffix -AzureADver2
