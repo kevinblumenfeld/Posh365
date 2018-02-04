@@ -82,7 +82,9 @@ function Connect-Exchange {
     If (!$NoPrefix) {
         $SessionModule = Import-PSSession -AllowClobber -DisableNameChecking -Prefix 'OnPrem' -Session $Session
         $Null = Import-Module $SessionModule -Global -Prefix "OnPrem" -DisableNameChecking -Force
-
+        if ($ViewEntireForest) {
+            Set-OnPremADServerSettings -ViewEntireForest:$True
+        }
         Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
         Write-Host "        You are now connected to On-Premises Exchange               " -foregroundcolor "darkgreen" -backgroundcolor "white"
         Write-Host "          All commands are pre-pended with OnPrem, for example:     " -foregroundcolor "darkgreen" -backgroundcolor "white"
@@ -95,14 +97,12 @@ function Connect-Exchange {
     else {
         $SessionModule = Import-PSSession -AllowClobber -DisableNameChecking -Session $Session
         $Null = Import-Module $SessionModule -Global -DisableNameChecking -Force
+        if ($ViewEntireForest) {
+            Set-ADServerSettings -ViewEntireForest:$True
+        }
         Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
         Write-Host "        You are now connected to On-Premises Exchange               " -foregroundcolor "darkgreen" -backgroundcolor "white"
         Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
-    }
-    
-
-    if ($ViewEntireForest) {
-        Set-ADServerSettings -ViewEntireForest:$True
     }
 }
     
