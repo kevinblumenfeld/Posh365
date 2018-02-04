@@ -166,24 +166,24 @@ Function New-UserToCloud {
             Get-AzureADTenantDetail -erroraction stop | Out-Null
         }
         catch {
-            If ($SpecifyRetentionPolicy) {
-                write-host "test in Specify IF"
-                Connect-Cloud $targetAddressSuffix -AzureADver2
-                try {
-                    Get-CloudMsolAccountSku -ErrorAction stop | Out-Null
-                }
-                Catch {
-                    Connect-Cloud $targetAddressSuffix -ExchangeOnline -EXOPrefix    
-                }
-                
-                while ($RetentionPolicyToAdd.count -ne "1") {
-                    [string[]]$RetentionPolicyToAdd = ((Get-CloudRetentionPolicy).name | Out-GridView -Title "Choose a single Retention Policy and Click OK" -PassThru)
-                }
+            Connect-Cloud $targetAddressSuffix -AzureADver2
+        }
+        If ($SpecifyRetentionPolicy) {
+            write-host "test in Specify IF"
+            try {
+                Get-CloudMsolAccountSku -ErrorAction stop | Out-Null
             }
-            else {
-                Connect-Cloud $targetAddressSuffix -AzureADver2
+            Catch {
+                Connect-Cloud $targetAddressSuffix -ExchangeOnline -EXOPrefix    
+            }
+            while ($RetentionPolicyToAdd.count -ne "1") {
+                [string[]]$RetentionPolicyToAdd = ((Get-CloudRetentionPolicy).name | Out-GridView -Title "Choose a single Retention Policy and Click OK" -PassThru)
             }
         }
+        else {
+            Connect-Cloud $targetAddressSuffix -AzureADver2
+        }
+        
     
         $OUSearch2 = "Users"
         $ou = (Get-ADOrganizationalUnit -Server $domainController -filter * -SearchBase (Get-ADDomain -Server $domainController).distinguishedname -Properties canonicalname | 
