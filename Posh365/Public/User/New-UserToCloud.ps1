@@ -178,10 +178,12 @@ Function New-UserToCloud {
             while ($RetentionPolicyToAdd.count -ne "1") {
                 try {
                     $RetentionPolicyToAdd = ((Get-CloudRetentionPolicy -erroraction stop).name | Out-GridView -Title "Choose a single Retention Policy and Click OK" -PassThru)
+                    Get-PSSession | Remove-PSSession
                 }
                 Catch {
                     Write-Output "Error running the command Get-CloudRetentionPolicy."
                     Write-Output "Please make sure you are connected to Exchange Online with the Prefix, Cloud, and try again"
+                    Get-PSSession | Remove-PSSession
                     Break
                 }
             }
