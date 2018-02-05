@@ -25,7 +25,7 @@ Function Set-Retention {
         $RententionPolicyToAdd = $args[1]
         $targetAddressSuffix = $args[2]
         Connect-Cloud $targetAddressSuffix -ExchangeOnline -EXOPrefix
-        while (!(Get-Mailbox $UserPrincipalName -ErrorAction SilentlyContinue)) {
+        while (!(Get-CloudMailbox $UserPrincipalName -ErrorAction SilentlyContinue)) {
             Start-Sleep -Seconds 30
         }
         Set-CloudMailbox $UserPrincipalName -RetentionPolicy $RetentionPolicyToAdd
