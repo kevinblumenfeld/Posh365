@@ -12,7 +12,7 @@ Function Set-Retention {
         [string] $UserPrincipalName,
     
         [Parameter()]
-        [string] $RetentionPolicyToAdd
+        $RetentionPolicyToAdd
     )
 
     $RootPath = $env:USERPROFILE + "\ps\"
@@ -24,13 +24,7 @@ Function Set-Retention {
         $UserPrincipalName = $args[0]
         $RententionPolicyToAdd = $args[1]
         $targetAddressSuffix = $args[2]
-        try {
-            Get-CloudAcceptedDomain -ErrorAction Stop | Out-Null
-        }
-        catch {
-            Connect-Cloud $targetAddressSuffix -ExchangeOnline -EXOPrefix
-        }
-        
+        Connect-Cloud $targetAddressSuffix -ExchangeOnline -EXOPrefix
         while (!(Get-CloudMailbox $UserPrincipalName -ErrorAction SilentlyContinue)) {
             Start-Sleep -Seconds 30
         }
