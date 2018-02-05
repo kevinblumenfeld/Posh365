@@ -12,7 +12,7 @@ Function Set-Retention {
         [string[]] $UserPrincipalName,
     
         [Parameter()]
-        [string[]] $RetentionPolicyToAdd
+        [string] $RetentionPolicyToAdd
     )
 
     $RootPath = $env:USERPROFILE + "\ps\"
