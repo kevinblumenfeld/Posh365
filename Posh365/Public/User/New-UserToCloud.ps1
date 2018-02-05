@@ -177,7 +177,7 @@ Function New-UserToCloud {
             }
             while ($RetentionPolicyToAdd.count -ne "1") {
                 try {
-                    [string[]]$RetentionPolicyToAdd = ((Get-CloudRetentionPolicy -erroraction stop).name | Out-GridView -Title "Choose a single Retention Policy and Click OK" -PassThru)
+                    $RetentionPolicyToAdd = ((Get-CloudRetentionPolicy -erroraction stop).name | Out-GridView -Title "Choose a single Retention Policy and Click OK" -PassThru)
                 }
                 Catch {
                     Write-Output "Error running the command Get-CloudRetentionPolicy."
