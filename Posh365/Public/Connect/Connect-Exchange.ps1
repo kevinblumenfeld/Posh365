@@ -53,11 +53,11 @@ function Connect-Exchange {
         Catch {
             if ($_.exception.Message -match '"userName" is not valid. Change the value of the "userName" argument and run the operation again') {
                 Connect-Exchange -DeleteExchangeCreds
-                Write-Host "********************************************************************" -foregroundcolor "darkblue" -backgroundcolor "white"
-                Write-Host "                    Bad Username                                    " -foregroundcolor "darkblue" -backgroundcolor "white"
-                Write-Host "          Please try your last command again...                     " -foregroundcolor "darkblue" -backgroundcolor "white"
-                Write-Host "...you will be prompted to enter your Office 365 credentials again. " -foregroundcolor "darkblue" -backgroundcolor "white"
-                Write-Host "********************************************************************" -foregroundcolor "darkblue" -backgroundcolor "white"
+                Write-Host "***************************************************************************** " -foregroundcolor "darkblue" -backgroundcolor "white"
+                Write-Host "                    Bad Username.                                             " -foregroundcolor "darkblue" -backgroundcolor "white"
+                Write-Host "          Please try your last command again...                               " -foregroundcolor "darkblue" -backgroundcolor "white"
+                Write-Host "...you will be prompted to enter your on-premises Exchange credentials again. " -foregroundcolor "darkblue" -backgroundcolor "white"
+                Write-Host "***************************************************************************** " -foregroundcolor "darkblue" -backgroundcolor "white"
                 Break
             }
         }
@@ -69,11 +69,11 @@ function Connect-Exchange {
         }
         else {
             Connect-Exchange -DeleteExchangeCreds
-            Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
-            Write-Host "                 No Password Present.                               " -foregroundcolor "darkgreen" -backgroundcolor "white"
-            Write-Host "          Please try your last command again...                     " -foregroundcolor "darkgreen" -backgroundcolor "white"
-            Write-Host "...you will be prompted to enter your Office 365 credentials again. " -foregroundcolor "darkgreen" -backgroundcolor "white"
-            Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
+            Write-Host "***************************************************************************** " -foregroundcolor "darkblue" -backgroundcolor "white"
+            Write-Host "                    No Password Present.                                      " -foregroundcolor "darkblue" -backgroundcolor "white"
+            Write-Host "          Please try your last command again...                               " -foregroundcolor "darkblue" -backgroundcolor "white"
+            Write-Host "...you will be prompted to enter your on-premises Exchange credentials again. " -foregroundcolor "darkblue" -backgroundcolor "white"
+            Write-Host "***************************************************************************** " -foregroundcolor "darkblue" -backgroundcolor "white"
             Break
         }
         $Credential.UserName | Out-File ($KeyPath + "$($user).uExchangeCred")
@@ -84,11 +84,11 @@ function Connect-Exchange {
     Catch {
         If ($_.exception.Message -match 'user name or password') {
             Connect-Exchange -DeleteExchangeCreds
-            Write-Host "********************************************************************" -foregroundcolor "darkblue" -backgroundcolor "white"
-            Write-Host "                    Bad Credentials                                 " -foregroundcolor "darkblue" -backgroundcolor "white"
-            Write-Host "          Please try your last command again...                     " -foregroundcolor "darkblue" -backgroundcolor "white"
-            Write-Host "...you will be prompted to enter your Office 365 credentials again. " -foregroundcolor "darkblue" -backgroundcolor "white"
-            Write-Host "********************************************************************" -foregroundcolor "darkblue" -backgroundcolor "white"
+            Write-Host "***************************************************************************** " -foregroundcolor "darkblue" -backgroundcolor "white"
+            Write-Host "                    Bad Credentials.                                          " -foregroundcolor "darkblue" -backgroundcolor "white"
+            Write-Host "          Please try your last command again...                               " -foregroundcolor "darkblue" -backgroundcolor "white"
+            Write-Host "...you will be prompted to enter your on-premises Exchange credentials again. " -foregroundcolor "darkblue" -backgroundcolor "white"
+            Write-Host "***************************************************************************** " -foregroundcolor "darkblue" -backgroundcolor "white"
             Break
         }
     }
