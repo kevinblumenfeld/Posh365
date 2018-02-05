@@ -9,7 +9,7 @@ Function Set-Retention {
     Param (
     
         [Parameter()]
-        [string[]] $UserPrincipalName,
+        [string] $UserPrincipalName,
     
         [Parameter()]
         [string] $RetentionPolicyToAdd
