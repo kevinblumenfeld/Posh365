@@ -204,7 +204,7 @@ Function New-UserToCloud {
             Watch-ToLicense -GuidFolder $GuidFolder -optionsToAdd $optionsToAdd
             $GuidFolderRetention = Join-Path $env:TEMP ([Guid]::NewGuid().tostring())
             New-Item -Path $GuidFolderRetention -ItemType Directory
-            Watch-ToSetRetention -GuidFolder $GuidFolderRetention -RetentionPolicyToAdd $RetentionPolicyToAdd
+            Watch-ToSetRetention -GuidFolderRetention $GuidFolderRetention -RetentionPolicyToAdd $RetentionPolicyToAdd
 
         }        
     

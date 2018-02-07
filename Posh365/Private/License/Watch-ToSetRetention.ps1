@@ -18,7 +18,7 @@ Function Watch-ToSetRetention {
 
     $targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")
 
-    $WatcherJob = Start-Job -Name WatchToLicense {
+    $WatcherJob = Start-Job -Name Watch-ToSetRetention {
         $RetentionPolicyToAdd = $args[0]
         $GuidFolderUPN = $args[1]
         $targetAddressSuffix = $args[2]
