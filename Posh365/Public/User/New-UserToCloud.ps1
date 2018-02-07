@@ -442,6 +442,7 @@ Function New-UserToCloud {
         if (!$NoMail) {
             Start-Job -Name DeleteGuidFolder {
                 $GuidFolder = $args[0]
+                $GuidFolderRetention = $args[0]
                 New-Item -Path $GuidFolder -Name "ALLDONE" -Type File
                 New-Item -Path $GuidFolderRetention -Name "ALLDONE" -Type File
                 while ((Get-ChildItem -Path $GuidFolder).count -gt 0) {
