@@ -20,7 +20,7 @@ Function Watch-ToSetRetention {
 
     $WatcherJob = Start-Job -Name Watch-ToSetRetention {
         $RetentionPolicyToAdd = $args[0]
-        $GuidFolderUPN = $args[1]
+        $GuidFolderRetention = $args[1]
         $targetAddressSuffix = $args[2]
         Set-Location $GuidFolderRetention
         Connect-Cloud $targetAddressSuffix -ExchangeOnline -EXOPrefix
