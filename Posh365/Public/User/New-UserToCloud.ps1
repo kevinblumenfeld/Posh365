@@ -173,7 +173,7 @@ Function New-UserToCloud {
                 $null = Get-CloudMsolAccountSku -ErrorAction stop
             }
             Catch {
-                Connect-Cloud $targetAddressSuffix -AzureADver2 -ExchangeOnline -EXOPrefix    
+                Connect-Cloud $targetAddressSuffix -ExchangeOnline -EXOPrefix    
             }
             Remove-Variable -Name RetentionPolicyToAdd -ErrorAction SilentlyContinue
             while ($RetentionPolicyToAdd.count -ne "1") {
@@ -187,10 +187,7 @@ Function New-UserToCloud {
                 }
             }
         }
-        else {
-            Connect-Cloud $targetAddressSuffix -AzureADver2
-        }
-        
+
     
         $OUSearch2 = "Users"
         $ou = (Get-ADOrganizationalUnit -Server $domainController -filter * -SearchBase (Get-ADDomain -Server $domainController).distinguishedname -Properties canonicalname | 
@@ -442,7 +439,7 @@ Function New-UserToCloud {
         if (!$NoMail) {
             Start-Job -Name DeleteGuidFolder {
                 $GuidFolder = $args[0]
-                $GuidFolderRetention = $args[0]
+                $GuidFolderRetention = $args[1]
                 New-Item -Path $GuidFolder -Name "ALLDONE" -Type File
                 New-Item -Path $GuidFolderRetention -Name "ALLDONE" -Type File
                 while ((Get-ChildItem -Path $GuidFolder).count -gt 0) {
