@@ -175,7 +175,7 @@ Function New-UserToCloud {
             Catch {
                 Connect-Cloud $targetAddressSuffix -AzureADver2 -ExchangeOnline -EXOPrefix    
             }
-            Remove-Variable -Name RetentionPolicyToAdd
+            Remove-Variable -Name RetentionPolicyToAdd -ErrorAction SilentlyContinue
             while ($RetentionPolicyToAdd.count -ne "1") {
                 try {
                     $RetentionPolicyToAdd = ((Get-CloudRetentionPolicy -erroraction stop).name | Out-GridView -Title "Choose a single Retention Policy and Click OK" -PassThru)
@@ -204,7 +204,7 @@ Function New-UserToCloud {
             Watch-ToLicense -GuidFolder $GuidFolder -optionsToAdd $optionsToAdd
             $GuidFolderRetention = Join-Path $env:TEMP ([Guid]::NewGuid().tostring())
             New-Item -Path $GuidFolderRetention -ItemType Directory
-            Watch-ToSetRetention -GuidFolder $GuidFolderRetention -optionsToAdd $RetentionPolicyToAdd
+            Watch-ToSetRetention -GuidFolder $GuidFolderRetention -RetentionPolicyToAdd $RetentionPolicyToAdd
 
         }        
     
