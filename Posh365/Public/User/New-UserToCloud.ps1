@@ -170,20 +170,19 @@ Function New-UserToCloud {
         }
         If ($SpecifyRetentionPolicy) {
             try {
-                Get-CloudMsolAccountSku -ErrorAction stop | Out-Null
+                $null = Get-CloudMsolAccountSku -ErrorAction stop
             }
             Catch {
-                Connect-Cloud $targetAddressSuffix -ExchangeOnline -EXOPrefix    
+                Connect-Cloud $targetAddressSuffix -AzureADver2 -ExchangeOnline -EXOPrefix    
             }
+            Remove-Variable -Name RetentionPolicyToAdd
             while ($RetentionPolicyToAdd.count -ne "1") {
                 try {
                     $RetentionPolicyToAdd = ((Get-CloudRetentionPolicy -erroraction stop).name | Out-GridView -Title "Choose a single Retention Policy and Click OK" -PassThru)
-                    Get-PSSession | Remove-PSSession
                 }
                 Catch {
                     Write-Output "Error running the command Get-CloudRetentionPolicy."
                     Write-Output "Please make sure you are connected to Exchange Online with the Prefix, Cloud, and try again"
-                    Get-PSSession | Remove-PSSession
                     Break
                 }
             }
@@ -203,6 +202,10 @@ Function New-UserToCloud {
             New-Item -Path $GuidFolder -ItemType Directory
             [string[]]$optionsToAdd = (Get-CloudSkuTable -all | Out-GridView -Title "Choose License Options, with Control + Click" -PassThru)
             Watch-ToLicense -GuidFolder $GuidFolder -optionsToAdd $optionsToAdd
+            $GuidFolderRetention = Join-Path $env:TEMP ([Guid]::NewGuid().tostring())
+            New-Item -Path $GuidFolderRetention -ItemType Directory
+            Watch-ToSetRetention -GuidFolder $GuidFolderRetention -optionsToAdd $RetentionPolicyToAdd
+
         }        
     
     }
@@ -365,12 +368,8 @@ Function New-UserToCloud {
     
             $tempfile = Join-Path $GuidFolder ([Guid]::NewGuid().tostring())
             $UserPrincipalName | Set-Content $tempfile
-            
-            ###################################################
-            #    Set Retention Policy Once Mailbox is seen    # 
-            ###################################################
-    
-            Set-Retention -UserPrincipalName $UserPrincipalName -RetentionPolicyToAdd $RetentionPolicyToAdd
+            $tempfileRetention = Join-Path $GuidFolderRetention ([Guid]::NewGuid().tostring())
+            $UserPrincipalName | Set-Content $tempfileRetention
         
         } # End of IF MAIL (ABOVE)
     
@@ -444,10 +443,14 @@ Function New-UserToCloud {
             Start-Job -Name DeleteGuidFolder {
                 $GuidFolder = $args[0]
                 New-Item -Path $GuidFolder -Name "ALLDONE" -Type File
+                New-Item -Path $GuidFolderRetention -Name "ALLDONE" -Type File
                 while ((Get-ChildItem -Path $GuidFolder).count -gt 0) {
                 }
                 Remove-Item -Path $GuidFolder -Confirm:$False -force -verbose
-            } -ArgumentList $GuidFolder
+                while ((Get-ChildItem -Path $GuidFolderRetention).count -gt 0) {
+                }
+                Remove-Item -Path $GuidFolderRetention -Confirm:$False -force -verbose
+            } -ArgumentList $GuidFolder, $GuidFolderRetention
         }
     }
 }    
