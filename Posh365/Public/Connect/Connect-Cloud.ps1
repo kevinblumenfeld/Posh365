@@ -124,12 +124,20 @@ function Connect-Cloud {
                 Write-Output "*******************************************"
             }
             Catch {
-                if ($_.exception.Message -match "Bad username or password") {
+                if ($_.exception.Message -match "password") {
                     Connect-Cloud $Tenant -DeleteCreds
                     Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
                     Write-Host "           Bad Username or Password.                                " -foregroundcolor "darkgreen" -backgroundcolor "white"
                     Write-Host "          Please Try your last command again...                     " -foregroundcolor "darkgreen" -backgroundcolor "white"
                     Write-Host "...you will be prompted to enter your Office 365 credentials again. " -foregroundcolor "darkgreen" -backgroundcolor "white"
+                    Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
+                    Break
+                    
+                }
+                else {
+                    Connect-Cloud $Tenant -DeleteCreds
+                    Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
+                    Write-Host "           There was an error connecting you to MSOnline            " -foregroundcolor "darkgreen" -backgroundcolor "white"
                     Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
                     Break
                 }
@@ -262,12 +270,23 @@ function Connect-Cloud {
                     Write-Output "**********************************************"
                 }
                 Catch {
-                    Write-Output "There was an error Connecting to Azure Ad - Ensure the module is installed"
-                    Write-Output "Download PowerShell 5 or PowerShellGet"
-                    Write-Output "https://msdn.microsoft.com/en-us/powershell/wmf/5.1/install-configure"
+                    if ($error[0].categoryinfo.reason -match "Authentication") {
+                        Connect-Cloud $targetAddressSuffix -DeleteCreds
+                        Write-Output "There was with your credentials"
+                        Write-Output "Please run the same command you just ran and try again"
+                        Break
+                    }
+                    else {
+                        $error[0]
+                        Write-Output "There was an error Connecting to Azure Ad - Ensure the module is installed"
+                        Write-Output "Download PowerShell 5 or PowerShellGet"
+                        Write-Output "https://msdn.microsoft.com/en-us/powershell/wmf/5.1/install-configure"
+                        Break
+                    }
+                    
                 }
             }
-            else {
+            else {  
                 Try {
                     $null = Get-Command "Get-AzureADTenantDetail" -ErrorAction Stop
                 }
@@ -281,9 +300,20 @@ function Connect-Cloud {
                     Write-Output "**********************************************"
                 }
                 Catch {
-                    Write-Output "There was an error Connecting to Azure Ad - Ensure the module is installed"
-                    Write-Output "Download PowerShell 5 or PowerShellGet"
-                    Write-Output "https://msdn.microsoft.com/en-us/powershell/wmf/5.1/install-configure"
+                    if ($error[0].categoryinfo.reason -match "Authentication") {
+                        Connect-Cloud $targetAddressSuffix -DeleteCreds
+                        Write-Output "There was with your credentials"
+                        Write-Output "Please run the same command you just ran and try again"
+                        Break
+                    }
+                    else {
+                        $error[0]
+                        Write-Output "There was an error Connecting to Azure Ad - Ensure the module is installed"
+                        Write-Output "Download PowerShell 5 or PowerShellGet"
+                        Write-Output "https://msdn.microsoft.com/en-us/powershell/wmf/5.1/install-configure"
+                        Break
+                    }
+                    
                 }
             }
         }

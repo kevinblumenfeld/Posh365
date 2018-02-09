@@ -157,317 +157,299 @@ Function New-UserToCloud {
         #              Connect                #
         #######################################
         try {
-            (Get-OnPremExchangeServer -erroraction stop)[0] | Out-Null
+            $null = Get-Command "Get-OnPremExchangeServer" -ErrorAction Stop
         }
         catch {
-            Try {
-                Connect-Exchange -ExchangeServer $ExchangeServer -ViewEntireForest -ErrorAction Stop
+            Connect-Exchange -ExchangeServer $ExchangeServer -ViewEntireForest
+        }
+        try {
+            $null = Get-AzureADTenantDetail -erroraction stop -ErrorAction Stop
+        }
+        catch {
+            Connect-Cloud $targetAddressSuffix -AzureADver2      
+        }
+        If ($SpecifyRetentionPolicy) {
+            try {
+                $null = Get-Command "Get-CloudMsolAccountSku" -ErrorAction Stop
             }
             Catch {
-                Connect-Exchange -DeleteExchangeCreds
-                Connect-Exchange -ExchangeServer $ExchangeServer -ViewEntireForest
+                Connect-Cloud $targetAddressSuffix -ExchangeOnline -EXOPrefix
             }
-            try {
-                Get-AzureADTenantDetail -erroraction stop -ErrorAction Stop | Out-Null
-            }
-            catch {
-                Try {
-                    Connect-Cloud $targetAddressSuffix -AzureADver2 -ErrorAction Stop
-                }
-                Catch {
-                    Connect-Cloud $targetAddressSuffix -DeleteCreds
-                    Connect-Cloud $targetAddressSuffix -AzureADver2
-                }
-            }
-            If ($SpecifyRetentionPolicy) {
+            Remove-Variable -Name RetentionPolicyToAdd -ErrorAction SilentlyContinue
+            while ($RetentionPolicyToAdd.count -ne "1") {
                 try {
-                    $null = Get-CloudMsolAccountSku -ErrorAction stop
+                    $RetentionPolicyToAdd = ((Get-CloudRetentionPolicy -erroraction stop).name | Out-GridView -Title "Choose a single Retention Policy and Click OK" -PassThru)
                 }
                 Catch {
-                    Try {
-                        Connect-Cloud $targetAddressSuffix -ExchangeOnline -EXOPrefix -ErrorAction Stop
-                    }
-                    Catch {
-                        Connect-Cloud $targetAddressSuffix -DeleteCreds
-                        Connect-Cloud $targetAddressSuffix -ExchangeOnline -EXOPrefix
-                    }
-                    
-                }
-                Remove-Variable -Name RetentionPolicyToAdd -ErrorAction SilentlyContinue
-                while ($RetentionPolicyToAdd.count -ne "1") {
-                    try {
-                        $RetentionPolicyToAdd = ((Get-CloudRetentionPolicy -erroraction stop).name | Out-GridView -Title "Choose a single Retention Policy and Click OK" -PassThru)
-                    }
-                    Catch {
-                        Write-Output "Error running the command Get-CloudRetentionPolicy."
-                        Write-Output "Please make sure you are connected to Exchange Online with the Prefix, Cloud, and try again"
-                        Break
-                    }
+                    Write-Output "Error running the command Get-CloudRetentionPolicy."
+                    Write-Output "Please make sure you are connected to Exchange Online with the Prefix, Cloud, and try again"
+                    Break
                 }
             }
+        }
 
     
-            $OUSearch2 = "Users"
-            $ou = (Get-ADOrganizationalUnit -Server $domainController -filter * -SearchBase (Get-ADDomain -Server $domainController).distinguishedname -Properties canonicalname | 
-                    where {$_.canonicalname -match $OUSearch -or $_.canonicalname -match $OUSearch2
-                } | Select canonicalname, distinguishedname| sort canonicalname | 
-                    Out-GridView -PassThru -Title "Choose the OU in which to create the new user, then click OK").distinguishedname
-            if (!$NoMail) {
-                $GuidFolder = Join-Path $env:TEMP ([Guid]::NewGuid().tostring())
-                New-Item -Path $GuidFolder -ItemType Directory
-                [string[]]$optionsToAdd = (Get-CloudSkuTable -all | Out-GridView -Title "Choose License Options, with Control + Click" -PassThru)
-                Watch-ToLicense -GuidFolder $GuidFolder -optionsToAdd $optionsToAdd
-                $GuidFolderRetention = Join-Path $env:TEMP ([Guid]::NewGuid().tostring())
-                New-Item -Path $GuidFolderRetention -ItemType Directory
-                Watch-ToSetRetention -GuidFolderRetention $GuidFolderRetention -RetentionPolicyToAdd $RetentionPolicyToAdd
+        $OUSearch2 = "Users"
+        $ou = (Get-ADOrganizationalUnit -Server $domainController -filter * -SearchBase (Get-ADDomain -Server $domainController).distinguishedname -Properties canonicalname | 
+                where {$_.canonicalname -match $OUSearch -or $_.canonicalname -match $OUSearch2
+            } | Select canonicalname, distinguishedname| sort canonicalname | 
+                Out-GridView -PassThru -Title "Choose the OU in which to create the new user, then click OK").distinguishedname
+        if (!$NoMail) {
+            $GuidFolder = Join-Path $env:TEMP ([Guid]::NewGuid().tostring())
+            New-Item -Path $GuidFolder -ItemType Directory
+            [string[]]$optionsToAdd = (Get-CloudSkuTable -all | Out-GridView -Title "Choose License Options, with Control + Click" -PassThru)
+            Watch-ToLicense -GuidFolder $GuidFolder -optionsToAdd $optionsToAdd
+            $GuidFolderRetention = Join-Path $env:TEMP ([Guid]::NewGuid().tostring())
+            New-Item -Path $GuidFolderRetention -ItemType Directory
+            Watch-ToSetRetention -GuidFolderRetention $GuidFolderRetention -RetentionPolicyToAdd $RetentionPolicyToAdd
 
-            }        
+        }        
     
+    }
+    
+    Process {
+    
+        #######################################
+        # Copy ADUser (Template) & Create New #
+        #######################################
+        #Requires -Modules ActiveDirectory
+        if ($SharedMailboxEmailAlias) {
+            $LastName = $SharedMailboxEmailAlias
         }
     
-        Process {
-    
-            #######################################
-            # Copy ADUser (Template) & Create New #
-            #######################################
-            #Requires -Modules ActiveDirectory
-            if ($SharedMailboxEmailAlias) {
-                $LastName = $SharedMailboxEmailAlias
+        if ($UserToCopy) {
+            if ($UserToCopy -like "*@*") {
+                $UserToCopy = (Get-ADUser -LDAPfilter "(userprincipalname=$UserToCopy)").samaccountname
             }
+            $template = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties Enabled, StreetAddress, City, State, PostalCode
+            $template = $template | Select Enabled, StreetAddress, City, State, PostalCode
+            $groupMembership = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties memberof | select -ExpandProperty memberof    
+        }
+        $Last = $LastName -replace (" ", "")
+        $First = $FirstName -replace (" ", "")
     
-            if ($UserToCopy) {
-                if ($UserToCopy -like "*@*") {
-                    $UserToCopy = (Get-ADUser -LDAPfilter "(userprincipalname=$UserToCopy)").samaccountname
-                }
-                $template = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties Enabled, StreetAddress, City, State, PostalCode
-                $template = $template | Select Enabled, StreetAddress, City, State, PostalCode
-                $groupMembership = Get-ADUser -Identity $UserToCopy -Server $domainController -Properties memberof | select -ExpandProperty memberof    
-            }
-            $Last = $LastName -replace (" ", "")
-            $First = $FirstName -replace (" ", "")
+        #######################
+        #     NOT SHARED      #
+        #######################
+        if (!$Shared) {
     
-            #######################
-            #     NOT SHARED      #
-            #######################
-            if (!$Shared) {
-    
-                $DisplayName = $ExecutionContext.InvokeCommand.ExpandString($DisplayNameFormat)
+            $DisplayName = $ExecutionContext.InvokeCommand.ExpandString($DisplayNameFormat)
        
-                ##############################################
-                #              SamAccountName                #
-                ##############################################
-                if (!$SAMPrefix) {
-                    $SamAccountName = (($Last[0..6] -join '') + $First)[0..7] -join ''
-                    $i = 2
-                    while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
-                        $CharactersUsedForIteration = ([string]$i).Length
-                        $SamAccountName = ((($Last[0..(6 - $CharactersUsedForIteration)] -join '') + $First)[0..(7 - $CharactersUsedForIteration)] -join '') + $i
-                        $i++
-                    }
-                }
-    
-                else {
-                    $SamAccountName = ((($SAMPrefix + $LastName)[0..6] -join '') + $First)[0..7] -join ''
-                    $i = 2
-                    while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
-                        $CharactersUsedForIteration = ([string]$i).Length
-                        $SamAccountName = (((($SAMPrefix + $LastName)[0..(6 - $CharactersUsedForIteration)] -join '') + $First)[0..(7 - $CharactersUsedForIteration)] -join '') + $i
-                        $i++
-                    }
-                }
-    
-            } ###   End: NOT SHARED    ###
-    
-            #######################
-            #  SHARED  UPN & SAM  #
-            #######################
-    
-            Else {
-                $LastName = $LastName.replace(" ", "")
-    
-                $SamAccountName = $Last[0..7] -join ''
+            ##############################################
+            #              SamAccountName                #
+            ##############################################
+            if (!$SAMPrefix) {
+                $SamAccountName = (($Last[0..6] -join '') + $First)[0..7] -join ''
                 $i = 2
                 while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
                     $CharactersUsedForIteration = ([string]$i).Length
-                    $SamAccountName = ($Last[0..(7 - $CharactersUsedForIteration)] -join '') + $i
+                    $SamAccountName = ((($Last[0..(6 - $CharactersUsedForIteration)] -join '') + $First)[0..(7 - $CharactersUsedForIteration)] -join '') + $i
                     $i++
                 }
-    
             }
     
-            # SamAccount To Lower
-            $samaccountname = $samaccountname.tolower()
-            
-            # cn
-            $cn = $DisplayName
+            else {
+                $SamAccountName = ((($SAMPrefix + $LastName)[0..6] -join '') + $First)[0..7] -join ''
+                $i = 2
+                while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
+                    $CharactersUsedForIteration = ([string]$i).Length
+                    $SamAccountName = (((($SAMPrefix + $LastName)[0..(6 - $CharactersUsedForIteration)] -join '') + $First)[0..(7 - $CharactersUsedForIteration)] -join '') + $i
+                    $i++
+                }
+            }
+    
+        } ###   End: NOT SHARED    ###
+    
+        #######################
+        #  SHARED  UPN & SAM  #
+        #######################
+    
+        Else {
+            $LastName = $LastName.replace(" ", "")
+    
+            $SamAccountName = $Last[0..7] -join ''
             $i = 2
-            while (Get-ADUser -Server $domainController -LDAPFilter "(cn=$cn)") {
-                $cn = $DisplayName + $i
+            while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
+                $CharactersUsedForIteration = ([string]$i).Length
+                $SamAccountName = ($Last[0..(7 - $CharactersUsedForIteration)] -join '') + $i
                 $i++
             }
-            $name = $cn
     
-            #########################################
-            #   Create Parameters for New ADUser    #
-            #########################################
-                
-            $hash = @{
-                "Instance"          = $template
-                "Name"              = $name
-                "DisplayName"       = $DisplayName
-                "GivenName"         = $FirstName
-                "SurName"           = $LastName
-                "OfficePhone"       = $OfficePhone
-                "mobile"            = $MobilePhone
-                "description"       = $Description
-                "streetaddress"     = $StreetAddress
-                "city"              = $City
-                "state"             = $State
-                "postalcode"        = $Zip
-                "country"           = $Country
-                "office"            = $Office
-                "title"             = $Title
-                "department"        = $Department
-                "company"           = $Company                                    
-                "SamAccountName"    = $samaccountname
-                "UserPrincipalName" = $userprincipalname
-                "AccountPassword"   = $password_ss
-                "Path"              = $ou
-            }
-            $params = @{}
-            ForEach ($key in $hash.keys) {
-                if ($($hash.item($key))) {
-                    $params.add($key, $($hash.item($key)))
-                }
-            }
+        }
+    
+        # SamAccount To Lower
+        $samaccountname = $samaccountname.tolower()
             
-            #########################################
-            #          Create New ADUser            #
-            #########################################
-            New-ADUser @params -Server $domainController -ChangePasswordAtLogon:$true -Enabled:$true
-            
-            if ($UserToCopy) {
-                $groupMembership | Add-ADGroupMember -Server $domainController -Members $samaccountname
-            }
+        # cn
+        $cn = $DisplayName
+        $i = 2
+        while (Get-ADUser -Server $domainController -LDAPFilter "(cn=$cn)") {
+            $cn = $DisplayName + $i
+            $i++
+        }
+        $name = $cn
     
-            # Purge old jobs
-            Get-Job | where {$_.State -ne 'Running'}| Remove-Job
-    
-            if (!$NoMail) {
-    
-                ##################################################
-                # Enable Remote Mailbox in Office 365 & set UPN  #
-                ##################################################
-                Enable-OnPremRemoteMailbox -DomainController $domainController -Identity $samaccountname -RemoteRoutingAddress ($samaccountname + "@" + $targetAddressSuffix) -Alias $samaccountname 
+        #########################################
+        #   Create Parameters for New ADUser    #
+        #########################################
                 
-                # After Email Address Policy, Set UPN to same as PrimarySMTP #
-                $userprincipalname = (Get-ADUser -Server $domainController -Identity $SamAccountName -Properties proxyaddresses | Select @{
-                        n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses | ? {$_ -cmatch "SMTP:*"}).Substring(5)}
-                    }).primarysmtpaddress
-                Set-ADUser -Server $domainController -Identity $SamAccountName -userprincipalname $userprincipalname
+        $hash = @{
+            "Instance"          = $template
+            "Name"              = $name
+            "DisplayName"       = $DisplayName
+            "GivenName"         = $FirstName
+            "SurName"           = $LastName
+            "OfficePhone"       = $OfficePhone
+            "mobile"            = $MobilePhone
+            "description"       = $Description
+            "streetaddress"     = $StreetAddress
+            "city"              = $City
+            "state"             = $State
+            "postalcode"        = $Zip
+            "country"           = $Country
+            "office"            = $Office
+            "title"             = $Title
+            "department"        = $Department
+            "company"           = $Company                                    
+            "SamAccountName"    = $samaccountname
+            "UserPrincipalName" = $userprincipalname
+            "AccountPassword"   = $password_ss
+            "Path"              = $ou
+        }
+        $params = @{}
+        ForEach ($key in $hash.keys) {
+            if ($($hash.item($key))) {
+                $params.add($key, $($hash.item($key)))
+            }
+        }
+            
+        #########################################
+        #          Create New ADUser            #
+        #########################################
+        New-ADUser @params -Server $domainController -ChangePasswordAtLogon:$true -Enabled:$true
+            
+        if ($UserToCopy) {
+            $groupMembership | Add-ADGroupMember -Server $domainController -Members $samaccountname
+        }
+    
+        # Purge old jobs
+        Get-Job | where {$_.State -ne 'Running'}| Remove-Job
+    
+        if (!$NoMail) {
+    
+            ##################################################
+            # Enable Remote Mailbox in Office 365 & set UPN  #
+            ##################################################
+            Enable-OnPremRemoteMailbox -DomainController $domainController -Identity $samaccountname -RemoteRoutingAddress ($samaccountname + "@" + $targetAddressSuffix) -Alias $samaccountname 
+                
+            # After Email Address Policy, Set UPN to same as PrimarySMTP #
+            $userprincipalname = (Get-ADUser -Server $domainController -Identity $SamAccountName -Properties proxyaddresses | Select @{
+                    n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses | ? {$_ -cmatch "SMTP:*"}).Substring(5)}
+                }).primarysmtpaddress
+            Set-ADUser -Server $domainController -Identity $SamAccountName -userprincipalname $userprincipalname
                
-                ########################################
-                #          Convert To Shared           #
-                ########################################
-                if ($Shared) {
-                    Start-Job -Name ConvertToShared {
-                        Start-Sleep -Seconds 300
-                        $userprincipalname = $args[0]
-                        $userprincipalname | ConvertTo-Shared
-                    } -ArgumentList  $userprincipalname | Out-Null
-                }
+            ########################################
+            #          Convert To Shared           #
+            ########################################
+            if ($Shared) {
+                Start-Job -Name ConvertToShared {
+                    Start-Sleep -Seconds 300
+                    $userprincipalname = $args[0]
+                    $userprincipalname | ConvertTo-Shared
+                } -ArgumentList  $userprincipalname | Out-Null
+            }
     
-                ########################################
-                #     Write UPNs to Temp GUID file     # 
-                ########################################
+            ########################################
+            #     Write UPNs to Temp GUID file     # 
+            ########################################
     
-                $tempfile = Join-Path $GuidFolder ([Guid]::NewGuid().tostring())
-                $UserPrincipalName | Set-Content $tempfile
-                $tempfileRetention = Join-Path $GuidFolderRetention ([Guid]::NewGuid().tostring())
-                $UserPrincipalName | Set-Content $tempfileRetention
+            $tempfile = Join-Path $GuidFolder ([Guid]::NewGuid().tostring())
+            $UserPrincipalName | Set-Content $tempfile
+            $tempfileRetention = Join-Path $GuidFolderRetention ([Guid]::NewGuid().tostring())
+            $UserPrincipalName | Set-Content $tempfileRetention
         
-            } # End of IF MAIL (ABOVE)
+        } # End of IF MAIL (ABOVE)
     
-            # IF "NO MAIL" FOR THIS USER (BELOW)
-            Else {
-                $LastName = $LastName.replace(" ", "")
-                $FirstName = $FirstName.replace(" ", "")
-                $userprincipalname = $LastName + "-" + $FirstName + "@" + $PsBoundParameters[$ParamName_UPNSuffix]
+        # IF "NO MAIL" FOR THIS USER (BELOW)
+        Else {
+            $LastName = $LastName.replace(" ", "")
+            $FirstName = $FirstName.replace(" ", "")
+            $userprincipalname = $LastName + "-" + $FirstName + "@" + $PsBoundParameters[$ParamName_UPNSuffix]
                 
-                $i = 2
-                $F = $null
-                while (Get-ADUser -LDAPfilter "(userprincipalname=$userprincipalname)") {
-                    $F = $FirstName + $i
-                    $userprincipalname = $LastName + "-" + $F + "@" + $PsBoundParameters[$ParamName_UPNSuffix]
-                    $i++
-                }
-                if ($F) {
-                    $name = $LastName + ", " + $F
-                }
-                else {
-                    $name = $LastName + ", " + $FirstName
-                }
-                Set-ADUser -Server $domainController -Identity $SamAccountName -userprincipalname $userprincipalname
+            $i = 2
+            $F = $null
+            while (Get-ADUser -LDAPfilter "(userprincipalname=$userprincipalname)") {
+                $F = $FirstName + $i
+                $userprincipalname = $LastName + "-" + $F + "@" + $PsBoundParameters[$ParamName_UPNSuffix]
+                $i++
             }
-    
-            ########################################
-            #   Verbose Output of ADUser Created   #
-            ########################################
-            $properties = @(
-                'DisplayName', 'Title', 'Office', 'Department', 'Division'
-                'Company', 'Organization', 'EmployeeID', 'EmployeeNumber', 'Description', 'GivenName'
-                'Surname', 'StreetAddress', 'City', 'State', 'PostalCode', 'Country', 'countryCode'
-                'POBox', 'MobilePhone', 'OfficePhone', 'HomePhone', 'Fax', 'cn'
-                'mailnickname', 'samaccountname', 'UserPrincipalName', 'proxyAddresses'
-                'Distinguishedname', 'legacyExchangeDN', 'EmailAddress', 'msExchRecipientDisplayType'
-                'msExchRecipientTypeDetails', 'msExchRemoteRecipientType', 'targetaddress'
-            )
-    
-            $Selectproperties = @(
-                'DisplayName', 'Title', 'Office', 'Department', 'Division'
-                'Company', 'Organization', 'EmployeeID', 'EmployeeNumber', 'Description', 'GivenName'
-                'Surname', 'StreetAddress', 'City', 'State', 'PostalCode', 'Country', 'countryCode'
-                'POBox', 'MobilePhone', 'OfficePhone', 'HomePhone', 'Fax', 'cn'
-                'mailnickname', 'samaccountname', 'UserPrincipalName', 'Distinguishedname'
-                'legacyExchangeDN', 'EmailAddress', 'msExchRecipientDisplayType'
-                'msExchRecipientTypeDetails', 'msExchRemoteRecipientType', 'targetaddress'
-            )
-    
-            $CalculatedProps = @(
-                @{n = "OU" ; e = {$_.Distinguishedname | ForEach-Object {($_ -split '(OU=)', 2)[1, 2] -join ''}}},
-                @{n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses | ? {$_ -cmatch "SMTP:*"}).Substring(5) -join ";" }},
-                @{n = "smtp" ; e = {( $_.proxyAddresses | ? {$_ -cmatch "smtp:*"}).Substring(5) -join ";" }},
-                @{n = "x500" ; e = {( $_.proxyAddresses | ? {$_ -match "x500:*"}).Substring(0) -join ";" }},
-                @{n = "SIP" ; e = {( $_.proxyAddresses | ? {$_ -match "SIP:*"}).Substring(4) -join ";" }}
-            )   
-    
-            Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)" -Properties $Properties -searchBase (Get-ADDomain -Server $domainController).distinguishedname -SearchScope SubTree |
-                select ($Selectproperties + $CalculatedProps) | FL
+            if ($F) {
+                $name = $LastName + ", " + $F
+            }
+            else {
+                $name = $LastName + ", " + $FirstName
+            }
+            Set-ADUser -Server $domainController -Identity $SamAccountName -userprincipalname $userprincipalname
         }
     
-        End {
-            ########################################
-            #         Sync Azure AD Connect        #
-            ########################################
-            Sync-ADConnect
+        ########################################
+        #   Verbose Output of ADUser Created   #
+        ########################################
+        $properties = @(
+            'DisplayName', 'Title', 'Office', 'Department', 'Division'
+            'Company', 'Organization', 'EmployeeID', 'EmployeeNumber', 'Description', 'GivenName'
+            'Surname', 'StreetAddress', 'City', 'State', 'PostalCode', 'Country', 'countryCode'
+            'POBox', 'MobilePhone', 'OfficePhone', 'HomePhone', 'Fax', 'cn'
+            'mailnickname', 'samaccountname', 'UserPrincipalName', 'proxyAddresses'
+            'Distinguishedname', 'legacyExchangeDN', 'EmailAddress', 'msExchRecipientDisplayType'
+            'msExchRecipientTypeDetails', 'msExchRemoteRecipientType', 'targetaddress'
+        )
     
-            ########################################
-            # Stop the Licensing Watcher Function  #
-            ########################################
-            if (!$NoMail) {
-                Start-Job -Name DeleteGuidFolder {
-                    $GuidFolder = $args[0]
-                    $GuidFolderRetention = $args[1]
-                    New-Item -Path $GuidFolder -Name "ALLDONE" -Type File
-                    New-Item -Path $GuidFolderRetention -Name "ALLDONE" -Type File
-                    while ((Get-ChildItem -Path $GuidFolder).count -gt 0) {
-                    }
-                    Remove-Item -Path $GuidFolder -Confirm:$False -force -verbose
-                    while ((Get-ChildItem -Path $GuidFolderRetention).count -gt 0) {
-                    }
-                    Remove-Item -Path $GuidFolderRetention -Confirm:$False -force -verbose
-                } -ArgumentList $GuidFolder, $GuidFolderRetention
-            }
+        $Selectproperties = @(
+            'DisplayName', 'Title', 'Office', 'Department', 'Division'
+            'Company', 'Organization', 'EmployeeID', 'EmployeeNumber', 'Description', 'GivenName'
+            'Surname', 'StreetAddress', 'City', 'State', 'PostalCode', 'Country', 'countryCode'
+            'POBox', 'MobilePhone', 'OfficePhone', 'HomePhone', 'Fax', 'cn'
+            'mailnickname', 'samaccountname', 'UserPrincipalName', 'Distinguishedname'
+            'legacyExchangeDN', 'EmailAddress', 'msExchRecipientDisplayType'
+            'msExchRecipientTypeDetails', 'msExchRemoteRecipientType', 'targetaddress'
+        )
+    
+        $CalculatedProps = @(
+            @{n = "OU" ; e = {$_.Distinguishedname | ForEach-Object {($_ -split '(OU=)', 2)[1, 2] -join ''}}},
+            @{n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses | ? {$_ -cmatch "SMTP:*"}).Substring(5) -join ";" }},
+            @{n = "smtp" ; e = {( $_.proxyAddresses | ? {$_ -cmatch "smtp:*"}).Substring(5) -join ";" }},
+            @{n = "x500" ; e = {( $_.proxyAddresses | ? {$_ -match "x500:*"}).Substring(0) -join ";" }},
+            @{n = "SIP" ; e = {( $_.proxyAddresses | ? {$_ -match "SIP:*"}).Substring(4) -join ";" }}
+        )   
+    
+        Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)" -Properties $Properties -searchBase (Get-ADDomain -Server $domainController).distinguishedname -SearchScope SubTree |
+            select ($Selectproperties + $CalculatedProps) | FL
+    }
+    
+    End {
+        ########################################
+        #         Sync Azure AD Connect        #
+        ########################################
+        Sync-ADConnect
+    
+        ########################################
+        # Stop the Licensing Watcher Function  #
+        ########################################
+        if (!$NoMail) {
+            Start-Job -Name DeleteGuidFolder {
+                $GuidFolder = $args[0]
+                $GuidFolderRetention = $args[1]
+                New-Item -Path $GuidFolder -Name "ALLDONE" -Type File
+                New-Item -Path $GuidFolderRetention -Name "ALLDONE" -Type File
+                while ((Get-ChildItem -Path $GuidFolder).count -gt 0) {
+                }
+                Remove-Item -Path $GuidFolder -Confirm:$False -force -verbose
+                while ((Get-ChildItem -Path $GuidFolderRetention).count -gt 0) {
+                }
+                Remove-Item -Path $GuidFolderRetention -Confirm:$False -force -verbose
+            } -ArgumentList $GuidFolder, $GuidFolderRetention
         }
-    }    
+    }
+}    
     
