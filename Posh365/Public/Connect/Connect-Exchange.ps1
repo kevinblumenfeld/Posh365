@@ -22,23 +22,25 @@ function Connect-Exchange {
     # Delete invalid or unwanted credentials
     if ($DeleteExchangeCreds) {
         Try {
-            Remove-Item ($KeyPath + "$($user).ExchangeCred") -erroraction stop
+            Remove-Item ($KeyPath + "$($user).ExchangeCred") -ErrorAction Stop
         }
         Catch {
-
+            $_
+            Write-Host "Unable to Delete Exchange Password"
         }
         Try {
-            Remove-Item ($KeyPath + "$($user).uExchangeCred") -erroraction stop
+            Remove-Item ($KeyPath + "$($user).uExchangeCred") -ErrorAction Stop
         }
         Catch {
-            
+            $_
+            Write-Host "Unable to Delete Exchange Username"
         }
         
     }
     # Create KeyPath Directory
     if (!(Test-Path $KeyPath)) {
         try {
-            New-Item -ItemType Directory -Path $KeyPath -ErrorAction STOP | Out-Null
+            New-Item -ItemType Directory -Path $KeyPath -ErrorAction Stop | Out-Null
         }
         catch {
             throw $_.Exception.Message
@@ -79,7 +81,7 @@ function Connect-Exchange {
         $Credential.UserName | Out-File ($KeyPath + "$($user).uExchangeCred")
     }    
     Try {
-        $Session = New-PSSession -Name "OnPremExchange" -ConfigurationName Microsoft.Exchange -ConnectionUri ("http://" + $ExchangeServer + "/PowerShell/") -Authentication Kerberos -Credential $Credential -erroraction Stop
+        $Session = New-PSSession -Name "OnPremExchange" -ConfigurationName Microsoft.Exchange -ConnectionUri ("http://" + $ExchangeServer + "/PowerShell/") -Authentication Kerberos -Credential $Credential -ErrorAction Stop
     }
     Catch {
         If ($_.exception.Message -match 'user name or password') {
