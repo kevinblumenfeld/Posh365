@@ -70,7 +70,7 @@
     Write-Output "Retrieving distinguishedname's of all Exchange Mailboxes"
     $allMailboxes = (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname)
 
-    if (! $SkipSendAsOnly) {
+    if (! $SkipSendAs) {
         Write-Output "Getting SendAs permissions for each mailbox and writing to file"
         $allMailboxes | Get-SendAsPerms -ADHashDN $ADHashDN -ADHash $ADHash  | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
             Export-csv .\SendAsPerms.csv -NoTypeInformation
