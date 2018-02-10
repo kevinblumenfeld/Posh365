@@ -12,7 +12,7 @@
     param (
         [Parameter(Mandatory = $true)]
         [System.IO.FileInfo] $ReportPath,
-        [Parameter]
+        [Parameter()]
         [switch] $IncludeFullAccess
     )
 
