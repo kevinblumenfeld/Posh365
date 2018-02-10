@@ -23,8 +23,7 @@
     #>
     param (
         [Parameter(Mandatory = $true)]
-        [ValidateScript( {Test-Path $_})]
-        [string] $ReportPath,
+        [System.IO.FileInfo] $ReportPath,
         [Parameter]
         [switch] $IncludeFullAccess
     )
