@@ -12,10 +12,10 @@
 
     Get-ADCache
     
-    There will be no output only 2 Hashtables created.
+    There will be no output only 2 Hashtables will be created in memory.
     
     #>
-    [CmdletBinding()]
+    Import-Module ActiveDirectory -ErrorAction SilentlyContinue
     $Script:ADHash = @{}
     $Script:ADHashDN = @{}
     Get-ADUser -filter 'proxyaddresses -ne "$null"' -server ($dc + ":3268") -SearchBase (Get-ADRootDSE).rootdomainnamingcontext -SearchScope Subtree -Properties displayname, canonicalname | 
