@@ -56,11 +56,11 @@
         Export-csv .\SendAsPerms.csv -NoTypeInformation
 
     Write-Output "Getting SendOnBehalf permissions for each mailbox and writing to file"
-    $allMailboxes | Get-SendOnBehalf -ADHashDN $ADHashDN | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
+    $allMailboxes | Get-SendOnBehalfPerms -ADHashDN $ADHashDN | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
         Export-csv .\SendOnBehalfPerms.csv -NoTypeInformation
     
     if ($IncludeFullAccess) {
-        Write-Output "Getting SendAs permissions for each mailbox and writing to file"
+        Write-Output "Getting FullAccess permissions for each mailbox and writing to file"
         $allMailboxes | Get-FullAccessPerms -ADHashDN $ADHashDN -ADHash $ADHash  | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
             Export-csv .\FullAccessPerms.csv -NoTypeInformation
     }
