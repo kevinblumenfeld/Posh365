@@ -10,7 +10,7 @@
         $User
     )
     Begin {
-
+        $ADHashDN = @{}
     }
     Process {
         foreach ($CurUser in $User) {

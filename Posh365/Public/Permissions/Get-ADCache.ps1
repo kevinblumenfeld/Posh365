@@ -28,8 +28,6 @@
     $RootPath = $env:USERPROFILE + "\ps\"
     $KeyPath = $Rootpath + "creds\"
     $User = $env:USERNAME
-    $ADHash = @{}
-    $ADHashDN = @{}
 
     while (!(Test-Path ($RootPath + "$($user).EXCHServer"))) {
         Select-ExchangeServer
