@@ -6,7 +6,7 @@
     
     #>
     param (
-        [parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        [parameter(ValueFromPipeline = $true)]
         $DistinguishedName
     )
     Begin {
