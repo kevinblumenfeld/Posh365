@@ -27,7 +27,6 @@
         [Parameter]
         [switch] $IncludeFullAccess
     )
-    $ReportPath = $ReportPath.TrimEnd('\')
     Import-Module ActiveDirectory -ErrorAction SilentlyContinue
     $RootPath = $env:USERPROFILE + "\ps\"
     $KeyPath = $Rootpath + "creds\"
