@@ -7,17 +7,17 @@
     #>
     param (
         [parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-        $User
+        $DistinguishedName
     )
     Begin {
         $ADHashDN = @{}
     }
     Process {
-        foreach ($CurUser in $User) {
-            $ADHashDN[$CurUser.DistinguishedName] = @{
-                DisplayName = $CurUser.DisplayName
-                UPN         = $CurUser.UserPrincipalName
-                Logon       = $CurUser.logon
+        foreach ($CurDN in $DistinguishedName) {
+            $ADHashDN[$CurDN.DistinguishedName] = @{
+                DisplayName = $CurDN.DisplayName
+                UPN         = $CurDN.UserPrincipalName
+                Logon       = $CurDN.logon
             }
         }
 
