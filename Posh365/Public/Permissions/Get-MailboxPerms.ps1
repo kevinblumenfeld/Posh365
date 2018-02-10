@@ -47,6 +47,8 @@
     $ADHash = $AllADUsers | Get-ADHash
     Write-Output "Caching hash table. DN as Key and Values as DisplayName, UPN & LogonName"
     $ADHashDN = $AllADUsers | Get-ADHashDN
+    Write-Output "Caching hash table. CN as Key and Values as DisplayName, UPN & LogonName"
+    $ADHashCN = $AllADUsers | Get-ADHashCN
 
     Write-Output "Retrieving distinguishedname's of all Exchange Mailboxes"
     $allMailboxes = (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname)
@@ -56,7 +58,7 @@
         Export-csv .\SendAsPerms.csv -NoTypeInformation
 
     Write-Output "Getting SendOnBehalf permissions for each mailbox and writing to file"
-    $allMailboxes | Get-SendOnBehalfPerms -ADHashDN $ADHashDN | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
+    $allMailboxes | Get-SendOnBehalfPerms -ADHashDN $ADHashCN | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
         Export-csv .\SendOnBehalfPerms.csv -NoTypeInformation
     
     if ($IncludeFullAccess) {
