@@ -18,7 +18,9 @@
         [parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         $DistinguishedName,
         [parameter()]
-        [hashtable] $ADHashDN
+        [hashtable] $ADHashDN,
+        [parameter()]
+        [hashtable] $ADHash
     )
     Begin {
         import-module activedirectory -ErrorAction SilentlyContinue

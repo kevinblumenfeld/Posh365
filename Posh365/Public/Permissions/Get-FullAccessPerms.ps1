@@ -16,7 +16,11 @@ function Get-FullAccessPerms {
     [CmdletBinding()]
     Param (
         [parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-        $DistinguishedName
+        $DistinguishedName,
+        [parameter()]
+        [hashtable] $ADHashDN,
+        [parameter()]
+        [hashtable] $ADHash
     )
     Begin {
         import-module activedirectory -ErrorAction SilentlyContinue
