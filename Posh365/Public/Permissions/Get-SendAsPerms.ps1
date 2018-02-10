@@ -9,32 +9,18 @@
     (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-SendAsPerms | Export-csv .\SA.csv -NoTypeInformation
     
     If not running from Exchange Management Shell (EMS):
-
-    (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-SendAsPerms -ConnectToExchange | Export-csv .\SA.csv -NoTypeInformation
+    
+    Connect-Exchange -NoPrefix
+    (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-SendAsPerms | Export-csv .\SA.csv -NoTypeInformation
 
     #>
     [CmdletBinding()]
     Param (
         [parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-        $DistinguishedName,
-        
-        [parameter()]
-        [switch] $ConnectToExchange
+        $DistinguishedName
     )
     Begin {
         import-module activedirectory -ErrorAction SilentlyContinue
-        if ($ConnectToExchange) {
-            While (!(Get-Content ($RootPath + "$($user).EXCHServer") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
-                Select-ExchangeServer
-            }
-            $ExchangeServer = Get-Content ($RootPath + "$($user).EXCHServer")
-            try {
-                $null = Get-Command "Get-ExchangeServer" -ErrorAction Stop | Out-Null
-            }
-            catch {
-                Connect-Exchange -ExchangeServer $ExchangeServer -ViewEntireForest -NoPrefix
-            }
-        }
     }
     Process {
         ForEach ($curDN in $DistinguishedName) {
