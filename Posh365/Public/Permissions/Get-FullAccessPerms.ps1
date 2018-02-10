@@ -1,5 +1,4 @@
 function Get-FullAccessPerms {
-    [CmdletBinding()]
     <#
     .SYNOPSIS
     Outputs Full Access permissions for each mailbox that has permissions assigned.
@@ -14,6 +13,7 @@ function Get-FullAccessPerms {
     (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-FullAccessPerms -ConnectToExchange | Export-csv .\FA.csv -NoTypeInformation
 
     #>
+    [CmdletBinding()]
     Param (
         [parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         $DistinguishedName,

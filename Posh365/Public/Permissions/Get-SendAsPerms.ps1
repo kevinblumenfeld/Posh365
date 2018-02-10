@@ -1,5 +1,4 @@
 ﻿function Get-SendAsPerms {
-    [CmdletBinding()]
     <#
     .SYNOPSIS
     Outputs Send As permissions for each mailbox that has permissions assigned.
@@ -14,6 +13,7 @@
     (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-SendAsPerms -ConnectToExchange | Export-csv .\SA.csv -NoTypeInformation
 
     #>
+    [CmdletBinding()]
     Param (
         [parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         $DistinguishedName,
@@ -59,7 +59,7 @@
                     }
                 } 
                 Catch {
-                    	New-Object -TypeName psobject -property @{
+                    New-Object -TypeName psobject -property @{
                         Mailbox    = $ADHashDN.$mailbox.DisplayName
                         UPN        = $ADHashDN.$mailbox.UPN
                         Granted    = $ADHash."$User".DisplayName

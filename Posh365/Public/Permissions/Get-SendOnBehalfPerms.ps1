@@ -1,5 +1,4 @@
 function Get-SendOnBehalfPerms {
-    [CmdletBinding()]
     <#
     .SYNOPSIS
     Outputs SendOnBehalf permissions for each mailbox that has permissions assigned.
@@ -14,6 +13,7 @@ function Get-SendOnBehalfPerms {
     (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-SendOnBehalfPerms -ConnectToExchange | Export-csv .\SOB.csv -NoTypeInformation
 
     #>
+    [CmdletBinding()]
     Param (
         [parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         $DistinguishedName,
