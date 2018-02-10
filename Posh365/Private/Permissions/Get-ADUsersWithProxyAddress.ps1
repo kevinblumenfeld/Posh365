@@ -1,4 +1,4 @@
-﻿Function Get-ADUsersWithProxyAddresses {
+﻿Function Get-ADUsersWithProxyAddress {
     <#
     .SYNOPSIS
 
