@@ -14,7 +14,7 @@
     }
     Process {
         foreach ($CurCN in $CanonicalName) {
-            $ADHashDN[$CurCN.CanonicalName] = @{
+            $ADHashCN[$CurCN.CanonicalName] = @{
                 DisplayName = $CurCN.DisplayName
                 UPN         = $CurCN.UserPrincipalName
                 Logon       = $CurCN.logon
