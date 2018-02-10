@@ -28,7 +28,7 @@
         [switch] $IncludeFullAccess
     )
     Import-Module ActiveDirectory -ErrorAction SilentlyContinue
-    Get-ADCache
+    
     $RootPath = $env:USERPROFILE + "\ps\"
     $KeyPath = $Rootpath + "creds\"
     $User = $env:USERNAME
@@ -53,17 +53,6 @@
     New-Item -ItemType Directory -Path $ReportPath -ErrorAction SilentlyContinue
     Set-Location $ReportPath
 
-    (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) |
-        Get-SendAsPerms | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
-        Export-csv .\SendAsPerms.csv -NoTypeInformation
+    Get-ADCache
 
-    (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) |
-        Get-SendOnBehalfPerms | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
-        Export-csv .\SendOnBehalfPerms.csv -NoTypeInformation
-        
-    if ($IncludeFullAccess) {
-        (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) |
-            Get-FullAccessPerms | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
-            Export-csv .\FullAccessPerms.csv -NoTypeInformation 
-    }
 }
