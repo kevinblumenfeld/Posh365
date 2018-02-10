@@ -8,11 +8,10 @@ function Get-FullAccessPerms {
     
     (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-FullAccessPerms | Export-csv .\FA.csv -NoTypeInformation
 
-    If not running from Exchange Management Shell (EMS):
+    If not running from Exchange Management Shell (EMS), run this first:
 
     Connect-Exchange -NoPrefix
-    (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-FullAccessPerms | Export-csv .\FA.csv -NoTypeInformation
-
+    
     #>
     [CmdletBinding()]
     Param (

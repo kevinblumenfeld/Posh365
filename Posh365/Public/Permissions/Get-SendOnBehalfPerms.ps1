@@ -8,11 +8,10 @@ function Get-SendOnBehalfPerms {
     
 	(Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-SendOnBehalfPerms | Export-csv .\SOB.csv -NoTypeInformation
 
-    If not running from Exchange Management Shell (EMS):
+    If not running from Exchange Management Shell (EMS), run this first:
 
     Connect-Exchange -NoPrefix
-    (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-SendOnBehalfPerms | Export-csv .\SOB.csv -NoTypeInformation
-
+    
     #>
     [CmdletBinding()]
     Param (

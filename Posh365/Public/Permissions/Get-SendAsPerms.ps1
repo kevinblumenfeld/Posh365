@@ -7,12 +7,11 @@
     .EXAMPLE 
     
     (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-SendAsPerms | Export-csv .\SA.csv -NoTypeInformation
-    
-    If not running from Exchange Management Shell (EMS):
-    
-    Connect-Exchange -NoPrefix
-    (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-SendAsPerms | Export-csv .\SA.csv -NoTypeInformation
 
+    If not running from Exchange Management Shell (EMS), run this first:
+
+    Connect-Exchange -NoPrefix
+    
     #>
     [CmdletBinding()]
     Param (
