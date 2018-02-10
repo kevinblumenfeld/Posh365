@@ -14,7 +14,6 @@
     }
     Process {
         foreach ($CurDN in $DistinguishedName) {
-            write-host "CURDN: " $CurDN
             $ADHashDN[$CurDN.DistinguishedName] = @{
                 DisplayName = $CurDN.DisplayName
                 UPN         = $CurDN.UserPrincipalName
@@ -24,7 +23,7 @@
 
     }
     End {
-
+        $ADHashDN
     }
      
 }
