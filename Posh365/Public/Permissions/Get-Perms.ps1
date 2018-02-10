@@ -28,6 +28,7 @@
         [switch] $IncludeFullAccess
     )
     Import-Module ActiveDirectory -ErrorAction SilentlyContinue
+    Get-ADCache
     $RootPath = $env:USERPROFILE + "\ps\"
     $KeyPath = $Rootpath + "creds\"
     $User = $env:USERNAME
