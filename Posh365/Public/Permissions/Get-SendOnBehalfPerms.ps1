@@ -15,38 +15,38 @@ function Get-SendOnBehalfPerms {
     #>
     [CmdletBinding()]
     Param (
-        [parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-        $DistinguishedName,
+        [parameter(ValueFromPipeline = $true)]
+        $CanonicalName,
         [parameter()]
-        [hashtable] $ADHashDN
+        [hashtable] $ADHashCN
     )
     Begin {
         import-module activedirectory -ErrorAction SilentlyContinue
     }
     Process {
-        ForEach ($curDN in $DistinguishedName) {
+        ForEach ($curDN in $CanonicalName) {
             $mailbox = $curDN
-            (Get-Mailbox $curDN -erroraction silentlycontinue).GrantSendOnBehalfTo | Select -expandproperty distinguishedName |
+            (Get-Mailbox $curDN -erroraction silentlycontinue).GrantSendOnBehalfTo |
                 where-object {$_ -ne $null}  | ForEach-Object {
                 $User = $_
                 try {
                     Get-ADGroupMember $_ -Recursive -ErrorAction stop | 
                         ForEach-Object {
                         New-Object -TypeName psobject -property @{
-                            Mailbox    = $ADHashDN.$mailbox.DisplayName
-                            UPN        = $ADHashDN.$mailbox.UPN
-                            Granted    = $ADHashDN[$_.distinguishedname].DisplayName
-                            GrantedUPN = $ADHashDN[$_.distinguishedname].UPN
+                            Mailbox    = $ADHashCN.$mailbox.DisplayName
+                            UPN        = $ADHashCN.$mailbox.UPN
+                            Granted    = $ADHashCN[$_.distinguishedname].DisplayName
+                            GrantedUPN = $ADHashCN[$_.distinguishedname].UPN
                             Permission = "SendOnBehalf"
                         }
                     }
                 } 
                 Catch {
                     New-Object -TypeName psobject -property @{
-                        Mailbox    = $ADHashDN.$mailbox.DisplayName
-                        UPN        = $ADHashDN.$mailbox.UPN
-                        Granted    = $ADHashDN."$User".DisplayName
-                        GrantedUPN = $ADHashDN."$User".UPN
+                        Mailbox    = $ADHashCN.$mailbox.DisplayName
+                        UPN        = $ADHashCN.$mailbox.UPN
+                        Granted    = $ADHashCN."$User".DisplayName
+                        GrantedUPN = $ADHashCN."$User".UPN
                         Permission = "SendOnBehalf"
                     }  
                 }
