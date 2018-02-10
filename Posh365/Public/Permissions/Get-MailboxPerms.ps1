@@ -2,10 +2,23 @@
     
     <#
     .SYNOPSIS
+    By default, creates permissions reports for all mailboxes with SendAs, SendOnBehalf and FullAccess delegates.
+    Switches can be added to isolate one or more reports
 
+    CSVs headers:
+    "Mailbox","UPN","Granted","GrantedUPN","Permission"
 
     .EXAMPLE
+    Get-MailboxPerms -ReportPath C:\PermsReports
+    
+    .EXAMPLE
+    Get-MailboxPerms -ReportPath C:\PermsReports -SkipFullAccess
+    
+    .EXAMPLE
+    Get-MailboxPerms -ReportPath C:\PermsReports -SkipSendOnBehalf
 
+    .EXAMPLE
+    Get-MailboxPerms -ReportPath C:\PermsReports -SkipSendAs -SkipFullAccess
     
     #>
     [CmdletBinding(SupportsShouldProcess = $true)]
@@ -13,16 +26,18 @@
         [Parameter(Mandatory = $true)]
         [System.IO.FileInfo] $ReportPath,
         [Parameter()]
-        [switch] $IncludeFullAccess,
+        [switch] $SkipSendAs,
         [Parameter()]
-        [switch] $SkipSendAs
+        [switch] $SkipSendOnBehalf,
+        [Parameter()]
+        [switch] $SkipFullAccess
     )
 
     Import-Module ActiveDirectory -ErrorAction SilentlyContinue
     $RootPath = $env:USERPROFILE + "\ps\"
     $KeyPath = $Rootpath + "creds\"
     $User = $env:USERNAME
-
+    
     while (!(Test-Path ($RootPath + "$($user).EXCHServer"))) {
         Select-ExchangeServer
     }
@@ -55,17 +70,19 @@
     Write-Output "Retrieving distinguishedname's of all Exchange Mailboxes"
     $allMailboxes = (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname)
 
-    if (! $SkipSendAs) {
+    if (! $SkipSendAsOnly) {
         Write-Output "Getting SendAs permissions for each mailbox and writing to file"
         $allMailboxes | Get-SendAsPerms -ADHashDN $ADHashDN -ADHash $ADHash  | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
             Export-csv .\SendAsPerms.csv -NoTypeInformation
     }
     
-    Write-Output "Getting SendOnBehalf permissions for each mailbox and writing to file"
-    $allMailboxes | Get-SendOnBehalfPerms -ADHashCN $ADHashCN | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
-        Export-csv .\SendOnBehalfPerms.csv -NoTypeInformation
+    if (! $SkipSendOnBehalf) {
+        Write-Output "Getting SendOnBehalf permissions for each mailbox and writing to file"
+        $allMailboxes | Get-SendOnBehalfPerms -ADHashCN $ADHashCN | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
+            Export-csv .\SendOnBehalfPerms.csv -NoTypeInformation
+    }
     
-    if ($IncludeFullAccess) {
+    if (! $SkipFullAccess) {
         Write-Output "Getting FullAccess permissions for each mailbox and writing to file"
         $allMailboxes | Get-FullAccessPerms -ADHashDN $ADHashDN -ADHash $ADHash  | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
             Export-csv .\FullAccessPerms.csv -NoTypeInformation
