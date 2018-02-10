@@ -13,7 +13,9 @@
         [Parameter(Mandatory = $true)]
         [System.IO.FileInfo] $ReportPath,
         [Parameter()]
-        [switch] $IncludeFullAccess
+        [switch] $IncludeFullAccess,
+        [Parameter()]
+        [switch] $SkipSendAs
     )
 
     Import-Module ActiveDirectory -ErrorAction SilentlyContinue
@@ -53,10 +55,12 @@
     Write-Output "Retrieving distinguishedname's of all Exchange Mailboxes"
     $allMailboxes = (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname)
 
-    Write-Output "Getting SendAs permissions for each mailbox and writing to file"
-    $allMailboxes | Get-SendAsPerms -ADHashDN $ADHashDN -ADHash $ADHash  | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
-        Export-csv .\SendAsPerms.csv -NoTypeInformation
-
+    if (! $SkipSendAs) {
+        Write-Output "Getting SendAs permissions for each mailbox and writing to file"
+        $allMailboxes | Get-SendAsPerms -ADHashDN $ADHashDN -ADHash $ADHash  | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
+            Export-csv .\SendAsPerms.csv -NoTypeInformation
+    }
+    
     Write-Output "Getting SendOnBehalf permissions for each mailbox and writing to file"
     $allMailboxes | Get-SendOnBehalfPerms -ADHashCN $ADHashCN | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
         Export-csv .\SendOnBehalfPerms.csv -NoTypeInformation
