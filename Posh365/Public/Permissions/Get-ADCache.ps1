@@ -15,19 +15,25 @@
     There will be no output only 2 Hashtables will be created in memory.
     
     #>
+    param (
+
+    )
     Import-Module ActiveDirectory -ErrorAction SilentlyContinue
-    $Script:ADHash = @{}
-    $Script:ADHashDN = @{}
+    $ADHash = @{}
+    $ADHashDN = @{}
     Get-ADUser -filter 'proxyaddresses -ne "$null"' -server ($dc + ":3268") -SearchBase (Get-ADRootDSE).rootdomainnamingcontext -SearchScope Subtree -Properties displayname, canonicalname | 
         Select distinguishedname, displayname, userprincipalname, @{n = "logon"; e = {$_.canonicalname.split('.')[0] + "\" + $_.samaccountname}} | % {
-        $Script:ADHash[$_.logon] = @{
+        $ADHash[$_.logon] = @{
             DisplayName = $_.DisplayName
             UPN         = $_.UserPrincipalName
         }
-        $Script:ADHashDN[$_.DistinguishedName] = @{
+        $ADHashDN[$_.DistinguishedName] = @{
             DisplayName = $_.DisplayName
             UPN         = $_.UserPrincipalName
             Logon       = $_.logon
         }
     }
+    $allMailboxes = (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) 
+        $allMailboxes | Get-SendAsPerms -ADHashDN $ADHashDN  | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
+        Export-csv .\SendAsPerms.csv -NoTypeInformation
 }
