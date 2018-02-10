@@ -16,7 +16,7 @@ function Get-SendOnBehalfPerms {
     [CmdletBinding()]
     Param (
         [parameter(ValueFromPipeline = $true)]
-        $CanonicalName,
+        $DistinguishedName,
         [parameter()]
         [hashtable] $ADHashCN
     )
@@ -24,17 +24,17 @@ function Get-SendOnBehalfPerms {
         import-module activedirectory -ErrorAction SilentlyContinue
     }
     Process {
-        ForEach ($curDN in $CanonicalName) {
+        ForEach ($curDN in $DistinguishedName) {
             $mailbox = $curDN
             (Get-Mailbox $curDN -erroraction silentlycontinue).GrantSendOnBehalfTo |
                 where-object {$_ -ne $null}  | ForEach-Object {
-                $User = $_
+                $CN = $_
                 try {
                     Get-ADGroupMember $_ -Recursive -ErrorAction stop | 
                         ForEach-Object {
                         New-Object -TypeName psobject -property @{
-                            Mailbox    = $ADHashCN.$mailbox.DisplayName
-                            UPN        = $ADHashCN.$mailbox.UPN
+                            Mailbox    = $mailbox.DisplayName
+                            UPN        = $mailbox.UPN
                             Granted    = $ADHashCN[$_.distinguishedname].DisplayName
                             GrantedUPN = $ADHashCN[$_.distinguishedname].UPN
                             Permission = "SendOnBehalf"
@@ -43,10 +43,10 @@ function Get-SendOnBehalfPerms {
                 } 
                 Catch {
                     New-Object -TypeName psobject -property @{
-                        Mailbox    = $ADHashCN.$mailbox.DisplayName
-                        UPN        = $ADHashCN.$mailbox.UPN
-                        Granted    = $ADHashCN."$User".DisplayName
-                        GrantedUPN = $ADHashCN."$User".UPN
+                        Mailbox    = $mailbox.DisplayName
+                        UPN        = $mailbox.UPN
+                        Granted    = $ADHashCN."$CN".DisplayName
+                        GrantedUPN = $ADHashCN."$CN".UPN
                         Permission = "SendOnBehalf"
                     }  
                 }
