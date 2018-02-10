@@ -18,15 +18,18 @@
     #>
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (
-
+        [Parameter(Mandatory = $true)]
+        [System.IO.FileInfo] $ReportPath,
+        [Parameter]
+        [switch] $IncludeFullAccess
     )
 
     Import-Module ActiveDirectory -ErrorAction SilentlyContinue
-    $RootPath   = $env:USERPROFILE + "\ps\"
-    $KeyPath    = $Rootpath + "creds\"
-    $User       = $env:USERNAME
-    $ADHash     = @{}
-    $ADHashDN   = @{}
+    $RootPath = $env:USERPROFILE + "\ps\"
+    $KeyPath = $Rootpath + "creds\"
+    $User = $env:USERNAME
+    $ADHash = @{}
+    $ADHashDN = @{}
 
     while (!(Test-Path ($RootPath + "$($user).EXCHServer"))) {
         Select-ExchangeServer
@@ -51,9 +54,9 @@
     Write-Verbose "Importing Active Directory Users that have at least one proxy address"
     $AllADUsers = Get-ADUsersWithProxyAddress
     Write-Verbose "Caching hash table. LogonName as Key and Values as DisplayName & UPN"
-    $ADHash     = $AllADUsers | Get-ADHash
+    $ADHash = $AllADUsers | Get-ADHash
     Write-Verbose "Caching hash table. DN as Key and Values as DisplayName, UPN & LogonName"
-    $ADHashDN   = $AllADUsers | Get-ADHashDN
+    $ADHashDN = $AllADUsers | Get-ADHashDN
 
     Write-Verbose "Retrieving distinguishedname's of all Exchange Mailboxes"
     $allMailboxes = (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) 
