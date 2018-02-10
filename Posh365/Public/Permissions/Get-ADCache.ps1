@@ -1,4 +1,5 @@
 ﻿Function Get-ADCache {
+    
     <#
     .SYNOPSIS
      Caches AD attributes.
@@ -15,25 +16,48 @@
     There will be no output only 2 Hashtables will be created in memory.
     
     #>
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param (
 
     )
+
     Import-Module ActiveDirectory -ErrorAction SilentlyContinue
-    $ADHash = @{}
-    $ADHashDN = @{}
-    Get-ADUser -filter 'proxyaddresses -ne "$null"' -server ($dc + ":3268") -SearchBase (Get-ADRootDSE).rootdomainnamingcontext -SearchScope Subtree -Properties displayname, canonicalname | 
-        Select distinguishedname, displayname, userprincipalname, @{n = "logon"; e = {$_.canonicalname.split('.')[0] + "\" + $_.samaccountname}} | % {
-        $ADHash[$_.logon] = @{
-            DisplayName = $_.DisplayName
-            UPN         = $_.UserPrincipalName
+    $RootPath   = $env:USERPROFILE + "\ps\"
+    $KeyPath    = $Rootpath + "creds\"
+    $User       = $env:USERNAME
+    $ADHash     = @{}
+    $ADHashDN   = @{}
+
+    while (!(Test-Path ($RootPath + "$($user).EXCHServer"))) {
+        Select-ExchangeServer
+    }
+    $ExchangeServer = Get-Content ($RootPath + "$($user).EXCHServer")
+    
+    if ($exscripts) {
+        write-output 'Exchange Management Shell loaded'
+    }
+    else {
+        try {
+            $null = Get-Command "Get-ExchangeServer" -ErrorAction Stop
         }
-        $ADHashDN[$_.DistinguishedName] = @{
-            DisplayName = $_.DisplayName
-            UPN         = $_.UserPrincipalName
-            Logon       = $_.logon
+        catch {
+            Connect-Exchange -ExchangeServer $ExchangeServer -ViewEntireForest -NoPrefix
         }
     }
+    
+    New-Item -ItemType Directory -Path $ReportPath -ErrorAction SilentlyContinue
+    Set-Location $ReportPath
+
+    Write-Verbose "Importing Active Directory Users that have at least one proxy address"
+    $AllADUsers = Get-ADUsersWithProxyAddress
+    Write-Verbose "Caching hash table. LogonName as Key and Values as DisplayName & UPN"
+    $ADHash     = $AllADUsers | Get-ADHash
+    Write-Verbose "Caching hash table. DN as Key and Values as DisplayName, UPN & LogonName"
+    $ADHashDN   = $AllADUsers | Get-ADHashDN
+
+    Write-Verbose "Retrieving distinguishedname's of all Exchange Mailboxes"
     $allMailboxes = (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) 
-        $allMailboxes | Get-SendAsPerms -ADHashDN $ADHashDN  | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
+    Write-Verbose "Getting SendAs permissions for each mailbox and writing to file"
+    $allMailboxes | Get-SendAsPerms -ADHashDN $ADHashDN  | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
         Export-csv .\SendAsPerms.csv -NoTypeInformation
 }
