@@ -26,6 +26,7 @@ function Get-SendOnBehalfPerms {
     Process {
         ForEach ($curDN in $DistinguishedName) {
             $mailbox = $curDN
+            write-host "MAILBOX: " $Mailbox
             (Get-Mailbox $curDN -erroraction silentlycontinue).GrantSendOnBehalfTo |
                 where-object {$_ -ne $null}  | ForEach-Object {
                 $CN = $_
@@ -35,8 +36,8 @@ function Get-SendOnBehalfPerms {
                         New-Object -TypeName psobject -property @{
                             Mailbox    = $mailbox.DisplayName
                             UPN        = $mailbox.UPN
-                            Granted    = $ADHashCN[$_.distinguishedname].DisplayName
-                            GrantedUPN = $ADHashCN[$_.distinguishedname].UPN
+                            Granted    = $ADHashDN[$_.distinguishedname].DisplayName
+                            GrantedUPN = $ADHashDN[$_.distinguishedname].UPN
                             Permission = "SendOnBehalf"
                         }
                     }
