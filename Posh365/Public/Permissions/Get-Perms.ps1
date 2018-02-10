@@ -49,17 +49,21 @@
             Connect-Exchange -ExchangeServer $ExchangeServer -ViewEntireForest -NoPrefix
         }
     }
+    
+    New-Item -ItemType Directory -Path $ReportPath -ErrorAction SilentlyContinue
+    Set-Location $ReportPath
+
     (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) |
         Get-SendAsPerms | Select Mailbox, UPN, Granted, Granted, UPN, Permission |
-        Export-csv $ReportPath + "\" + "SendAsPerms.csv" -NoTypeInformation
+        Export-csv .\SendAsPerms.csv -NoTypeInformation
 
     (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) |
         Get-SendOnBehalfPerms | Select Mailbox, UPN, Granted, Granted, UPN, Permission |
-        Export-csv $ReportPath + "\" + "SendOnBehalfPerms.csv" -NoTypeInformation
+        Export-csv .\SendOnBehalfPerms.csv -NoTypeInformation
         
     if ($IncludeFullAccess) {
         (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) |
             Get-FullAccessPerms | Select Mailbox, UPN, Granted, Granted, UPN, Permission |
-            Export-csv $ReportPath + "\" + "FullAccessPerms.csv" -NoTypeInformation 
+            Export-csv .\FullAccessPerms.csv -NoTypeInformation 
     }
 }
