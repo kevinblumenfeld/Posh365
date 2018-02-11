@@ -19,6 +19,8 @@ function Select-SamAccountNameNumberOfLastNameCharacters {
     }
     if ($SamAccountNameNumberOfFirstNameCharacters) {
         while ($SamAccountNameNumberOfLastNameCharacters.length -gt 1 ) {
+            write-host "WTF IS GOING ON HERE: " $SamAccountNameNumberOfLastNameCharacters.length
+            write-host "SamAccountNameNumberOfLastNameCharacters:  " $SamAccountNameNumberOfLastNameCharacters
             [array]$SamAccountNameNumberOfLastNameCharacters = 1..($SamAccountNameCharacters - $SamAccountNameNumberOfFirstNameCharacters)  | % {$_ -join ","}  | 
                 Out-GridView -PassThru -Title "Select the Maximum number of characters from the user's Last Name that will make up the SamAccountName (Choose 1 and click OK)"
         }    
