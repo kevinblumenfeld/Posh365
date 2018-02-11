@@ -275,6 +275,9 @@ Function New-UserToCloud {
             ##############################################
             if (!$SAMPrefix) {
                 if ($SamAccountNameOrder -eq "SamFirstFirst") {
+                    Write-Host "SAMPrefix1: " $SAMPrefix
+                    Write-Host "SAMPrefix: " $Last
+                    Write-Host "SAMPrefix: " $First
                     $SamAccountName = (($First[0..($SamAccountNameNumberOfFirstNameCharacters - 1)] -join '') + $Last)[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join ''
                     $i = 2
                     while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
@@ -284,6 +287,9 @@ Function New-UserToCloud {
                     }
                 }
                 else {
+                    Write-Host "SAMPrefix2: " $SAMPrefix
+                    Write-Host "SAMPrefix: " $Last
+                    Write-Host "SAMPrefix: " $First
                     $SamAccountName = (($Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '') + $First)[0..($SamAccountNameNumberOfFirstNameCharacters - 1)] -join ''
                     $i = 2
                     while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
@@ -297,6 +303,9 @@ Function New-UserToCloud {
             else {
                 [int]$SAMPrefixNumberOfCharacters = ([string]$SAMPrefix).Length
                 if ($SamAccountNameOrder -eq "SamFirstFirst") {
+                    Write-Host "SAMPrefix3: " $SAMPrefix
+                    Write-Host "SAMPrefix: " $Last
+                    Write-Host "SAMPrefix: " $First
                     $SamAccountName = (($SAMPrefix + $First[0..($SamAccountNameNumberOfFirstNameCharacters - 1)] -join '') + $Last)[0..($SamAccountNameNumberOfLastNameCharacters - ($SAMPrefixNumberOfCharacters + 1))] -join ''
                     $i = 2
                     while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
@@ -306,7 +315,7 @@ Function New-UserToCloud {
                     }
                 }
                 else {
-                    Write-Host "SAMPrefix: " $SAMPrefix
+                    Write-Host "SAMPrefix4: " $SAMPrefix
                     Write-Host "SAMPrefix: " $Last
                     Write-Host "SAMPrefix: " $First
                     $SamAccountName = (($SAMPrefix + $Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '') + $First)[0..($SamAccountNameNumberOfFirstNameCharacters - ($SAMPrefixNumberOfCharacters + 1))] -join ''
