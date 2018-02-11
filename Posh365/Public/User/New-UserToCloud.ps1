@@ -504,16 +504,20 @@ Function New-UserToCloud {
         if (!$NoMail) {
             Start-Job -Name DeleteGuidFolder {
                 $GuidFolder = $args[0]
-                $GuidFolderRetention = $args[1]
                 New-Item -Path $GuidFolder -Name "ALLDONE" -Type File
-                New-Item -Path $GuidFolderRetention -Name "ALLDONE" -Type File
                 while ((Get-ChildItem -Path $GuidFolder).count -gt 0) {
                 }
                 Remove-Item -Path $GuidFolder -Confirm:$False -force -verbose
-                while ((Get-ChildItem -Path $GuidFolderRetention).count -gt 0) {
-                }
-                Remove-Item -Path $GuidFolderRetention -Confirm:$False -force -verbose
-            } -ArgumentList $GuidFolder, $GuidFolderRetention
+            } -ArgumentList $GuidFolder
+            if ($RetentionPolicyToAdd) {
+                Start-Job -Name DeleteGuidFolderRetention {
+                    $GuidFolderRetention = $args[0]
+                    New-Item -Path $GuidFolderRetention -Name "ALLDONE" -Type File
+                    while ((Get-ChildItem -Path $GuidFolderRetention).count -gt 0) {
+                    }
+                    Remove-Item -Path $GuidFolderRetention -Confirm:$False -force -verbose
+                } -ArgumentList  $GuidFolderRetention
+            }
         }
     }
 }    
