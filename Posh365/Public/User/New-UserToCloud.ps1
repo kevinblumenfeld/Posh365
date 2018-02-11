@@ -151,8 +151,35 @@ Function New-UserToCloud {
         While (!(Get-Content ($RootPath + "$($user).DisplayNameFormat") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-DisplayNameFormat
         }
-        $DisplayNameFormat = Get-Content ($RootPath + "$($user).DisplayNameFormat")     
-    
+        $DisplayNameFormat = Get-Content ($RootPath + "$($user).DisplayNameFormat")    
+
+        While (!(Get-Content ($RootPath + "$($user).SamAccountNameCharacters") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+            Select-SamAccountNameCharacters
+        }
+        [int]$SamAccountNameCharacters = Get-Content ($RootPath + "$($user).SamAccountNameCharacters")     
+
+        While (!(Get-Content ($RootPath + "$($user).SamAccountNameOrder") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+            Select-SamAccountNameOrder
+        }
+        $SamAccountNameOrder = Get-Content ($RootPath + "$($user).SamAccountNameOrder")
+        
+        if ($SamAccountNameOrder -eq "SamFirstFirst") {
+
+            While (!(Get-Content ($RootPath + "$($user).SamAccountNameNumberOfFirstNameCharacters") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+                Select-SamAccountNameNumberOfFirstNameCharacters -SamAccountNameCharacters $SamAccountNameCharacters
+            }
+            [int]$SamAccountNameNumberOfFirstNameCharacters = Get-Content ($RootPath + "$($user).SamAccountNameNumberOfFirstNameCharacters")
+            
+            While (!(Get-Content ($RootPath + "$($user).SamAccountNameNumberOfLastNameCharacters") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
+                Select-SamAccountNameNumberOfLastNameCharacters -SamAccountNameCharacters $SamAccountNameCharacters -SamAccountNameNumberOfFirstNameCharacters $SamAccountNameNumberOfFirstNameCharacters
+            }
+            [int]$SamAccountNameNumberOfLastNameCharacters = Get-Content ($RootPath + "$($user).SamAccountNameNumberOfLastNameCharacters")
+            
+        }
+        else {
+
+        }
+
         #######################################
         #              Connect                #
         #######################################
@@ -239,12 +266,23 @@ Function New-UserToCloud {
             #              SamAccountName                #
             ##############################################
             if (!$SAMPrefix) {
-                $SamAccountName = (($Last[0..6] -join '') + $First)[0..7] -join ''
-                $i = 2
-                while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
-                    $CharactersUsedForIteration = ([string]$i).Length
-                    $SamAccountName = ((($Last[0..(6 - $CharactersUsedForIteration)] -join '') + $First)[0..(7 - $CharactersUsedForIteration)] -join '') + $i
-                    $i++
+                if ($SamAccountNameOrder -eq "SamFirstFirst") {
+                    $SamAccountName = (($First[0..($SamAccountNameNumberOfFirstNameCharacters - 1)] -join '') + $Last)[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join ''
+                    $i = 2
+                    while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
+                        $CharactersUsedForIteration = ([string]$i).Length
+                        $SamAccountName = ((($First[0..($SamAccountNameNumberOfFirstNameCharacters - ($CharactersUsedForIteration + 1))] -join '') + $Last)[0..($SamAccountNameNumberOfLastNameCharacters - ($CharactersUsedForIteration + 1))] -join '') + $i
+                        $i++
+                    }
+                }
+                else {
+                    $SamAccountName = (($Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '') + $First)[0..($SamAccountNameNumberOfFirstNameCharacters - 1)] -join ''
+                    $i = 2
+                    while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
+                        $CharactersUsedForIteration = ([string]$i).Length
+                        $SamAccountName = ((($Last[0..($SamAccountNameNumberOfLastNameCharacters - ($CharactersUsedForIteration + 1))] -join '') + $First)[0..($SamAccountNameNumberOfFirstNameCharacters - ($CharactersUsedForIteration + 1))] -join '') + $i
+                        $i++
+                    }
                 }
             }
     
