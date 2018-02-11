@@ -323,6 +323,7 @@ Function New-UserToCloud {
                     Write-Host "SAMPrefix: " $Last
                     Write-Host "SAMPrefix: " $First
                     $SamAccountName = ($SAMPrefix + ($Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '')) + ($First[0..($SamAccountNameNumberOfFirstNameCharacters - ($SAMPrefixNumberOfCharacters + 1))] -join '')
+                    Write-Host "SAMACCOUNTNAME: " $SamAccountName
                     $i = 2
                     while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
                         $CharactersUsedForIteration = ([string]$i).Length
@@ -338,6 +339,7 @@ Function New-UserToCloud {
         #######################
     
         Else {
+            WRITE-HOST "IN SHARED!!!!!"
             $LastName = $LastName.replace(" ", "")
     
             $SamAccountName = $Last[0..7] -join ''
