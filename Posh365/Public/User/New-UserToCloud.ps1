@@ -275,6 +275,7 @@ Function New-UserToCloud {
             ##############################################
             if (!$SAMPrefix) {
                 if ($SamAccountNameOrder -eq "SamFirstFirst") {
+                    # SamFIRSTFirst
                     Write-Host "SAMPrefix1: " $SAMPrefix
                     Write-Host "SAMPrefix: " $Last
                     Write-Host "SAMPrefix: " $First
@@ -287,6 +288,7 @@ Function New-UserToCloud {
                     }
                 }
                 else {
+                    # SamFIRSTFirst
                     Write-Host "SAMPrefix2: " $SAMPrefix
                     Write-Host "SAMPrefix: " $Last
                     Write-Host "SAMPrefix: " $First
@@ -303,6 +305,7 @@ Function New-UserToCloud {
             else {
                 [int]$SAMPrefixNumberOfCharacters = ([string]$SAMPrefix).Length
                 if ($SamAccountNameOrder -eq "SamFirstFirst") {
+                    # SamFIRSTFirst w/ PREFIX
                     Write-Host "SAMPrefix3: " $SAMPrefix
                     Write-Host "SAMPrefix: " $Last
                     Write-Host "SAMPrefix: " $First
@@ -315,10 +318,11 @@ Function New-UserToCloud {
                     }
                 }
                 else {
+                    # SamLASTFirst w/ PREFIX
                     Write-Host "SAMPrefix4: " $SAMPrefix
                     Write-Host "SAMPrefix: " $Last
                     Write-Host "SAMPrefix: " $First
-                    $SamAccountName = (($SAMPrefix + ($Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '')) + $First)[0..($SamAccountNameNumberOfFirstNameCharacters - ($SAMPrefixNumberOfCharacters + 1))] -join ''
+                    $SamAccountName = ($SAMPrefix + ($Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '')) + ($First[0..($SamAccountNameNumberOfFirstNameCharacters - ($SAMPrefixNumberOfCharacters + 1))] -join '')
                     $i = 2
                     while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
                         $CharactersUsedForIteration = ([string]$i).Length
