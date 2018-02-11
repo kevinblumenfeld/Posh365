@@ -29,6 +29,8 @@ function Select-SamAccountNameNumberOfLastNameCharacters {
         $SamAccountNameNumberOfLastNameCharacters | Out-File ($RootPath + "$($user).SamAccountNameNumberOfLastNameCharacters") -Force
     }
     else {
+        write-host "IN FIRST-SECOND SECTION (IN LAST)" $SamAccountNameNumberOfFirstNameCharacters
+        write-host "IN FIRST-SECOND SECTION (LENGTHTEST)" $SamAccountNameNumberOfLastNameCharacters.length
         while ($SamAccountNameNumberOfLastNameCharacters.length -ne 1 ) {
             [array]$SamAccountNameNumberOfLastNameCharacters = 1..($SamAccountNameCharacters)  | % {$_ -join ","}  | 
                 Out-GridView -PassThru -Title "Select the Maximum number of characters from the user's Last Name that will make up the SamAccountName (Choose 1 and click OK)"
