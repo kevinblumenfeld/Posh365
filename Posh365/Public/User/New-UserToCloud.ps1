@@ -322,7 +322,7 @@ Function New-UserToCloud {
                         Write-Host "SAMFIRST:  " $First
                         Write-Host "SAMAcctName: " $SamAccountName
                         $CharactersUsedForIteration = ([string]$i).Length
-                        $SamAccountName = $SAMPrefix + ($Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '') + $First[0..($SamAccountNameNumberOfFirstNameCharacters - ($SAMPrefixNumberOfCharacters + $CharactersUsedForIteration + 1))] -join '' + $i
+                        $SamAccountName = $SAMPrefix + ($Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '') + ($First[0..($SamAccountNameNumberOfFirstNameCharacters - ($SAMPrefixNumberOfCharacters + $CharactersUsedForIteration + 1))] -join '') + $i
                         $i++
                     }
                 }
