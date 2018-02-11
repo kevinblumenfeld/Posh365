@@ -2,10 +2,10 @@ function Select-SamAccountNameOptions {
     param ()
     $RootPath = $env:USERPROFILE + "\ps\"
     $User = $env:USERNAME
-    Remove-Item -path $RootPath + "$($user).SamAccountNameCharacters" -force
-    Remove-Item -path $RootPath + "$($user).SamAccountNameOrder" -force
-    Remove-Item -path $RootPath + "$($user).SamAccountNameNumberOfFirstNameCharacters" -force
-    Remove-Item -path $RootPath + "$($user).SamAccountNameNumberOfLastNameCharacters" -force
+    Remove-Item -path ($RootPath + "$($user).SamAccountNameCharacters") -force
+    Remove-Item -path ($RootPath + "$($user).SamAccountNameOrder") -force
+    Remove-Item -path ($RootPath + "$($user).SamAccountNameNumberOfFirstNameCharacters") -force
+    Remove-Item -path ($RootPath + "$($user).SamAccountNameNumberOfLastNameCharacters") -force
 
     While (!(Get-Content ($RootPath + "$($user).SamAccountNameCharacters") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
         Select-SamAccountNameCharacters
