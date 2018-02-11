@@ -1,9 +1,9 @@
 function Select-SamAccountNameNumberOfFirstNameCharacters {
     param (
         [Parameter()]
-        $SamAccountNameCharacters,
+        [int]$SamAccountNameCharacters,
         [Parameter()]
-        $SamAccountNameNumberOfLastNameCharacters
+        [int]$SamAccountNameNumberOfLastNameCharacters
     )
     
     $RootPath = $env:USERPROFILE + "\ps\"
