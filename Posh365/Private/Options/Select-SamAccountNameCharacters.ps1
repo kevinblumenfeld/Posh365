@@ -12,11 +12,8 @@ function Select-SamAccountNameCharacters {
             throw $_.Exception.Message
         }           
     }
-
-    while ($SamAccountNameCharacters.length -ne 1 ) {
-        [array]$SamAccountNameCharacters = "1", "2", "3", "4", "5", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20" | 
-            Out-GridView -PassThru -Title "Select the Maximum number of characters in your SamAccountName (Choose 1 and click OK)"
-    }    
+    [array]$SamAccountNameCharacters = "1", "2", "3", "4", "5", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20" | 
+        Out-GridView -OutputMode Single -Title "Select the Maximum number of characters in your SamAccountName (Choose 1 and click OK)"
     $SamAccountNameCharacters | Out-File ($RootPath + "$($user).SamAccountNameCharacters") -Force
 }
     

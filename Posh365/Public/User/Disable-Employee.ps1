@@ -114,7 +114,7 @@ Function Disable-Employee {
             $ou = (Get-ADOrganizationalUnit -Server $domainController -filter * -SearchBase (Get-ADDomain -Server $domainController).distinguishedname -Properties canonicalname | 
                     where {$_.canonicalname -match $OUSearch -or $_.canonicalname -match $OUSearch2
                 } | Select canonicalname, distinguishedname| sort canonicalname | 
-                    Out-GridView -PassThru -Title "Choose the OU in which to Move the Disabled User, then click OK").distinguishedname 
+                    Out-GridView -OutputMode Single -Title "Choose the OU in which to Move the Disabled User, then click OK").distinguishedname 
             Write-Output "Disabling AD User and moving user to chosen OU"                 
             if ($UserToDisable -like "*@*") {
                 Get-ADUser -LDAPFilter "(Userprincipalname=$UserToDisable)" -Server $domainController | % {

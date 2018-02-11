@@ -29,7 +29,7 @@ function Select-TargetAddressSuffix {
     }
     while (! $TargetAddressSuffix) {
         $TargetAddressSuffix = Get-ADObject @ADObjectSplat | Select-Object -ExpandProperty msExchAcceptedDomainName| ? {$_ -like "*.mail.onmicrosoft.com"} | 
-            Out-GridView -Passthru -Title "SELECT THE TARGET ADDRESS SUFFIX"
+            Out-GridView -OutputMode Single -Title "SELECT THE TARGET ADDRESS SUFFIX"
     }
     $TargetAddressSuffix | Out-File ($RootPath + "$($user).TargetAddressSuffix") -Force 
 }

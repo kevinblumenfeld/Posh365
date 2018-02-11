@@ -211,16 +211,14 @@ Function New-UserToCloud {
                 Connect-Cloud $targetAddressSuffix -ExchangeOnline -EXOPrefix
             }
             Remove-Variable -Name RetentionPolicyToAdd -ErrorAction SilentlyContinue
-            while ($RetentionPolicyToAdd.count -ne "1") {
                 try {
-                    $RetentionPolicyToAdd = ((Get-CloudRetentionPolicy -erroraction stop).name | Out-GridView -Title "Choose a single Retention Policy and Click OK" -PassThru)
+                    $RetentionPolicyToAdd = ((Get-CloudRetentionPolicy -erroraction stop).name | Out-GridView -OutputMode Single -Title "Choose a single Retention Policy and Click OK")
                 }
                 Catch {
                     Write-Output "Error running the command Get-CloudRetentionPolicy."
                     Write-Output "Please make sure you are connected to Exchange Online with the Prefix, Cloud, and try again"
                     Break
                 }
-            }
         }
 
     
@@ -228,7 +226,7 @@ Function New-UserToCloud {
         $ou = (Get-ADOrganizationalUnit -Server $domainController -filter * -SearchBase (Get-ADDomain -Server $domainController).distinguishedname -Properties canonicalname | 
                 where {$_.canonicalname -match $OUSearch -or $_.canonicalname -match $OUSearch2
             } | Select canonicalname, distinguishedname| sort canonicalname | 
-                Out-GridView -PassThru -Title "Choose the OU in which to create the new user, then click OK").distinguishedname
+                Out-GridView -OutputMode Single -Title "Choose the OU in which to create the new user, then click OK").distinguishedname
         if (!$NoMail) {
             $GuidFolder = Join-Path $env:TEMP ([Guid]::NewGuid().tostring())
             New-Item -Path $GuidFolder -ItemType Directory
@@ -311,16 +309,8 @@ Function New-UserToCloud {
                 else {
                     # SamLASTFirst w/ PREFIX
                     $SamAccountName = ($SAMPrefix + ($Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '')) + ($First[0..($SamAccountNameNumberOfFirstNameCharacters - ($SAMPrefixNumberOfCharacters + 1))] -join '')
-                    Write-Host "SAMPrefix1: " $SAMPrefix```
-                    Write-Host "SAMLAST:  " $Last
-                    Write-Host "SAMFIRST:  " $First
-                    Write-Host "SAMAcctName: " $SamAccountName
                     $i = 2
                     while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
-                        Write-Host "SAMPrefix2: " $SAMPrefix
-                        Write-Host "SAMLAST:  " $Last
-                        Write-Host "SAMFIRST:  " $First
-                        Write-Host "SAMAcctName: " $SamAccountName
                         $CharactersUsedForIteration = ([string]$i).Length
                         $SamAccountName = $SAMPrefix + ($Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '') + ($First[0..($SamAccountNameNumberOfFirstNameCharacters - ($SAMPrefixNumberOfCharacters + $CharactersUsedForIteration + 1))] -join '') + $i
                         $i++

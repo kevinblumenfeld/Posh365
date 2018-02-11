@@ -14,7 +14,7 @@ function Select-DisplayNameFormat {
     }
 
     while (!$DisplayNameFormat) {
-        $DisplayNameFormat = "FirstName LastName", "LastName, FirstName" | Out-GridView -PassThru -Title "SELECT `"DISPLAY NAME`" FORMAT"
+        $DisplayNameFormat = "FirstName LastName", "LastName, FirstName" | Out-GridView -OutputMode Single -Title "SELECT `"DISPLAY NAME`" FORMAT"
     }
     if ($DisplayNameFormat -eq "FirstName LastName") {
         '$FirstName $LastName' |  Out-File ($RootPath + "$($user).DisplayNameFormat") -Force

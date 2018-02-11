@@ -19,7 +19,7 @@ function Select-ExchangeServer {
         Select -ExpandProperty member
     while (! $EXCHServer) {
         $EXCHServer = ([regex]::Matches($Ex, '(?<=CN=).*?(?=\,)').groups.value) | 
-            Out-GridView -PassThru -Title "SELECT AN EXCHANGE SERVER AND CLICK OK"
+            Out-GridView -OutputMode Single -Title "SELECT AN EXCHANGE SERVER AND CLICK OK"
     }
     $EXCHServer |  Out-File ($RootPath + "$($user).EXCHServer") -Force
 }

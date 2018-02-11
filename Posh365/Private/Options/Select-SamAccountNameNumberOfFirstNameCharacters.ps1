@@ -17,6 +17,7 @@ function Select-SamAccountNameNumberOfFirstNameCharacters {
             throw $_.Exception.Message
         }           
     }
+    
     if ($SamAccountNameNumberOfLastNameCharacters) {
         [array]$SamAccountNameNumberOfFirstNameCharacters = 1..($SamAccountNameCharacters - $SamAccountNameNumberOfLastNameCharacters)  | % {$_ -join ","}  | 
             Out-GridView -OutputMode Single -Title "Select the Maximum number of characters from the user's First Name that will make up the SamAccountName (Choose 1 and click OK)" 
