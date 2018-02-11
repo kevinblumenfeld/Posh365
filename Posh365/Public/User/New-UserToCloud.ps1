@@ -301,10 +301,12 @@ Function New-UserToCloud {
                 if ($SamAccountNameOrder -eq "SamFirstFirst") {
                     # SamFIRSTFirst w/ PREFIX
                     $SamAccountName = (($SAMPrefix + $First[0..($SamAccountNameNumberOfFirstNameCharacters - 1)] -join '') + $Last)[0..($SamAccountNameNumberOfLastNameCharacters - ($SAMPrefixNumberOfCharacters + 1))] -join ''
+                    write-host "WITHPREFIXSamAccountName:   " $SamAccountName
                     $i = 2
                     while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
                         $CharactersUsedForIteration = ([string]$i).Length
                         $SamAccountName = ((($First[0..($SamAccountNameNumberOfFirstNameCharacters - 1)] -join '') + $Last)[0..($SamAccountNameNumberOfLastNameCharacters - ($SAMPrefixNumberOfCharacters + $CharactersUsedForIteration + 1))] -join '') + $i
+                        write-host "WITHPREFIXSamAccountName2222:   " $SamAccountName
                         $i++
                     }
                 }
