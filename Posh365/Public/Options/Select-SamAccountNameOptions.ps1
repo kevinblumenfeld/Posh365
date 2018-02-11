@@ -33,7 +33,7 @@ function Select-SamAccountNameOptions {
         [int]$SamAccountNameNumberOfFirstNameCharacters = Get-Content ($RootPath + "$($user).SamAccountNameNumberOfFirstNameCharacters")
         
         # Number of LastName Characters
-
+        Write-Host "NUMBER OF LAST NAME"
         While (!(Get-Content ($RootPath + "$($user).SamAccountNameNumberOfLastNameCharacters") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-SamAccountNameNumberOfLastNameCharacters -SamAccountNameCharacters $SamAccountNameCharacters -SamAccountNameNumberOfFirstNameCharacters $SamAccountNameNumberOfFirstNameCharacters
         }
@@ -53,7 +53,7 @@ function Select-SamAccountNameOptions {
         [int]$SamAccountNameNumberOfLastNameCharacters = Get-Content ($RootPath + "$($user).SamAccountNameNumberOfLastNameCharacters")
         
         # Number of FirstName Characters
-        
+
         While (!(Get-Content ($RootPath + "$($user).SamAccountNameNumberOfFirstNameCharacters") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-SamAccountNameNumberOfFirstNameCharacters -SamAccountNameCharacters $SamAccountNameCharacters -SamAccountNameNumberOfLastNameCharacters $SamAccountNameNumberOfLastNameCharacters
         }
