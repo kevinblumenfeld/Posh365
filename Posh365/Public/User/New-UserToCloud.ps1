@@ -47,7 +47,6 @@ Function New-UserToCloud {
         [string] $Zip,
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-        [ValidateLength(1, 2)]
         [string] $SAMPrefix,
         [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
@@ -248,7 +247,7 @@ Function New-UserToCloud {
         #######################################
         # Copy ADUser (Template) & Create New #
         #######################################
-        #Requires -Modules ActiveDirectory
+
         if ($SharedMailboxEmailAlias) {
             $LastName = $SharedMailboxEmailAlias
         }
@@ -296,15 +295,26 @@ Function New-UserToCloud {
             }
     
             else {
-                $SamAccountName = ((($SAMPrefix + $LastName)[0..6] -join '') + $First)[0..7] -join ''
-                $i = 2
-                while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
-                    $CharactersUsedForIteration = ([string]$i).Length
-                    $SamAccountName = (((($SAMPrefix + $LastName)[0..(6 - $CharactersUsedForIteration)] -join '') + $First)[0..(7 - $CharactersUsedForIteration)] -join '') + $i
-                    $i++
+                [int]$SAMPrefixNumberOfCharacters = ([string]$SAMPrefix).Length
+                if ($SamAccountNameOrder -eq "SamFirstFirst") {
+                    $SamAccountName = (($SAMPrefix + $First[0..($SamAccountNameNumberOfFirstNameCharacters - 1)] -join '') + $Last)[0..($SamAccountNameNumberOfLastNameCharacters - ($SAMPrefixNumberOfCharacters + 1))] -join ''
+                    $i = 2
+                    while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
+                        $CharactersUsedForIteration = ([string]$i).Length
+                        $SamAccountName = ((($First[0..($SamAccountNameNumberOfFirstNameCharacters - 1)] -join '') + $Last)[0..($SamAccountNameNumberOfLastNameCharacters - ($SAMPrefixNumberOfCharacters + $CharactersUsedForIteration + 1))] -join '') + $i
+                        $i++
+                    }
                 }
-            }
-    
+                else {
+                    $SamAccountName = (($SAMPrefix + $Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '') + $First)[0..($SamAccountNameNumberOfFirstNameCharacters - ($SAMPrefixNumberOfCharacters + 1))] -join ''
+                    $i = 2
+                    while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
+                        $CharactersUsedForIteration = ([string]$i).Length
+                        $SamAccountName = ((($Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '') + $First)[0..($SamAccountNameNumberOfFirstNameCharacters - ($SAMPrefixNumberOfCharacters + $CharactersUsedForIteration + 1))] -join '') + $i
+                        $i++
+                    }
+                }
+            } ### End with Prefix 
         } ###   End: NOT SHARED    ###
     
         #######################
@@ -327,7 +337,7 @@ Function New-UserToCloud {
         # SamAccount To Lower
         $samaccountname = $samaccountname.tolower()
             
-        # cn
+        # Set CN to DisplayName
         $cn = $DisplayName
         $i = 2
         while (Get-ADUser -Server $domainController -LDAPFilter "(cn=$cn)") {
@@ -385,11 +395,15 @@ Function New-UserToCloud {
         if (!$NoMail) {
     
             ##################################################
-            # Enable Remote Mailbox in Office 365 & set UPN  #
+            #      Enable Remote Mailbox in Office 365       #
             ##################################################
             Enable-OnPremRemoteMailbox -DomainController $domainController -Identity $samaccountname -RemoteRoutingAddress ($samaccountname + "@" + $targetAddressSuffix) -Alias $samaccountname 
-                
+            
+            ##############################################################
+            #                  Set UserPrincipalName                     #
             # After Email Address Policy, Set UPN to same as PrimarySMTP #
+            ##############################################################
+            
             $userprincipalname = (Get-ADUser -Server $domainController -Identity $SamAccountName -Properties proxyaddresses | Select @{
                     n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses | ? {$_ -cmatch "SMTP:*"}).Substring(5)}
                 }).primarysmtpaddress
