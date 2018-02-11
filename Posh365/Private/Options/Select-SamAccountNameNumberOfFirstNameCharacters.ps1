@@ -1,7 +1,11 @@
 function Select-SamAccountNameNumberOfFirstNameCharacters {
-    param ([Parameter()]
-    $SamAccountNameCharacters
+    param (
+        [Parameter()]
+        $SamAccountNameCharacters,
+        [Parameter()]
+        $SamAccountNameNumberOfLastNameCharacters
     )
+    
     $RootPath = $env:USERPROFILE + "\ps\"
     $User = $env:USERNAME
     $DisplayNameFormat = $null
@@ -15,10 +19,20 @@ function Select-SamAccountNameNumberOfFirstNameCharacters {
         }           
     }
 
-    while ($SamAccountNameNumberOfFirstNameCharacters.length -ne 1 ) {
-        [array]$SamAccountNameNumberOfFirstNameCharacters = 1..($SamAccountNameCharacters)  | % {$_ -join ","}  | 
-            Out-GridView -PassThru -Title "Select the Maximum number of characters from the user's First Name that will make up the SamAccountName (Choose 1 and click OK)"
-    }    
-    $SamAccountNameNumberOfFirstNameCharacters | Out-File ($RootPath + "$($user).SamAccountNameNumberOfFirstNameCharacters") -Force
+    if ($SamAccountNameNumberOfLastNameCharacters) {
+        while ($SamAccountNameNumberOfFirstNameCharacters.length -ne 1 ) {
+            [array]$SamAccountNameNumberOfFirstNameCharacters = 1..($SamAccountNameCharacters - $SamAccountNameNumberOfLastNameCharacters)  | % {$_ -join ","}  | 
+                Out-GridView -PassThru -Title "Select the Maximum number of characters from the user's First Name that will make up the SamAccountName (Choose 1 and click OK)"
+        }    
+        $SamAccountNameNumberOfFirstNameCharacters | Out-File ($RootPath + "$($user).SamAccountNameNumberOfFirstNameCharacters") -Force
+    }
+    else {
+        while ($SamAccountNameNumberOfFirstNameCharacters.length -ne 1 ) {
+            [array]$SamAccountNameNumberOfFirstNameCharacters = 1..($SamAccountNameCharacters)  | % {$_ -join ","}  | 
+                Out-GridView -PassThru -Title "Select the Maximum number of characters from the user's First Name that will make up the SamAccountName (Choose 1 and click OK)"
+        }    
+        $SamAccountNameNumberOfFirstNameCharacters | Out-File ($RootPath + "$($user).SamAccountNameNumberOfFirstNameCharacters") -Force
+    }
+    
 }
     
