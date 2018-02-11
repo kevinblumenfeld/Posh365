@@ -19,7 +19,9 @@ function Select-SamAccountNameNumberOfLastNameCharacters {
     }
     write-host "1WTF IS GOING ON HERE: " $SamAccountNameNumberOfLastNameCharacters.length
     write-host "1SamAccountNameNumberOfLastNameCharacters:  " $SamAccountNameNumberOfLastNameCharacters
+    write-host "FIRST NAME:::::::" $SamAccountNameNumberOfFirstNameCharacters
     if ($SamAccountNameNumberOfFirstNameCharacters) {
+        write-host "2222FIRST NAME:::::::" $SamAccountNameNumberOfFirstNameCharacters
         while ($SamAccountNameNumberOfLastNameCharacters.length -gt 1 ) {
             write-host "2WTF IS GOING ON HERE: " $SamAccountNameNumberOfLastNameCharacters.length
             write-host "2SamAccountNameNumberOfLastNameCharacters:  " $SamAccountNameNumberOfLastNameCharacters
