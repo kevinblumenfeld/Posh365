@@ -504,7 +504,7 @@ Function New-UserToCloud {
         ########################################
         #         Sync Azure AD Connect        #
         ########################################
-        Sync-ADConnect
+        Sync-ADConnect -Sleep 5
     
         ########################################
         # Stop the Licensing Watcher Function  #
