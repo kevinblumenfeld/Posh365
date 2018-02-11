@@ -306,6 +306,9 @@ Function New-UserToCloud {
                     }
                 }
                 else {
+                    Write-Host "SAMPrefix: " $SAMPrefix
+                    Write-Host "SAMPrefix: " $Last
+                    Write-Host "SAMPrefix: " $First
                     $SamAccountName = (($SAMPrefix + $Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '') + $First)[0..($SamAccountNameNumberOfFirstNameCharacters - ($SAMPrefixNumberOfCharacters + 1))] -join ''
                     $i = 2
                     while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
@@ -318,7 +321,7 @@ Function New-UserToCloud {
         } ###   End: NOT SHARED    ###
     
         #######################
-        #  SHARED  UPN & SAM  #
+        #   SHARED  SAMACCT   #
         #######################
     
         Else {
