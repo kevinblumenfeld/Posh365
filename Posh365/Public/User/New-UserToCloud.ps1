@@ -232,12 +232,12 @@ Function New-UserToCloud {
             New-Item -Path $GuidFolder -ItemType Directory
             [string[]]$optionsToAdd = (Get-CloudSkuTable -all | Out-GridView -Title "Choose License Options, with Control + Click" -PassThru)
             Watch-ToLicense -GuidFolder $GuidFolder -optionsToAdd $optionsToAdd
-            $GuidFolderRetention = Join-Path $env:TEMP ([Guid]::NewGuid().tostring())
-            New-Item -Path $GuidFolderRetention -ItemType Directory
-            Watch-ToSetRetention -GuidFolderRetention $GuidFolderRetention -RetentionPolicyToAdd $RetentionPolicyToAdd
-
+            If ($SpecifyRetentionPolicy) {
+                $GuidFolderRetention = Join-Path $env:TEMP ([Guid]::NewGuid().tostring())
+                New-Item -Path $GuidFolderRetention -ItemType Directory
+                Watch-ToSetRetention -GuidFolderRetention $GuidFolderRetention -RetentionPolicyToAdd $RetentionPolicyToAdd
+            }
         }        
-    
     }
     
     Process {
@@ -428,8 +428,10 @@ Function New-UserToCloud {
     
             $tempfile = Join-Path $GuidFolder ([Guid]::NewGuid().tostring())
             $UserPrincipalName | Set-Content $tempfile
-            $tempfileRetention = Join-Path $GuidFolderRetention ([Guid]::NewGuid().tostring())
-            $UserPrincipalName | Set-Content $tempfileRetention
+            If ($SpecifyRetentionPolicy) {
+                $tempfileRetention = Join-Path $GuidFolderRetention ([Guid]::NewGuid().tostring())
+                $UserPrincipalName | Set-Content $tempfileRetention
+            }
         
         } # End of IF MAIL (ABOVE)
     
