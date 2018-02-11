@@ -327,7 +327,7 @@ Function New-UserToCloud {
                     $i = 2
                     while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
                         $CharactersUsedForIteration = ([string]$i).Length
-                        $SamAccountName = ((($Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '') + $First)[0..($SamAccountNameNumberOfFirstNameCharacters - ($SAMPrefixNumberOfCharacters + $CharactersUsedForIteration + 1))] -join '') + $i
+                        $SamAccountName = (($SAMPrefix + ($Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '')) + ($First[0..($SamAccountNameNumberOfFirstNameCharacters - ($SAMPrefixNumberOfCharacters + $CharactersUsedForIteration + 1))] -join '')) + $i
                         $i++
                     }
                 }
