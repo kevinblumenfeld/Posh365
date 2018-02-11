@@ -6,9 +6,9 @@ function Select-Options {
     Select-TargetAddressSuffix
     Select-DisplayNameFormat
     Select-SamAccountNameCharacters
+    Select-SamAccountNameOrder
     Select-SamAccountNameNumberOfFirstNameCharacters
     Select-SamAccountNameNumberOfLastNameCharacters
-    Select-SamAccountNameOrder
     Select-TargetAddressSuffix
 }
     
