@@ -8,7 +8,7 @@ function Select-SamAccountNameNumberOfLastNameCharacters {
     
     $RootPath = $env:USERPROFILE + "\ps\"
     $User = $env:USERNAME
-    
+
     if (!(Test-Path $RootPath)) {
         try {
             New-Item -ItemType Directory -Path $RootPath -ErrorAction STOP | Out-Null
@@ -19,17 +19,13 @@ function Select-SamAccountNameNumberOfLastNameCharacters {
     }
 
     if ($SamAccountNameNumberOfFirstNameCharacters) {
-        while ($SamAccountNameNumberOfLastNameCharacters.length -ne 1 ) {
-            [array]$SamAccountNameNumberOfLastNameCharacters = 1..($SamAccountNameCharacters - $SamAccountNameNumberOfFirstNameCharacters)  | % {$_ -join ","}  | 
-            Out-GridView -OutputMode Single -PassThru -Title "Select the Maximum number of characters from the user's Last Name that will make up the SamAccountName (Choose 1 and click OK)"
-        }    
+        [array]$SamAccountNameNumberOfLastNameCharacters = 1..($SamAccountNameCharacters - $SamAccountNameNumberOfFirstNameCharacters)  | % {$_ -join ","}  | 
+            Out-GridView -OutputMode Single -PassThru -Title "Select the Maximum number of characters from the user's Last Name that will make up the SamAccountName (Choose 1 and click OK)"    
         $SamAccountNameNumberOfLastNameCharacters | Out-File ($RootPath + "$($user).SamAccountNameNumberOfLastNameCharacters") -Force
     }
     else {
-        while ($SamAccountNameNumberOfLastNameCharacters.length -ne 1 ) {
-            [array]$SamAccountNameNumberOfLastNameCharacters = 1..($SamAccountNameCharacters)  | % {$_ -join ","}  | 
-                Out-GridView Out-GridView -OutputMode Single-PassThru -Title "Select the Maximum number of characters from the user's Last Name that will make up the SamAccountName (Choose 1 and click OK)"
-        }    
+        [array]$SamAccountNameNumberOfLastNameCharacters = 1..($SamAccountNameCharacters)  | % {$_ -join ","}  | 
+            Out-GridView Out-GridView -OutputMode Single-PassThru -Title "Select the Maximum number of characters from the user's Last Name that will make up the SamAccountName (Choose 1 and click OK)"  
         $SamAccountNameNumberOfLastNameCharacters | Out-File ($RootPath + "$($user).SamAccountNameNumberOfLastNameCharacters") -Force
     }
     

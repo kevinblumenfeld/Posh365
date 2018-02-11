@@ -18,19 +18,13 @@ function Select-SamAccountNameNumberOfFirstNameCharacters {
         }           
     }
     if ($SamAccountNameNumberOfLastNameCharacters) {
-        while ($SamAccountNameNumberOfFirstNameCharacters.length -gt 1 ) {
-            [array]$SamAccountNameNumberOfFirstNameCharacters = 1..($SamAccountNameCharacters - $SamAccountNameNumberOfLastNameCharacters)  | % {$_ -join ","}  | 
-                Out-GridView -PassThru -Title "Select the Maximum number of characters from the user's First Name that will make up the SamAccountName (Choose 1 and click OK)"
-        }    
+        [array]$SamAccountNameNumberOfFirstNameCharacters = 1..($SamAccountNameCharacters - $SamAccountNameNumberOfLastNameCharacters)  | % {$_ -join ","}  | 
+            Out-GridView -OutputMode Single -PassThru -Title "Select the Maximum number of characters from the user's First Name that will make up the SamAccountName (Choose 1 and click OK)" 
         $SamAccountNameNumberOfFirstNameCharacters | Out-File ($RootPath + "$($user).SamAccountNameNumberOfFirstNameCharacters") -Force
     }
     else {
-        while ($SamAccountNameNumberOfFirstNameCharacters.length -gt 1 ) {
-            [array]$SamAccountNameNumberOfFirstNameCharacters = 1..($SamAccountNameCharacters)  | % {$_ -join ","}  | 
-                Out-GridView -PassThru -Title "Select the Maximum number of characters from the user's First Name that will make up the SamAccountName (Choose 1 and click OK)"
-        }    
+        [array]$SamAccountNameNumberOfFirstNameCharacters = 1..($SamAccountNameCharacters)  | % {$_ -join ","}  | 
+            Out-GridView -OutputMode Single -PassThru -Title "Select the Maximum number of characters from the user's First Name that will make up the SamAccountName (Choose 1 and click OK)"
         $SamAccountNameNumberOfFirstNameCharacters | Out-File ($RootPath + "$($user).SamAccountNameNumberOfFirstNameCharacters") -Force
     }
-    
-}
-    
+}  
