@@ -211,14 +211,14 @@ Function New-UserToCloud {
                 Connect-Cloud $targetAddressSuffix -ExchangeOnline -EXOPrefix
             }
             Remove-Variable -Name RetentionPolicyToAdd -ErrorAction SilentlyContinue
-                try {
-                    $RetentionPolicyToAdd = ((Get-CloudRetentionPolicy -erroraction stop).name | Out-GridView -OutputMode Single -Title "Choose a single Retention Policy and Click OK")
-                }
-                Catch {
-                    Write-Output "Error running the command Get-CloudRetentionPolicy."
-                    Write-Output "Please make sure you are connected to Exchange Online with the Prefix, Cloud, and try again"
-                    Break
-                }
+            try {
+                $RetentionPolicyToAdd = ((Get-CloudRetentionPolicy -erroraction stop).name | Out-GridView -OutputMode Single -Title "Choose a single Retention Policy and Click OK")
+            }
+            Catch {
+                Write-Output "Error running the command Get-CloudRetentionPolicy."
+                Write-Output "Please make sure you are connected to Exchange Online with the Prefix, Cloud, and try again"
+                Break
+            }
         }
 
     
@@ -300,7 +300,6 @@ Function New-UserToCloud {
                 [int]$SAMPrefixNumberOfCharacters = ([string]$SAMPrefix).Length
                 if ($SamAccountNameOrder -eq "SamFirstFirst") {
                     # SamFIRSTFirst w/ PREFIX
-                    if (($SamAccountNameNumberOfLastNameCharacters - ($SAMPrefixNumberOfCharacters + 1) -lt 0)
                     $SamAccountName = ((($SAMPrefix + $First)[0..($SamAccountNameNumberOfFirstNameCharacters - 1)] -join '') + $Last)[0..($SamAccountNameCharacters - 1)] -join ''
                     Write-Host "FIRSTPART:   " $((($SAMPrefix + $First)[0..($SamAccountNameNumberOfFirstNameCharacters - 1)] -join ''))
                     Write-Host "2NdPART:   " $(($Last[0..($SamAccountNameNumberOfLastNameCharacters - ($SAMPrefixNumberOfCharacters + 1))] -join ''))
