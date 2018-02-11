@@ -5,5 +5,10 @@ function Select-Options {
     Select-ExchangeServer
     Select-TargetAddressSuffix
     Select-DisplayNameFormat
+    Select-SamAccountNameCharacters
+    Select-SamAccountNameNumberOfFirstNameCharacters
+    Select-SamAccountNameNumberOfLastNameCharacters
+    Select-SamAccountNameOrder
+    Select-TargetAddressSuffix
 }
     
