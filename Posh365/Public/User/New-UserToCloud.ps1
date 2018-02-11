@@ -311,8 +311,16 @@ Function New-UserToCloud {
                 else {
                     # SamLASTFirst w/ PREFIX
                     $SamAccountName = ($SAMPrefix + ($Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '')) + ($First[0..($SamAccountNameNumberOfFirstNameCharacters - ($SAMPrefixNumberOfCharacters + 1))] -join '')
+                    Write-Host "SAMPrefix1: " $SAMPrefix```
+                    Write-Host "SAMPrefix:  " $Last
+                    Write-Host "SAMPrefix:  " $First
+                    Write-Host "SAMAcctName: " $SamAccountName
                     $i = 2
                     while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
+                        Write-Host "SAMPrefix1: " $SAMPrefix
+                        Write-Host "SAMPrefix:  " $Last
+                        Write-Host "SAMPrefix:  " $First
+                        Write-Host "SAMAcctName: " $SamAccountName
                         $CharactersUsedForIteration = ([string]$i).Length
                         $SamAccountName = ($SAMPrefix + $Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '' + $First[0..($SamAccountNameNumberOfFirstNameCharacters - ($SAMPrefixNumberOfCharacters + $CharactersUsedForIteration + 1))] -join '') + $i
                         $i++
