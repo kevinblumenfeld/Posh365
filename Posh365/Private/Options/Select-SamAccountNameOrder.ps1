@@ -2,7 +2,6 @@ function Select-SamAccountNameOrder {
     param ()
     $RootPath = $env:USERPROFILE + "\ps\"
     $User = $env:USERNAME
-    $DisplayNameFormat = $null
 
     if (!(Test-Path $RootPath)) {
         try {
@@ -13,16 +12,14 @@ function Select-SamAccountNameOrder {
         }           
     }
 
-    while ($SamAccountNameOrder.length -ne 1 ) {
-        [array]$SamAccountNameOrder = "First Name then Last Name (example: JSmith)", "Last Name then First Name (example: SmithJ)" | 
-            Out-GridView -PassThru -Title "The SamAccountName is represented by First Name and Last Name - In which order (Choose 1 and click OK)"
-    } 
+    [array]$SamAccountNameOrder = "First Name then Last Name (example: JSmith)", "Last Name then First Name (example: SmithJ)" | 
+        Out-GridView -OutputMode Single -Title "The SamAccountName is represented by First Name and Last Name - In which order (Choose 1 and click OK)"
+
     if ($SamAccountNameOrder -eq "First Name then Last Name (example: JSmith)") {
         "SamFirstFirst" | Out-File ($RootPath + "$($user).SamAccountNameOrder") -Force
     }
     else {
         "SamLastFirst" | Out-File ($RootPath + "$($user).SamAccountNameOrder") -Force
     }
-    
-}
-    
+
+}  
