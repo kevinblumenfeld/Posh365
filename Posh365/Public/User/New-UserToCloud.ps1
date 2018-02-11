@@ -300,7 +300,8 @@ Function New-UserToCloud {
                 [int]$SAMPrefixNumberOfCharacters = ([string]$SAMPrefix).Length
                 if ($SamAccountNameOrder -eq "SamFirstFirst") {
                     # SamFIRSTFirst w/ PREFIX
-                    $SamAccountName = (($SAMPrefix + $First)[0..($SamAccountNameNumberOfFirstNameCharacters - 1)] -join '') + ($Last[0..($SamAccountNameNumberOfLastNameCharacters - ($SAMPrefixNumberOfCharacters + 1))] -join '')
+                    if (($SamAccountNameNumberOfLastNameCharacters - ($SAMPrefixNumberOfCharacters + 1) -lt 0)
+                    $SamAccountName = ((($SAMPrefix + $First)[0..($SamAccountNameNumberOfFirstNameCharacters - 1)] -join '') + $Last)[0..($SamAccountNameCharacters - 1)] -join ''
                     Write-Host "FIRSTPART:   " $((($SAMPrefix + $First)[0..($SamAccountNameNumberOfFirstNameCharacters - 1)] -join ''))
                     Write-Host "2NdPART:   " $(($Last[0..($SamAccountNameNumberOfLastNameCharacters - ($SAMPrefixNumberOfCharacters + 1))] -join ''))
                     write-host "WITHPREFIXSamAccountName:   " $SamAccountName
