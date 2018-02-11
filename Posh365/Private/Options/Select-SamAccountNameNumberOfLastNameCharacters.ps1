@@ -9,7 +9,7 @@ function Select-SamAccountNameNumberOfLastNameCharacters {
     $RootPath = $env:USERPROFILE + "\ps\"
     $User = $env:USERNAME
     $DisplayNameFormat = $null
-    write-host "ONE IN FIRST SECTION (LENGTHTEST)" $SamAccountNameNumberOfLastNameCharacters.length
+    $SamAccountNameNumberOfLastNameCharacters = $null
     if (!(Test-Path $RootPath)) {
         try {
             New-Item -ItemType Directory -Path $RootPath -ErrorAction STOP | Out-Null

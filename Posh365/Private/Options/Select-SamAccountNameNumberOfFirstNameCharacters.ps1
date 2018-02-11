@@ -9,6 +9,7 @@ function Select-SamAccountNameNumberOfFirstNameCharacters {
     $RootPath = $env:USERPROFILE + "\ps\"
     $User = $env:USERNAME
     $DisplayNameFormat = $null
+    $SamAccountNameNumberOfFirstNameCharacters = $null
 
     if (!(Test-Path $RootPath)) {
         try {
