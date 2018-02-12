@@ -18,7 +18,7 @@ Function Watch-ToLicense {
 
     $targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")
 
-    $WatcherJob = Start-Job -Name WatchToLicense {
+    Start-Job -Name WatchToLicense {
         $optionsToAdd = $args[0]
         $GuidFolder = $args[1]
         $targetAddressSuffix = $args[2]
