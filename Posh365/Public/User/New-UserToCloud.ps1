@@ -49,7 +49,7 @@ Function New-UserToCloud {
     New-UserToCloud -UserToCopy "FredJones@contoso.com" -FirstName Jonathan -LastName Smithson
    
     .EXAMPLE
-    New-UserToCloud -FirstName Jon -LastName Smith -OfficePhone "(404)555-1212" -MobilePhone "(404)555-1212" -Description "Hired Feb 12, 2018"
+    New-UserToCloud -FirstName Jon -LastName Smith -OfficePhone "(404)555-1212" -MobilePhone "(404)333-5252" -DescriptiADdedon "Hired Feb 12, 2018"
     
     .EXAMPLE
     New-UserToCloud -FirstName Jon -LastName Smith -StreetAddress "123 Main St" -City "New York" -State "NY" -Zip "10080" -Country "US"
