@@ -25,7 +25,7 @@ function Select-SamAccountNameNumberOfLastNameCharacters {
     }
     else {
         [array]$SamAccountNameNumberOfLastNameCharacters = 1..($SamAccountNameCharacters)  | % {$_ -join ","}  | 
-            Out-GridView Out-GridView -OutputMode Single -Title "Select the Maximum number of characters from the user's Last Name that will make up the SamAccountName (Choose 1 and click OK)"  
+            Out-GridView -OutputMode Single -Title "Select the Maximum number of characters from the user's Last Name that will make up the SamAccountName (Choose 1 and click OK)"  
         $SamAccountNameNumberOfLastNameCharacters | Out-File ($RootPath + "$($user).SamAccountNameNumberOfLastNameCharacters") -Force
     }
     
