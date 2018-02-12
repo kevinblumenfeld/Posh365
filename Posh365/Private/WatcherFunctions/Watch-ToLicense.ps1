@@ -26,6 +26,7 @@ Function Watch-ToLicense {
         Connect-Cloud $targetAddressSuffix -AzureADver2
         Start-Sleep -Seconds 120
         while (Test-Path $GuidFolder) {
+            write-host "While: GUIDFOLDER!!!!!!!!!!!"
             Get-ChildItem -Path $GuidFolder -File -Verbose -ErrorAction SilentlyContinue | ForEach {
                 if ($_ -and !($_.name -eq 'ALLDONE')) {
                     Get-Content $_.VersionInfo.filename | Set-CloudLicense -ExternalOptionsToAdd $optionsToAdd
