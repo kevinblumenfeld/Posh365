@@ -494,6 +494,7 @@ Function New-UserToCloud {
                 $GuidFolder = $args[0]
                 New-Item -Path $GuidFolder -Name "ALLDONE" -Type File
                 while ((Get-ChildItem -Path $GuidFolder).count -gt 0) {
+                    Start-Sleep -Seconds 5
                     Write-Host "DELETE GUID WHILE LOOP!!!!!!!!!"
                 }
                 Remove-Item -Path $GuidFolder -Confirm:$False -force -verbose
