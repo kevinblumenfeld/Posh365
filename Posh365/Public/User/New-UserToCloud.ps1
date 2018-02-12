@@ -168,27 +168,12 @@ Function New-UserToCloud {
                 Select-SamAccountNameNumberOfFirstNameCharacters -SamAccountNameCharacters $SamAccountNameCharacters
             }
             [int]$SamAccountNameNumberOfFirstNameCharacters = Get-Content ($RootPath + "$($user).SamAccountNameNumberOfFirstNameCharacters")
-            
-            <#
-            While (!(Get-Content ($RootPath + "$($user).SamAccountNameNumberOfLastNameCharacters") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
-                Select-SamAccountNameNumberOfLastNameCharacters -SamAccountNameCharacters $SamAccountNameCharacters -SamAccountNameNumberOfFirstNameCharacters $SamAccountNameNumberOfFirstNameCharacters
-            }
-            [int]$SamAccountNameNumberOfLastNameCharacters = Get-Content ($RootPath + "$($user).SamAccountNameNumberOfLastNameCharacters")
-            #>
-            
         }
         else {
             While (!(Get-Content ($RootPath + "$($user).SamAccountNameNumberOfLastNameCharacters") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
                 Select-SamAccountNameNumberOfLastNameCharacters -SamAccountNameCharacters $SamAccountNameCharacters
             }
             [int]$SamAccountNameNumberOfLastNameCharacters = Get-Content ($RootPath + "$($user).SamAccountNameNumberOfLastNameCharacters")
-            
-            <#
-            While (!(Get-Content ($RootPath + "$($user).SamAccountNameNumberOfFirstNameCharacters") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
-                Select-SamAccountNameNumberOfFirstNameCharacters -SamAccountNameCharacters $SamAccountNameCharacters -SamAccountNameNumberOfLastNameCharacters $SamAccountNameNumberOfLastNameCharacters
-            }
-            [int]$SamAccountNameNumberOfFirstNameCharacters = Get-Content ($RootPath + "$($user).SamAccountNameNumberOfFirstNameCharacters")
-            #>
         }
 
         #######################################
@@ -280,7 +265,6 @@ Function New-UserToCloud {
                     $SamAccountName = (($First[0..($SamAccountNameNumberOfFirstNameCharacters - 1)] -join '') + $Last)[0..($SamAccountNameCharacters - 1)] -join ''
                     $i = 2
                     while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
-                        write-host "IN WHILE LOOP FF: " $SamAccountName
                         $CharactersUsedForIteration = ([string]$i).Length
                         $SamAccountName = $SamAccountName = ((($First[0..($SamAccountNameNumberOfFirstNameCharacters - 1)] -join '') + $Last)[0..($SamAccountNameCharacters - ($CharactersUsedForIteration + 1))] -join '') + $i
                         $i++
@@ -292,7 +276,7 @@ Function New-UserToCloud {
                     $i = 2
                     while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
                         $CharactersUsedForIteration = ([string]$i).Length
-                        $SamAccountName = (($Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '') + $First + $i)[0..($SamAccountNameCharacters - 1)] -join ''
+                        $SamAccountName = ((($Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '') + $First)[0..($SamAccountNameCharacters - ($CharactersUsedForIteration + 1))] -join '') + $i
                         $i++
                     }
                 }
@@ -306,7 +290,7 @@ Function New-UserToCloud {
                     $i = 2
                     while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
                         $CharactersUsedForIteration = ([string]$i).Length
-                        $SamAccountName = $SamAccountName = ($SAMPrefix + (($First[0..($SamAccountNameNumberOfFirstNameCharacters - 1)] -join '') + $Last + $i))[0..($SamAccountNameCharacters - 1)] -join ''
+                        $SamAccountName = $SamAccountName = ($SAMPrefix + (($First[0..($SamAccountNameNumberOfFirstNameCharacters - 1)] -join '') + $Last))[0..($SamAccountNameCharacters - ($CharactersUsedForIteration + 1))] -join '' + $i
                         $i++
                     }
                 }
@@ -316,7 +300,7 @@ Function New-UserToCloud {
                     $i = 2
                     while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
                         $CharactersUsedForIteration = ([string]$i).Length
-                        $SamAccountName = ($SAMPrefix + (($Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '') + $First + $i))[0..($SamAccountNameCharacters - 1)] -join ''
+                        $SamAccountName = (($SAMPrefix + (($Last[0..($SamAccountNameNumberOfLastNameCharacters - 1)] -join '') + $First))[0..($SamAccountNameCharacters - ($CharactersUsedForIteration + 1))] -join '') + $i
                         $i++
                     }
                 }
