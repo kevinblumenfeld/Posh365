@@ -87,4 +87,12 @@
         $allMailboxes | Get-FullAccessPerms -ADHashDN $ADHashDN -ADHash $ADHash  | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
             Export-csv .\FullAccessPerms.csv -NoTypeInformation
     }
+    $AllPermissions = $null
+    Get-ChildItem -File -Filter "*.csv" | % {
+        $AllPermissions += (import-csv $_)
+    }
+    $AllPermissions | Export-Csv .\AllPermissions.csv -NoTypeInformation
+    Write-Output "Combined all CSV's into a single file named, AllPermissions.csv"
+    Write-Output "Opening Folder "
+    Invoke-Item .
 }
