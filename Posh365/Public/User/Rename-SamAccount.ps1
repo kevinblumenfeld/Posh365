@@ -64,7 +64,8 @@ Function Rename-SamAccount {
                 Set-ADUser -Identity $CurrentSamAccountName -remove @{proxyaddresses = "$($_)"} -Server $domainController
                 Set-ADUser -Identity $CurrentSamAccountName -add @{proxyaddresses = ("smtp:" + $($_).substring(5))} -Server $domainController
                 Set-ADUser -Identity $CurrentSamAccountName -add @{proxyaddresses = ("SMTP:" + $SamAccountName + "@" + ($($_).substring(5).split("@"))[1])} -Server $domainController
-                Set-ADUser -Identity $CurrentSamAccountName -Server $domainController -replace @{mail = ($SamAccountName + "@" + ($($_).substring(5).split("@"))[1]); UserPrincipalName = $SamAccountName + "@" + ($($_).substring(5).split("@"))[1]}
+                Set-ADUser -Identity $CurrentSamAccountName -Server $domainController -replace @{mail = ($SamAccountName + "@" + ($($_).substring(5).split("@"))[1])
+                }
             } 
             if (($_ -cmatch "smtp:*") -and ($($_).substring(5).split("@"))[0] -eq $CurrentSamAccountName) {
                 Set-ADUser -Identity $CurrentSamAccountName -add @{proxyaddresses = ("smtp:" + $SamAccountName + "@" + ($($_).substring(5).split("@"))[1])} -Server $domainController

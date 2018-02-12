@@ -4,6 +4,7 @@
     .SYNOPSIS
     By default, creates permissions reports for all mailboxes with SendAs, SendOnBehalf and FullAccess delegates.
     Switches can be added to isolate one or more reports
+    Creates individual reports for each permission type (unless skipped), and a report that combines all CSVs in chosen directory.
 
     CSVs headers:
     "Mailbox","UPN","Granted","GrantedUPN","Permission"

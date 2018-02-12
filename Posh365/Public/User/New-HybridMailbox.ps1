@@ -1,4 +1,4 @@
-Function New-UserToCloud {
+Function New-HybridMailbox {
     <#
     .SYNOPSIS
    Designed to manage users in Hybrid Office 365 environment.
@@ -33,7 +33,7 @@ Function New-UserToCloud {
    **                           See example below                                          **
       
     .EXAMPLE
-    Import-Csv C:\data\theTEST.csv | New-UserToCloud
+    Import-Csv C:\data\theTEST.csv | New-HybridMailbox
 
     Example of CSV (illustrated without commas):
 
@@ -44,19 +44,19 @@ Function New-UserToCloud {
     Jamie     Yothers
 
     .EXAMPLE
-    New-UserToCloud -FirstName John -LastName Smith
+    New-HybridMailbox -FirstName John -LastName Smith
 
     .EXAMPLE
-    New-UserToCloud -UserToCopy "FredJones@contoso.com" -FirstName Jonathan -LastName Smithson
+    New-HybridMailbox -UserToCopy "FredJones@contoso.com" -FirstName Jonathan -LastName Smithson
    
     .EXAMPLE
-    New-UserToCloud -FirstName Jon -LastName Smith -OfficePhone "(404)555-1212" -MobilePhone "(404)333-5252" -DescriptiADdedon "Hired Feb 12, 2018"
+    New-HybridMailbox -FirstName Jon -LastName Smith -OfficePhone "(404)555-1212" -MobilePhone "(404)333-5252" -DescriptiADdedon "Hired Feb 12, 2018"
     
     .EXAMPLE
-    New-UserToCloud -FirstName Jon -LastName Smith -StreetAddress "123 Main St" -City "New York" -State "NY" -Zip "10080" -Country "US"
+    New-HybridMailbox -FirstName Jon -LastName Smith -StreetAddress "123 Main St" -City "New York" -State "NY" -Zip "10080" -Country "US"
        
     .EXAMPLE
-    New-UserToCloud -FirstName Jon -LastName Smith -Office "Manhattan" -Title "Vice President of Finance" -Department "Finance" -Company "Contoso, Inc."
+    New-HybridMailbox -FirstName Jon -LastName Smith -Office "Manhattan" -Title "Vice President of Finance" -Department "Finance" -Company "Contoso, Inc."
    
     #>
     [CmdletBinding()]
