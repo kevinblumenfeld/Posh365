@@ -1,5 +1,44 @@
 Function New-UserToCloud {
-    
+    <#
+    .SYNOPSIS
+   Numerous functions to managed users in a Hybrid Office 365 environment.
+   On-Premises Exchange server is needed.  The script is dependent on your use of Email Address Policies.
+   The UserPrincipalName is created by copying the Primary SMTP Address (as created by the On Premises Exchange Email Address Policies)
+   Can be run from any machine on the domain that has the module for ActiveDirectory installed.
+   The script will prompt once for the names of a Domain Controller, Exchange Server and the Azure AD Connect server.
+   The script will also prompt for DisplayName & SamAccountName Format.
+   All of these prompts will only occur once per machine (per user).
+   Should you wish to change any/all options just run: Select-Options
+   Until your 365 and/or AD password changes, the script stores & encrypts both password.  You should be prompted once unless your password changes.
+
+   By default, the script creates an new Active Directory User & corresponding mailbox in Exchange Online.
+   You will be prompted for which OU to place the user(s).
+   You will also be prompted for which license options the user should receive.
+   If using the "UserToCopy" parameter to the new user will receive all the attributes (Enabled, StreetAddress, City, State, PostalCode & group membership).
+   The script checks the option: User must change password at next logon.  Unless this parameter is used: DontForceUserToChangePasswordAtLogon
+
+   ** The script will also take CSV input. The minimum parameters are FirstName & LastName **
+   **                           See example below                                          **
+      
+    .EXAMPLE
+    Import-Csv C:\data\theTEST.csv | New-UserToCloud
+
+    Example of CSV (illustrated without commas):
+
+    FirstName LastName
+    John      Smith
+    Sally     James
+    Jeff      Williams
+    Jamie     Yothers
+
+    .EXAMPLE
+    New-UserToCloud -FirstName John -LastName Smith
+
+    .EXAMPLE
+    New-UserToCloud -UserToCopy "FredJones@contoso.com" -FirstName Jonathan -LastName Smithson
+
+   
+    #>
     [CmdletBinding()]
     Param (
         [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
@@ -18,6 +57,10 @@ Function New-UserToCloud {
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
         [switch] $SpecifyRetentionPolicy,
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
+        [switch] $DontForceUserToChangePasswordAtLogon,
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
         [ValidateScript( {if ($_ -notlike "* *") {Return $True} else {Write-Host "Please choose an SharedMailboxEmailAlias without spaces"}})]
         [string] $SharedMailboxEmailAlias,
@@ -373,8 +416,13 @@ Function New-UserToCloud {
         #########################################
         #          Create New ADUser            #
         #########################################
-        New-ADUser @params -Server $domainController -ChangePasswordAtLogon:$true -Enabled:$true
-            
+        if (!$DontForceUserToChangePasswordAtLogon) {
+            New-ADUser @params -Server $domainController -ChangePasswordAtLogon:$true -Enabled:$true
+        }
+        else {
+            New-ADUser @params -Server $domainController -ChangePasswordAtLogon:$false -Enabled:$true
+        }
+     
         if ($UserToCopy) {
             $groupMembership | Add-ADGroupMember -Server $domainController -Members $samaccountname
         }
