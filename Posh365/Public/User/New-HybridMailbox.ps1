@@ -80,6 +80,14 @@ Function New-HybridMailbox {
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
+        [switch] $PrimarySMTPAddress,
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
+        [switch] $SecondarySMTPAddress,
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
         [switch] $DontForceUserToChangePasswordAtLogon,
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
         [ValidateScript( {if ($_ -notlike "* *") {Return $True} else {Write-Host "Please choose an SharedMailboxEmailAlias without spaces"}})]
@@ -292,7 +300,7 @@ Function New-HybridMailbox {
     }
     
     Process {
-    
+
         #######################################
         # Copy ADUser (Template) & Create New #
         #######################################
@@ -312,9 +320,9 @@ Function New-HybridMailbox {
         $Last = $LastName -replace (" ", "")
         $First = $FirstName -replace (" ", "")
     
-        #######################
-        #     NOT SHARED      #
-        #######################
+        ###############################################
+        #     NOT SHARED  DisplayName & SamAccount    #
+        ###############################################
         if (!$Shared) {
     
             $DisplayName = $ExecutionContext.InvokeCommand.ExpandString($DisplayNameFormat)
@@ -368,11 +376,11 @@ Function New-HybridMailbox {
                     }
                 }
             } ### End with Prefix 
-        } ###   End: NOT SHARED    ###
+        } ###   End: NOT SHARED DISPLAYNAME AND SAMACCOUNTNAME    ###
     
-        #######################
-        #   SHARED  SAMACCT   #
-        #######################
+        #############################
+        #  SHARED  SamAccountName   #
+        #############################
     
         Else {
             $LastName = $LastName.replace(" ", "")
@@ -385,7 +393,7 @@ Function New-HybridMailbox {
                 $i++
             }
     
-        } # End if Shared
+        } # End: SHARED SAMACCOUNTNAME
     
         # SamAccount To Lower
         $samaccountname = $samaccountname.tolower()
@@ -436,6 +444,7 @@ Function New-HybridMailbox {
         #########################################
         #          Create New ADUser            #
         #########################################
+
         if (!$DontForceUserToChangePasswordAtLogon) {
             New-ADUser @params -Server $domainController -ChangePasswordAtLogon:$true -Enabled:$true
         }
@@ -445,6 +454,22 @@ Function New-HybridMailbox {
      
         if ($UserToCopy) {
             $groupMembership | Add-ADGroupMember -Server $domainController -Members $samaccountname
+        }
+
+        # If ProxyAddresses are used
+        $Proxies = @()
+
+        if ($PrimarySMTPAddress) {
+            $Proxies += ("SMTP:" + $PrimarySMTPAddress)
+            Set-ADUser -Identity $SamAccountName -Replace @{msExchPoliciesExcluded = "{26491CFC-9E50-4857-861B-0CB8DF22B5D7}"}
+        } 
+        
+        if ($SecondarySMTPAddress) {
+            $Proxies += ("smtp:" + $SecondarySMTPAddress)
+        }
+
+        if ($PrimarySMTPAddress -or $SecondarySMTPAddress) {
+            Set-ADUser -Identity $SamAccountName -Replace @{proxyaddresses = $Proxies}
         }
     
         # Purge old jobs
