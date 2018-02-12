@@ -80,11 +80,11 @@ Function New-HybridMailbox {
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
-        [switch] $PrimarySMTPAddress,
+        [string] $PrimarySMTPAddress,
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
-        [switch] $SecondarySMTPAddress,
+        [string] $SecondarySMTPAddress,
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
