@@ -19,7 +19,11 @@ Function New-UserToCloud {
    You will be prompted for which OU to place the user(s).
    You will also be prompted for which license options the user should receive.
    If using the "UserToCopy" parameter, the new user will receive all the attributes (Enabled, StreetAddress, City, State, PostalCode & Group Memberships).
-   The script enables the option: User must change password at next logon.  Unless this parameter is used: -DontForceUserToChangePasswordAtLogon
+   The script enables the option: User must change password at next logon.  Unless this switch is used: -DontForceUserToChangePasswordAtLogon
+
+   Whichever Retention Policy is set to "Default", will be the retention policy that
+   the Exchange Online Mailbox will receive unless this switch is used -SpecifyRetentionPolicy.
+   The script will prompt for which Retention Policy to assign the user(s).
 
    ** The script will also take CSV input. The minimum parameters are FirstName & LastName **
    **                           See example below                                          **
@@ -162,7 +166,7 @@ Function New-UserToCloud {
     }
         
     Begin {
-        $password_ss = Read-Host "Enter a Password for the User" -AsSecureString
+        $password_ss = Read-Host "Enter a Password for the User(s): " -AsSecureString
         $RootPath = $env:USERPROFILE + "\ps\"
         $User = $env:USERNAME
     
