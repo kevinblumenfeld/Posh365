@@ -17,16 +17,17 @@ Function New-UserToCloud {
 
    By default, the script creates an new Active Directory User & corresponding mailbox in Exchange Online.
 
-   You will be prompted for which OU to place the user(s).  By default, you will be presented to choose from an OU with the word "user" or "resource" in it.
-   To add additional search criteria, use -OUSearch "SomeOtherSearchCriteria"
+   You will be prompted for the OU where to place the user(s).  
+   By default, you will be presented to choose from all OUs with the word "user" or "resource" in it.
+   To add additional search criteria, use:  -OUSearch "SomeOtherSearchCriteria"
    You will also be prompted for which license options the user should receive.
 
    If using the "UserToCopy" parameter, the new user will receive all the attributes (Enabled, StreetAddress, City, State, PostalCode & Group Memberships).
    The script enables the option: User must change password at next logon.  Unless this switch is used: -DontForceUserToChangePasswordAtLogon
 
    Whichever Retention Policy is set to "Default", will be the retention policy that
-   the Exchange Online Mailbox will receive unless this switch is used -SpecifyRetentionPolicy.
-   The script will prompt for which Retention Policy to assign the user(s).
+   the Exchange Online Mailbox will receive - unless this switch is used:  -SpecifyRetentionPolicy
+   If -SpecifyRetentionPolicy is used, the script will prompt for which Retention Policy to assign the user(s).
 
    ** The script will also take CSV input. The minimum parameters are FirstName & LastName **
    **                           See example below                                          **
