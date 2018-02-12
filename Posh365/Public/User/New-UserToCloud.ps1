@@ -16,8 +16,11 @@ Function New-UserToCloud {
    You should be prompted only once unless your password changes or a time-out occurs.
 
    By default, the script creates an new Active Directory User & corresponding mailbox in Exchange Online.
-   You will be prompted for which OU to place the user(s).
+
+   You will be prompted for which OU to place the user(s).  By default, you will be presented to choose from an OU with the word "user" or "resource" in it.
+   To add additional search criteria, use -OUSearch "SomeOtherSearchCriteria"
    You will also be prompted for which license options the user should receive.
+
    If using the "UserToCopy" parameter, the new user will receive all the attributes (Enabled, StreetAddress, City, State, PostalCode & Group Memberships).
    The script enables the option: User must change password at next logon.  Unless this switch is used: -DontForceUserToChangePasswordAtLogon
 
@@ -44,6 +47,15 @@ Function New-UserToCloud {
 
     .EXAMPLE
     New-UserToCloud -UserToCopy "FredJones@contoso.com" -FirstName Jonathan -LastName Smithson
+   
+    .EXAMPLE
+    New-UserToCloud -FirstName Jon -LastName Smith -OfficePhone "(404)555-1212" -MobilePhone "(404)555-1212" -Description "Hired Feb 12, 2018"
+    
+    .EXAMPLE
+    New-UserToCloud -FirstName Jon -LastName Smith -StreetAddress "123 Main St" -City "New York" -State "NY" -Zip "10080" -Country "US"
+       
+    .EXAMPLE
+    New-UserToCloud -FirstName Jon -LastName Smith -Office "Manhattan" -Title "Vice President of Finance" -Department "Finance" -Company "Contoso, Inc."
    
     #>
     [CmdletBinding()]
@@ -120,7 +132,7 @@ Function New-UserToCloud {
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]        
-        [string] $OUSearch = "Resources"
+        [string] $OUSearch = "Resource"
     )
     DynamicParam {
             
@@ -260,7 +272,7 @@ Function New-UserToCloud {
         }
 
     
-        $OUSearch2 = "Users"
+        $OUSearch2 = "User"
         $ou = (Get-ADOrganizationalUnit -Server $domainController -filter * -SearchBase (Get-ADDomain -Server $domainController).distinguishedname -Properties canonicalname | 
                 where {$_.canonicalname -match $OUSearch -or $_.canonicalname -match $OUSearch2
             } | Select canonicalname, distinguishedname| sort canonicalname | 
