@@ -460,18 +460,15 @@ Function New-HybridMailbox {
         $Proxies = @()
 
         if ($PrimarySMTPAddress) {
-            $Proxies += ("SMTP:" + $PrimarySMTPAddress)
-            Set-ADUser -Identity $SamAccountName -Replace @{msExchPoliciesExcluded = "{26491CFC-9E50-4857-861B-0CB8DF22B5D7}"}
+            $PrimaryProxy += ("SMTP:" + $PrimarySMTPAddress)
+            Set-ADUser -Identity $SamAccountName -Add @{proxyaddresses = $PrimaryProxy}
         } 
         
         if ($SecondarySMTPAddress) {
-            $Proxies += ("smtp:" + $SecondarySMTPAddress)
+            $SecondaryProxy += ("smtp:" + $SecondarySMTPAddress)
+            Set-ADUser -Identity $SamAccountName -Add @{proxyaddresses = $SecondaryProxy}
         }
 
-        if ($PrimarySMTPAddress -or $SecondarySMTPAddress) {
-            Set-ADUser -Identity $SamAccountName -Replace @{proxyaddresses = $Proxies}
-        }
-    
         # Purge old jobs
         Get-Job | where {$_.State -ne 'Running'}| Remove-Job
     
@@ -480,7 +477,12 @@ Function New-HybridMailbox {
             ##################################################
             #      Enable Remote Mailbox in Office 365       #
             ##################################################
-            Enable-OnPremRemoteMailbox -DomainController $domainController -Identity $samaccountname -RemoteRoutingAddress ($samaccountname + "@" + $targetAddressSuffix) -Alias $samaccountname 
+            if ($PrimarySMTPAddress) {
+                Enable-OnPremRemoteMailbox -DomainController $domainController -Identity $samaccountname -PrimarySmtpAddress $PrimarySMTPAddress -RemoteRoutingAddress ($samaccountname + "@" + $targetAddressSuffix) -Alias $samaccountname 
+            }
+            else {
+                Enable-OnPremRemoteMailbox -DomainController $domainController -Identity $samaccountname -RemoteRoutingAddress ($samaccountname + "@" + $targetAddressSuffix) -Alias $samaccountname 
+            }
             
             ##############################################################
             #                  Set UserPrincipalName                     #
