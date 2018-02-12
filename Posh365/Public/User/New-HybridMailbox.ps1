@@ -179,7 +179,7 @@ Function New-HybridMailbox {
     }
         
     Begin {
-        $password_ss = Read-Host "Enter a Password for the User(s): " -AsSecureString
+        $password_ss = Read-Host "Enter a Password for the User(s) " -AsSecureString
         $RootPath = $env:USERPROFILE + "\ps\"
         $User = $env:USERNAME
     
@@ -377,15 +377,15 @@ Function New-HybridMailbox {
         Else {
             $LastName = $LastName.replace(" ", "")
     
-            $SamAccountName = $Last[0..7] -join ''
+            $SamAccountName = $LastName[0..($SamAccountNameCharacters - 1)] -join ''
             $i = 2
             while (Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$samaccountname)") {
                 $CharactersUsedForIteration = ([string]$i).Length
-                $SamAccountName = ($Last[0..(7 - $CharactersUsedForIteration)] -join '') + $i
+                $SamAccountName = ($LastName[0..($SamAccountNameCharacters - ($CharactersUsedForIteration + 1))] -join '') + $i
                 $i++
             }
     
-        }
+        } # End if Shared
     
         # SamAccount To Lower
         $samaccountname = $samaccountname.tolower()
