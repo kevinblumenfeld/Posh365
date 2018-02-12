@@ -1,21 +1,25 @@
 Function New-UserToCloud {
     <#
     .SYNOPSIS
-   Numerous functions to managed users in a Hybrid Office 365 environment.
-   On-Premises Exchange server is needed.  The script is dependent on your use of Email Address Policies.
-   The UserPrincipalName is created by copying the Primary SMTP Address (as created by the On Premises Exchange Email Address Policies)
+   Designed to manage users in Hybrid Office 365 environment.
+   On-Premises Exchange server is required.  
+   
+   ** The script is dependent on your use of Email Address Policies **
+   
+   The UserPrincipalName is created by copying the Primary SMTP Address (as created by the On-Premises Exchange Email Address Policies)
    Can be run from any machine on the domain that has the module for ActiveDirectory installed.
    The script will prompt once for the names of a Domain Controller, Exchange Server and the Azure AD Connect server.
-   The script will also prompt for DisplayName & SamAccountName Format.
+   The script will also prompt once for DisplayName & SamAccountName Format.
    All of these prompts will only occur once per machine (per user).
    Should you wish to change any/all options just run: Select-Options
-   Until your 365 and/or AD password changes, the script stores & encrypts both password.  You should be prompted once unless your password changes.
+   The script stores & encrypts both your Exchange/AD & Office 365 password.  
+   You should be prompted only once unless your password changes or a time-out occurs.
 
    By default, the script creates an new Active Directory User & corresponding mailbox in Exchange Online.
    You will be prompted for which OU to place the user(s).
    You will also be prompted for which license options the user should receive.
-   If using the "UserToCopy" parameter to the new user will receive all the attributes (Enabled, StreetAddress, City, State, PostalCode & group membership).
-   The script checks the option: User must change password at next logon.  Unless this parameter is used: DontForceUserToChangePasswordAtLogon
+   If using the "UserToCopy" parameter, the new user will receive all the attributes (Enabled, StreetAddress, City, State, PostalCode & Group Memberships).
+   The script enables the option: User must change password at next logon.  Unless this parameter is used: -DontForceUserToChangePasswordAtLogon
 
    ** The script will also take CSV input. The minimum parameters are FirstName & LastName **
    **                           See example below                                          **
@@ -36,7 +40,6 @@ Function New-UserToCloud {
 
     .EXAMPLE
     New-UserToCloud -UserToCopy "FredJones@contoso.com" -FirstName Jonathan -LastName Smithson
-
    
     #>
     [CmdletBinding()]
