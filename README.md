@@ -4,33 +4,63 @@ Connect.  Provision.  Maintain.
 Posh365 is a Toolbox for Office 365 Environments
 
 
-## New-UserToCloud
+ Designed to manage users in Hybrid Office 365 environment.
+   On-Premises Exchange server is required.  
+   
+   ** The script is dependent on your use of Email Address Policies **
+   
+   The UserPrincipalName is created by copying the Primary SMTP Address (as created by the On-Premises Exchange Email Address Policies)
+   Can be run from any machine on the domain that has the module for ActiveDirectory installed.
+   The script will prompt once for the names of a Domain Controller, Exchange Server and the Azure AD Connect server.
+   The script will also prompt once for DisplayName & SamAccountName Format.
+   All of these prompts will only occur once per machine (per user).
+   Should you wish to change any/all options just run: Select-Options
+   The script stores & encrypts both your Exchange/AD & Office 365 password.  
+   You should be prompted only once unless your password changes or a time-out occurs.
 
-##### -New
+   By default, the script creates an new Active Directory User & corresponding mailbox in Exchange Online.
 
-Creates a new Active Directory user in an OU of your choosing.  The user is given an Office 365 mailbox and licensed by you.  Once the command is run you will be presented with grids to select the OU and the license for the user.  
+   You will be prompted for the OU where to place the user(s).  
+   By default, you will be presented to choose from all OUs with the word "user" or "resource" in it.
+   To add additional search criteria, use:  -OUSearch "SomeOtherSearchCriteria"
+   You will also be prompted for which license options the user should receive.
 
-    New-UserToCloud -New -FirstName John -LastName Smith -StreetAddress "100 Industry Ln" -City "New York" -State "NY" -Zip "30002" -OfficePhone "(404)555-1212" -Description "Manhattan Warehouse" -Department "Warehouse" -Title "Forklift Operator"
+   If using the "UserToCopy" parameter, the new user will receive all the attributes (Enabled, StreetAddress, City, State, PostalCode & Group Memberships).
+   The script enables the option: User must change password at next logon.  Unless this switch is used: -DontForceUserToChangePasswordAtLogon
 
+   Whichever Retention Policy is set to "Default", will be the retention policy that
+   the Exchange Online Mailbox will receive - unless this switch is used:  -SpecifyRetentionPolicy
+   If -SpecifyRetentionPolicy is used, the script will prompt for which Retention Policy to assign the user(s).
 
+   ** The script will also take CSV input. The minimum parameters are FirstName & LastName **
+   **                           See example below                                          **
+      
+    .EXAMPLE
+    Import-Csv C:\data\theTEST.csv | New-HybridMailbox
 
-> **Note:**
->
-> - The **only mandatory parameters** are **Firstname** and **Lastname**
-> - After entering the command you will be prompted to enter a new password for the user
-> - User will be required to enter a new password at first login
-  
-##### -UserToCopy
+    Example of CSV (illustrated without commas):
 
-Creates a new Active Directory user in an OU of your choosing, while copying these attributes of another AD user: *StreetAddress, City, State & PostalCode*.  The user is given an Office 365 mailbox and licensed by you.  Once the command is run you will be presented with grids to select the OU and the license for the user.  
+    FirstName LastName
+    John      Smith
+    Sally     James
+    Jeff      Williams
+    Jamie     Yothers
 
-    New-UserToCloud -UserToCopy FJones -FirstName John -LastName Smith
+    .EXAMPLE
+    New-HybridMailbox -FirstName John -LastName Smith
 
-##### -Shared
-
-Creates a disabled Active Directory user in an OU of your choosing.  A shared mailbox is created and is associated with the AD User.  Once the command is run you will be presented with grids to select the OU and the license for the user.  After a few minutes the license will be removed as Shared Mailboxes do not require a license.
-
-     New-UserToCloud -Shared -SharedMailboxEmailAlias "Sales" -DisplayName "Sales Department" -Description "Shared Mailbox for Sales Department"
+    .EXAMPLE
+    New-HybridMailbox -UserToCopy "FredJones@contoso.com" -FirstName Jonathan -LastName Smithson
+   
+    .EXAMPLE
+    New-HybridMailbox -FirstName Jon -LastName Smith -OfficePhone "(404)555-1212" -MobilePhone "(404)333-5252" -DescriptiADdedon "Hired Feb 12, 2018"
+    
+    .EXAMPLE
+    New-HybridMailbox -FirstName Jon -LastName Smith -StreetAddress "123 Main St" -City "New York" -State "NY" -Zip "10080" -Country "US"
+       
+    .EXAMPLE
+    New-HybridMailbox -FirstName Jon -LastName Smith -Office "Manhattan" -Title "Vice President of Finance" -Department "Finance" -Company "Contoso, Inc."
+   
      
 ## Connect-Cloud
 
