@@ -3,10 +3,8 @@ Function New-HybridMailbox {
     .SYNOPSIS
    Designed to manage users in Hybrid Office 365 environment.
    On-Premises Exchange server is required.  
-   
-   ** The script is dependent on your use of Email Address Policies **
-   
-   The UserPrincipalName is created by copying the Primary SMTP Address (as created by the On-Premises Exchange Email Address Policies)
+      
+   The UserPrincipalName is created by copying the Primary SMTP Address (as created by the On-Premises Exchange Email Address Policies or manually entering PrimarySMTP)
    Can be run from any machine on the domain that has the module for ActiveDirectory installed.
    The script will prompt once for the names of a Domain Controller, Exchange Server and the Azure AD Connect server.
    The script will also prompt once for DisplayName & SamAccountName Format.
