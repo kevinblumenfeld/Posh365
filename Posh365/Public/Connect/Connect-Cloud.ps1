@@ -275,11 +275,11 @@ function Connect-Cloud {
                 }
                 Catch {
                     if ($error[0].categoryinfo.reason -match "Authentication") {
-                        if ($targetAddressSuffix) {
-                            Connect-Cloud $targetAddressSuffix -DeleteCreds
+                        if ($Tenant) {
+                            Connect-Cloud $Tenant -DeleteCreds
                         }
                         else {
-                            Connect-Cloud $Tenant -DeleteCreds
+                            Connect-Cloud $targetAddressSuffix -DeleteCreds 
                         }
                         
                         Write-Output "There was an issue with your credentials"
