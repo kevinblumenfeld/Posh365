@@ -105,8 +105,6 @@ function Connect-Exchange {
         Write-Host "          All commands are pre-pended with OnPrem, for example:     " -foregroundcolor "darkgreen" -backgroundcolor "white"
         Write-Host "               Get-Mailbox       is      Get-OnPremMailbox          " -foregroundcolor "darkgreen" -backgroundcolor "white"
         Write-Host " This is to prevent overlap of commands between Office 365 and EXO  " -foregroundcolor "darkgreen" -backgroundcolor "white"
-        Write-Host "   For example, Get-Mailbox would be used for Office 365 while,     " -foregroundcolor "darkgreen" -backgroundcolor "white"
-        Write-Host "     Get-OnPremMailbox would be used for On-Premises Exchange       " -foregroundcolor "darkgreen" -backgroundcolor "white"
         Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
     }
     else {

@@ -454,7 +454,7 @@ Function New-HybridMailbox {
             $groupMembership | Add-ADGroupMember -Server $domainController -Members $samaccountname
         }
 
-        # If ProxyAddresses are used
+        # If ProxyAddresses are to be added manually
         $Proxies = @()
 
         if ($PrimarySMTPAddress) {
@@ -499,7 +499,7 @@ Function New-HybridMailbox {
                 Start-Job -Name ConvertToShared {
                     Start-Sleep -Seconds 300
                     $userprincipalname = $args[0]
-                    $userprincipalname | ConvertTo-Shared
+                    ConvertTo-Shared -UserToConvert $userprincipalname
                 } -ArgumentList  $userprincipalname | Out-Null
             }
     

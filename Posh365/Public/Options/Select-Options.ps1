@@ -6,6 +6,5 @@ function Select-Options {
     Select-TargetAddressSuffix
     Select-DisplayNameFormat
     Select-SamAccountNameOptions
-    Select-TargetAddressSuffix
 }
     

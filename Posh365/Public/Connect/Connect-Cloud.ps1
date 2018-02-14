@@ -42,6 +42,9 @@ function Connect-Cloud {
         }
 		
         $host.ui.RawUI.WindowTitle = "Tenant: $($Tenant.ToUpper())"
+        $RootPath = $env:USERPROFILE + "\ps\"
+        $User = $env:USERNAME
+        $targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")
     }
     Process {
 
@@ -156,9 +159,10 @@ function Connect-Cloud {
                 else {
                     $EXOSession = New-PSSession -Name "EXO" -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell -Credential $Credential -Authentication Basic -AllowRedirection 
                     Import-Module (Import-PSSession $EXOSession -AllowClobber -WarningAction SilentlyContinue -Prefix "Cloud") -Global -Prefix "Cloud" | Out-Null
-                    Write-Output "**************************************************"
-                    Write-Output "You have successfully connected to Exchange Online"
-                    Write-Output "**************************************************"
+                    Write-Output "************************************************************************"
+                    Write-Output "You have successfully connected to Exchange Online With the Prefix Cloud"
+                    Write-Output "         For Example: Get-Mailbox is now Get-CloudMailbox               "
+                    Write-Output "************************************************************************"
                 }
                 
             }
@@ -272,12 +276,12 @@ function Connect-Cloud {
                 Catch {
                     if ($error[0].categoryinfo.reason -match "Authentication") {
                         Connect-Cloud $targetAddressSuffix -DeleteCreds
-                        Write-Output "There was with your credentials"
+                        Write-Output "There was an issue with your credentials"
                         Write-Output "Please run the same command you just ran and try again"
                         Break
                     }
                     else {
-                        $error[0]
+                        $_
                         Write-Output "There was an error Connecting to Azure Ad - Ensure the module is installed"
                         Write-Output "Download PowerShell 5 or PowerShellGet"
                         Write-Output "https://msdn.microsoft.com/en-us/powershell/wmf/5.1/install-configure"
