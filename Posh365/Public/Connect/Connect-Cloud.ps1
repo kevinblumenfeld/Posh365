@@ -44,7 +44,7 @@ function Connect-Cloud {
         $host.ui.RawUI.WindowTitle = "Tenant: $($Tenant.ToUpper())"
         $RootPath = $env:USERPROFILE + "\ps\"
         $User = $env:USERNAME
-        $targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")
+        $targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix") -ErrorAction SilentlyContinue
     }
     Process {
 
@@ -275,7 +275,13 @@ function Connect-Cloud {
                 }
                 Catch {
                     if ($error[0].categoryinfo.reason -match "Authentication") {
-                        Connect-Cloud $targetAddressSuffix -DeleteCreds
+                        if ($targetAddressSuffix) {
+                            Connect-Cloud $targetAddressSuffix -DeleteCreds
+                        }
+                        else {
+                            Connect-Cloud $Tenant -DeleteCreds
+                        }
+                        
                         Write-Output "There was an issue with your credentials"
                         Write-Output "Please run the same command you just ran and try again"
                         Break
