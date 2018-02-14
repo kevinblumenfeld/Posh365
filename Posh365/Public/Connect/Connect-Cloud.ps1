@@ -6,9 +6,6 @@ function Connect-Cloud {
     (
         [parameter(Position = 0, Mandatory = $true)]
         [string] $Tenant,
-
-        [parameter(Position = 1)]
-        [string] $User,
                            
         [switch] $ExchangeOnline,
                               
@@ -37,24 +34,17 @@ function Connect-Cloud {
         if ($Tenant -match 'onmicrosoft') {
             $Tenant = $Tenant.Split(".")[0]
         }
-        if (! $User) {
-            $User = "Default"
-        }
-		
+
         $host.ui.RawUI.WindowTitle = "Tenant: $($Tenant.ToUpper())"
         $RootPath = $env:USERPROFILE + "\ps\"
-        $User = $env:USERNAME
-        $targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix") -ErrorAction SilentlyContinue
+        $KeyPath = $Rootpath + "creds\"
     }
     Process {
 
-        $RootPath = $env:USERPROFILE + "\ps\"
-        $KeyPath = $Rootpath + "creds\"
-
         # Delete invalid or unwanted credentials
         if ($DeleteCreds) {
-            Remove-Item ($KeyPath + "$($Tenant).$($user).cred") 
-            Remove-Item ($KeyPath + "$($Tenant).$($user).ucred")
+            Remove-Item ($KeyPath + "$($Tenant).cred") 
+            Remove-Item ($KeyPath + "$($Tenant).ucred")
         }
         # Create Directory for Transact Logs
         if (!(Test-Path ($RootPath + $Tenant + "\logs\"))) {
@@ -70,16 +60,16 @@ function Connect-Cloud {
         # Create KeyPath Directory
         if (!(Test-Path $KeyPath)) {
             Try {
-                New-Item -ItemType Directory -Path $KeyPath -ErrorAction STOP | Out-Null
+                $null = New-Item -ItemType Directory -Path $KeyPath -ErrorAction STOP
             }
             Catch {
                 throw $_.Exception.Message
             }           
         }
         if ($ExchangeOnline -or $MSOnline -or $All365 -or $Skype -or $SharePoint -or $Compliance -or $AzureADver2) {
-            if (Test-Path ($KeyPath + "$($Tenant).$($user).cred")) {
-                $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).$($user).cred") | ConvertTo-SecureString
-                $UsernameString = Get-Content ($KeyPath + "$($Tenant).$($user).ucred")
+            if (Test-Path ($KeyPath + "$($Tenant).cred")) {
+                $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).cred") | ConvertTo-SecureString
+                $UsernameString = Get-Content ($KeyPath + "$($Tenant).ucred")
                 $Credential = Try {
                     New-Object System.Management.Automation.PSCredential -ArgumentList $UsernameString, $PwdSecureString -ErrorAction Stop 
                 }
@@ -93,12 +83,15 @@ function Connect-Cloud {
                         Write-Host "********************************************************************" -foregroundcolor "darkblue" -backgroundcolor "white"
                         Break
                     }
+                    Else {
+                        $error[0]
+                    }
                 }
             }
             else {
                 $Credential = Get-Credential -Message "ENTER USERNAME & PASSWORD FOR OFFICE 365/AZURE AD"
                 if ($Credential.Password) {
-                    $Credential.Password | ConvertFrom-SecureString | Out-File ($KeyPath + "$($Tenant).$($user).cred") -Force
+                    $Credential.Password | ConvertFrom-SecureString | Out-File ($KeyPath + "$($Tenant).cred") -Force
                 }
                 else {
                     Connect-Cloud $Tenant -DeleteCreds
@@ -109,7 +102,7 @@ function Connect-Cloud {
                     Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
                     Break
                 }
-                $Credential.UserName | Out-File ($KeyPath + "$($Tenant).$($user).ucred")
+                $Credential.UserName | Out-File ($KeyPath + "$($Tenant).ucred")
             }
         }
         if ($MSOnline -or $All365) {
@@ -150,19 +143,39 @@ function Connect-Cloud {
             if (!$MFA) {
                 if (!$EXOPrefix) {
                     # Exchange Online
-                    $EXOSession = New-PSSession -Name "EXO" -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell -Credential $Credential -Authentication Basic -AllowRedirection 
-                    Import-Module (Import-PSSession $EXOSession -AllowClobber -WarningAction SilentlyContinue) -Global | Out-Null
-                    Write-Output "**************************************************"
-                    Write-Output "You have successfully connected to Exchange Online"
-                    Write-Output "**************************************************"
+                    if (!(Get-Command Get-AcceptedDomain -ErrorAction SilentlyContinue)) {
+                        Try {
+                            $EXOSession = New-PSSession -Name "EXO" -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell -Credential $Credential -Authentication Basic -AllowRedirection -ErrorAction Stop
+                        }
+                        Catch {
+                            Connect-Cloud $Tenant -DeleteCreds
+                            Write-Output "There was an issue with your credentials"
+                            Write-Output "Please run the same command you just ran and try again"
+                            Break
+                        }
+                        Import-Module (Import-PSSession $EXOSession -AllowClobber -WarningAction SilentlyContinue) -Global | Out-Null
+                        Write-Output "**************************************************"
+                        Write-Output "You have successfully connected to Exchange Online"
+                        Write-Output "**************************************************"
+                    }
                 }
                 else {
-                    $EXOSession = New-PSSession -Name "EXO" -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell -Credential $Credential -Authentication Basic -AllowRedirection 
-                    Import-Module (Import-PSSession $EXOSession -AllowClobber -WarningAction SilentlyContinue -Prefix "Cloud") -Global -Prefix "Cloud" | Out-Null
-                    Write-Output "************************************************************************"
-                    Write-Output "You have successfully connected to Exchange Online With the Prefix Cloud"
-                    Write-Output "         For Example: Get-Mailbox is now Get-CloudMailbox               "
-                    Write-Output "************************************************************************"
+                    if (!(Get-Command Get-CloudAcceptedDomain -ErrorAction SilentlyContinue)) {
+                        Try {
+                            $EXOSession = New-PSSession -Name "EXO" -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell -Credential $Credential -Authentication Basic -AllowRedirection -ErrorAction Stop
+                        }
+                        Catch {
+                            Connect-Cloud $Tenant -DeleteCreds
+                            Write-Output "There was an issue with your credentials"
+                            Write-Output "Please run the same command you just ran and try again"
+                            Break
+                        }
+                        Import-Module (Import-PSSession $EXOSession -AllowClobber -WarningAction SilentlyContinue -Prefix "Cloud") -Global -Prefix "Cloud" | Out-Null
+                        Write-Output "************************************************************************"
+                        Write-Output "You have successfully connected to Exchange Online With the Prefix Cloud"
+                        Write-Output "         For Example: Get-Mailbox is now Get-CloudMailbox               "
+                        Write-Output "************************************************************************"
+                    }
                 }
                 
             }
@@ -274,14 +287,8 @@ function Connect-Cloud {
                     Write-Output "**********************************************"
                 }
                 Catch {
-                    if ($error[0].categoryinfo.reason -match "Authentication") {
-                        if ($Tenant) {
-                            Connect-Cloud $Tenant -DeleteCreds
-                        }
-                        else {
-                            Connect-Cloud $targetAddressSuffix -DeleteCreds 
-                        }
-                        
+                    if ($error[0]) {
+                        Connect-Cloud $Tenant -DeleteCreds
                         Write-Output "There was an issue with your credentials"
                         Write-Output "Please run the same command you just ran and try again"
                         Break
@@ -310,9 +317,9 @@ function Connect-Cloud {
                     Write-Output "**********************************************"
                 }
                 Catch {
-                    if ($error[0].categoryinfo.reason -match "Authentication") {
-                        Connect-Cloud $targetAddressSuffix -DeleteCreds
-                        Write-Output "There was with your credentials"
+                    if ($error[0]) {
+                        Connect-Cloud $Tenant -DeleteCreds
+                        Write-Output "There was as issue with your credentials"
                         Write-Output "Please run the same command you just ran and try again"
                         Break
                     }

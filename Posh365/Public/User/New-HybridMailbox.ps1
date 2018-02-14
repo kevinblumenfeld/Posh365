@@ -277,7 +277,6 @@ Function New-HybridMailbox {
                 Break
             }
         }
-
     
         $OUSearch2 = "User"
         $ou = (Get-ADOrganizationalUnit -Server $domainController -filter * -SearchBase (Get-ADDomain -Server $domainController).distinguishedname -Properties canonicalname | 
