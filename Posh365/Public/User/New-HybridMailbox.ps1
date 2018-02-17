@@ -35,11 +35,11 @@ Function New-HybridMailbox {
 
     Example of CSV (illustrated without commas):
 
-    FirstName LastName
-    John      Smith
-    Sally     James
-    Jeff      Williams
-    Jamie     Yothers
+    FirstName LastName Description          OfficePhone
+    John      Smith    Warehouse            (404)555-1212
+    Sally     James    Manager of LA Branch (213)444-2312
+    Jeff      Williams Jeff's Description   (404)312-8989
+    Jamie     Yothers  Acting CEO           (212)492-6578
 
     .EXAMPLE
     New-HybridMailbox -FirstName John -LastName Smith
