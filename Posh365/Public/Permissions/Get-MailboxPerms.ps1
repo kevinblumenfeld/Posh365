@@ -89,7 +89,7 @@
             Export-csv .\FullAccessPerms.csv -NoTypeInformation
     }
     $AllPermissions = $null
-    Get-ChildItem -File -Filter "*.csv" | % {
+    Get-ChildItem -Filter "*.csv" | % {
         $AllPermissions += (import-csv $_)
     }
     $AllPermissions | Export-Csv .\AllPermissions.csv -NoTypeInformation

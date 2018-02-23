@@ -12,7 +12,7 @@ Function ConvertTo-Shared {
     #>
     [CmdletBinding()]
     Param (
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName=$true)]
         [string] $UserToConvert
     )
     

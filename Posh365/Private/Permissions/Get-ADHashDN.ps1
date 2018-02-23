@@ -20,10 +20,8 @@
                 Logon       = $CurDN.logon
             }
         }
-
     }
     End {
         $ADHashDN
-    }
-     
+    }     
 }

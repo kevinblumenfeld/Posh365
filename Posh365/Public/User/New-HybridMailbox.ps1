@@ -59,86 +59,86 @@ Function New-HybridMailbox {
     #>
     [CmdletBinding()]
     Param (
-        [parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
+        [parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
         [string] $UserToCopy,
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]   
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Shared")]   
         [switch] $Shared,
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
         [switch] $New,
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
         [string] $FirstName,
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
         [string] $LastName,
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Shared")]
         [switch] $SpecifyRetentionPolicy,
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Shared")]
         [string] $PrimarySMTPAddress,
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Shared")]
         [string] $SecondarySMTPAddress,
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Shared")]
         [switch] $DontForceUserToChangePasswordAtLogon,
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = "Shared")]
         [ValidateScript( {if ($_ -notlike "* *") {Return $True} else {Write-Host "Please choose an SharedMailboxEmailAlias without spaces"}})]
         [string] $SharedMailboxEmailAlias,
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = "Shared")]
         [string] $DisplayName,
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
         [string] $OfficePhone,
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
         [string] $MobilePhone,
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Shared")]
         [string] $Description,
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
         [string] $StreetAddress,
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
         [string] $City,
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
         [string] $State,
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
         [string] $Zip,
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
         [string] $SAMPrefix,
-        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = "UPN")]
+        [parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = "UPN")]
         [switch] $NoMail,
-        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
         [string] $Country,
-        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
         [string] $Office,
-        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
         [string] $Title,
-        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
         [string] $Department,
-        [parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
+        [parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
         [string] $Company,
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Copy")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "New")]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = "Shared")]        
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Copy")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "New")]
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = "Shared")]        
         [string] $OUSearch = "Resource"
     )
     DynamicParam {

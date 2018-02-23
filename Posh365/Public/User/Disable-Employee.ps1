@@ -12,16 +12,16 @@ Function Disable-Employee {
     [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "")]
     Param (
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [string] $UserToDisable,
 
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [switch] $DontConvertToShared,
 
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [string[]] $UsersToGiveFullAccess,
 
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [string] $OUSearch2
     )
     

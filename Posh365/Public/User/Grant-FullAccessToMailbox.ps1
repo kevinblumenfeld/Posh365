@@ -9,9 +9,9 @@ Function Grant-FullAccessToMailbox {
     #>
     [CmdletBinding()]
     Param (
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [string] $Mailbox,
-        [Parameter(Mandatory = $false, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [Parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [string] $UserNeedingAccess
     )
     
@@ -24,6 +24,11 @@ Function Grant-FullAccessToMailbox {
             Select-DomainController
         }
         $DomainController = Get-Content ($RootPath + "$($user).DomainController")   
+        
+        While (!(Get-Content ($RootPath + "$($user).TargetAddressSuffix") -ErrorAction SilentlyContinue | Where-Object {$_.count -gt 0})) {
+            Select-TargetAddressSuffix
+        }
+        $targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")
 
         try {
             (Get-CloudAcceptedDomain -erroraction stop)[0] | Out-Null
