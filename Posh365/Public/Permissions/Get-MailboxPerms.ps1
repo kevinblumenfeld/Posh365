@@ -61,12 +61,15 @@
 
     Write-Output "Importing Active Directory Users that have at least one proxy address"
     $AllADUsers = Get-ADUsersWithProxyAddress
-    Write-Output "Caching hash table. LogonName as Key and Values of DisplayName & UPN"
-    $ADHash = $AllADUsers | Get-ADHash
-    Write-Output "Caching hash table. DN as Key and Values of DisplayName, UPN & LogonName"
-    $ADHashDN = $AllADUsers | Get-ADHashDN
-    Write-Output "Caching hash table. CN as Key and Values of DisplayName, UPN & LogonName"
-    $ADHashCN = $AllADUsers | Get-ADHashCN
+
+Write-Output "Caching hash table. LogonName as Key and Values of DisplayName & UPN"
+$ADHash = $AllADUsers | Get-ADHash
+
+Write-Output "Caching hash table. DN as Key and Values of DisplayName, UPN & LogonName"
+$ADHashDN = $AllADUsers | Get-ADHashDN
+
+Write-Output "Caching hash table. CN as Key and Values of DisplayName, UPN & LogonName"
+$ADHashCN = $AllADUsers | Get-ADHashCN
 
     Write-Output "Retrieving distinguishedname's of all Exchange Mailboxes"
     $allMailboxes = (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname)
@@ -89,11 +92,12 @@
             Export-csv .\FullAccessPerms.csv -NoTypeInformation
     }
     $AllPermissions = $null
-    Get-ChildItem -Filter "*.csv" | % {
+    Get-ChildItem -Filter "*.csv" -Exclude "*allpermissions.csv" -Recurse | % {
         $AllPermissions += (import-csv $_)
     }
     $AllPermissions | Export-Csv .\AllPermissions.csv -NoTypeInformation
     Write-Output "Combined all CSV's into a single file named, AllPermissions.csv"
-    Write-Output "Opening Folder "
-    Invoke-Item .
+    # Write-Output "Opening Folder "
+    # Invoke-Item .
 }
+ # Get-MailboxPerms -ReportPath C:\scripts\rpoo

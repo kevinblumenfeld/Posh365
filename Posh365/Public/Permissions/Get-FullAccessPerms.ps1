@@ -23,6 +23,7 @@ function Get-FullAccessPerms {
         [hashtable] $ADHash
     )
     Begin {
+        
         import-module activedirectory -ErrorAction SilentlyContinue
 
     }
@@ -52,8 +53,8 @@ function Get-FullAccessPerms {
                     New-Object -TypeName psobject -property @{
                         Mailbox    = $ADHashDN.$mailbox.DisplayName
                         UPN        = $ADHashDN.$mailbox.UPN
-                        Granted    = $ADHash."$User".DisplayName
-                        GrantedUPN = $ADHash."$User".UPN
+                        Granted    = $ADHash[$User].DisplayName
+                        GrantedUPN = $ADHash.$User.UPN
                         Permission = "FullAccess"
                     }  
                 }

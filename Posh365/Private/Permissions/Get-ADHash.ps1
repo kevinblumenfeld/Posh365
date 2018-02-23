@@ -15,12 +15,14 @@
 
     Process {
         foreach ($CurDN in $DistinguishedName) {
-            $ADHash[$CurDN.logon] = @{
+            New-Object -TypeName psobject -property @{
+                Logon       = $CurDN.Logon
                 DisplayName = $CurDN.DisplayName
                 UPN         = $CurDN.UserPrincipalName
+            } | ForEach-Object {
+                $ADhash.($_.logon) = $_ 
             }
-        }
-
+        } 
     }
     End {
         $ADHash
