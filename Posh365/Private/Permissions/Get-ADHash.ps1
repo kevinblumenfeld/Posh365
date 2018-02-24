@@ -1,7 +1,6 @@
 ﻿Function Get-ADHash {
     <#
     .SYNOPSIS
-
     .EXAMPLE
     
     #>
@@ -15,14 +14,12 @@
 
     Process {
         foreach ($CurDN in $DistinguishedName) {
-            New-Object -TypeName psobject -property @{
-                Logon       = $CurDN.Logon
+            $ADHash[$CurDN.logon] = @{
                 DisplayName = $CurDN.DisplayName
                 UPN         = $CurDN.UserPrincipalName
-            } | ForEach-Object {
-                $ADhash.($_.logon) = $_ 
             }
-        } 
+        }
+
     }
     End {
         $ADHash

@@ -59,17 +59,19 @@
     New-Item -ItemType Directory -Path $ReportPath -ErrorAction SilentlyContinue
     Set-Location $ReportPath
 
+    $DomainNameHash = Get-DomainNameHash
+
     Write-Output "Importing Active Directory Users that have at least one proxy address"
-    $AllADUsers = Get-ADUsersWithProxyAddress
+    $AllADUsers = Get-ADUsersWithProxyAddress -DomainNameHash $DomainNameHash
 
-Write-Output "Caching hash table. LogonName as Key and Values of DisplayName & UPN"
-$ADHash = $AllADUsers | Get-ADHash
+    Write-Output "Caching hash table. LogonName as Key and Values of DisplayName & UPN"
+    $ADHash = $AllADUsers | Get-ADHash
 
-Write-Output "Caching hash table. DN as Key and Values of DisplayName, UPN & LogonName"
-$ADHashDN = $AllADUsers | Get-ADHashDN
+    Write-Output "Caching hash table. DN as Key and Values of DisplayName, UPN & LogonName"
+    $ADHashDN = $AllADUsers | Get-ADHashDN
 
-Write-Output "Caching hash table. CN as Key and Values of DisplayName, UPN & LogonName"
-$ADHashCN = $AllADUsers | Get-ADHashCN
+    Write-Output "Caching hash table. CN as Key and Values of DisplayName, UPN & LogonName"
+    $ADHashCN = $AllADUsers | Get-ADHashCN
 
     Write-Output "Retrieving distinguishedname's of all Exchange Mailboxes"
     $allMailboxes = (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname)
@@ -100,4 +102,4 @@ $ADHashCN = $AllADUsers | Get-ADHashCN
     # Write-Output "Opening Folder "
     # Invoke-Item .
 }
- # Get-MailboxPerms -ReportPath C:\scripts\rpoo
+# Get-MailboxPerms -ReportPath C:\scripts\rpoo
