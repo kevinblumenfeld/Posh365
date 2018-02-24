@@ -5,6 +5,7 @@ $Public = Get-ChildItem $PSScriptRoot\Public\*.ps1 -Recurse -ErrorAction Silentl
 $Private = Get-ChildItem $PSScriptRoot\Private\*.ps1 -Recurse -ErrorAction SilentlyContinue
 
 # Dot source the files
+
 if ($Private) {
     Foreach ($import in @($Public + $Private)) {
         Try {
