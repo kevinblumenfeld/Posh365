@@ -108,7 +108,7 @@ function Connect-Cloud {
         if ($MSOnline -or $All365) {
             # Office 365 Tenant
             Try {
-                $null = Get-Command "Get-MsolAccountSku" -ErrorAction Stop
+                $null = Get-MsolAccountSku -ErrorAction Stop
             }
             Catch {
                 Install-Module -Name MSOnline -Scope CurrentUser -Force
@@ -275,7 +275,7 @@ function Connect-Cloud {
         If ($AzureADver2 -or $All365) {
             if (! $MFA) {  
                 Try {
-                    $null = Get-Command "Get-AzureADTenantDetail" -ErrorAction Stop
+                    $null = Get-AzureADTenantDetail -ErrorAction Stop
                 }
                 Catch {
                     Install-Module AzureAD -scope CurrentUser -force
@@ -305,7 +305,7 @@ function Connect-Cloud {
             }
             else {  
                 Try {
-                    $null = Get-Command "Get-AzureADTenantDetail" -ErrorAction Stop
+                    $null = Get-AzureADTenantDetail -ErrorAction Stop
                 }
                 Catch {
                     Install-Module AzureAD -scope CurrentUser -force
@@ -341,7 +341,7 @@ function Connect-Cloud {
 
 function Get-LAAzureConnected {
     Try {
-        $null = Get-Command "Get-AzureRmTenant" -ErrorAction Stop
+        $null = Get-AzureRmTenant -ErrorAction Stop
     }
     Catch {
         Install-Module -Name AzureRM -Scope CurrentUser -force

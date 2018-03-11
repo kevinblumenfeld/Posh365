@@ -1,35 +1,35 @@
 Function New-HybridMailbox {
     <#
     .SYNOPSIS
-   Designed to manage users in Hybrid Office 365 environment.
-   On-Premises Exchange server is required.  
-      
-   The UserPrincipalName is created by copying the Primary SMTP Address (as created by the On-Premises Exchange Email Address Policies or manually entering PrimarySMTP)
-   Can be run from any machine on the domain that has the module for ActiveDirectory installed.
-   The script will prompt once for the names of a Domain Controller, Exchange Server and the Azure AD Connect server.
-   The script will also prompt once for DisplayName & SamAccountName Format.
-   All of these prompts will only occur once per machine (per user).
-   Should you wish to change any/all options just run: Select-Options
-   The script stores & encrypts both your Exchange/AD & Office 365 password.  
-   You should be prompted only once unless your password changes or a time-out occurs.
+    Designed to manage users in Hybrid Office 365 environment.
+    On-Premises Exchange server is required.  
+        
+    The UserPrincipalName is created by copying the Primary SMTP Address (as created by the On-Premises Exchange Email Address Policies or manually entering PrimarySMTP)
+    Can be run from any machine on the domain that has the module for ActiveDirectory installed.
+    The script will prompt once for the names of a Domain Controller, Exchange Server and the Azure AD Connect server.
+    The script will also prompt once for DisplayName & SamAccountName Format.
+    All of these prompts will only occur once per machine (per user).
+    Should you wish to change any/all options just run: Select-Options
+    The script stores & encrypts both your Exchange/AD & Office 365 password.  
+    You should be prompted only once unless your password changes or a time-out occurs.
 
-   By default, the script creates an new Active Directory User & corresponding mailbox in Exchange Online.
+    By default, the script creates an new Active Directory User & corresponding mailbox in Exchange Online.
 
-   You will be prompted for the OU where to place the user(s).  
-   By default, you will be presented to choose from all OUs with the word "user" or "resource" in it.
-   To add additional search criteria, use:  -OUSearch "SomeOtherSearchCriteria"
-   You will also be prompted for which license options the user should receive.
+    You will be prompted for the OU where to place the user(s).  
+    By default, you will be presented to choose from all OUs with the word "user" or "resource" in it.
+    To add additional search criteria, use:  -OUSearch "SomeOtherSearchCriteria"
+    You will also be prompted for which license options the user should receive.
 
-   If using the "UserToCopy" parameter, the new user will receive all the attributes (Enabled, StreetAddress, City, State, PostalCode & Group Memberships).
-   The script enables the option: User must change password at next logon.  Unless this switch is used: -DontForceUserToChangePasswordAtLogon
+    If using the "UserToCopy" parameter, the new user will receive all the attributes (Enabled, StreetAddress, City, State, PostalCode & Group Memberships).
+    The script enables the option: User must change password at next logon.  Unless this switch is used: -DontForceUserToChangePasswordAtLogon
 
-   Whichever Retention Policy is set to "Default", will be the retention policy that
-   the Exchange Online Mailbox will receive - unless this switch is used:  -SpecifyRetentionPolicy
-   If -SpecifyRetentionPolicy is used, the script will prompt for which Retention Policy to assign the user(s).
+    Whichever Retention Policy is set to "Default", will be the retention policy that
+    the Exchange Online Mailbox will receive - unless this switch is used:  -SpecifyRetentionPolicy
+    If -SpecifyRetentionPolicy is used, the script will prompt for which Retention Policy to assign the user(s).
 
-   ** The script will also take CSV input. The minimum parameters are FirstName & LastName **
-   **                           See example below                                          **
-      
+    ** The script will also take CSV input. The minimum parameters are FirstName & LastName **
+    **                           See example below                                          **
+        
     .EXAMPLE
     Import-Csv C:\data\theTEST.csv | New-HybridMailbox
 
@@ -46,16 +46,16 @@ Function New-HybridMailbox {
 
     .EXAMPLE
     New-HybridMailbox -UserToCopy "FredJones@contoso.com" -FirstName Jonathan -LastName Smithson
-   
+
     .EXAMPLE
     New-HybridMailbox -FirstName Jon -LastName Smith -OfficePhone "(404)555-1212" -MobilePhone "(404)333-5252" -DescriptiADdedon "Hired Feb 12, 2018"
     
     .EXAMPLE
     New-HybridMailbox -FirstName Jon -LastName Smith -StreetAddress "123 Main St" -City "New York" -State "NY" -Zip "10080" -Country "US"
-       
+    
     .EXAMPLE
     New-HybridMailbox -FirstName Jon -LastName Smith -Office "Manhattan" -Title "Vice President of Finance" -Department "Finance" -Company "Contoso, Inc."
-   
+    
     #>
     [CmdletBinding()]
     Param (
