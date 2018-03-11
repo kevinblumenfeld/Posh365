@@ -1,13 +1,13 @@
 function Get-AuditLog {
     <#
     .SYNOPSIS
-        Collects all data from Office 365 Unified Audit Log a specified number of minutes in the past till now.
+        Collects all data from Office 365 Unified Audit Log a specified number of minutes in the past till now
 
     .DESCRIPTION
-        Collects all data from Office 365 Unified Audit Log a specified number of minutes in the past till now.
+        Collects all data from Office 365 Unified Audit Log a specified number of minutes in the past till now
 
     .PARAMETER Tenant
-        Tenant name used to store credentials.
+        Tenant name used to store credentials
 
     .PARAMETER Path
         Specific path where the file will be saved
@@ -26,7 +26,7 @@ function Get-AuditLog {
         1. delete any existing .old files
         2. rename the existing .json (or .csv) file(s) to .old
         3. create new json (or .csv)
-        This prevents steps 1 & 2 from occurring
+        This switch parameter, prevents steps 1 & 2 from occurring
 
     .PARAMETER AppendTimeStampToFileName
         This appends the year,month,day & time to the file name

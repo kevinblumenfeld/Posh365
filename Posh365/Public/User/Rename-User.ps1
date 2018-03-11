@@ -83,7 +83,7 @@ Function Rename-User {
     
         }
 
-        #Requires -Modules ActiveDirectory
+        Import-Module ActiveDirectory -ErrorAction SilentlyContinue
 
         Set-OnPremRemoteMailbox -Identity $UsersSamAccount -EmailAddressPolicyEnabled:$false
 
