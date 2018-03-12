@@ -56,7 +56,7 @@ function Get-DistributionGroupMembership {
             Get-Group -ResultSize Unlimited -filter $Filter | 
                 Where-Object {$_.WindowsEmailAddress -notin $Processed} |
                 ForEach-Object {
-                if (!($_.RecipientTypeDetails -in 'NonUniversalGroup', 'GroupMailbox', 'RoleGroup')) {
+                if ($_.RecipientTypeDetails -notin 'NonUniversalGroup', 'GroupMailbox', 'RoleGroup') {
                     $_
                     $Results += $_
                 }
