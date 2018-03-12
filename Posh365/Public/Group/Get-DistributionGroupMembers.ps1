@@ -15,7 +15,7 @@ function Get-DistributionGroupMembers {
         Parameter used internally by function to hold those that have been processed (loopback detection)
 
     .EXAMPLE
-        "john@contoso.com" | Get-DistributionGroupMembers -Recurse -Verbose
+        "Group01@contoso.com" | Get-DistributionGroupMembers -Recurse -Verbose
 
 #>
     [CmdletBinding(SupportsShouldProcess = $true)]
