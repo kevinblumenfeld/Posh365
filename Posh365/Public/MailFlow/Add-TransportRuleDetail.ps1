@@ -85,6 +85,7 @@ function Add-TransportRuleDetail {
         fred@contoso.com, moon, wind, 142.23.221.21
         jane@fabrikam.com, sun fire, rain, 142.23.220.1-142.23.220.254
         potato.com, ocean, snow, 72.14.52.0/24
+
     .EXAMPLE
         Import-Csv .\RuleDetails.csv | Add-TransportRuleDetail -TransportRule "Bypass Spam Filtering for New York Partners" -Action01 BypassSpamFiltering
 
@@ -98,7 +99,7 @@ function Add-TransportRuleDetail {
 
         [Parameter(ValueFromPipelineByPropertyName = $true)]
         [Alias('AddressWords')]
-        [string]
+        [string[]]
         $RecipientAddressContainsWords,
         
         [Parameter(ValueFromPipelineByPropertyName = $true)]
@@ -134,7 +135,7 @@ function Add-TransportRuleDetail {
         [string[]]
         $AttachmentMatchesPatterns,
         
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
         [ValidateSet("DeleteMessage", "BypassSpamFiltering")]
         $Action01,
 
@@ -162,25 +163,39 @@ function Add-TransportRuleDetail {
     }
     process {
         if ($RecipientAddressContainsWords) {
-            [void]$listAddressWords.add($RecipientAddressContainsWords)
+            foreach ($CurRecipientAddressContainsWords in $RecipientAddressContainsWords) {
+                [void]$listAddressWords.add($CurRecipientAddressContainsWords)
+            }
         }
         if ($ExceptIfRecipientAddressContainsWords) {
-            [void]$listExceptAddressWords.add($ExceptIfRecipientAddressContainsWords)
+            foreach ($CurExceptIfRecipientAddressContainsWords in $ExceptIfRecipientAddressContainsWords) {
+                [void]$listExceptAddressWords.add($CurExceptIfRecipientAddressContainsWords)
+            }
         }
         if ($SubjectOrBodyContainsWords) {
-            [void]$listSBWords.add($SubjectOrBodyContainsWords)
+            foreach ($CurSubjectOrBodyContainsWords in $SubjectOrBodyContainsWords) {
+                [void]$listSBWords.add($CurSubjectOrBodyContainsWords)
+            }
         }
         if ($ExceptIfSubjectOrBodyContainsWords) {
-            [void]$listExceptSBWords.add($ExceptIfSubjectOrBodyContainsWords)
+            foreach ($CurExceptIfSubjectOrBodyContainsWords in $ExceptIfSubjectOrBodyContainsWords) {
+                [void]$listExceptSBWords.add($ExceptIfSubjectOrBodyContainsWords)
+            }
         }
         if ($AttachmentContainsWords) {
-            [void]$listAttachmentWords.add($AttachmentContainsWords)
+            foreach ($CurAttachmentContainsWords in $AttachmentContainsWords) {
+                [void]$listAttachmentWords.add($CurAttachmentContainsWords)
+            }
         }
         if ($AttachmentMatchesPatterns) {
-            [void]$listAttachmentPattern.add($AttachmentMatchesPatterns)
+            foreach ($CurAttachmentMatchesPatterns in $AttachmentMatchesPatterns) {
+                [void]$listAttachmentPattern.add($CurAttachmentMatchesPatterns)
+            }
         }        
         if ($SenderIPRanges) {
-            [void]$listSenderIPRanges.add($SenderIPRanges)
+            foreach ($CurSenderIPRanges in $SenderIPRanges) {
+                [void]$listSenderIPRanges.add($CurSenderIPRanges)
+            }
         }
     }
     end {
@@ -239,7 +254,10 @@ function Add-TransportRuleDetail {
                 Write-Verbose "Parameters: `t $($Params.values | % { $_ -join " "})"
             }
             Catch {
-                $_
+                Write-Warning $_
+                Write-Warning "Rerun the same command using the -Action01 parameter"
+                Write-Warning "Currently the -Action01 parameter accepts, DeleteMessage & BypassSpamFiltering"
+                Write-Warning "Alternatively, manually create the Transport Rule via the GUI and rerun the command you just ran (in that case, there is no need for the -Action01 parameter)"
                 Write-Verbose "Unable to Create Transport Rule"
                 Throw
             }

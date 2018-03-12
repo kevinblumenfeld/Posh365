@@ -60,7 +60,7 @@ function Add-ContentFilterPolicyDetail {
         [Parameter(ValueFromPipelineByPropertyName = $true)]
         [Alias('AllowedDomains')]
         [Alias('AllowedDomain')]
-        [string]
+        [string[]]
         $AllowedSenderDomains,
         
         [Parameter(ValueFromPipelineByPropertyName = $true)]
@@ -101,16 +101,24 @@ function Add-ContentFilterPolicyDetail {
     }
     process {
         if ($AllowedSenderDomains) {
-            [void]$listAllowedSenderDomains.add($AllowedSenderDomains)
+            foreach ($CurAllowedSenderDomains in $AllowedSenderDomains) {
+                [void]$listAllowedSenderDomains.add($CurAllowedSenderDomains)
+            }
         }
         if ($AllowedSenders) {
-            [void]$listAllowedSenders.add($AllowedSenders)
+            foreach ($CurAllowedSenders in $AllowedSenders) {
+                [void]$listAllowedSenders.add($CurAllowedSenders)
+            }
         }
         if ($BlockedSenderDomains) {
-            [void]$listBlockedSenderDomains.add($BlockedSenderDomains)
+            foreach ($CurBlockedSenderDomains in $BlockedSenderDomains) {
+                [void]$listBlockedSenderDomains.add($CurBlockedSenderDomains)
+            }
         }
         if ($BlockedSenders) {
-            [void]$listBlockedSenders.add($BlockedSenders)
+            foreach ($CurBlockedSenders in $BlockedSenders) {
+                [void]$listBlockedSenders.add($CurBlockedSenders)
+            }
         }
     }
     end {

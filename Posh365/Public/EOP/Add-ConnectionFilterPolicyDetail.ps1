@@ -1,10 +1,10 @@
 function Add-ConnectionFilterPolicyDetail {
     <#
     .SYNOPSIS
-        Adds Detail to Connection Filter Policy. Specifically, Allowed/Blocked IP Addresses
+        Adds Detail to Connection Filter Policy. Specifically, Allowed/Blocked IP Addresses. If the Connection Filter Policy does not exist, it creates it.
 
     .DESCRIPTION
-        Adds Detail to Connection Filter Policy. Specifically, Allowed/Blocked IP Addresses
+        Adds Detail to Connection Filter Policy. Specifically, Allowed/Blocked IP Addresses. If the Connection Filter Policy does not exist, it creates it.
 
     .PARAMETER ConnectionFilterPolicy
         Name of the Connection Filter Policy to use.
@@ -43,7 +43,7 @@ function Add-ConnectionFilterPolicyDetail {
         43.56.231.223, 72.56.231.103
 
     .EXAMPLE
-        Import-Csv .\ConnectionFilterIPs.csv | Add-ConnectionFilterPolicyDetail -ConnectionFilterPolicy "Bypass Spam Filtering for New York Partners"
+        Import-Csv .\ConnectionFilterIPs.csv | Add-ConnectionFilterPolicyDetail -ConnectionFilterPolicy "IPs of NewYork Partners"
 
     .EXAMPLE
         Import-Csv .\IPs.csv | Add-ConnectionFilterPolicyDetail -ConnectionFilterPolicy "Notable Connections"
@@ -59,13 +59,13 @@ function Add-ConnectionFilterPolicyDetail {
         [Parameter(ValueFromPipelineByPropertyName = $true)]
         [Alias('AllowedIPs')]
         [Alias('AllowedIP')]
-        [string]
+        [string[]]
         $IPAllowList,
         
         [Parameter(ValueFromPipelineByPropertyName = $true)]
         [Alias('BlockedIPs')]
         [Alias('BlockedIP')]
-        [string]
+        [string[]]
         $IPBlockList,
 
         [string]
@@ -87,10 +87,14 @@ function Add-ConnectionFilterPolicyDetail {
     }
     process {
         if ($IPAllowList) {
-            [void]$listIPAllowList.add($IPAllowList)
+            foreach ($CurIPAllow in $IPAllowList) {
+                [void]$listIPAllowList.add($CurIPAllow)
+            }
         }
         if ($IPBlockList) {
-            [void]$listIPBlockList.add($IPBlockList)
+            foreach ($CurIPBlock in $IPBlockList) {
+                [void]$listIPBlockList.add($CurIPBlock)
+            }
         }
     }
     end {
