@@ -1,4 +1,4 @@
-function Get-DistributionGroupMembership {
+function Get-DistributionGroupMembers {
     <#
     .SYNOPSIS
         Determines the Groups that a recipient is a member of.  Either recursively or not.
@@ -15,7 +15,7 @@ function Get-DistributionGroupMembership {
         Parameter used internally by function to hold those that have been processed (loopback detection)
 
     .EXAMPLE
-        "john@contoso.com" | Get-DistributionGroupMembership -Recurse -Verbose
+        "john@contoso.com" | Get-DistributionGroupMembers -Recurse -Verbose
 
 #>
     [CmdletBinding(SupportsShouldProcess = $true)]
@@ -36,9 +36,6 @@ function Get-DistributionGroupMembership {
     }    
     process {
         foreach ($CurIdentity in $Identity) {
-            if (-not $PSCmdlet.ShouldProcess($CurIdentity)) {
-                continue
-            }
             Write-Verbose "Looking up memberships for '$CurIdentity'."
             try {
                 $Recipient = Get-Recipient -Identity $CurIdentity -ErrorAction Stop
@@ -52,26 +49,24 @@ function Get-DistributionGroupMembership {
             Write-Verbose "Adding '$($Recipient.PrimarySmtpAddress)' to processed list"
             $Processed += $Recipient.PrimarySmtpAddress
             $Results = @()
-            $Filter = "members -eq '{0}'" -f $Recipient.DistinguishedName
-            Get-Group -ResultSize Unlimited -filter $Filter | 
-                Where-Object {$_.WindowsEmailAddress -notin $Processed} |
+            Write-Verbose "RTD: '$($Recipient.RecipientTypeDetails)'"
+            Get-DistributionGroupMember -Identity $Recipient.DistinguishedName -ResultSize Unlimited | 
+                Where-Object {$_.PrimarySmtpAddress -notin $Processed} |
                 ForEach-Object {
-                if (!($_.RecipientTypeDetails -in 'NonUniversalGroup', 'GroupMailbox', 'RoleGroup')) {
-                    $_
-                    $Results += $_
-                }
+                $_ | ? {$_.RecipientTypeDetails -notin 'NonUniversalGroup', 'GroupMailbox', 'RoleGroup','MailNonUniversalGroup','MailUniversalSecurityGroup','MailUniversalDistributionGroup','DynamicDistributionGroup','PublicFolder','UniversalDistributionGroup','UniversalSecurityGroup','NonUniversalGroup'}
+                $Results += $_
             }
             if (-not $Recurse) {
                 continue
             }
             Foreach ($Result in $Results) {
                 #Skip "Office 365 Groups" as they fail recipient checks and cannot be members of other groups
-                if ($Result.RecipientTypeDetails -in 'NonUniversalGroup', 'GroupMailbox', 'RoleGroup') {
+                if ($Result.RecipientTypeDetails -in 'NonUniversalGroup', 'GroupMailbox', 'RoleGroup', 'UserMailbox') {
                     Continue
                 }
-                Write-Verbose "Start recursing for '$($Result.WindowsEmailAddress)'."
-                Get-DistributionGroupMembership -Identity $Result.Guid.ToString() -Recurse -Processed $Processed
-                Write-Verbose "Done recursing for '$($Result.WindowsEmailAddress)'."
+                Write-Verbose "Start recursing for '$($Result.PrimarySmtpAddress)'."
+                Get-DistributionGroupMembers -Identity $Result.Guid.ToString() -Recurse -Processed $Processed
+                Write-Verbose "Done recursing for '$($Result.PrimarySmtpAddress)'."
             }#End Foreach result
         } #End Foreach Identity
     } #End Process
