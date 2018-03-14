@@ -106,6 +106,12 @@ function Add-TransportRuleDetail {
         [Alias('ExceptAddressWords')]
         [string[]]
         $ExceptIfRecipientAddressContainsWords,
+                
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [Alias('ExceptFromWords')]
+        [Alias('ExceptSendersWords')]
+        [string[]]
+        $ExceptIfFromAddressContainsWords,
         
         [Parameter(ValueFromPipelineByPropertyName = $true)]
         [Alias('SubjectBodyWords')]
@@ -131,6 +137,11 @@ function Add-TransportRuleDetail {
         $AttachmentContainsWords,
                 
         [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [Alias('ExceptAttachmentWords')]
+        [string[]]
+        $ExceptIfAttachmentContainsWords,
+                
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [Alias('AttachmentPatterns')]
         [string[]]
         $AttachmentMatchesPatterns,
@@ -146,9 +157,11 @@ function Add-TransportRuleDetail {
         $Params = @{}
         $listAddressWords = New-Object System.Collections.Generic.HashSet[String]
         $listExceptAddressWords = New-Object System.Collections.Generic.HashSet[String]
+        $listExceptFromAddressWords = New-Object System.Collections.Generic.HashSet[String]
         $listSBWords = New-Object System.Collections.Generic.HashSet[String]
         $listExceptSBWords = New-Object System.Collections.Generic.HashSet[String]
         $listAttachmentWords = New-Object System.Collections.Generic.HashSet[String]
+        $listExceptAttachmentWords = New-Object System.Collections.Generic.HashSet[String]
         $listAttachmentPattern = New-Object System.Collections.Generic.HashSet[String]
         $listSenderIPRanges = New-Object System.Collections.Generic.HashSet[String]
 
@@ -172,6 +185,11 @@ function Add-TransportRuleDetail {
                 [void]$listExceptAddressWords.add($CurExceptIfRecipientAddressContainsWords)
             }
         }
+        if ($ExceptIfFromAddressContainsWords) {
+            foreach ($CurExceptIfFromAddressContainsWords in $ExceptIfFromAddressContainsWords) {
+                [void]$listExceptFromAddressWords.add($CurExceptIfFromAddressContainsWords)
+            }
+        }
         if ($SubjectOrBodyContainsWords) {
             foreach ($CurSubjectOrBodyContainsWords in $SubjectOrBodyContainsWords) {
                 [void]$listSBWords.add($CurSubjectOrBodyContainsWords)
@@ -185,6 +203,11 @@ function Add-TransportRuleDetail {
         if ($AttachmentContainsWords) {
             foreach ($CurAttachmentContainsWords in $AttachmentContainsWords) {
                 [void]$listAttachmentWords.add($CurAttachmentContainsWords)
+            }
+        }
+        if ($ExceptIfAttachmentContainsWords) {
+            foreach ($CurExceptIfAttachmentContainsWords in $ExceptIfAttachmentContainsWords) {
+                [void]$listExceptAttachmentWords.add($CurExceptIfAttachmentContainsWords)
             }
         }
         if ($AttachmentMatchesPatterns) {
@@ -211,6 +234,12 @@ function Add-TransportRuleDetail {
             }
             $Params.Add("ExceptIfRecipientAddressContainsWords", $listExceptAddressWords)
         }
+        if ($listExceptFromAddressWords.count -gt "0") {
+            if ((Get-TransportRule $TransportRule -ErrorAction SilentlyContinue).ExceptIfFromAddressContainsWords) {
+                (Get-TransportRule $TransportRule).ExceptIfFromAddressContainsWords | ForEach-Object {[void]$listExceptFromAddressWords.Add($_)}
+            }
+            $Params.Add("ExceptIfFromAddressContainsWords", $listExceptFromAddressWords)
+        }
         if ($listSBWords.count -gt "0") {
             if ((Get-TransportRule $TransportRule -ErrorAction SilentlyContinue).SubjectOrBodyContainsWords) {
                 (Get-TransportRule $TransportRule).SubjectOrBodyContainsWords | ForEach-Object {[void]$listSBWords.Add($_)}
@@ -228,6 +257,12 @@ function Add-TransportRuleDetail {
                 (Get-TransportRule $TransportRule).AttachmentContainsWords | ForEach-Object {[void]$listAttachmentWords.Add($_)}
             }
             $Params.Add("AttachmentContainsWords", $listAttachmentWords)
+        }
+        if ($listExceptAttachmentWords.count -gt "0") {
+            if ((Get-TransportRule $TransportRule -ErrorAction SilentlyContinue).ExceptIfAttachmentContainsWords) {
+                (Get-TransportRule $TransportRule).ExceptIfAttachmentContainsWords | ForEach-Object {[void]$listExceptAttachmentWords.Add($_)}
+            }
+            $Params.Add("ExceptIfAttachmentContainsWords", $listExceptAttachmentWords)
         }
         if ($listAttachmentPattern.count -gt "0") {
             if ((Get-TransportRule $TransportRule -ErrorAction SilentlyContinue).AttachmentMatchesPatterns) {

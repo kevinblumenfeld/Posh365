@@ -6,19 +6,19 @@ function Connect-Cloud {
     (
         [parameter(Position = 0, Mandatory = $true)]
         [string] $Tenant,
-                           
+
         [switch] $ExchangeOnline,
-                              
+
         [switch] $MSOnline,
-                       
+
         [switch] $All365,
-                
+
         [switch] $Azure,    
 
         [switch] $Skype,
-          
+
         [switch] $SharePoint,
-        
+
         [switch] $Compliance,
 
         [switch] $AzureADver2,               
@@ -106,36 +106,40 @@ function Connect-Cloud {
             }
         }
         if ($MSOnline -or $All365) {
-            # Office 365 Tenant
             Try {
-                $null = Get-MsolAccountSku -ErrorAction Stop
+                $null = Get-Module -Name MSOnline -ListAvailable -ErrorAction Stop
             }
             Catch {
                 Install-Module -Name MSOnline -Scope CurrentUser -Force
             }
             Try {
-                Connect-MsolService -Credential $Credential -ErrorAction Stop
-                Write-Output "*******************************************"
-                Write-Output "You have successfully connected to MSONLINE"
-                Write-Output "*******************************************"
+                $null = Get-MsolAccountSku -ErrorAction Stop
             }
             Catch {
-                if ($_.exception.Message -match "password") {
-                    Connect-Cloud $Tenant -DeleteCreds
-                    Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
-                    Write-Host "           Bad Username or Password.                                " -foregroundcolor "darkgreen" -backgroundcolor "white"
-                    Write-Host "          Please Try your last command again...                     " -foregroundcolor "darkgreen" -backgroundcolor "white"
-                    Write-Host "...you will be prompted to enter your Office 365 credentials again. " -foregroundcolor "darkgreen" -backgroundcolor "white"
-                    Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
-                    Break
-                    
+                Try {
+                    Connect-MsolService -Credential $Credential -ErrorAction Stop
+                    Write-Output "*******************************************"
+                    Write-Output "You have successfully connected to MSONLINE"
+                    Write-Output "*******************************************"
                 }
-                else {
-                    Connect-Cloud $Tenant -DeleteCreds
-                    Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
-                    Write-Host "           There was an error connecting you to MSOnline            " -foregroundcolor "darkgreen" -backgroundcolor "white"
-                    Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
-                    Break
+                Catch {
+                    if ($_.exception.Message -match "password") {
+                        Connect-Cloud $Tenant -DeleteCreds
+                        Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
+                        Write-Host "           Bad Username or Password.                                " -foregroundcolor "darkgreen" -backgroundcolor "white"
+                        Write-Host "          Please Try your last command again...                     " -foregroundcolor "darkgreen" -backgroundcolor "white"
+                        Write-Host "...you will be prompted to enter your Office 365 credentials again. " -foregroundcolor "darkgreen" -backgroundcolor "white"
+                        Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
+                        Break
+                    
+                    }
+                    else {
+                        Connect-Cloud $Tenant -DeleteCreds
+                        Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
+                        Write-Host "           There was an error connecting you to MSOnline            " -foregroundcolor "darkgreen" -backgroundcolor "white"
+                        Write-Host "********************************************************************" -foregroundcolor "darkgreen" -backgroundcolor "white"
+                        Break
+                    }
                 }
             }
         }
@@ -275,62 +279,70 @@ function Connect-Cloud {
         If ($AzureADver2 -or $All365) {
             if (! $MFA) {  
                 Try {
+                    $null = Get-Module -Name AzureAD -ListAvailable -ErrorAction Stop
+                }
+                Catch {
+                    Install-Module -Name AzureAD -Scope CurrentUser -Force
+                }
+                Try {
                     $null = Get-AzureADTenantDetail -ErrorAction Stop
                 }
                 Catch {
-                    Install-Module AzureAD -scope CurrentUser -force
-                }
-                Try {
-                    Connect-AzureAD -Credential $Credential -ErrorAction Stop
-                    Write-Output "**********************************************"
-                    Write-Output "You have successfully connected to AzureADver2"
-                    Write-Output "**********************************************"
-                }
-                Catch {
-                    if ($error[0]) {
-                        Connect-Cloud $Tenant -DeleteCreds
-                        Write-Output "There was an issue with your credentials"
-                        Write-Output "Please run the same command you just ran and try again"
-                        Break
+                    Try {
+                        Connect-AzureAD -Credential $Credential -ErrorAction Stop
+                        Write-Output "**********************************************"
+                        Write-Output "You have successfully connected to AzureADver2"
+                        Write-Output "**********************************************"
                     }
-                    else {
-                        $_
-                        Write-Output "There was an error Connecting to Azure Ad - Ensure the module is installed"
-                        Write-Output "Download PowerShell 5 or PowerShellGet"
-                        Write-Output "https://msdn.microsoft.com/en-us/powershell/wmf/5.1/install-configure"
-                        Break
+                    Catch {
+                        if ($error[0]) {
+                            Connect-Cloud $Tenant -DeleteCreds
+                            Write-Output "There was an issue with your credentials"
+                            Write-Output "Please run the same command you just ran and try again"
+                            Break
+                        }
+                        else {
+                            $_
+                            Write-Output "There was an error Connecting to Azure Ad - Ensure the module is installed"
+                            Write-Output "Download PowerShell 5 or PowerShellGet"
+                            Write-Output "https://msdn.microsoft.com/en-us/powershell/wmf/5.1/install-configure"
+                            Break
+                        }   
                     }
-                    
                 }
             }
             else {  
                 Try {
+                    $null = Get-Module -Name AzureAD -ListAvailable -ErrorAction Stop
+                }
+                Catch {
+                    Install-Module -Name AzureAD -Scope CurrentUser -Force
+                }
+                Try {
                     $null = Get-AzureADTenantDetail -ErrorAction Stop
                 }
                 Catch {
-                    Install-Module AzureAD -scope CurrentUser -force
-                }
-                Try {
-                    Connect-AzureAD -Credential $Credential -ErrorAction Stop
-                    Write-Output "**********************************************"
-                    Write-Output "You have successfully connected to AzureADver2"
-                    Write-Output "**********************************************"
-                }
-                Catch {
-                    if ($error[0]) {
-                        Connect-Cloud $Tenant -DeleteCreds
-                        Write-Output "There was as issue with your credentials"
-                        Write-Output "Please run the same command you just ran and try again"
-                        Break
+                    Try {
+                        Connect-AzureAD -Credential $Credential -ErrorAction Stop
+                        Write-Output "**********************************************"
+                        Write-Output "You have successfully connected to AzureADver2"
+                        Write-Output "**********************************************"
                     }
-                    else {
-                        $error[0]
-                        Write-Output "There was an error Connecting to Azure Ad - Ensure the module is installed"
-                        Write-Output "Download PowerShell 5 or PowerShellGet"
-                        Write-Output "https://msdn.microsoft.com/en-us/powershell/wmf/5.1/install-configure"
-                        Break
+                    Catch {
+                        if ($error[0]) {
+                            Connect-Cloud $Tenant -DeleteCreds
+                            Write-Output "There was as issue with your credentials"
+                            Write-Output "Please run the same command you just ran and try again"
+                            Break
+                        }
+                        else {
+                            $error[0]
+                            Write-Output "There was an error Connecting to Azure Ad - Ensure the module is installed"
+                            Write-Output "Download PowerShell 5 or PowerShellGet"
+                            Write-Output "https://msdn.microsoft.com/en-us/powershell/wmf/5.1/install-configure"
+                            Break
+                        }      
                     }
-                    
                 }
             }
         }
@@ -341,25 +353,69 @@ function Connect-Cloud {
 
 function Get-LAAzureConnected {
     Try {
-        $null = Get-AzureRmTenant -ErrorAction Stop
+        $null = Get-Module -Name AzureRM -ListAvailable -ErrorAction Stop
     }
     Catch {
         Install-Module -Name AzureRM -Scope CurrentUser -force
     }
-    if (! $MFA) {
-        $json = Get-ChildItem -Recurse -Include '*@*.json' -Path $KeyPath
-        if ($json) {
-            Write-Host   "************************************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
-            Write-Host   "************************************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
-            Write-Output "   Select the Azure username and Click `"OK`" in lower right-hand corner"
-            Write-Output "   Otherwise, if this is the first time using this Azure username click `"Cancel`""
-            Write-Host   "************************************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
-            Write-Host   "************************************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
-            $json = $json | select name | Out-GridView -PassThru -Title "Select Azure username or click Cancel to use another"
-        }
-        if (!($json)) {
+    Try {
+        $null = Get-AzureRmTenant -ErrorAction Stop
+    }
+    Catch {
+        if (! $MFA) {
+            $json = Get-ChildItem -Recurse -Include '*@*.json' -Path $KeyPath
+            if ($json) {
+                Write-Host   "************************************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
+                Write-Host   "************************************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
+                Write-Output "   Select the Azure username and Click `"OK`" in lower right-hand corner"
+                Write-Output "   Otherwise, if this is the first time using this Azure username click `"Cancel`""
+                Write-Host   "************************************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
+                Write-Host   "************************************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
+                $json = $json | select name | Out-GridView -PassThru -Title "Select Azure username or click Cancel to use another"
+            }
+            if (!($json)) {
+                Try {
+                    $azLogin = Login-AzureRmAccount -ErrorAction Stop
+                }
+                Catch [System.Management.Automation.CommandNotFoundException] {
+                    Write-Output "Download and install PowerShell 5.1 or PowerShellGet so the AzureRM module can be automatically installed"
+                    Write-Output "https://docs.microsoft.com/en-us/powershell/azure/install-azurerm-ps?view=azurermps-4.2.0#how-to-get-powershellget"
+                    Write-Output "or download the MSI installer and install from here: https://github.com/Azure/azure-powershell/releases"
+                    Break
+                }
+                Save-AzureRmContext -Path ($KeyPath + ($azLogin.Context.Account.Id) + ".json")
+                Import-AzureRmContext -Path ($KeyPath + ($azLogin.Context.Account.Id) + ".json")
+            }
+            else {
+                Import-AzureRmContext -Path ($KeyPath + $json.name)
+            }
+            Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
+            Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
+            Write-Output "   Select Subscription and Click `"OK`" in lower right-hand corner"
+            Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
+            Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
+            $subscription = Get-AzureRmSubscription | Out-GridView -PassThru -Title "Choose Azure Subscription"| Select id
             Try {
-                $azLogin = Login-AzureRmAccount -ErrorAction Stop
+                Select-AzureRmSubscription -SubscriptionId $subscription.id -ErrorAction Stop
+                Write-Output "****************************************"
+                Write-Output "You have successfully connected to Azure"
+                Write-Output "****************************************"
+            }
+            Catch {
+                Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
+                Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
+                Write-Output " Azure credentials are invalid or expired. Authenticate again please."
+                Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
+                Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
+                if ($json.name) {
+                    Remove-Item ($KeyPath + $json.name)
+                }
+                Get-LAAzureConnected
+            }
+        }
+        else {
+            Try {
+                Login-AzureRmAccount -ErrorAction Stop
             }
             Catch [System.Management.Automation.CommandNotFoundException] {
                 Write-Output "Download and install PowerShell 5.1 or PowerShellGet so the AzureRM module can be automatically installed"
@@ -367,60 +423,21 @@ function Get-LAAzureConnected {
                 Write-Output "or download the MSI installer and install from here: https://github.com/Azure/azure-powershell/releases"
                 Break
             }
-            Save-AzureRmContext -Path ($KeyPath + ($azLogin.Context.Account.Id) + ".json")
-            Import-AzureRmContext -Path ($KeyPath + ($azLogin.Context.Account.Id) + ".json")
-        }
-        else {
-            Import-AzureRmContext -Path ($KeyPath + $json.name)
-        }
-        Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
-        Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
-        Write-Output "   Select Subscription and Click `"OK`" in lower right-hand corner"
-        Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
-        Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
-        $subscription = Get-AzureRmSubscription | Out-GridView -PassThru -Title "Choose Azure Subscription"| Select id
-        Try {
-            Select-AzureRmSubscription -SubscriptionId $subscription.id -ErrorAction Stop
-            Write-Output "****************************************"
-            Write-Output "You have successfully connected to Azure"
-            Write-Output "****************************************"
-        }
-        Catch {
             Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
             Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
-            Write-Output " Azure credentials are invalid or expired. Authenticate again please."
+            Write-Output "   Select Subscription and Click `"OK`" in lower right-hand corner"
             Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
             Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
-            if ($json.name) {
-                Remove-Item ($KeyPath + $json.name)
+            $subscription = Get-AzureRmSubscription | Out-GridView -PassThru -Title "Choose Azure Subscription" | Select id
+            Try {
+                Select-AzureRmSubscription -SubscriptionId $subscription.id -ErrorAction Stop
+                Write-Output "****************************************"
+                Write-Output "You have successfully connected to Azure"
+                Write-Output "****************************************"
             }
-            Get-LAAzureConnected
-        }
-    }
-    else {
-        Try {
-            Login-AzureRmAccount -ErrorAction Stop
-        }
-        Catch [System.Management.Automation.CommandNotFoundException] {
-            Write-Output "Download and install PowerShell 5.1 or PowerShellGet so the AzureRM module can be automatically installed"
-            Write-Output "https://docs.microsoft.com/en-us/powershell/azure/install-azurerm-ps?view=azurermps-4.2.0#how-to-get-powershellget"
-            Write-Output "or download the MSI installer and install from here: https://github.com/Azure/azure-powershell/releases"
-            Break
-        }
-        Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
-        Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
-        Write-Output "   Select Subscription and Click `"OK`" in lower right-hand corner"
-        Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
-        Write-Host   "*********************************************************************" -foregroundcolor "magenta" -backgroundcolor "white"
-        $subscription = Get-AzureRmSubscription | Out-GridView -PassThru -Title "Choose Azure Subscription" | Select id
-        Try {
-            Select-AzureRmSubscription -SubscriptionId $subscription.id -ErrorAction Stop
-            Write-Output "****************************************"
-            Write-Output "You have successfully connected to Azure"
-            Write-Output "****************************************"
-        }
-        Catch {
-            Write-Output "There was an error selecting your subscription ID"
+            Catch {
+                Write-Output "There was an error selecting your subscription ID"
+            }
         }
     }
 }

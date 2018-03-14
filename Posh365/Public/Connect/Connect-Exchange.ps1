@@ -2,12 +2,19 @@ function Connect-Exchange {
     param (
         [Parameter(Mandatory = $False)]
         $ExchangeServer,
+
         [Parameter(Mandatory = $False)]
         [Switch] $NoPrefix,
+
         [Parameter(Mandatory = $False)]
         [Switch] $DeleteExchangeCreds,
+        
         [Parameter(Mandatory = $False)]
-        [Switch] $ViewEntireForest
+        [Switch] $ViewEntireForest,
+
+        [Parameter(Mandatory = $False)]
+        [Switch] $NoMessageForPS2
+        
     )
 
     $RootPath = $env:USERPROFILE + "\ps\"
@@ -65,7 +72,12 @@ function Connect-Exchange {
         }
     }
     else {
-        $Credential = Get-Credential -Message "Enter a username and password for ONPREM EXCHANGE"
+        if (!$NoMessageForPS2) {
+            $Credential = Get-Credential -Message "Enter a username and password for ONPREM EXCHANGE"   
+        }
+        else {
+            $Credential = Get-Credential
+        }
         if ($Credential.Password) {
             $Credential.Password | ConvertFrom-SecureString | Out-File ($KeyPath + "$($user).ExchangeCred") -Force
         }
