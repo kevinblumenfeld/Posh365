@@ -27,6 +27,16 @@ function Add-TransportRuleDetail {
         You can specify multiple words separated by commas. This parameter works when the recipient is an individual user.
         This parameter doesn't work with distribution groups.
 
+    .PARAMETER ExceptIfRecipientAddressContainsWords
+        This parameter specifies an exception or part of an exception for the rule. The name of the corresponding condition doesn't include the ExceptIf prefix.
+
+        In on-premises Exchange, this exception is available on Mailbox servers and Edge Transport servers.
+
+        The ExceptIfFromAddressContainsWords parameter specifies an exception that looks for words in the sender's email address.
+        You can specify multiple words separated by commas.
+
+        You can use SenderAddressLocation parameter to specify where to look for the sender's email address (message header(default), message envelope, or both).
+
     .PARAMETER SubjectOrBodyContainsWords
         This parameter specifies a condition or part of a condition for the rule. The name of the corresponding exception parameter starts with ExceptIf.
 
@@ -40,6 +50,20 @@ function Add-TransportRuleDetail {
         In on-premises Exchange, this exception is available on Mailbox servers and Edge Transport servers.
 
         The ExceptIfSubjectOrBodyContainsWords parameter specifies an exception that looks for words in the Subject field or body of messages.
+
+    .PARAMETER SubjectContainsWords
+        This parameter specifies a condition or part of a condition for the rule. The name of the corresponding exception parameter starts with ExceptIf.
+
+        In on-premises Exchange, this condition is available on Mailbox servers and Edge Transport servers.
+
+        The SubjectContainsWords parameter specifies a condition that looks for words in the Subject field of messages.
+
+    .PARAMETER ExceptIfSubjectContainsWords
+        This parameter specifies an exception or part of an exception for the rule. The name of the corresponding condition doesn't include the ExceptIf prefix.
+
+        In on-premises Exchange, this exception is available on Mailbox servers and Edge Transport servers.
+
+        The ExceptIfSubjectContainsWords parameter specifies an exception that looks for words in the Subject field of messages.
 
     .PARAMETER SenderIPRanges
         This parameter specifies a condition or part of a condition for the rule. The name of the corresponding exception parameter starts with ExceptIf.
@@ -63,6 +87,15 @@ function Add-TransportRuleDetail {
 
         To specify multiple words or phrases, this parameter uses the syntax: Word1,"Phrase with spaces",word2,.... Don't use leading or trailing spaces.
     
+    .PARAMETER ExceptIfAttachmentContainsWords
+        This parameter specifies an exception or part of an exception for the rule. The name of the corresponding condition doesn't include the ExceptIf prefix.
+
+        In on-premises Exchange, this exception is only available on Mailbox servers.
+
+        The ExceptIfAttachmentContainsWords parameter specifies an exception that looks for words in message attachments. Only supported attachment types are checked.
+
+        To specify multiple words or phrases, this parameter uses the syntax: Word1,"Phrase with spaces",word2,.... Don't use leading or trailing spaces.
+
     .PARAMETER AttachmentMatchesPatterns
         This parameter specifies a condition or part of a condition for the rule. The name of the corresponding exception parameter starts with ExceptIf.
 
@@ -71,6 +104,14 @@ function Add-TransportRuleDetail {
         The AttachmentMatchesPatterns parameter specifies a condition that looks for text patterns in the content of message attachments by using regular expressions. Only supported attachment types are checked.
 
         You can specify multiple text patterns by using the following syntax: "<regular expression1>","<regular expression2>",....
+
+    .PARAMETER Action01
+        Currently, Actions available for this function are DeleteMessage or BypassSpamFiltering.  
+
+    .PARAMETER Disabled
+        By default Transport Rules are created Enabled.
+        This parameter creates new Transport Rules as disabled. 
+        When using this switch parameter, if the Transport Rule already exists, it disables it.
 
     .PARAMETER OutputPath
         Where to write the report files to.
@@ -87,7 +128,10 @@ function Add-TransportRuleDetail {
         potato.com, ocean, snow, 72.14.52.0/24
 
     .EXAMPLE
-        Import-Csv .\RuleDetails.csv | Add-TransportRuleDetail -TransportRule "Bypass Spam Filtering for New York Partners" -Action01 BypassSpamFiltering
+        Import-Csv .\RuleDetails.csv | Add-TransportRuleDetail -TransportRule "Bypass Spam Filtering for New York Partners" -Action01 BypassSpamFiltering -Disabled
+
+    .EXAMPLE
+        Add-TransportRuleDetail -TransportRule "Rule01" -SubjectContainsWords "abc","123","red","blue","green" -Action01 BypassSpamFiltering
 
 #>
     [CmdletBinding()]
@@ -124,7 +168,19 @@ function Add-TransportRuleDetail {
         [Alias('ExceptSBWords')]
         [string[]]
         $ExceptIfSubjectOrBodyContainsWords,
+                
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [Alias('SubjectWords')]
+        [Alias('SWords')]
+        [string[]]
+        $SubjectContainsWords,
         
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [Alias('ExceptSubjectWords')]
+        [Alias('ExceptSWords')]
+        [string[]]
+        $ExceptIfSubjectContainsWords,
+                        
         [Parameter(ValueFromPipelineByPropertyName = $true)]
         [Alias('SenderIP')]
         [Alias('SenderIPs')]
@@ -149,6 +205,10 @@ function Add-TransportRuleDetail {
         [Parameter(Mandatory = $false)]
         [ValidateSet("DeleteMessage", "BypassSpamFiltering")]
         $Action01,
+        
+        [Parameter(Mandatory = $false)]
+        [switch]
+        $Disabled,
 
         [string]
         $OutputPath = "."
@@ -160,6 +220,8 @@ function Add-TransportRuleDetail {
         $listExceptFromAddressWords = New-Object System.Collections.Generic.HashSet[String]
         $listSBWords = New-Object System.Collections.Generic.HashSet[String]
         $listExceptSBWords = New-Object System.Collections.Generic.HashSet[String]
+        $listSWords = New-Object System.Collections.Generic.HashSet[String]
+        $listExceptSWords = New-Object System.Collections.Generic.HashSet[String]
         $listAttachmentWords = New-Object System.Collections.Generic.HashSet[String]
         $listExceptAttachmentWords = New-Object System.Collections.Generic.HashSet[String]
         $listAttachmentPattern = New-Object System.Collections.Generic.HashSet[String]
@@ -198,6 +260,16 @@ function Add-TransportRuleDetail {
         if ($ExceptIfSubjectOrBodyContainsWords) {
             foreach ($CurExceptIfSubjectOrBodyContainsWords in $ExceptIfSubjectOrBodyContainsWords) {
                 [void]$listExceptSBWords.add($ExceptIfSubjectOrBodyContainsWords)
+            }
+        }        
+        if ($SubjectContainsWords) {
+            foreach ($CurSubjectContainsWords in $SubjectContainsWords) {
+                [void]$listSWords.add($CurSubjectContainsWords)
+            }
+        }
+        if ($ExceptIfSubjectContainsWords) {
+            foreach ($CurExceptIfSubjectContainsWords in $ExceptIfSubjectContainsWords) {
+                [void]$listExceptSWords.add($ExceptIfSubjectContainsWords)
             }
         }
         if ($AttachmentContainsWords) {
@@ -251,6 +323,18 @@ function Add-TransportRuleDetail {
                 (Get-TransportRule $TransportRule).ExceptIfSubjectOrBodyContainsWords | ForEach-Object {[void]$listExceptSBWords.Add($_)}
             }
             $Params.Add("ExceptIfSubjectOrBodyContainsWords", $listExceptSBWords)
+        }        
+        if ($listSWords.count -gt "0") {
+            if ((Get-TransportRule $TransportRule -ErrorAction SilentlyContinue).SubjectContainsWords) {
+                (Get-TransportRule $TransportRule).SubjectContainsWords | ForEach-Object {[void]$listSWords.Add($_)}
+            }
+            $Params.Add("SubjectContainsWords", $listSWords)
+        }
+        if ($listExceptSWords.count -gt "0") {
+            if ((Get-TransportRule $TransportRule -ErrorAction SilentlyContinue).ExceptIfSubjectContainsWords) {
+                (Get-TransportRule $TransportRule).ExceptIfSubjectContainsWords | ForEach-Object {[void]$listExceptSWords.Add($_)}
+            }
+            $Params.Add("ExceptIfSubjectContainsWords", $listExceptSWords)
         }
         if ($listAttachmentWords.count -gt "0") {
             if ((Get-TransportRule $TransportRule -ErrorAction SilentlyContinue).AttachmentContainsWords) {
@@ -283,6 +367,9 @@ function Add-TransportRuleDetail {
             $Params.Add("SetSCL", "-1")
         }
         if (!(Get-TransportRule -Identity $TransportRule -ErrorAction SilentlyContinue)) {
+            if ($Disabled) {
+                $Params.Add("Enabled", $false)
+            }
             Try {
                 New-TransportRule -Name $TransportRule @Params -ErrorAction Stop
                 Write-Verbose "Transport Rule `"$TransportRule`" has been created."
@@ -301,6 +388,9 @@ function Add-TransportRuleDetail {
             Write-Verbose "Transport Rule `"$TransportRule`" already exists."
             try {
                 Set-TransportRule -Identity $TransportRule @Params -ErrorAction Stop
+                if ($Disabled) {
+                    Disable-TransportRule $TransportRule -Confirm:$false
+                }
                 Write-Verbose "Parameters: `t $($Params.values | % { $_ -join " "})" 
                 $TransportRule + "," + ($Params.values | % { $_ -join " "}) | Out-file $successPath -Encoding UTF8 -append
             }
@@ -311,4 +401,3 @@ function Add-TransportRuleDetail {
         }
     }
 }
-# Import-Csv c:\scripts\words.csv | Add-TransportRuleDetail -TransportRule "MultipleColumns10" -Action01 BypassSpamFiltering -Verbose
