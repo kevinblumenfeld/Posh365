@@ -72,34 +72,31 @@
     # Write-Output "Retrieving distinguishedname's of all Exchange Mailboxes"
     # $allMailboxes = (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname)
 
-    <#
     if (! $SkipSendAs) {
         Write-Output "Getting SendAs permissions for each mailbox and writing to file"
-        $allMailboxes | Get-SendAsPerms -ADHashDN $ADHashDN -ADHash $ADHash  | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
+        $allMailboxDNs | Get-EXOSendAsPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash |
             Export-csv .\SendAsPerms.csv -NoTypeInformation
     }
-    
     if (! $SkipSendOnBehalf) {
         Write-Output "Getting SendOnBehalf permissions for each mailbox and writing to file"
-        $allMailboxes | Get-SendOnBehalfPerms -ADHashCN $ADHashCN | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
+        $AllMailboxDNs | Get-EXOSendOnBehalfPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash |
             Export-csv .\SendOnBehalfPerms.csv -NoTypeInformation
     }
-    #>
     if (! $SkipFullAccess) {
         Write-Output "Getting FullAccess permissions for each mailbox and writing to file"
         $AllMailboxDNs | Get-EXOFullAccessPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash |
             Export-csv .\FullAccessPerms.csv -NoTypeInformation
     }
-    <#
+
     $AllPermissions = $null
     Get-ChildItem -Filter "*.csv" -Exclude "*allpermissions.csv" -Recurse | % {
         $AllPermissions += (import-csv $_)
     }
     $AllPermissions | Export-Csv .\AllPermissions.csv -NoTypeInformation
         Write-Output "Combined all CSV's into a single file named, AllPermissions.csv"
-    #>
+
     # Write-Output "Opening Folder "
     # Invoke-Item .
     
 }
-# Get-EXOMailboxPerms -ReportPath C:\scripts\rpoo
+# Get-EXOMailboxPerms -Tenant LAPCM -ReportPath C:\scripts\new4 -SkipSendOnBehalf
