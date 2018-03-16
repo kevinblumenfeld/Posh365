@@ -17,8 +17,10 @@
     Param (
         [parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         $DistinguishedName,
+
         [parameter()]
         [hashtable] $ADHashDN,
+        
         [parameter()]
         [hashtable] $ADHash
     )

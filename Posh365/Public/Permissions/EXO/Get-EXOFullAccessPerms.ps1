@@ -15,49 +15,45 @@ function Get-EXOFullAccessPerms {
     #>
     [CmdletBinding()]
     Param (
-        [parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        [parameter(ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
         $DistinguishedName,
+
         [parameter()]
-        [hashtable] $DGHash,
+        [hashtable] $RecipientMailHash,
+
         [parameter()]
-        [hashtable] $ADHash
+        [hashtable] $RecipientHash
+
     )
     Begin {
-        
         
 
     }
     Process {
-        ForEach ($curDN in $DistinguishedName) {
-            $mailbox = $curDN
-            Get-MailboxPermission $curDN |
-                Where-Object {
-                $_.AccessRights -like "*FullAccess*" -and 
-                !$_.IsInherited -and !$_.user.tostring().startswith('S-1-5-21-') -and 
-                !$_.user.tostring().startswith('NT AUTHORITY\SELF')
-            } | ForEach-Object {
-                $User = $_.User
-                if ($DGHash.containskey($_.User)) {
-                    $DGHash[$_.User].value | ForEach-Object {
-                        New-Object -TypeName psobject -property @{
-                            Mailbox     = $mailbox.Name
-                            PrimarySMTP = $mailbox.primarysmtpaddress
-                            Granted     = $ADHashDN[$_.distinguishedname].DisplayName
-                            GrantedUPN  = $ADHashDN[$_.distinguishedname].UPN
-                            Permission  = "FullAccess"
-                        }  
-                    }
-                }
-                else {
-                    New-Object -TypeName psobject -property @{
-                        Mailbox    = $ADHashDN.$mailbox.DisplayName
-                        UPN        = $ADHashDN.$mailbox.UPN
-                        Granted    = $ADHash[$User].DisplayName
-                        GrantedUPN = $ADHash.$User.UPN
-                        Permission = "FullAccess"
-                    }  
-                }
+        Get-MailboxPermission $_ |
+            Where-Object {
+            $_.AccessRights -like "*FullAccess*" -and 
+            !$_.IsInherited -and !$_.user.tostring().startswith('S-1-5-21-') -and 
+            !$_.user.tostring().startswith('NT AUTHORITY\SELF')
+        } | ForEach-Object {
+            $User = $_.User
+            if ($RecipientMailHash.ContainsKey($_.User)) {
+                $User = $RecipientMailHash[$_.User].Name
+                $Type = $RecipientMailHash[$_.User].RecipientTypeDetails
             }
+            $Email = $_.User
+            if ($RecipientHash.ContainsKey($_.User)) {
+                $Email = $RecipientHash[$_.User].PrimarySMTPAddress
+                $Type = $RecipientHash[$_.User].RecipientTypeDetails
+            }
+            [pscustomobject]@{
+                Mailbox              = $_.Identity
+                MailboxPrimarySMTP   = $RecipientHash[$_.Identity].PrimarySMTPAddress
+                Granted              = $User
+                GrantedPrimarySMTP   = $Email
+                RecipientTypeDetails = $Type          
+                Permission           = "FullAccess"
+            }  
         }
     }
     END {

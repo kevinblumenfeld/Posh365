@@ -126,13 +126,15 @@
     
     if (! $SkipFullAccess) {
         Write-Output "Getting FullAccess permissions for each mailbox and writing to file"
-        $allMailboxes | Get-FullAccessPerms -ADHashDN $ADHashDN -ADHash $ADHash  | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
+        $allMailboxes | Get-FullAccessPerms -RecipientHash $RecipientHash |
             Export-csv (Join-Path $ReportPath "FullAccessPerms.csv") -NoTypeInformation
     }
+
     $AllPermissions = $null
     Get-ChildItem -Path $ReportPath -Filter "*.csv" -Exclude "*allpermissions.csv" -Recurse | % {
         $AllPermissions += (import-csv $_)
     }
+    
     $AllPermissions | Export-Csv (Join-Path $ReportPath "AllPermissions.csv") -NoTypeInformation
     Write-Output "Combined all CSV's into a single file named, AllPermissions.csv"
 }
