@@ -21,9 +21,6 @@ function Get-EXOSendOnBehalfPerms {
         [hashtable] $RecipientHash,
 
         [parameter()]
-        [hashtable] $GroupMembershipHash,
-
-        [parameter()]
         [hashtable] $RecipientDNHash
     )
     Begin {

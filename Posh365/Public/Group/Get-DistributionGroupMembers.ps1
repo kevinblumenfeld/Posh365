@@ -53,7 +53,7 @@ function Get-DistributionGroupMembers {
             Get-DistributionGroupMember -Identity $Recipient.DistinguishedName -ResultSize Unlimited | 
                 Where-Object {$_.PrimarySmtpAddress -notin $Processed} |
                 ForEach-Object {
-                $_ | ? {$_.RecipientTypeDetails -notin 'NonUniversalGroup', 'GroupMailbox', 'RoleGroup','MailNonUniversalGroup','MailUniversalSecurityGroup','MailUniversalDistributionGroup','DynamicDistributionGroup','PublicFolder','UniversalDistributionGroup','UniversalSecurityGroup','NonUniversalGroup'}
+                $_ | Where-Object {$_.RecipientTypeDetails -notin 'NonUniversalGroup', 'GroupMailbox', 'RoleGroup','MailNonUniversalGroup','MailUniversalSecurityGroup','MailUniversalDistributionGroup','DynamicDistributionGroup','PublicFolder','UniversalDistributionGroup','UniversalSecurityGroup','NonUniversalGroup'} | Select -ExpandProperty DistinguishedName
                 $Results += $_
             }
             if (-not $Recurse) {

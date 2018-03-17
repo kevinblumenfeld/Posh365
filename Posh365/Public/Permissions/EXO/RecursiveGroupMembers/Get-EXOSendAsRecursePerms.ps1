@@ -1,4 +1,4 @@
-function Get-EXOSendAsPerms {
+function Get-EXOSendAsRecursePerms {
     <#
     .SYNOPSIS
     Outputs Send As permissions for each mailbox that has permissions assigned.
@@ -18,9 +18,15 @@ function Get-EXOSendAsPerms {
         [hashtable] $RecipientMailHash,
 
         [parameter()]
-        [hashtable] $RecipientHash
+        [hashtable] $RecipientHash,
 
+        [parameter()]
+        [hashtable] $RecipientDNHash,
+        
+        [parameter()]
+        [hashtable] $GroupMemberHash
     )
+
     Begin {
         
 
