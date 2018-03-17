@@ -18,8 +18,10 @@ function Get-EXOSendOnBehalfPerms {
         [hashtable] $RecipientMailHash,
 
         [parameter()]
-        [hashtable] $RecipientHash
+        [hashtable] $RecipientHash,
 
+        [parameter()]
+        [hashtable] $RecipientDNHash
     )
     Begin {
         
@@ -28,9 +30,9 @@ function Get-EXOSendOnBehalfPerms {
     Process {
         $SendOB = $_
         (Get-Mailbox $_ -erroraction silentlycontinue).GrantSendOnBehalfTo | where-object {$_ -ne $null} | ForEach-Object {
-            $NameSendOB = $_
+            $CurGranted = $_
             if ($RecipientMailHash.ContainsKey($_)) {
-                $NameSendOB = $RecipientMailHash[$_].Name
+                $CurGranted = $RecipientMailHash[$_].Name
                 $Type = $RecipientMailHash[$_].RecipientTypeDetails
             }
             $Email = $_
@@ -39,9 +41,9 @@ function Get-EXOSendOnBehalfPerms {
                 $Type = $RecipientHash[$_].RecipientTypeDetails
             }
             [pscustomobject]@{
-                Mailbox              = $SendOB
-                MailboxPrimarySMTP   = $RecipientHash[$SendOB].PrimarySMTPAddress
-                Granted              = $NameSendOB
+                Mailbox              = $RecipientDNHash[$SendOB].Name
+                MailboxPrimarySMTP   = $RecipientDNHash[$SendOB].PrimarySMTPAddress
+                Granted              = $CurGranted
                 GrantedPrimarySMTP   = $Email
                 RecipientTypeDetails = $Type          
                 Permission           = "SendOnBehalf"

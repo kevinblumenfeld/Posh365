@@ -62,6 +62,7 @@
     Write-Output "Caching hash table. Name as Key and Value of PrimarySMTPAddress"
     $RecipientHash = $AllRecipients | Get-RecipientHash
     $RecipientMailHash = $AllRecipients | Get-RecipientMailHash
+    $RecipientDNHash = $AllRecipients | Get-RecipientDNHash
 
     # Write-Output "Caching hash table. DN as Key and Values of DisplayName, UPN & LogonName"
     # $ADHashDN = $AllRecipients | Get-ADHashDN
@@ -79,7 +80,7 @@
     }
     if (! $SkipSendOnBehalf) {
         Write-Output "Getting SendOnBehalf permissions for each mailbox and writing to file"
-        $AllMailboxDNs | Get-EXOSendOnBehalfPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash |
+        $AllMailboxDNs | Get-EXOSendOnBehalfPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientDNHash $RecipientDNHash |
             Export-csv .\SendOnBehalfPerms.csv -NoTypeInformation
     }
     if (! $SkipFullAccess) {
