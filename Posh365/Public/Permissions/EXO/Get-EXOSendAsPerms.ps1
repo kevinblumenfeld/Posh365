@@ -16,6 +16,9 @@ function Get-EXOSendAsPerms {
 
         [parameter()]
         [hashtable] $RecipientMailHash,
+        
+        [parameter()]
+        [hashtable] $GroupMembershipHash,
 
         [parameter()]
         [hashtable] $RecipientHash

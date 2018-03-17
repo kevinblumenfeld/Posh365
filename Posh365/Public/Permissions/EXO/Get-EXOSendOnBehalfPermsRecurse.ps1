@@ -1,4 +1,4 @@
-function Get-EXOSendOnBehalfPerms {
+function Get-EXOSendOnBehalfPermsRecurse {
     <#
     .SYNOPSIS
     Outputs Send On Behalf permissions for each mailbox that has permissions assigned.
@@ -24,7 +24,7 @@ function Get-EXOSendOnBehalfPerms {
         [hashtable] $GroupMembershipHash,
 
         [parameter()]
-        [hashtable] $RecipientDNHash
+        [hashtable] $RecipientNameHash
     )
     Begin {
         
@@ -44,8 +44,8 @@ function Get-EXOSendOnBehalfPerms {
                 $Type = $RecipientHash[$_].RecipientTypeDetails
             }
             [pscustomobject]@{
-                Mailbox              = $RecipientDNHash[$SendOB].Name
-                MailboxPrimarySMTP   = $RecipientDNHash[$SendOB].PrimarySMTPAddress
+                Mailbox              = $SendOB
+                MailboxPrimarySMTP   = $RecipientNameHash[$SendOB]
                 Granted              = $CurGranted
                 GrantedPrimarySMTP   = $Email
                 RecipientTypeDetails = $Type          

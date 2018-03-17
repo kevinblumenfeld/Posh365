@@ -1,4 +1,4 @@
-function New-DistributionGroupMembershipHash {
+function Get-DistributionGroupMembershipHash {
     <#
     .SYNOPSIS
         Creates a hash table from data returned from Get-DistributionGroupMembership
@@ -10,10 +10,10 @@ function New-DistributionGroupMembershipHash {
         Reveals nested group membership
 
     .EXAMPLE
-        "john@contoso.com" | New-DistributionGroupMembershipHash -Recurse -Verbose
+        "john@contoso.com" | Get-DistributionGroupMembershipHash -Recurse -Verbose
     
     .EXAMPLE
-        Get-Content ./primaries.txt | New-DistributionGroupMembershipHash -Recurse -Verbose
+        Get-Content ./primaries.txt | Get-DistributionGroupMembershipHash -Recurse -Verbose
 
 #>
     [CmdletBinding(SupportsShouldProcess = $true)]

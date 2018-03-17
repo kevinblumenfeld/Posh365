@@ -1,4 +1,4 @@
-function New-DistributionGroupMembersHash {
+function Get-DistributionGroupMembersHash {
     <#
     .SYNOPSIS
         Creates a hash table from data returned from Get-DistributionGroupMembership
@@ -10,10 +10,10 @@ function New-DistributionGroupMembersHash {
         Reveals nested group membership
 
     .EXAMPLE
-        "group01@contoso.com" | New-DistributionGroupMembersHash -Recurse -Verbose
+        "group01@contoso.com" | Get-DistributionGroupMembersHash -Recurse -Verbose
     
     .EXAMPLE
-        Get-DistributionGroup -resultsize unlimited | New-DistributionGroupMembersHash -Recurse -Verbose
+        Get-DistributionGroup -resultsize unlimited | Get-DistributionGroupMembersHash -Recurse -Verbose
 
 #>
     [CmdletBinding()]
@@ -31,10 +31,10 @@ function New-DistributionGroupMembersHash {
         foreach ($CurIdentity in $Identity) {
             Write-Verbose "Looking up memberships for '$CurIdentity'."
             if ($Recurse) {
-                $GroupHash.$CurIdentity = $CurIdentity | Get-DistributionGroupMembers -Recurse
+                $GroupHash[$CurIdentity] = $CurIdentity | Get-DistributionGroupMembers -Recurse
             }
             else {
-                $GroupHash.$CurIdentity = $CurIdentity | Get-DistributionGroupMembers
+                $GroupHash[$CurIdentity] = $CurIdentity | Get-DistributionGroupMembers
             }
         }
     }

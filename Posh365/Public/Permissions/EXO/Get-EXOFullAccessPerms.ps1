@@ -22,6 +22,9 @@ function Get-EXOFullAccessPerms {
         [hashtable] $RecipientMailHash,
 
         [parameter()]
+        [hashtable] $GroupMembershipHash,
+
+        [parameter()]
         [hashtable] $RecipientHash
 
     )
