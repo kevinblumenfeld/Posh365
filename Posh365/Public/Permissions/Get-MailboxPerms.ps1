@@ -97,35 +97,35 @@
 
     $DomainNameHash = Get-DomainNameHash
 
-    Write-Output "Importing Active Directory Users that have at least one proxy address"
+    Write-Verbose "Importing Active Directory Users that have at least one proxy address"
     $AllADUsers = Get-ADUsersWithProxyAddress -DomainNameHash $DomainNameHash
 
-    Write-Output "Caching hash table. LogonName as Key and Values of DisplayName & UPN"
+    Write-Verbose "Caching hash table. LogonName as Key and Values of DisplayName & UPN"
     $ADHash = $AllADUsers | Get-ADHash
 
-    Write-Output "Caching hash table. DN as Key and Values of DisplayName, UPN & LogonName"
+    Write-Verbose "Caching hash table. DN as Key and Values of DisplayName, UPN & LogonName"
     $ADHashDN = $AllADUsers | Get-ADHashDN
 
-    Write-Output "Caching hash table. CN as Key and Values of DisplayName, UPN & LogonName"
+    Write-Verbose "Caching hash table. CN as Key and Values of DisplayName, UPN & LogonName"
     $ADHashCN = $AllADUsers | Get-ADHashCN
 
-    Write-Output "Retrieving distinguishedname's of all Exchange Mailboxes"
+    Write-Verbose "Retrieving distinguishedname's of all Exchange Mailboxes"
     $allMailboxes = (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname)
 
     if (! $SkipSendAs) {
-        Write-Output "Getting SendAs permissions for each mailbox and writing to file"
+        Write-Verbose "Getting SendAs permissions for each mailbox and writing to file"
         $allMailboxes | Get-SendAsPerms -ADHashDN $ADHashDN -ADHash $ADHash  | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
             Export-csv (Join-Path $ReportPath "SendAsPerms.csv") -NoTypeInformation
     }
     
     if (! $SkipSendOnBehalf) {
-        Write-Output "Getting SendOnBehalf permissions for each mailbox and writing to file"
+        Write-Verbose "Getting SendOnBehalf permissions for each mailbox and writing to file"
         $allMailboxes | Get-SendOnBehalfPerms -ADHashCN $ADHashCN | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
             Export-csv (Join-Path $ReportPath "SendOnBehalfPerms.csv") -NoTypeInformation
     }
     
     if (! $SkipFullAccess) {
-        Write-Output "Getting FullAccess permissions for each mailbox and writing to file"
+        Write-Verbose "Getting FullAccess permissions for each mailbox and writing to file"
         $allMailboxes | Get-FullAccessPerms -RecipientHash $RecipientHash |
             Export-csv (Join-Path $ReportPath "FullAccessPerms.csv") -NoTypeInformation
     }
@@ -136,5 +136,5 @@
     }
     
     $AllPermissions | Export-Csv (Join-Path $ReportPath "AllPermissions.csv") -NoTypeInformation
-    Write-Output "Combined all CSV's into a single file named, AllPermissions.csv"
+    Write-Verbose "Combined all CSV's into a single file named, AllPermissions.csv"
 }
