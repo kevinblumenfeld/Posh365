@@ -13,24 +13,24 @@
     "Mailbox","UPN","Granted","GrantedUPN","Permission"
 
     .EXAMPLE
-    Get-MailboxPerms -ReportPath C:\PermsReports
+    Get-MailboxPerms -ReportPath C:\PermsReports -Verbose
     
     .EXAMPLE
-    Get-MailboxPerms -ReportPath C:\PermsReports -SkipFullAccess
+    Get-MailboxPerms -ReportPath C:\PermsReports -SkipFullAccess -Verbose
     
     .EXAMPLE
-    Get-MailboxPerms -ReportPath C:\PermsReports -SkipSendOnBehalf
+    Get-MailboxPerms -ReportPath C:\PermsReports -SkipSendOnBehalf -Verbose
 
     .EXAMPLE
-    Get-MailboxPerms -ReportPath C:\PermsReports -SkipSendAs -SkipFullAccess
+    Get-MailboxPerms -ReportPath C:\PermsReports -SkipSendAs -SkipFullAccess -Verbose
     
     .EXAMPLE
-    Get-MailboxPerms -ReportPath C:\PermsReports -PowerShell2 -ExchangeServer "ExServer01"
-    *ONLY PS2: When running from PowerShell 2 (Exchange 2010 Server)*
+    Get-MailboxPerms -ReportPath C:\PermsReports -PowerShell2 -ExchangeServer "ExServer01" -Verbose
+    ***ONLY PS2: When running from PowerShell 2 (Exchange 2010 Server)***
 
-    *FIRST*: Be sure to dot-source the function with the below command (change the path):
+    ***FIRST***: Be sure to dot-source the function with the below command (change the path):
     Get-ChildItem -Path "C:\scripts\Posh365\" -filter *.ps1 -Recurse | % { . $_.fullname }
-    It is normal to see errors when running the above command                 
+    It is normal to see errors when running the above command, as some of the functions (that aren't needed here) do not support PS2                 
     
     #>
     [CmdletBinding(SupportsShouldProcess = $true)]

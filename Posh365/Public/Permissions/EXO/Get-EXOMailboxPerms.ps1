@@ -10,16 +10,16 @@
     "Mailbox","MailboxPrimarySMTP","Granted","GrantedPrimarySMTP","RecipientTypeDetails","Permission"
 
     .EXAMPLE
-    Get-EXOMailboxPerms -ReportPath C:\PermsReports
+    Get-EXOMailboxPerms -Tenant Contoso -ReportPath C:\PermsReports -Verbose
     
     .EXAMPLE
-    Get-EXOMailboxPerms -ReportPath C:\PermsReports -SkipFullAccess
+    Get-EXOMailboxPerms -Tenant Contoso -ReportPath C:\PermsReports -SkipFullAccess -Verbose
     
     .EXAMPLE
-    Get-EXOMailboxPerms -ReportPath C:\PermsReports -SkipSendOnBehalf
+    Get-EXOMailboxPerms -Tenant Contoso -ReportPath C:\PermsReports -SkipSendOnBehalf -Verbose
 
     .EXAMPLE
-    Get-EXOMailboxPerms -ReportPath C:\PermsReports -SkipSendAs -SkipFullAccess
+    Get-EXOMailboxPerms -Tenant Contoso -ReportPath C:\PermsReports -SkipSendAs -SkipFullAccess -Verbose
     
     #>
     [CmdletBinding(SupportsShouldProcess = $true)]
