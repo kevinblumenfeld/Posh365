@@ -75,9 +75,9 @@
     }
 
     $AllPermissions = $null
-    Get-ChildItem -Filter "*.csv" -Exclude "*allEXOpermissions.csv" -Recurse | % {
+    Get-ChildItem -Path $ReportPath -Filter "*.csv" -Exclude "*allEXOpermissions.csv" -Recurse | % {
         $AllPermissions += (import-csv $_)
     }
-    $AllPermissions | Export-Csv (Join-Path $ReportPath "AllPermissions.csv") -NoTypeInformation
-    Write-Verbose "Combined all CSV's into a single file named, AllPermissions.csv"
+    $AllPermissions | Export-Csv (Join-Path $ReportPath "AllEXOPermissions.csv") -NoTypeInformation
+    Write-Verbose "Combined all CSV's into a single file named, AllEXOPermissions.csv"
 }
