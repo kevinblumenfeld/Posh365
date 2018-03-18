@@ -32,30 +32,51 @@ function Get-EXOSendAsRecursePerms {
 
     }
     Process {
+        $listGroupMembers = [System.Collections.Generic.HashSet[string]]::new()
         Get-RecipientPermission $_ |
             Where-Object {
             $_.AccessRights -like "*SendAs*" -and 
             !$_.IsInherited -and !$_.identity.tostring().startswith('S-1-5-21-') -and 
             !$_.trustee.tostring().startswith('NT AUTHORITY\SELF') -and !$_.trustee.tostring().startswith('NULL SID')
         } | ForEach-Object {
+            $Identity = $_.Identity
             $Trustee = $_.Trustee
-            if ($RecipientMailHash.ContainsKey($_.Trustee)) {
-                $Trustee = $RecipientMailHash[$_.Trustee].Name
-                $Type = $RecipientMailHash[$_.Trustee].RecipientTypeDetails
+            if ($GroupMemberHash.ContainsKey($Trustee) -and $GroupMemberHash[$Trustee]) {
+                $GroupMemberHash[$Trustee] | ForEach-Object {
+                    [void]$listGroupMembers.Add($_)
+                }
             }
-            $Email = $_.Trustee
-            if ($RecipientHash.ContainsKey($_.Trustee)) {
-                $Email = $RecipientHash[$_.Trustee].PrimarySMTPAddress
-                $Type = $RecipientHash[$_.Trustee].RecipientTypeDetails
+            elseif (!($GroupMemberHash.ContainsKey($Trustee))) {
+                if ($RecipientMailHash.ContainsKey($Trustee)) {
+                    $Trustee = $RecipientMailHash[$Trustee].Name
+                    $Type = $RecipientMailHash[$Trustee].RecipientTypeDetails
+                }
+                $Email = $Trustee
+                if ($RecipientHash.ContainsKey($Trustee)) {
+                    $Email = $RecipientHash[$Trustee].PrimarySMTPAddress
+                    $Type = $RecipientHash[$Trustee].RecipientTypeDetails
+                }
+                [pscustomobject]@{
+                    Mailbox              = $_.Identity
+                    MailboxPrimarySMTP   = $RecipientHash[$_.Identity].PrimarySMTPAddress
+                    Granted              = $Trustee
+                    GrantedPrimarySMTP   = $Email
+                    RecipientTypeDetails = $Type          
+                    Permission           = "SendAs"
+                }  
             }
-            [pscustomobject]@{
-                Mailbox              = $_.Identity
-                MailboxPrimarySMTP   = $RecipientHash[$_.Identity].PrimarySMTPAddress
-                Granted              = $Trustee
-                GrantedPrimarySMTP   = $Email
-                RecipientTypeDetails = $Type          
-                Permission           = "SendAs"
-            }  
+        }
+        if ($listGroupMembers.Count -gt 0) {
+            foreach ($CurlistGroupMember in $listGroupMembers) {
+                [pscustomobject]@{
+                    Mailbox              = $Identity
+                    MailboxPrimarySMTP   = $RecipientHash[$Identity].PrimarySMTPAddress
+                    Granted              = $RecipientDNHash[$CurlistGroupMember].Name
+                    GrantedPrimarySMTP   = $RecipientDNHash[$CurlistGroupMember].PrimarySMTPAddress
+                    RecipientTypeDetails = $Type          
+                    Permission           = "SendAs"
+                }  
+            }
         }
     }
     END {
