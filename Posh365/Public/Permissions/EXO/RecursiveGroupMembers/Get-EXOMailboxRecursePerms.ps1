@@ -84,4 +84,3 @@
     $AllPermissions | Export-Csv (Join-Path $ReportPath "AllEXOPermissionsRecurse.csv") -NoTypeInformation
     Write-Verbose "Combined all CSV's into a single file named, AllEXOPermissionsRecurse.csv"
 }
-# Get-EXOMailboxRecursePerms -ReportPath C:\scripts\CHANGE3 -Tenant LAPCM

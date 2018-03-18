@@ -47,7 +47,7 @@ function Get-EXOFullAccessRecursePerms {
                     [void]$listGroupMembers.Add($_)
                 }
             }
-            else {
+            elseif (!($GroupMemberHash.ContainsKey($_.User))) {
                 $User = $_.User
                 if ($RecipientMailHash.ContainsKey($_.User)) {
                     $User = $RecipientMailHash[$_.User].Name
