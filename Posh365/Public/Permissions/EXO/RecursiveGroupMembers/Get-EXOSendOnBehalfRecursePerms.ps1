@@ -31,26 +31,47 @@ function Get-EXOSendOnBehalfRecursePerms {
 
     }
     Process {
-        $SendOB = $_
-        (Get-Mailbox $_ -erroraction silentlycontinue).GrantSendOnBehalfTo | where-object {$_ -ne $null} | ForEach-Object {
+        $Mailbox = $_
+        $listGroupMembers = [System.Collections.Generic.HashSet[string]]::new()
+        (Get-Mailbox $Mailbox -erroraction silentlycontinue).GrantSendOnBehalfTo | where-object {$_ -ne $null} | 
+            ForEach-Object {
             $CurGranted = $_
-            if ($RecipientMailHash.ContainsKey($_)) {
-                $CurGranted = $RecipientMailHash[$_].Name
-                $Type = $RecipientMailHash[$_].RecipientTypeDetails
+            if ($GroupMemberHash.ContainsKey($CurGranted) -and $GroupMemberHash[$CurGranted]) {
+                $GroupMemberHash[$CurGranted] | ForEach-Object {
+                    [void]$listGroupMembers.Add($_)
+                }
             }
-            $Email = $_
-            if ($RecipientHash.ContainsKey($_)) {
-                $Email = $RecipientHash[$_].PrimarySMTPAddress
-                $Type = $RecipientHash[$_].RecipientTypeDetails
+            elseif (!($GroupMemberHash.ContainsKey($CurGranted))) {
+                if ($RecipientMailHash.ContainsKey($CurGranted)) {
+                    $CurGranted = $RecipientMailHash[$CurGranted].Name
+                    $Type = $RecipientMailHash[$CurGranted].RecipientTypeDetails
+                }
+                $Email = $CurGranted
+                if ($RecipientHash.ContainsKey($CurGranted)) {
+                    $Email = $RecipientHash[$CurGranted].PrimarySMTPAddress
+                    $Type = $RecipientHash[$CurGranted].RecipientTypeDetails
+                }
+                [pscustomobject]@{
+                    Mailbox              = $RecipientDNHash[$Mailbox].Name
+                    MailboxPrimarySMTP   = $RecipientDNHash[$Mailbox].PrimarySMTPAddress
+                    Granted              = $CurGranted
+                    GrantedPrimarySMTP   = $Email
+                    RecipientTypeDetails = $Type          
+                    Permission           = "SendOnBehalf"
+                }  
             }
-            [pscustomobject]@{
-                Mailbox              = $RecipientDNHash[$SendOB].Name
-                MailboxPrimarySMTP   = $RecipientDNHash[$SendOB].PrimarySMTPAddress
-                Granted              = $CurGranted
-                GrantedPrimarySMTP   = $Email
-                RecipientTypeDetails = $Type          
-                Permission           = "SendOnBehalf"
-            }  
+        }
+        if ($listGroupMembers.Count -gt 0) {
+            foreach ($CurlistGroupMember in $listGroupMembers) {
+                [pscustomobject]@{
+                    Mailbox              = $RecipientDNHash[$Mailbox].Name
+                    MailboxPrimarySMTP   = $RecipientDNHash[$Mailbox].PrimarySMTPAddress
+                    Granted              = $RecipientDNHash[$CurlistGroupMember].Name
+                    GrantedPrimarySMTP   = $RecipientDNHash[$CurlistGroupMember].PrimarySMTPAddress
+                    RecipientTypeDetails = $Type          
+                    Permission           = "SendOnBehalf"
+                }  
+            }
         }
     }
     END {
