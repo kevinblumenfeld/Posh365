@@ -48,28 +48,28 @@ function Connect-Cloud {
     If connecting to SharePoint Online, this parameter is used to used to create the URL needed to connect to SharePoint Online
 
     .PARAMETER ExchangeOnline
-    Parameter description
+    Connects to Exchange Online
 
     .PARAMETER MSOnline
-    Parameter description
+    Connects to Microsoft Online Service (Azure AD Version 1)
 
     .PARAMETER All365
     Connects to all Office 365 Services
 
     .PARAMETER Azure
-    Parameter description
+    Connects to Azure
 
     .PARAMETER Skype
-    Parameter description
+    Connects to Skype Online
 
     .PARAMETER SharePoint
-    Parameter description
+    Connects to SharePoint Online
 
     .PARAMETER Compliance
-    Parameter description
+    Connects to Security & Compliance Center
 
     .PARAMETER AzureADver2
-    Parameter description
+    Connects to Azure AD Version 2
 
     .PARAMETER MFA
     Parameter description
@@ -78,7 +78,7 @@ function Connect-Cloud {
     Deletes your saved credentials for tenant specified
 
     .PARAMETER EXOPrefix
-    Adds EXO prefix to all Exchange Online commands. For example Get-EXOMailbox
+    Adds EXO prefix to all Exchange Online commands. For example Get-EXOMailbox.
 
     .EXAMPLE
     Connect-Cloud -Tenant Contoso -ExchangeOnline -MSOnline
