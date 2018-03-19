@@ -63,11 +63,23 @@ Posh365 is a Toolbox for Office 365 Environments
      
 ## Connect-Cloud
 
-Allows for easy connecting to Office 365 and Azure services while saving and encrypting your passwords locally.  
-This prevents having to constantly type in credentials each session.  
-  
-Office 365 tenant name, for example, either contoso or contoso.onmicrosoft.com must be provided with -Tenant parameter. Additionally, if more than one username will be used against a single tenant, use the -User parameter (for the second username and so on).  
-Use anything unique to that username so the credential can be uniquely saved.  -User parameter is **not** mandatory.
+Connects to Office 365 services and/or Azure.  
+
+Connects to some or all of the Office 365/Azure services based on switches provided at runtime.  
+
+Office 365 tenant name, for example, either contoso or contoso.onmicrosoft.com must be provided with -Tenant parameter.  
+The -Tenant parameter is mandatory.
+
+There is a switch to use Multi-Factor Authentication.  
+For Exchange Online MFA, you are required to download and use the Exchange Online Remote PowerShell Module.  
+To download the Exchange Online Remote PowerShell Module for multi-factor authentication, in the EAC (https://outlook.office365.com/ecp/), go to Hybrid \> Setup and click the appropriate Configure button. 
+
+When using Multi-Factor Authentication the saving of credentials is not available currently - thus each service will prompt independently for credentials.  Also, the Security and Compliance Center does not currently support multi-factor authentication.  
+
+Locally saves and encrypts to a file the username and password.  
+The encrypted file...can only be used on the computer and within the user's profile from which it was created, is the same .txt file for all the Office 365 services and is a separate .json file for Azure.  
+If a username or password becomes corrupt or is entered incorrectly, it can be deleted using -DeleteCreds.  
+For example, Connect-Cloud Contoso -DeleteCreds  
 
 ## Set-CloudLicense
 
