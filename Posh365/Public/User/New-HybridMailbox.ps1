@@ -1,10 +1,17 @@
 Function New-HybridMailbox {
     <#
     .SYNOPSIS
-    Designed to manage users in Hybrid Office 365 environment.
+        <#
+    .SYNOPSIS
+    Designed to create and manage users in Hybrid Office 365 environment.
+    On-Premises Exchange server is required.  
+    
+    .DESCRIPTION
+    Designed to create and manage users in Hybrid Office 365 environment.
     On-Premises Exchange server is required.  
         
-    The UserPrincipalName is created by copying the Primary SMTP Address (as created by the On-Premises Exchange Email Address Policies or manually entering PrimarySMTP)
+    The UserPrincipalName is created by copying the Primary SMTP Address (as created by the On-Premises Exchange Email Address Policies).
+    Alternatively use the -PrimarySMTPAddress parameter)
     Can be run from any machine on the domain that has the module for ActiveDirectory installed.
     The script will prompt once for the names of a Domain Controller, Exchange Server and the Azure AD Connect server.
     The script will also prompt once for DisplayName & SamAccountName Format.
@@ -28,8 +35,86 @@ Function New-HybridMailbox {
     If -SpecifyRetentionPolicy is used, the script will prompt for which Retention Policy to assign the user(s).
 
     ** The script will also take CSV input. The minimum parameters are FirstName & LastName **
-    **                           See example below                                          **
+    **                           See examples below                                          **
         
+    .PARAMETER UserToCopy
+    Parameter description
+    
+    .PARAMETER Shared
+    Parameter description
+    
+    .PARAMETER New
+    Parameter description
+    
+    .PARAMETER FirstName
+    Parameter description
+    
+    .PARAMETER LastName
+    Parameter description
+    
+    .PARAMETER SpecifyRetentionPolicy
+    Parameter description
+    
+    .PARAMETER PrimarySMTPAddress
+    Parameter description
+    
+    .PARAMETER SecondarySMTPAddress
+    Parameter description
+    
+    .PARAMETER DontForceUserToChangePasswordAtLogon
+    Parameter description
+    
+    .PARAMETER SharedMailboxEmailAlias
+    Parameter description
+    
+    .PARAMETER DisplayName
+    Parameter description
+    
+    .PARAMETER OfficePhone
+    Parameter description
+    
+    .PARAMETER MobilePhone
+    Parameter description
+    
+    .PARAMETER Description
+    Parameter description
+    
+    .PARAMETER StreetAddress
+    Parameter description
+    
+    .PARAMETER City
+    Parameter description
+    
+    .PARAMETER State
+    Parameter description
+    
+    .PARAMETER Zip
+    Parameter description
+    
+    .PARAMETER SAMPrefix
+    Parameter description
+    
+    .PARAMETER NoMail
+    Parameter description
+    
+    .PARAMETER Country
+    Parameter description
+    
+    .PARAMETER Office
+    Parameter description
+    
+    .PARAMETER Title
+    Parameter description
+    
+    .PARAMETER Department
+    Parameter description
+    
+    .PARAMETER Company
+    Parameter description
+    
+    .PARAMETER OUSearch
+    Parameter description
+    
     .EXAMPLE
     Import-Csv C:\data\theTEST.csv | New-HybridMailbox
 
@@ -185,6 +270,14 @@ Function New-HybridMailbox {
     }
         
     Begin {
+        Try {
+            import-module activedirectory -ErrorAction Stop
+        }
+        Catch {
+            Write-Host "This module depends on the ActiveDirectory module."
+            Write-Host "Please download and install from https://www.microsoft.com/en-us/download/details.aspx?id=45520"
+            throw
+        }
         $password_ss = Read-Host "Enter a Password for the User(s) " -AsSecureString
         $RootPath = $env:USERPROFILE + "\ps\"
         $User = $env:USERNAME
@@ -210,7 +303,7 @@ Function New-HybridMailbox {
             Select-TargetAddressSuffix
         }
         $targetAddressSuffix = Get-Content ($RootPath + "$($user).TargetAddressSuffix")
-              
+
         While (!(Get-Content ($RootPath + "$($user).DomainController") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-DomainController
         }
@@ -323,7 +416,7 @@ Function New-HybridMailbox {
         if (!$Shared) {
     
             $DisplayName = $ExecutionContext.InvokeCommand.ExpandString($DisplayNameFormat)
-       
+
             ##############################################
             #              SamAccountName                #
             ##############################################
@@ -448,7 +541,7 @@ Function New-HybridMailbox {
         else {
             New-ADUser @params -Server $domainController -ChangePasswordAtLogon:$false -Enabled:$true
         }
-     
+
         if ($UserToCopy) {
             $groupMembership | Add-ADGroupMember -Server $domainController -Members $samaccountname
         }
@@ -490,7 +583,7 @@ Function New-HybridMailbox {
                     n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses | ? {$_ -cmatch "SMTP:*"}).Substring(5)}
                 }).primarysmtpaddress
             Set-ADUser -Server $domainController -Identity $SamAccountName -userprincipalname $userprincipalname
-               
+
             ########################################
             #          Convert To Shared           #
             ########################################
@@ -602,4 +695,3 @@ Function New-HybridMailbox {
         }
     }
 }    
-    
