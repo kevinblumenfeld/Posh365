@@ -546,16 +546,17 @@ Function New-HybridMailbox {
             $groupMembership | Add-ADGroupMember -Server $domainController -Members $samaccountname
         }
 
-        # If ProxyAddresses are to be added manually
-        $Proxies = @()
-
         if ($PrimarySMTPAddress) {
-            $PrimaryProxy += ("SMTP:" + $PrimarySMTPAddress)
+            $PrimaryProxy = ("SMTP:" + $PrimarySMTPAddress)
+            $SIP = ("SIP:" + $PrimarySMTPAddress)
+            $Target = ("smtp:" + $samaccountname + "@" + $targetAddressSuffix)
             Set-ADUser -Identity $SamAccountName -Add @{proxyaddresses = $PrimaryProxy}
+            Set-ADUser -Identity $SamAccountName -Add @{proxyaddresses = $SIP}
+            Set-ADUser -Identity $SamAccountName -Add @{proxyaddresses = $Target}
         } 
         
         if ($SecondarySMTPAddress) {
-            $SecondaryProxy += ("smtp:" + $SecondarySMTPAddress)
+            $SecondaryProxy = ("smtp:" + $SecondarySMTPAddress)
             Set-ADUser -Identity $SamAccountName -Add @{proxyaddresses = $SecondaryProxy}
         }
 
