@@ -1,7 +1,40 @@
 function Connect-Exchange {
-    param (
+    
+    <#
+    .SYNOPSIS
+    Connects to On-Premises Microsoft Exchange Server
+    
+    .DESCRIPTION
+    Connects to On-Premises Microsoft Exchange Server. By default, prefixes all commands with, "OnPrem".
+    For example, Get-OnPremMailbox. Use the NoPrefix parameter to prevent this.
+    
+    .PARAMETER ExchangeServer
+    The Exchange Server name to connect to
+    
+    .PARAMETER NoPrefix
+    Prevents the use of "OnPrem" prefix. If this parameter is used, commands will be the standard commands.
+    For example, Get-Mailbox instead of Get-OnPremMailbox
+    
+    .PARAMETER DeleteExchangeCreds
+    Deletes the saved/encrypted credentials, previously saved by this script.
+    Helpful when incorrect credentials were entered previously.
+    
+    .PARAMETER ViewEntireForest
+    Sets the scope of the current session to the entire forest
+    
+    .PARAMETER NoMessageForPS2
+    Use this when using PowerShell 2
+    
+    .EXAMPLE
+    Connect-Exchange -ExchangeServer EXCH01 -ViewEntireForest -NoPrefix
+    
+    #>
+
+    [CmdletBinding(SupportsShouldProcess = $true)]
+    param 
+    (
         [Parameter(Mandatory = $False)]
-        $ExchangeServer,
+        [string] $ExchangeServer,
 
         [Parameter(Mandatory = $False)]
         [Switch] $NoPrefix,
