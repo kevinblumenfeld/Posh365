@@ -6,7 +6,7 @@ function Get-EXOFullAccessRecursePerms {
     
     .EXAMPLE
     
-    (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-EXOFullAccessPerms | Export-csv .\FA.csv -NoTypeInformation
+    (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-EXOFullAccessRecursePerms | Export-csv .\FA.csv -NoTypeInformation
 
     If not running from Exchange Management Shell (EMS), run this first:
 

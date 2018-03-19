@@ -6,7 +6,7 @@ function Get-EXOSendOnBehalfRecursePerms {
     
     .EXAMPLE
     
-    (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-EXOSendOnBehalfPerms | Export-csv .\SendOB.csv -NoTypeInformation
+    (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-EXOSendOnBehalfRecursePerms | Export-csv .\SendOB.csv -NoTypeInformation
     
     #>
     [CmdletBinding()]

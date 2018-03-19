@@ -1,6 +1,107 @@
 function Connect-Cloud {
-    
- 
+    <#
+    .SYNOPSIS
+    Connects to Office 365 services and/or Azure.
+
+    .DESCRIPTION
+    Connects to Office 365 services and/or Azure.  
+
+    Connects to some or all of the Office 365/Azure services based on switches provided at runtime.  
+
+    Office 365 tenant name, for example, either contoso or contoso.onmicrosoft.com must be provided with -Tenant parameter.  
+    The -Tenant parameter is mandatory.
+
+    There is a switch to use Multi-Factor Authentication.  
+    For Exchange Online MFA, you are required to download and use the Exchange Online Remote PowerShell Module.  
+    To download the Exchange Online Remote PowerShell Module for multi-factor authentication, in the EAC (https://outlook.office365.com/ecp/), go to Hybrid \> Setup and click the appropriate Configure button.  
+    When using Multi-Factor Authentication the saving of credentials is not available currently - thus each service will prompt independently for credentials.   
+    Also the Security and Compliance Center does not currently support multi-factor authentication.  
+
+    Locally saves and encrypts to a file the username and password.  
+    The encrypted file...can only be used on the computer and within the user's profile from which it was created, is the same .txt file for all the Office 365 services and is a separate .json file for Azure.  
+    If a username or password becomes corrupt or is entered incorrectly, it can be deleted using -DeleteCreds.  
+    For example, Connect-Cloud Contoso -DeleteCreds  
+
+    If Azure switch is used for first time :
+
+    1. User will login as normal when prompted by Azure  
+    2. User will be prompted to select which Azure Subscription  
+    3. Select the subscription and click "OK"  
+
+    If Azure switch is used after first time:
+
+    1. User will be prompted to pick username used previously  
+    2. If a new username is to be used (e.g.username not found when prompted), click Cancel to be prompted to login.  
+    3. User will be prompted to select which Azure Subscription  
+    4. Select the subscription and click "OK"  
+
+    Directories used/created during the execution of this script
+
+    1. $env:USERPROFILE\ps\  
+    2. $env:USERPROFILE\ps\creds\   
+
+    All saved credentials are saved in $env:USERPROFILE\ps\creds\  
+    Transcript is started and kept in $env:USERPROFILE\ps\<tenantspecified\>  
+
+    .PARAMETER Tenant
+    Mandatory parameter that specifies which Office 365 and/or Azure Tenant you want to connect to.
+    If connecting to SharePoint Online, this parameter is used to used to create the URL needed to connect to SharePoint Online
+
+    .PARAMETER ExchangeOnline
+    Parameter description
+
+    .PARAMETER MSOnline
+    Parameter description
+
+    .PARAMETER All365
+    Connects to all Office 365 Services
+
+    .PARAMETER Azure
+    Parameter description
+
+    .PARAMETER Skype
+    Parameter description
+
+    .PARAMETER SharePoint
+    Parameter description
+
+    .PARAMETER Compliance
+    Parameter description
+
+    .PARAMETER AzureADver2
+    Parameter description
+
+    .PARAMETER MFA
+    Parameter description
+
+    .PARAMETER DeleteCreds
+    Deletes your saved credentials for tenant specified
+
+    .PARAMETER EXOPrefix
+    Adds EXO prefix to all Exchange Online commands. For example Get-EXOMailbox
+
+    .EXAMPLE
+    Connect-Cloud -Tenant Contoso -ExchangeOnline -MSOnline
+
+    Connects to MS Online Service (MSOL) and Exchange Online
+
+    The tenant must be specified, for example either contoso or contoso.onmicrosoft.com
+
+    .EXAMPLE
+    Connect-Cloud -Tenant Contoso -All365 -Azure
+
+    Connects to Azure, MS Online Service (MSOL), Exchange Online, Skype, SharePoint & Compliance
+
+    .EXAMPLE
+    Connect-Cloud Contoso -Skype -Azure -ExchangeOnline -MSOnline
+
+    Connects to Azure, MS Online Service (MSOL), Exchange Online & Skype
+
+    This is to illustrate that any number of individual services can be used to connect.
+    Also that the -Tenant parameter is positional
+
+    #> 
+
     [CmdletBinding(SupportsShouldProcess = $true)]
     Param
     (
