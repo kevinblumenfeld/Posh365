@@ -12,7 +12,7 @@ Posh365 is a Toolbox for Office 365 Environments
    Can be run from any machine on the domain that has the module for ActiveDirectory installed.
    The script will prompt once for the names of a Domain Controller, Exchange Server and the Azure AD Connect server.
    The script will also prompt once for DisplayName & SamAccountName Format.
-   All of these prompts will only occur once per machine (per user).
+   All of these prompts will only occur once per machine (per user)..
    Should you wish to change any/all options just run: Select-Options
    The script stores & encrypts both your Exchange/AD & Office 365 password.  
    You should be prompted only once unless your password changes or a time-out occurs.
