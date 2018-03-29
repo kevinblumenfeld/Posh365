@@ -200,11 +200,8 @@ function Connect-Cloud {
             }
         }
         if ($MSOnline -or $All365) {
-            Try {
-                $null = Get-Module -Name MSOnline -ListAvailable -ErrorAction Stop
-            }
-            Catch {
-                Install-Module -Name MSOnline -Scope CurrentUser -Force
+            if (!($null = Get-Module -Name MSOnline -ListAvailable -ErrorAction Stop)) {
+                Install-Module -Name MSOnline -Scope CurrentUser -Force   
             }
             Try {
                 $null = Get-MsolAccountSku -ErrorAction Stop
@@ -354,10 +351,7 @@ function Connect-Cloud {
         # Azure AD
         If ($AzureADver2 -or $All365) {
             if (! $MFA) {  
-                Try {
-                    $null = Get-Module -Name AzureAD -ListAvailable -ErrorAction Stop
-                }
-                Catch {
+                If (!($null = Get-Module -Name AzureAD -ListAvailable)) {
                     Install-Module -Name AzureAD -Scope CurrentUser -Force
                 }
                 Try {
@@ -386,10 +380,7 @@ function Connect-Cloud {
                 }
             }
             else {  
-                Try {
-                    $null = Get-Module -Name AzureAD -ListAvailable -ErrorAction Stop
-                }
-                Catch {
+                If (!($null = Get-Module -Name AzureAD -ListAvailable)) {
                     Install-Module -Name AzureAD -Scope CurrentUser -Force
                 }
                 Try {
@@ -423,10 +414,7 @@ function Connect-Cloud {
     } 
 }
 function Get-LAAzureConnected {
-    Try {
-        $null = Get-Module -Name AzureRM -ListAvailable -ErrorAction Stop
-    }
-    Catch {
+    if (!($null = Get-Module -Name AzureRM -ListAvailable)) {
         Install-Module -Name AzureRM -Scope CurrentUser -force
     }
     Try {
