@@ -5,7 +5,7 @@ Posh365 is a Toolbox for Office 365 Environments
 
 
  Designed to manage users in Hybrid Office 365 environment.
-   On-Premises Exchange server is required.  
+   On-Premises Exchange server is required.   
 
 ## New-HybridMailbox   
    The UserPrincipalName is created by copying the Primary SMTP Address (as created by the On-Premises Exchange Email Address Policies or manually entering PrimarySMTP)
