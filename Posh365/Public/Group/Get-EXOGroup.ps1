@@ -26,7 +26,7 @@ function Get-EXOGroup {
     #####################
 
     #>
-    [CmdletBinding(SupportsShouldProcess = $true)]
+    [CmdletBinding()]
     param (
         [Parameter(ValueFromPipeline = $true, Mandatory = $false)]
         [string[]] $ListofGroups
