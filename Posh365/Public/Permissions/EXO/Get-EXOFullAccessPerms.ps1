@@ -22,7 +22,10 @@ function Get-EXOFullAccessPerms {
         [hashtable] $RecipientMailHash,
 
         [parameter()]
-        [hashtable] $RecipientHash
+        [hashtable] $RecipientHash,
+
+        [parameter()]
+        [hashtable] $RecipientLiveIDHash
 
     )
     Begin {
@@ -33,9 +36,11 @@ function Get-EXOFullAccessPerms {
         Get-MailboxPermission $_ |
             Where-Object {
             $_.AccessRights -like "*FullAccess*" -and 
-            !$_.IsInherited -and !$_.user.tostring().startswith('S-1-5-21-') -and 
-            !$_.user.tostring().startswith('NT AUTHORITY\SELF')
+            !$_.IsInherited -and !$_.user.startswith('S-1-5-21-') -and 
+            !$_.user.startswith('NT AUTHORITY\SELF') -and
+            !$_.user.contains('\')
         } | ForEach-Object {
+            $Type = $null
             $User = $_.User
             if ($RecipientMailHash.ContainsKey($_.User)) {
                 $User = $RecipientMailHash[$_.User].Name
@@ -45,6 +50,11 @@ function Get-EXOFullAccessPerms {
             if ($RecipientHash.ContainsKey($_.User)) {
                 $Email = $RecipientHash[$_.User].PrimarySMTPAddress
                 $Type = $RecipientHash[$_.User].RecipientTypeDetails
+            }            
+            if ($RecipientLiveIDHash.ContainsKey($_.User)) {
+                $User = $RecipientLiveIDHash[$_.User].Name 
+                $Email = $RecipientLiveIDHash[$_.User].PrimarySMTPAddress
+                $Type = $RecipientLiveIDHash[$_.User].RecipientTypeDetails
             }
             [pscustomobject]@{
                 Mailbox              = $_.Identity

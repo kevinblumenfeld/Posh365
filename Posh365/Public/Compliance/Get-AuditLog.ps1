@@ -64,7 +64,7 @@ function Get-AuditLog {
     )
     Begin {
         try {
-            Get-MsolAccountSku -ErrorAction Stop
+            $null = Get-MsolAccountSku -ErrorAction Stop
         }
         Catch {
             Connect-Cloud -Tenant $Tenant -ExchangeOnline
@@ -72,7 +72,7 @@ function Get-AuditLog {
     }
     Process {
         
-        New-Item -Path $Path -Type Directory -ErrorAction SilentlyContinue -Force
+        $null = New-Item -Path $Path -Type Directory -ErrorAction SilentlyContinue -Force
         
         if ((!$DontRenameAndDelete) -and (!$CSVOutput)) {
             Get-ChildItem -Path $path -Filter *.old | Remove-Item -Force

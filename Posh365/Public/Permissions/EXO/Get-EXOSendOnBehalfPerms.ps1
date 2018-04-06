@@ -31,6 +31,7 @@ function Get-EXOSendOnBehalfPerms {
         $SendOB = $_
         (Get-Mailbox $_ -erroraction silentlycontinue).GrantSendOnBehalfTo | where-object {$_ -ne $null} | ForEach-Object {
             $CurGranted = $_
+            $Type = $null
             if ($RecipientMailHash.ContainsKey($_)) {
                 $CurGranted = $RecipientMailHash[$_].Name
                 $Type = $RecipientMailHash[$_].RecipientTypeDetails

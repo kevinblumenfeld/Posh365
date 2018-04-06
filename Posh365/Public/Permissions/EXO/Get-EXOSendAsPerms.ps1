@@ -18,7 +18,10 @@ function Get-EXOSendAsPerms {
         [hashtable] $RecipientMailHash,
 
         [parameter()]
-        [hashtable] $RecipientHash
+        [hashtable] $RecipientHash,
+
+        [parameter()]
+        [hashtable] $RecipientLiveIDHash
 
     )
     Begin {
@@ -29,18 +32,26 @@ function Get-EXOSendAsPerms {
         Get-RecipientPermission $_ |
             Where-Object {
             $_.AccessRights -like "*SendAs*" -and 
-            !$_.IsInherited -and !$_.identity.tostring().startswith('S-1-5-21-') -and 
-            !$_.trustee.tostring().startswith('NT AUTHORITY\SELF') -and !$_.trustee.tostring().startswith('NULL SID')
+            !$_.IsInherited -and !$_.identity.startswith('S-1-5-21-') -and 
+            !$_.trustee.startswith('NT AUTHORITY\SELF') -and !$_.trustee.startswith('NULL SID') -and
+            !$_.trustee.contains('\')
         } | ForEach-Object {
             $Trustee = $_.Trustee
+            $Type = $null
             if ($RecipientMailHash.ContainsKey($_.Trustee)) {
                 $Trustee = $RecipientMailHash[$_.Trustee].Name
+                $Email = $RecipientMailHash[$_.Trustee].PrimarySMTPAddress
                 $Type = $RecipientMailHash[$_.Trustee].RecipientTypeDetails
             }
             $Email = $_.Trustee
             if ($RecipientHash.ContainsKey($_.Trustee)) {
                 $Email = $RecipientHash[$_.Trustee].PrimarySMTPAddress
                 $Type = $RecipientHash[$_.Trustee].RecipientTypeDetails
+            }
+            if ($RecipientLiveIDHash.ContainsKey($_.Trustee)) {
+                $Trustee = $RecipientLiveIDHash[$_.Trustee].Name 
+                $Email = $RecipientLiveIDHash[$_.Trustee].PrimarySMTPAddress
+                $Type = $RecipientLiveIDHash[$_.Trustee].RecipientTypeDetails
             }
             [pscustomobject]@{
                 Mailbox              = $_.Identity
