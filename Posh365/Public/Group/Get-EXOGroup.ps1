@@ -13,6 +13,9 @@ function Get-EXOGroup {
     Get-EXOGroup | Export-Csv c:\scripts\All365GroupExport.csv -notypeinformation -encoding UTF8
     
     .EXAMPLE
+    Get-DistributionGroup -Filter "emailaddresses -like '*contoso.com*'" | Select -ExpandProperty Name | Get-EXOGroup | Export-Csv c:\scripts\365GroupExport.csv -notypeinformation -encoding UTF8
+    
+    .EXAMPLE
     Get-Content "c:\scripts\groups.txt" | Get-EXOGroup | Export-Csv c:\scripts\365GroupExport.csv -notypeinformation -encoding UTF8
     
     Example of groups.txt
