@@ -6,7 +6,7 @@ function Get-365MsolUser {
     .DESCRIPTION
     Export Office 365 MsolUsers
     
-    .PARAMETER SpecificMsolUsers
+    .PARAMETER SpecificUsers
     Provide specific MsolUsers to report on.  Otherwise, all MsolUsers will be reported.  Please review the examples provided.
     
     .PARAMETER DetailedReport
@@ -44,39 +44,43 @@ function Get-365MsolUser {
     )
     Begin {
         if ($DetailedReport) {
-            $Selectproperties = @('UserPrincipalName', 'DisplayName', 'Title', 'FirstName', 'LastName', 'StreetAddress', 'City', 'State', 'PostalCode', 'Country'
+            $Selectproperties = @(
+                'UserPrincipalName', 'DisplayName', 'Title', 'FirstName', 'LastName', 'StreetAddress', 'City', 'State', 'PostalCode', 'Country'
                 'PhoneNumber', 'MobilePhone', 'Fax', 'Department', 'Office', 'PreferredDataLocation', 'PreferredLanguage', 'SignInName', 'LiveId'
                 'UsageLocation', 'UserLandingPageIdentifierForO365Shell', 'ImmutableId', 'UserLandingPageIdentifierForO365Shell', 'BlockCredential'
                 'IsLicensed', 'PasswordNeverExpires', 'PasswordResetNotRequiredDuringActivate', 'StrongPasswordRequired', 'LastDirSyncTime'
                 'LastPasswordChangeTimestamp', 'SoftDeletionTimestamp', 'StsRefreshTokensValidFrom', 'WhenCreated', 'ObjectId', 'CloudExchangeRecipientDisplayType'
-                'MSExchRecipientTypeDetails', 'StrongAuthenticationProofupTime', 'ReleaseTrack', 'UserType', 'ValidationStatus')
+                'MSExchRecipientTypeDetails', 'StrongAuthenticationProofupTime', 'ReleaseTrack', 'UserType', 'ValidationStatus'
+            )
 
             $CalculatedProps = @(
-                @{n = "AlternateEmailAddresses" ; e = {($_.AlternateEmailAddresses | ? {$_ -ne $null}) -join ";" }},
-                @{n = "AlternateMobilePhones" ; e = {($_.AlternateMobilePhones | ? {$_ -ne $null}) -join ";" }},
-                @{n = "AlternativeSecurityIds" ; e = {($_.AlternativeSecurityIds | ? {$_ -ne $null}) -join ";" }},
-                @{n = "DirSyncProvisioningErrors" ; e = {($_.DirSyncProvisioningErrors | ? {$_ -ne $null}) -join ";" }},
-                @{n = "Errors" ; e = {($_.Errors | ? {$_ -ne $null}) -join ";" }},
-                @{n = "ExtensionData" ; e = {($_.ExtensionData | ? {$_ -ne $null}) -join ";" }},
-                @{n = "IndirectLicenseErrors" ; e = {($_.IndirectLicenseErrors | ? {$_ -ne $null}) -join ";" }},
-                @{n = "Licenses" ; e = {($_.Licenses | ? {$_ -ne $null}) -join ";" }},
-                @{n = "OverallProvisioningStatus" ; e = {($_.OverallProvisioningStatus | ? {$_ -ne $null}) -join ";" }},
-                @{n = "PortalSettings" ; e = {($_.PortalSettings | ? {$_ -ne $null}) -join ";" }},
-                @{n = "ProxyAddresses" ; e = {($_.ProxyAddresses | ? {$_ -ne $null}) -join ";" }},
-                @{n = "ServiceInformation" ; e = {($_.ServiceInformation | ? {$_ -ne $null}) -join ";" }},
-                @{n = "StrongAuthenticationMethods" ; e = {($_.StrongAuthenticationMethods | ? {$_ -ne $null}) -join ";" }},
-                @{n = "StrongAuthenticationPhoneAppDetails" ; e = {($_.StrongAuthenticationPhoneAppDetails | ? {$_ -ne $null}) -join ";" }},
-                @{n = "StrongAuthenticationRequirements" ; e = {($_.StrongAuthenticationRequirements | ? {$_ -ne $null}) -join ";" }},
-                @{n = "StrongAuthenticationUserDetails" ; e = {($_.StrongAuthenticationUserDetails | ? {$_ -ne $null}) -join ";" }}                              
+                @{n = "AlternateEmailAddresses" ; e = {($_.AlternateEmailAddresses | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "AlternateMobilePhones" ; e = {($_.AlternateMobilePhones | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "AlternativeSecurityIds" ; e = {($_.AlternativeSecurityIds | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "DirSyncProvisioningErrors" ; e = {($_.DirSyncProvisioningErrors | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "Errors" ; e = {($_.Errors | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "ExtensionData" ; e = {($_.ExtensionData | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "IndirectLicenseErrors" ; e = {($_.IndirectLicenseErrors | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "Licenses" ; e = {($_.Licenses | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "OverallProvisioningStatus" ; e = {($_.OverallProvisioningStatus | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "PortalSettings" ; e = {($_.PortalSettings | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "ProxyAddresses" ; e = {($_.ProxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "ServiceInformation" ; e = {($_.ServiceInformation | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "StrongAuthenticationMethods" ; e = {($_.StrongAuthenticationMethods | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "StrongAuthenticationPhoneAppDetails" ; e = {($_.StrongAuthenticationPhoneAppDetails | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "StrongAuthenticationRequirements" ; e = {($_.StrongAuthenticationRequirements | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "StrongAuthenticationUserDetails" ; e = {($_.StrongAuthenticationUserDetails | Where-Object {$_ -ne $null}) -join ";" }}                              
             )
         }
         else {
-            $Selectproperties = @('UserPrincipalName', 'DisplayName', 'Title', 'FirstName', 'LastName', 'StreetAddress', 'City', 'State', 'PostalCode', 'Country'
-                'PhoneNumber', 'MobilePhone', 'Fax', 'Department', 'Office', 'PreferredDataLocation', 'PreferredLanguage', 'SignInName', 'LiveId'
-                'UsageLocation', 'ImmutableId', 'LastDirSyncTime', 'IsLicensed', 'ObjectId')
+            $Selectproperties = @(
+                'UserPrincipalName', 'DisplayName', 'Title', 'FirstName', 'LastName', 'StreetAddress'
+                'City', 'State', 'PostalCode', 'Country', 'PhoneNumber', 'MobilePhone', 'Fax', 'Department', 'Office'
+                'LastDirSyncTime', 'IsLicensed'
+            )
 
             $CalculatedProps = @(
-                @{n = "ProxyAddresses" ; e = {($_.ProxyAddresses | ? {$_ -ne $null}) -join ";" }}
+                @{n = "ProxyAddresses" ; e = {($_.ProxyAddresses | Where-Object {$_ -ne $null}) -join ";" }}
             )
         }
     }

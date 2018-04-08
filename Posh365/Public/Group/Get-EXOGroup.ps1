@@ -104,8 +104,8 @@ function Get-EXOGroup {
         else {
             $Groups = Get-DistributionGroup -ResultSize unlimited
             foreach ($CurGroup in $Groups) {
-                $Members = Get-DistributionGroupMember -Identity $CurGroup | Select-Object name, primarysmtpaddress
-                Get-DistributionGroup -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
+                $Members = Get-DistributionGroupMember -Identity $CurGroup.identity | Select-Object name, primarysmtpaddress
+                Get-DistributionGroup -identity $CurGroup.identity | Select-Object ($Selectproperties + $CalculatedProps)
             }
         }
     }

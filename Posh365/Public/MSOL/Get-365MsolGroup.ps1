@@ -16,7 +16,7 @@ function Get-365MsolGroup {
     Get-365MsolGroup | Export-Csv c:\scripts\All365MsolGroups.csv -notypeinformation -encoding UTF8
     
     .EXAMPLE
-    Get-MsolGroup -All | ? {$_.proxyaddresses -like "*contoso.com"} | Select -ExpandProperty ObjectId | Get-365MsolGroup | Export-Csv c:\scripts\365MsolGroups.csv -notypeinformation -encoding UTF8
+    Get-MsolGroup -All | Where-Object {$_.proxyaddresses -like "*contoso.com"} | Select -ExpandProperty ObjectId | Get-365MsolGroup | Export-Csv c:\scripts\365MsolGroups.csv -notypeinformation -encoding UTF8
         
     .EXAMPLE
     Get-Content "c:\scripts\ObjectIDs.txt" | Get-365MsolGroup | Export-Csv c:\scripts\365MsolGroupExport.csv -notypeinformation -encoding UTF8
@@ -41,27 +41,31 @@ function Get-365MsolGroup {
     )
     Begin {
         if ($DetailedReport) {
-            $Selectproperties = @('CommonName', 'Description', 'DisplayName', 'EmailAddress', 'ManagedBy')
+            $Selectproperties = @(
+                'CommonName', 'Description', 'DisplayName', 'EmailAddress', 'ManagedBy'
+            )
 
             $CalculatedProps = @(
-                @{n = "DirSyncProvisioningErrors" ; e = {($_.DirSyncProvisioningErrors | ? {$_ -ne $null}) -join ";" }},
-                @{n = "Errors" ; e = {($_.Errors | ? {$_ -ne $null}) -join ";" }},
-                @{n = "GroupType" ; e = {($_.GroupType | ? {$_ -ne $null}) -join ";" }},
-                @{n = "IsSystem" ; e = {($_.IsSystem | ? {$_ -ne $null}) -join ";" }},
-                @{n = "LastDirSyncTime" ; e = {($_.LastDirSyncTime | ? {$_ -ne $null}) -join ";" }},
-                @{n = "Licenses" ; e = {($_.Licenses | ? {$_ -ne $null}) -join ";" }},
-                @{n = "ObjectId" ; e = {($_.ObjectId | ? {$_ -ne $null}) -join ";" }},
-                @{n = "ProxyAddresses" ; e = {($_.ProxyAddresses | ? {$_ -ne $null}) -join ";" }},
-                @{n = "ValidationStatus" ; e = {($_.ValidationStatus | ? {$_ -ne $null}) -join ";" }}                                             
+                @{n = "DirSyncProvisioningErrors" ; e = {($_.DirSyncProvisioningErrors | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "Errors" ; e = {($_.Errors | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "GroupType" ; e = {($_.GroupType | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "IsSystem" ; e = {($_.IsSystem | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "LastDirSyncTime" ; e = {($_.LastDirSyncTime | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "Licenses" ; e = {($_.Licenses | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "ObjectId" ; e = {($_.ObjectId | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "ProxyAddresses" ; e = {($_.ProxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "ValidationStatus" ; e = {($_.ValidationStatus | Where-Object {$_ -ne $null}) -join ";" }}                                             
             )
         }
         else {
-            $Selectproperties = @('CommonName', 'Description', 'DisplayName', 'EmailAddress', 'ManagedBy')
+            $Selectproperties = @(
+                'CommonName', 'Description', 'DisplayName', 'EmailAddress', 'ManagedBy'
+            )
 
             $CalculatedProps = @(
-                @{n = "GroupType" ; e = {($_.GroupType | ? {$_ -ne $null}) -join ";" }},
-                @{n = "LastDirSyncTime" ; e = {($_.LastDirSyncTime | ? {$_ -ne $null}) -join ";" }},
-                @{n = "ProxyAddresses" ; e = {($_.ProxyAddresses | ? {$_ -ne $null}) -join ";" }}
+                @{n = "GroupType" ; e = {($_.GroupType | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "LastDirSyncTime" ; e = {($_.LastDirSyncTime | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "ProxyAddresses" ; e = {($_.ProxyAddresses | Where-Object {$_ -ne $null}) -join ";" }}
             )
         }
     }

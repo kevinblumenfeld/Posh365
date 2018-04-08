@@ -40,6 +40,9 @@ function Get-EXOMailbox {
         [Parameter(Mandatory = $false)]
         [switch] $DetailedReport,
 
+        [Parameter(Mandatory = $false)]
+        [switch] $ArchivesOnly,
+
         [Parameter(ValueFromPipeline = $true, Mandatory = $false)]
         [string[]] $SpecificMailboxes
     )
@@ -76,76 +79,88 @@ function Get-EXOMailbox {
             )
 
             $CalculatedProps = @(
-                @{n = "AcceptMessagesOnlyFrom" ; e = {($_.AcceptMessagesOnlyFrom | ? {$_ -ne $null}) -join ";" }},
-                @{n = "AcceptMessagesOnlyFromDLMembers" ; e = {($_.AcceptMessagesOnlyFromDLMembers | ? {$_ -ne $null}) -join ";" }},
-                @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = {($_.AcceptMessagesOnlyFromSendersOrMembers | ? {$_ -ne $null}) -join ";" }},
-                @{n = "AddressListMembership" ; e = {($_.AddressListMembership | ? {$_ -ne $null}) -join ";" }},
-                @{n = "AdministrativeUnits" ; e = {($_.AdministrativeUnits | ? {$_ -ne $null}) -join ";" }},
-                @{n = "BypassModerationFromSendersOrMembers" ; e = {($_.BypassModerationFromSendersOrMembers | ? {$_ -ne $null}) -join ";" }},
-                @{n = "GeneratedOfflineAddressBooks" ; e = {($_.GeneratedOfflineAddressBooks | ? {$_ -ne $null}) -join ";" }},
-                @{n = "GrantSendOnBehalfTo" ; e = {($_.GrantSendOnBehalfTo | ? {$_ -ne $null}) -join ";" }},
-                @{n = "ModeratedBy" ; e = {($_.ModeratedBy | ? {$_ -ne $null}) -join ";" }},
-                @{n = "RejectMessagesFrom" ; e = {($_.RejectMessagesFrom | ? {$_ -ne $null}) -join ";" }},
-                @{n = "RejectMessagesFromDLMembers" ; e = {($_.RejectMessagesFromDLMembers | ? {$_ -ne $null}) -join ";" }},
-                @{n = "RejectMessagesFromSendersOrMembers" ; e = {($_.RejectMessagesFromSendersOrMembers | ? {$_ -ne $null}) -join ";" }},
-                @{n = "PersistedCapabilities" ; e = {($_.PersistedCapabilities | ? {$_ -ne $null}) -join ";" }},
-                @{n = "AuditAdmin" ; e = {($_.AuditAdmin | ? {$_ -ne $null}) -join ";" }},
-                @{n = "AuditDelegate" ; e = {($_.AuditDelegate | ? {$_ -ne $null}) -join ";" }},
-                @{n = "AuditOwner" ; e = {($_.AuditOwner | ? {$_ -ne $null}) -join ";" }},
-                @{n = "MailboxProvisioningPreferences" ; e = {($_.MailboxProvisioningPreferences | ? {$_ -ne $null}) -join ";" }},
-                @{n = "UserCertificate" ; e = {($_.UserCertificate | ? {$_ -ne $null}) -join ";" }},
-                @{n = "UserSMimeCertificate" ; e = {($_.UserSMimeCertificate | ? {$_ -ne $null}) -join ";" }},
-                @{n = "Languages" ; e = {($_.Languages | ? {$_ -ne $null}) -join ";" }},
-                @{n = "AggregatedMailboxGuids" ; e = {($_.AggregatedMailboxGuids | ? {$_ -ne $null}) -join ";" }},
-                @{n = "ArchiveName" ; e = {($_.ArchiveName | ? {$_ -ne $null}) -join ";" }},
-                @{n = "ExtensionCustomAttribute1" ; e = {($_.ExtensionCustomAttribute1 | ? {$_ -ne $null}) -join ";" }},
-                @{n = "ExtensionCustomAttribute2" ; e = {($_.ExtensionCustomAttribute2 | ? {$_ -ne $null}) -join ";" }},
-                @{n = "ExtensionCustomAttribute3" ; e = {($_.ExtensionCustomAttribute3 | ? {$_ -ne $null}) -join ";" }},
-                @{n = "ExtensionCustomAttribute4" ; e = {($_.ExtensionCustomAttribute4 | ? {$_ -ne $null}) -join ";" }},
-                @{n = "ExtensionCustomAttribute5" ; e = {($_.ExtensionCustomAttribute5 | ? {$_ -ne $null}) -join ";" }},
-                @{n = "Extensions" ; e = {($_.Extensions | ? {$_ -ne $null}) -join ";" }},
-                @{n = "InPlaceHolds" ; e = {($_.InPlaceHolds | ? {$_ -ne $null}) -join ";" }},
-                @{n = "MailTipTranslations" ; e = {($_.MailTipTranslations | ? {$_ -ne $null}) -join ";" }},
-                @{n = "ObjectClass" ; e = {($_.ObjectClass | ? {$_ -ne $null}) -join ";" }},
-                @{n = "PoliciesExcluded" ; e = {($_.PoliciesExcluded | ? {$_ -ne $null}) -join ";" }},
-                @{n = "PoliciesIncluded" ; e = {($_.PoliciesIncluded | ? {$_ -ne $null}) -join ";" }},
-                @{n = "ProtocolSettings" ; e = {($_.ProtocolSettings | ? {$_ -ne $null}) -join ";" }},
-                @{n = "ResourceCustom" ; e = {($_.ResourceCustom | ? {$_ -ne $null}) -join ";" }},
-                @{n = "UMDtmfMap" ; e = {($_.UMDtmfMap | ? {$_ -ne $null}) -join ";" }},
-                @{n = "EmailAddresses" ; e = {($_.EmailAddresses | ? {$_ -ne $null}) -join ";" }},
+                @{n = "AcceptMessagesOnlyFrom" ; e = {($_.AcceptMessagesOnlyFrom | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "AcceptMessagesOnlyFromDLMembers" ; e = {($_.AcceptMessagesOnlyFromDLMembers | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = {($_.AcceptMessagesOnlyFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "AddressListMembership" ; e = {($_.AddressListMembership | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "AdministrativeUnits" ; e = {($_.AdministrativeUnits | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "BypassModerationFromSendersOrMembers" ; e = {($_.BypassModerationFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "GeneratedOfflineAddressBooks" ; e = {($_.GeneratedOfflineAddressBooks | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "GrantSendOnBehalfTo" ; e = {($_.GrantSendOnBehalfTo | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "ModeratedBy" ; e = {($_.ModeratedBy | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "RejectMessagesFrom" ; e = {($_.RejectMessagesFrom | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "RejectMessagesFromDLMembers" ; e = {($_.RejectMessagesFromDLMembers | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "RejectMessagesFromSendersOrMembers" ; e = {($_.RejectMessagesFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "PersistedCapabilities" ; e = {($_.PersistedCapabilities | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "AuditAdmin" ; e = {($_.AuditAdmin | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "AuditDelegate" ; e = {($_.AuditDelegate | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "AuditOwner" ; e = {($_.AuditOwner | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "MailboxProvisioningPreferences" ; e = {($_.MailboxProvisioningPreferences | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "UserCertificate" ; e = {($_.UserCertificate | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "UserSMimeCertificate" ; e = {($_.UserSMimeCertificate | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "Languages" ; e = {($_.Languages | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "AggregatedMailboxGuids" ; e = {($_.AggregatedMailboxGuids | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "ArchiveName" ; e = {($_.ArchiveName | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "ExtensionCustomAttribute1" ; e = {($_.ExtensionCustomAttribute1 | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "ExtensionCustomAttribute2" ; e = {($_.ExtensionCustomAttribute2 | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "ExtensionCustomAttribute3" ; e = {($_.ExtensionCustomAttribute3 | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "ExtensionCustomAttribute4" ; e = {($_.ExtensionCustomAttribute4 | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "ExtensionCustomAttribute5" ; e = {($_.ExtensionCustomAttribute5 | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "Extensions" ; e = {($_.Extensions | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "InPlaceHolds" ; e = {($_.InPlaceHolds | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "MailTipTranslations" ; e = {($_.MailTipTranslations | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "ObjectClass" ; e = {($_.ObjectClass | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "PoliciesExcluded" ; e = {($_.PoliciesExcluded | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "PoliciesIncluded" ; e = {($_.PoliciesIncluded | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "ProtocolSettings" ; e = {($_.ProtocolSettings | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "ResourceCustom" ; e = {($_.ResourceCustom | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "UMDtmfMap" ; e = {($_.UMDtmfMap | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "x500" ; e = {"x500:" + $_.LegacyExchangeDN}},
-                @{n = "MailboxLocations" ; e = {($_.MailboxLocations | ? {$_ -ne $null}) -join ";" }}       
+                @{n = "MailboxLocations" ; e = {($_.MailboxLocations | Where-Object {$_ -ne $null}) -join ";" }}       
             )
         }
         else {
             $Selectproperties = @(
+                'RecipientTypeDetails', 'Name', 'DisplayName', 'UserPrincipalName', 'Identity', 'PrimarySmtpAddress', 'Alias'
                 'ForwardingAddress', 'ForwardingSmtpAddress', 'LitigationHoldDate', 'AccountDisabled', 'DeliverToMailboxAndForward'
-                'HiddenFromAddressListsEnabled', 'IsDirSynced', 'LitigationHoldEnabled', 'ExchangeGuid', 'Guid', 'Alias', 'DisplayName', 'Identity'
-                'ImmutableId', 'LegacyExchangeDN', 'LitigationHoldDuration', 'LitigationHoldOwner', 'Name', 'Office', 'PrimarySmtpAddress'
-                'RecipientTypeDetails', 'RetentionPolicy', 'UserPrincipalName', 'WindowsEmailAddress'
+                'HiddenFromAddressListsEnabled', 'IsDirSynced', 'LitigationHoldEnabled', 'ExchangeGuid', 'Guid'
+                'LegacyExchangeDN', 'LitigationHoldDuration', 'LitigationHoldOwner', 'Office'
+                'RetentionPolicy', 'WindowsEmailAddress'
             )
 
             $CalculatedProps = @(
-                @{n = "AcceptMessagesOnlyFrom" ; e = {($_.AcceptMessagesOnlyFrom | ? {$_ -ne $null}) -join ";" }},
-                @{n = "AcceptMessagesOnlyFromDLMembers" ; e = {($_.AcceptMessagesOnlyFromDLMembers | ? {$_ -ne $null}) -join ";" }},
-                @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = {($_.AcceptMessagesOnlyFromSendersOrMembers | ? {$_ -ne $null}) -join ";" }},
-                @{n = "RejectMessagesFrom" ; e = {($_.RejectMessagesFrom | ? {$_ -ne $null}) -join ";" }},
-                @{n = "RejectMessagesFromDLMembers" ; e = {($_.RejectMessagesFromDLMembers | ? {$_ -ne $null}) -join ";" }},
-                @{n = "RejectMessagesFromSendersOrMembers" ; e = {($_.RejectMessagesFromSendersOrMembers | ? {$_ -ne $null}) -join ";" }},
-                @{n = "ArchiveName" ; e = {($_.ArchiveName | ? {$_ -ne $null}) -join ";" }},
-                @{n = "InPlaceHolds" ; e = {($_.InPlaceHolds | ? {$_ -ne $null}) -join ";" }},
-                @{n = "EmailAddresses" ; e = {($_.EmailAddresses | ? {$_ -ne $null}) -join ";" }}
+                @{n = "ArchiveName" ; e = {($_.ArchiveName | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "AcceptMessagesOnlyFrom" ; e = {($_.AcceptMessagesOnlyFrom | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "AcceptMessagesOnlyFromDLMembers" ; e = {($_.AcceptMessagesOnlyFromDLMembers | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = {($_.AcceptMessagesOnlyFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "RejectMessagesFrom" ; e = {($_.RejectMessagesFrom | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "RejectMessagesFromDLMembers" ; e = {($_.RejectMessagesFromDLMembers | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "RejectMessagesFromSendersOrMembers" ; e = {($_.RejectMessagesFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "InPlaceHolds" ; e = {($_.InPlaceHolds | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "x500" ; e = {"x500:" + $_.LegacyExchangeDN}},
+                @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join ";" }}
             )
         }
     }
     Process {
         if ($SpecificMailboxes) {
             foreach ($CurMailbox in $SpecificMailboxes) {
-                Get-Mailbox -identity $CurMailbox | Select-Object ($Selectproperties + $CalculatedProps)
+                if (! $ArchivesOnly) {
+                    Get-Mailbox -identity $CurMailbox | Select-Object ($Selectproperties + $CalculatedProps)
+                }
+                else {
+                    Get-Mailbox -Archive -identity $CurMailbox | Select-Object ($Selectproperties + $CalculatedProps)
+                }
             }
         }
         else {
-            Get-Mailbox -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
+            if (! $ArchivesOnly) {
+                Get-Mailbox -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
+            }
+            else {
+                Get-Mailbox -Archive -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
+            }
         }
     }
     End {

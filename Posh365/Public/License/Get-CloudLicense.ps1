@@ -1,4 +1,32 @@
 ﻿function Get-CloudLicense { 
+    <#
+    .SYNOPSIS
+    Report on Office 365 Licenses
+    Credit: Original script developed by Alan Byrne.
+    
+    .DESCRIPTION
+    Report on Office 365 License SKUs and Options assigned to each user
+    
+    .PARAMETER DomainFilter
+    Reports on licenses for users with an email address with the domain name(s) passed at the pipeline.  One report per domain.
+    Without DomainFilter, reports on all licensed users.
+    
+    .EXAMPLE
+    Get-CloudLicense
+    
+    .EXAMPLE
+    'contoso.com' | Get-CloudLicense
+    
+    .EXAMPLE
+    'contoso.com','fabrikam.com' | Get-CloudLicense
+    
+    #>
+
+    Param (
+        [Parameter(ValueFromPipeline = $true, Mandatory = $false)]
+        [string] $DomainFilter
+
+    )
 
     Begin {
 
@@ -11,7 +39,7 @@ ALT + Q / ALT + F8 / Click Run (large tenants take some time)
 #############################################################
 
 
-   Option Explicit
+    Option Explicit
 Sub createsheetabs()
     Application.ScreenUpdating = False
     Dim ws As Worksheet, lrow As Long, wk As Worksheet
@@ -58,7 +86,6 @@ Sub createsheetabs()
     Wend
     Application.ScreenUpdating = True
 End Sub
-
 
 #>
 
@@ -150,23 +177,27 @@ End Sub
             "YAMMER_ENTERPRISE"                  = "Yammer Enterprise";
             "YAMMER_MIDSIZE"                     = "Yammer Midsize"
         } 
-         
+
         # The Output will be written to this file in the current working directory
-         
-        $LogFile = ($(get-date -Format yyyy-MM-dd_HH-mm-ss) + "-licenses.csv")
- 
+        if ($DomainFilter) {
+            $LogFile = ($(get-date -Format yyyy-MM-dd_HH-mm-ss) + "-" + $DomainFilter + "-licenses.csv")
+        }
+        else {
+            $LogFile = ($(get-date -Format yyyy-MM-dd_HH-mm-ss) + "-licenses.csv")
+        }
+
         # Get a list of all Licenses that exist within the tenant 
         $licensetype = Get-MsolAccountSku # | Where {$_.SkuPartNumber -eq "STANDARDWOFFPACK_IW_STUDENT"} 
         # $licensetype = Get-MsolAccountSku | Where {$_.AccountSkuId -eq "TENANT:ENTERPRISEPACK"} 
- 
+
         # Loop through all License types found in the tenant 
         foreach ($license in $licensetype) {     
-    
+
             # Build and write the Header for the CSV file 
             $headerstring = "DisplayName,UserPrincipalName,AccountSku" 
-     
+
             foreach ($row in $($license.ServiceStatus)) { 
-         
+
                 # Build header string 
                 switch -wildcard ($($row.ServicePlan.servicename)) { 
                     "AAD_PREMIUM" { $thisLicense = "Azure Active Directory Premium Plan 1"}
@@ -280,18 +311,18 @@ End Sub
 
                     default { $thisLicense = $row.ServicePlan.servicename } 
                 } 
-         
+
                 $headerstring = ($headerstring + "," + $thisLicense) 
             } 
-     
             Out-File -FilePath $LogFile -InputObject $headerstring -Encoding UTF8 -append 
-     
             write-host ("Gathering users with the following subscription: " + $license.accountskuid) 
- 
-            $users = Get-MsolUser -all | where {$_.isLicensed -eq "True"}
-
+            If ($DomainFilter) {
+                $users = Get-MsolUser -Domain $DomainFilter | where {$_.isLicensed -eq "True"}
+            }
+            else {
+                $users = Get-MsolUser -all | where {$_.isLicensed -eq "True"}
+            }
             $skuid = $license.accountskuid
-
             foreach ($user in $users) {
                 $userLicenses = $user.Licenses
                 for ($i = 0; $i -lt $($userLicenses.count); $i++) {
@@ -302,21 +333,15 @@ End Sub
                         $datastring = ("`"" + $user.displayname + "`"" + "," + $user.userprincipalname + "," + $u2fSku.Item($userLicenses[$i].AccountSku.SkuPartNumber))
 
                         foreach ($row in $($userLicenses[$i].servicestatus)) {
-			
                             # Build data string
                             $datastring = ($datastring + "," + $($row.provisioningstatus))
                         }
-		
                         Out-File -FilePath $LogFile -InputObject $datastring -Encoding UTF8 -append
                     }
                 }
             }
-
-         
         }              
- 
         write-host ("Script Completed.  Results available in " + $LogFile)
-
     }
     End {
 
