@@ -12,7 +12,7 @@ function Get-365Info {
     1. Recipients
     2. MsolUsers
     3. MsolGroups
-    4. Distribution Groups (includes mail-enable Security Groups)
+    4. Distribution Groups (includes mail-enabled Security Groups)
     5. Mailboxes
     6. Archive Mailboxes
     7. Licenses assigned to each user broken out by Options
