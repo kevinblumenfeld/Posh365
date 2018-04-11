@@ -138,7 +138,7 @@
     }
 
     $AllPermissions = $null
-    Get-ChildItem -Path $ReportPath -Filter "*.csv" -Exclude "*allpermissions.csv" -Recurse | % {
+    Get-ChildItem -Path $ReportPath -Filter "*perms.csv" -Exclude "*allpermissions.csv" -Recurse | % {
         $AllPermissions += (import-csv $_)
     }
     

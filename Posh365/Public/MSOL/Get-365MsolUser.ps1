@@ -6,8 +6,9 @@ function Get-365MsolUser {
     .DESCRIPTION
     Export Office 365 MsolUsers
     
-    .PARAMETER SpecificUsers
-    Provide specific MsolUsers to report on.  Otherwise, all MsolUsers will be reported.  Please review the examples provided.
+    .PARAMETER DomainFilter
+    Specifies the domain to filter results on. This must be a verified domain for the company.
+    All users with an email address, primary or secondary, on this domain is returned.
     
     .PARAMETER DetailedReport
     Provides a full report of all attributes.  Otherwise, only a refined report will be given.
@@ -16,23 +17,14 @@ function Get-365MsolUser {
     Get-365MsolUser | Export-Csv c:\scripts\All365MsolUsers.csv -notypeinformation -encoding UTF8
     
     .EXAMPLE
-    Get-MsolUser -DomainName "contoso.com" -All | Select -ExpandProperty UserPrincipalName | Get-365MsolUser | Export-Csv c:\scripts\365MsolUsers.csv -notypeinformation -encoding UTF8
+    Get-365MsolUser -DetailedReport | Export-Csv c:\scripts\All365MsolUsers.csv -notypeinformation -encoding UTF8
+        
+    .EXAMPLE
+    'contoso.com','fabrikam.com' | Get-365MsolUser -DetailedReport| Export-Csv c:\scripts\365MsolUsers.csv -notypeinformation -encoding UTF8
     
     .EXAMPLE
-    Get-MsolUser -DomainName "contoso.com" -All | Select -ExpandProperty UserPrincipalName | Get-365MsolUser -DetailedReport | Export-Csv c:\scripts\365MsolUsers.csv -notypeinformation -encoding UTF8
+    'contoso.com','fabrikam.com' | Get-365MsolUser | Export-Csv c:\scripts\365MsolUsers.csv -notypeinformation -encoding UTF8
     
-    .EXAMPLE
-    Get-Content "c:\scripts\UPNs.txt" | Get-365MsolUser | Export-Csv c:\scripts\365MsolUserExport.csv -notypeinformation -encoding UTF8
-    
-    Example of UPNs.txt
-    #####################
-
-    kevin@contoso.com
-    sally@contoso.com
-    larry@contoso.com
-
-    #####################
-
     #>
     [CmdletBinding()]
     param (
@@ -40,16 +32,16 @@ function Get-365MsolUser {
         [switch] $DetailedReport,
 
         [Parameter(ValueFromPipeline = $true, Mandatory = $false)]
-        [string[]] $SpecificUsers
+        [string[]] $DomainFilter
     )
     Begin {
         if ($DetailedReport) {
             $Selectproperties = @(
                 'UserPrincipalName', 'DisplayName', 'Title', 'FirstName', 'LastName', 'StreetAddress', 'City', 'State', 'PostalCode', 'Country'
                 'PhoneNumber', 'MobilePhone', 'Fax', 'Department', 'Office', 'PreferredDataLocation', 'PreferredLanguage', 'SignInName', 'LiveId'
-                'UsageLocation', 'UserLandingPageIdentifierForO365Shell', 'ImmutableId', 'UserLandingPageIdentifierForO365Shell', 'BlockCredential'
-                'IsLicensed', 'PasswordNeverExpires', 'PasswordResetNotRequiredDuringActivate', 'StrongPasswordRequired', 'LastDirSyncTime'
-                'LastPasswordChangeTimestamp', 'SoftDeletionTimestamp', 'StsRefreshTokensValidFrom', 'WhenCreated', 'ObjectId', 'CloudExchangeRecipientDisplayType'
+                'UsageLocation', 'UserLandingPageIdentifierForO365Shell', 'ImmutableId', 'BlockCredential', 'IsLicensed', 'PasswordNeverExpires'
+                'PasswordResetNotRequiredDuringActivate', 'StrongPasswordRequired', 'LastDirSyncTime', 'LastPasswordChangeTimestamp'
+                'SoftDeletionTimestamp', 'StsRefreshTokensValidFrom', 'WhenCreated', 'ObjectId', 'CloudExchangeRecipientDisplayType'
                 'MSExchRecipientTypeDetails', 'StrongAuthenticationProofupTime', 'ReleaseTrack', 'UserType', 'ValidationStatus'
             )
 
@@ -85,9 +77,9 @@ function Get-365MsolUser {
         }
     }
     Process {
-        if ($SpecificUsers) {
-            foreach ($CurUPN in $SpecificUsers) {
-                Get-MsolUser -UserPrincipalName $CurUPN | Select-Object ($Selectproperties + $CalculatedProps)
+        if ($DomainFilter) {
+            foreach ($CurDomainFilter in $DomainFilter) {
+                Get-MsolUser -DomainName $CurDomainFilter -All | Select-Object ($Selectproperties + $CalculatedProps)
             }
         }
         else {

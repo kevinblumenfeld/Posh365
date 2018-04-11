@@ -16,24 +16,17 @@ function Get-EXOMailbox {
     Get-EXOMailbox | Export-Csv c:\scripts\All365Mailboxes.csv -notypeinformation -encoding UTF8
     
     .EXAMPLE
-    Get-Mailbox -Filter "emailaddresses -like '*contoso.com*'" -ResultSize Unlimited | Select -ExpandProperty Name | Get-EXOMailbox | Export-Csv c:\scripts\365Mailboxes.csv -notypeinformation -encoding UTF8
+    Get-EXOMailbox -ArchivesOnly | Export-Csv c:\scripts\All365Mailboxes.csv -notypeinformation -encoding UTF8
     
     .EXAMPLE
-    Get-Mailbox -Filter "emailaddresses -like '*contoso.com*'" -ResultSize Unlimited | Select -ExpandProperty Name | Get-EXOMailbox -DetailedReport | Export-Csv c:\scripts\365Mailboxes.csv -notypeinformation -encoding UTF8
+    '{emailaddresses -like "*contoso.com"}' | Get-EXOMailbox | Export-Csv c:\scripts\365Mailboxes.csv -notypeinformation -encoding UTF8
     
     .EXAMPLE
-    Get-Content "c:\scripts\list.txt" | Get-EXOMailbox | Export-Csv c:\scripts\365MailboxExport.csv -notypeinformation -encoding UTF8
+    '{emailaddresses -like "*contoso.com"}' | Get-EXOMailbox -ArchivesOnly | Export-Csv c:\scripts\365Mailboxes.csv -notypeinformation -encoding UTF8
     
-    Example of list.txt
-    #####################
-
-    Group01
-    Group02
-    Group03
-    Accounting Team
-
-    #####################
-
+    .EXAMPLE
+    '{emailaddresses -like "*contoso.com"}' | Get-EXOMailbox -DetailedReport | Export-Csv c:\scripts\365Mailboxes_Detailed.csv -notypeinformation -encoding UTF8
+    
     #>
     [CmdletBinding()]
     param (
@@ -44,7 +37,7 @@ function Get-EXOMailbox {
         [switch] $ArchivesOnly,
 
         [Parameter(ValueFromPipeline = $true, Mandatory = $false)]
-        [string[]] $SpecificMailboxes
+        [string[]] $MailboxFilter
     )
     Begin {
         if ($DetailedReport) {
@@ -124,9 +117,8 @@ function Get-EXOMailbox {
             $Selectproperties = @(
                 'RecipientTypeDetails', 'Name', 'DisplayName', 'UserPrincipalName', 'Identity', 'PrimarySmtpAddress', 'Alias'
                 'ForwardingAddress', 'ForwardingSmtpAddress', 'LitigationHoldDate', 'AccountDisabled', 'DeliverToMailboxAndForward'
-                'HiddenFromAddressListsEnabled', 'IsDirSynced', 'LitigationHoldEnabled', 'ExchangeGuid', 'Guid'
-                'LegacyExchangeDN', 'LitigationHoldDuration', 'LitigationHoldOwner', 'Office'
-                'RetentionPolicy', 'WindowsEmailAddress'
+                'HiddenFromAddressListsEnabled', 'IsDirSynced', 'LitigationHoldEnabled', 'LitigationHoldDuration'
+                'LitigationHoldOwner', 'Office', 'RetentionPolicy', 'WindowsEmailAddress'
             )
 
             $CalculatedProps = @(
@@ -144,13 +136,13 @@ function Get-EXOMailbox {
         }
     }
     Process {
-        if ($SpecificMailboxes) {
-            foreach ($CurMailbox in $SpecificMailboxes) {
+        if ($MailboxFilter) {
+            foreach ($CurMailboxFilter in $MailboxFilter) {
                 if (! $ArchivesOnly) {
-                    Get-Mailbox -identity $CurMailbox | Select-Object ($Selectproperties + $CalculatedProps)
+                    Get-Mailbox -Filter $CurMailboxFilter -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
                 }
                 else {
-                    Get-Mailbox -Archive -identity $CurMailbox | Select-Object ($Selectproperties + $CalculatedProps)
+                    Get-Mailbox -Archive -Filter $CurMailboxFilter -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
                 }
             }
         }

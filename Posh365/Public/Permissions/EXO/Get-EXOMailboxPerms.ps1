@@ -106,23 +106,23 @@
         if (! $SkipSendAs) {
             Write-Verbose "Getting SendAs permissions for each mailbox and writing to file"
             $allMailboxDNs | Get-EXOSendAsPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientLiveIDHash $RecipientLiveIDHash |
-                Export-csv (Join-Path $ReportPath "EXOSendAsPerms.csv") -NoTypeInformation
+                Export-csv (Join-Path $ReportPath ($tenant + "-EXOPermissions_SendAs.csv")) -NoTypeInformation
         }
         if (! $SkipSendOnBehalf) {
             Write-Verbose "Getting SendOnBehalf permissions for each mailbox and writing to file"
             $AllMailboxDNs | Get-EXOSendOnBehalfPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientDNHash $RecipientDNHash |
-                Export-csv (Join-Path $ReportPath "EXOSendOnBehalfPerms.csv") -NoTypeInformation
+                Export-csv (Join-Path $ReportPath ($tenant + "-EXOPermissions_SendOnBehalf.csv")) -NoTypeInformation
         }
         if (! $SkipFullAccess) {
             Write-Verbose "Getting FullAccess permissions for each mailbox and writing to file"
             $AllMailboxDNs | Get-EXOFullAccessPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientLiveIDHash $RecipientLiveIDHash |
-                Export-csv (Join-Path $ReportPath "EXOFullAccessPerms.csv") -NoTypeInformation
+                Export-csv (Join-Path $ReportPath ($tenant + "-EXOPermissions_FullAccess.csv")) -NoTypeInformation
         }
         $AllPermissions = $null
-        Get-ChildItem -Path $ReportPath -Filter "*.csv" -Exclude "*allEXOpermissions.csv" -Recurse | % {
+        Get-ChildItem -Path $ReportPath -Include "*-EXOPermissions_FullAccess.csv", "*-EXOPermissions_SendOnBehalf.csv", "*-EXOPermissions_SendAs.csv" -Recurse | % {
             $AllPermissions += (import-csv $_)
         }
-        $AllPermissions | Export-Csv (Join-Path $ReportPath "AllEXOPermissions.csv") -NoTypeInformation
+        $AllPermissions | Export-Csv (Join-Path $ReportPath ($tenant + "-EXOPermissions_All.csv")) -NoTypeInformation
         Write-Verbose "Combined all CSV's into a single file named, AllEXOPermissions.csv"
     }
 }
