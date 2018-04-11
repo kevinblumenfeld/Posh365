@@ -15,8 +15,9 @@ function Get-365Info {
     4. Distribution Groups (includes mail-enabled Security Groups)
     5. Mailboxes
     6. Archive Mailboxes
-    7. Licenses assigned to each user broken out by Options
-    8. Retention Policies and linked Retention Tags in a single report
+    7. Resource Mailboxes with Calendar Processing
+    8. Licenses assigned to each user broken out by Options
+    9. Retention Policies and linked Retention Tags in a single report
     
     If using the -Filtered switch, it will be necessary to replace domain placeholders in script (e.g. contoso.com etc.)
     The filters can be adjusted to anything supported by the -Filter parameter (OPath filters)
@@ -68,6 +69,7 @@ function Get-365Info {
         $EXOMailboxFileNameDetailed = ($Tenant + "-EXOMailbox_Detailed.csv")
         $EXOArchiveMailboxFileName = ($Tenant + "-EXOArchiveMailbox.csv")
         $EXOArchiveMailboxFileNameDetailed = ($Tenant + "-EXOArchiveMailbox_Detailed.csv")
+        $EXOResourceMailboxFileName = ($Tenant + "-EXOResourceMailbox.csv")
         $RetentionLinksFileName = ($Tenant + "-RetentionLinks.csv")
 
         if (! $Filtered) {
@@ -94,6 +96,9 @@ function Get-365Info {
             Write-Verbose "Gathering Exchange Online Archive Mailboxes"
             Get-EXOMailbox -ArchivesOnly | Export-Csv .\$EXOArchiveMailboxFileName -notypeinformation -encoding UTF8
             Get-EXOMailbox -ArchivesOnly -DetailedReport | Export-Csv .\$EXOArchiveMailboxFileNameDetailed -notypeinformation -encoding UTF8
+            
+            Write-Verbose "Gathering Exchange Online Resource Mailboxes and Calendar Processing"
+            Get-EXOResourceMailbox | Export-Csv .\$EXOResourceMailboxFileName -notypeinformation -encoding UTF8
             
             Write-Verbose "Gathering Office 365 Licenses"
             Get-CloudLicense
@@ -134,6 +139,9 @@ function Get-365Info {
             Write-Verbose "Gathering Exchange Online Archive Mailboxes - filtered"
             '{emailaddresses -like "*contoso.com"}' | Get-EXOMailbox -ArchivesOnly | Export-Csv .\$EXOArchiveMailboxFileName -notypeinformation -encoding UTF8
             '{emailaddresses -like "*contoso.com"}' | Get-EXOMailbox -ArchivesOnly -DetailedReport | Export-Csv .\$EXOArchiveMailboxFileNameDetailed -notypeinformation -encoding UTF8
+
+            Write-Verbose "Gathering Exchange Online Resource Mailboxes and Calendar Processing"
+            '{emailaddresses -like "*contoso.com"}' | Get-EXOResourceMailbox | Export-Csv .\$EXOResourceMailboxFileName -notypeinformation -encoding UTF8
 
             Write-Verbose "Gathering Office 365 Licenses - filtered"
             'contoso.com', 'fabrikam.com' | Get-CloudLicense
