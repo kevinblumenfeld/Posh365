@@ -122,8 +122,8 @@ function Get-365Info {
             PrimarySmtpAddress -like "*contoso.com"}' | Get-365Recipient -DetailedReport | Export-Csv .\$RecipientFileNameDetailed -notypeinformation -encoding UTF8
             
             Write-Verbose "Gathering MsolUsers - filtered"
-            'contoso.com', 'fabrikam.com' | Get-365MsolUser | Export-Csv .\$MsolUserFileName -notypeinformation -encoding UTF8
-            'contoso.com', 'fabrikam.com' | Get-365MsolUser -DetailedReport | Export-Csv .\$MsolUserFileNameDetailed -notypeinformation -encoding UTF8
+            'contoso.com' | Get-365MsolUser | Export-Csv .\$MsolUserFileName -notypeinformation -encoding UTF8
+            'contoso.com' | Get-365MsolUser -DetailedReport | Export-Csv .\$MsolUserFileNameDetailed -notypeinformation -encoding UTF8
     
             Write-Verbose "Gathering MsolGroups - filtered"
             Get-MsolGroup -All | Where-Object {$_.proxyaddresses -like "*contoso.com"} | Select -ExpandProperty ObjectId | Get-365MsolGroup | Export-Csv .\$MsolGroupFileName -notypeinformation -encoding UTF8
@@ -144,7 +144,7 @@ function Get-365Info {
             '{emailaddresses -like "*contoso.com"}' | Get-EXOResourceMailbox | Export-Csv .\$EXOResourceMailboxFileName -notypeinformation -encoding UTF8
 
             Write-Verbose "Gathering Office 365 Licenses - filtered"
-            'contoso.com', 'fabrikam.com' | Get-CloudLicense
+            'contoso.com' | Get-CloudLicense
             
             Write-Verbose "Gathering Mailbox Delegate Permissions - filtered"
             Get-Recipient -Filter {EmailAddresses -like "*contoso.com"}  | Select -ExpandProperty name | Get-EXOMailboxPerms -Tenant $Tenant -ReportPath .\
