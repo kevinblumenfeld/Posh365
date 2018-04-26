@@ -330,7 +330,12 @@ End Sub
 
                     if ($userSkuId -eq $skuid) {
                         write-host ("Processing " + $user.displayname)
-                        $datastring = ("`"" + $user.displayname + "`"" + "," + $user.userprincipalname + "," + $u2fSku.Item($userLicenses[$i].AccountSku.SkuPartNumber))
+                        if ($u2fSku.Item($userLicenses[$i].AccountSku.SkuPartNumber)) {
+                            $datastring = ("`"" + $user.displayname + "`"" + "," + $user.userprincipalname + "," + $u2fSku.Item($userLicenses[$i].AccountSku.SkuPartNumber))
+                        }
+                        else {
+                            $datastring = ("`"" + $user.displayname + "`"" + "," + $user.userprincipalname + "," + ($userLicenses[$i].AccountSku.SkuPartNumber))
+                        }
 
                         foreach ($row in $($userLicenses[$i].servicestatus)) {
                             # Build data string

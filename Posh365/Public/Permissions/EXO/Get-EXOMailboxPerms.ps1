@@ -119,8 +119,8 @@
                 Export-csv (Join-Path $ReportPath ($tenant + "-EXOPermissions_FullAccess.csv")) -NoTypeInformation
         }
         $AllPermissions = $null
-        Get-ChildItem -Path $ReportPath -Include "*-EXOPermissions_FullAccess.csv", "*-EXOPermissions_SendOnBehalf.csv", "*-EXOPermissions_SendAs.csv" -Recurse | % {
-            $AllPermissions += (import-csv $_)
+        $AllPermissions = Get-ChildItem -Path $ReportPath -Include ($tenant + "-EXOPermissions_FullAccess.csv"), ($tenant + "-EXOPermissions_SendOnBehalf.csv"), "*-EXOPermissions_SendAs.csv" -Recurse | % {
+            import-csv $_
         }
         $AllPermissions | Export-Csv (Join-Path $ReportPath ($tenant + "-EXOPermissions_All.csv")) -NoTypeInformation
         Write-Verbose "Combined all CSV's into a single file named, AllEXOPermissions.csv"

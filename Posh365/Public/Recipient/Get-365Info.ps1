@@ -71,6 +71,7 @@ function Get-365Info {
         $EXOArchiveMailboxFileNameDetailed = ($Tenant + "-EXOArchiveMailbox_Detailed.csv")
         $EXOResourceMailboxFileName = ($Tenant + "-EXOResourceMailbox.csv")
         $RetentionLinksFileName = ($Tenant + "-RetentionLinks.csv")
+        $UnifiedGroupsFileName = ($Tenant + "-UnifiedGroups.csv")
 
         if (! $Filtered) {
 
@@ -85,7 +86,7 @@ function Get-365Info {
             Write-Verbose "Gathering MsolGroups"
             Get-365MsolGroup | Export-Csv .\$MsolGroupFileName -notypeinformation -encoding UTF8
         
-            Write-Verbose "Gathering Distribution & Mail-Enable Security Groups"
+            Write-Verbose "Gathering Distribution & Mail-Enabled Security Groups"
             Get-EXOGroup | Export-Csv .\$EXOGroupFileName -notypeinformation -encoding UTF8
             Get-EXOGroup -DetailedReport | Export-Csv .\$EXOGroupFileNameDetailed -notypeinformation -encoding UTF8
         
@@ -105,7 +106,10 @@ function Get-365Info {
             
             Write-Verbose "Gathering Mailbox Delegate Permissions"
             Get-EXOMailboxPerms -Tenant $Tenant -ReportPath .\
-
+    
+            Write-Verbose "Gathering Distribution Group Delegate Permissions"
+            Get-EXODGPerms -Tenant $Tenant -ReportPath .\
+    
         }
         
         else {
@@ -128,7 +132,7 @@ function Get-365Info {
             Write-Verbose "Gathering MsolGroups - filtered"
             Get-MsolGroup -All | Where-Object {$_.proxyaddresses -like "*contoso.com"} | Select -ExpandProperty ObjectId | Get-365MsolGroup | Export-Csv .\$MsolGroupFileName -notypeinformation -encoding UTF8
     
-            Write-Verbose "Gathering Distribution & Mail-Enable Security Groups - filtered"
+            Write-Verbose "Gathering Distribution & Mail-Enabled Security Groups - filtered"
             Get-DistributionGroup -Filter "emailaddresses -like '*contoso.com*'" -ResultSize Unlimited | Select -ExpandProperty Name | Get-EXOGroup | Export-Csv .\$EXOGroupFileName -notypeinformation -encoding UTF8
             Get-DistributionGroup -Filter "emailaddresses -like '*contoso.com*'" -ResultSize Unlimited | Select -ExpandProperty Name | Get-EXOGroup -DetailedReport | Export-Csv .\$EXOGroupFileNameDetailed -notypeinformation -encoding UTF8
     
@@ -148,12 +152,17 @@ function Get-365Info {
             
             Write-Verbose "Gathering Mailbox Delegate Permissions - filtered"
             Get-Recipient -Filter {EmailAddresses -like "*contoso.com"}  | Select -ExpandProperty name | Get-EXOMailboxPerms -Tenant $Tenant -ReportPath .\
+                
+            Write-Verbose "Gathering Distribution Group Delegate Permissions - filtered"
+            Get-Recipient -Filter {EmailAddresses -like "*contoso.com"}  | Select -ExpandProperty name | Get-EXODGPerms -Tenant $Tenant -ReportPath .\
     
         }
 
         Write-Verbose "Gathering Retention Polices and linked Retention Policy Tags"
         Get-RetentionLinks | Export-Csv .\$RetentionLinksFileName -notypeinformation -encoding UTF8
 
+        Write-Verbose "Gathering Office 365 Unified Groups"
+        Export-AndImportUnifiedGroups -Mode Export -File .\$UnifiedGroupsFileName
     }
     End {
         
