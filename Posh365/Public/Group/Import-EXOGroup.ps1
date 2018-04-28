@@ -62,11 +62,6 @@ function Import-EXOGroup {
                 CustomAttribute7                     = $CurGroup.CustomAttribute7
                 CustomAttribute8                     = $CurGroup.CustomAttribute8
                 CustomAttribute9                     = $CurGroup.CustomAttribute9
-                ExtensionCustomAttribute1            = $CurGroup.ExtensionCustomAttribute1
-                ExtensionCustomAttribute2            = $CurGroup.ExtensionCustomAttribute2
-                ExtensionCustomAttribute3            = $CurGroup.ExtensionCustomAttribute3
-                ExtensionCustomAttribute4            = $CurGroup.ExtensionCustomAttribute4
-                ExtensionCustomAttribute5            = $CurGroup.ExtensionCustomAttribute5
                 HiddenFromAddressListsEnabled        = $CurGroup.HiddenFromAddressListsEnabled
                 Identity                             = $CurGroup.Identity
                 RejectMessagesFrom                   = $CurGroup.RejectMessagesFrom
@@ -91,10 +86,87 @@ function Import-EXOGroup {
                     $setparams.add($h, $($sethash.item($h)))
                 }
             }
-            # if ($CurGroup.RecipientTypeDetails -eq "RoomList") {New-DistributionGroup @newparams -RoomList}
-            # else {New-DistributionGroup @newparams}
-            New-DistributionGroup @newparams
+            if ($CurGroup.RecipientTypeDetails -ne "RoomList") {
+                New-DistributionGroup @newparams
+            }
+            else {
+                New-DistributionGroup @newparams -RoomList
+            }
+
             Set-DistributionGroup @setparams
+
+            if ($CurGroups.AcceptMessagesOnlyFrom) {
+                $CurGroups.AcceptMessagesOnlyFrom -Split ";" | 
+                    Set-DistributionGroup -Identity $CurGroup.Identity -AcceptMessagesOnlyFrom @{Add = "$_"}
+            }
+            if ($CurGroups.AcceptMessagesOnlyFromDLMembers) {
+                $CurGroups.AcceptMessagesOnlyFromDLMembers -Split ";" | 
+                    Set-DistributionGroup -Identity $CurGroup.Identity -AcceptMessagesOnlyFromDLMembers @{Add = "$_"}
+            }
+            if ($CurGroups.BypassModerationFromSendersOrMembers) {
+                $CurGroups.BypassModerationFromSendersOrMembers -Split ";" | 
+                    Set-DistributionGroup -Identity $CurGroup.Identity -BypassModerationFromSendersOrMembers @{Add = "$_"}
+            }
+            if ($CurGroups.GrantSendOnBehalfTo) {
+                $CurGroups.GrantSendOnBehalfTo -Split ";" | 
+                    Set-DistributionGroup -Identity $CurGroup.Identity -GrantSendOnBehalfTo @{Add = "$_"}
+            }
+            if ($CurGroups.ManagedBy) {
+                $CurGroups.ManagedBy -Split ";" | 
+                    Set-DistributionGroup -Identity $CurGroup.Identity -ManagedBy @{Add = "$_"}
+            }
+            if ($CurGroups.ModeratedBy) {
+                $CurGroups.ModeratedBy -Split ";" | 
+                    Set-DistributionGroup -Identity $CurGroup.Identity -ModeratedBy @{Add = "$_"}
+            }
+            if ($CurGroups.RejectMessagesFrom) {
+                $CurGroups.RejectMessagesFrom -Split ";" | 
+                    Set-DistributionGroup -Identity $CurGroup.Identity -RejectMessagesFrom @{Add = "$_"}
+            }
+            if ($CurGroups.RejectMessagesFromDLMembers) {
+                $CurGroups.RejectMessagesFromDLMembers -Split ";" | 
+                    Set-DistributionGroup -Identity $CurGroup.Identity -RejectMessagesFromDLMembers @{Add = "$_"}
+            }
+            if ($CurGroups.RejectMessagesFromSendersOrMembers) {
+                $CurGroups.RejectMessagesFromSendersOrMembers -Split ";" | 
+                    Set-DistributionGroup -Identity $CurGroup.Identity -RejectMessagesFromSendersOrMembers @{Add = "$_"}
+            }
+            if ($CurGroups.ExtensionCustomAttribute1) {
+                $CurGroups.ExtensionCustomAttribute1 -Split ";" | 
+                    Set-DistributionGroup -Identity $CurGroup.Identity -ExtensionCustomAttribute1 @{Add = "$_"}
+            }
+            if ($CurGroups.ExtensionCustomAttribute2) {
+                $CurGroups.ExtensionCustomAttribute2 -Split ";" | 
+                    Set-DistributionGroup -Identity $CurGroup.Identity -ExtensionCustomAttribute2 @{Add = "$_"}
+            }
+            if ($CurGroups.ExtensionCustomAttribute3) {
+                $CurGroups.ExtensionCustomAttribute3 -Split ";" | 
+                    Set-DistributionGroup -Identity $CurGroup.Identity -ExtensionCustomAttribute3 @{Add = "$_"}
+            }
+            if ($CurGroups.ExtensionCustomAttribute4) {
+                $CurGroups.ExtensionCustomAttribute4 -Split ";" | 
+                    Set-DistributionGroup -Identity $CurGroup.Identity -ExtensionCustomAttribute4 @{Add = "$_"}
+            }
+            if ($CurGroups.ExtensionCustomAttribute5) {
+                $CurGroups.ExtensionCustomAttribute5 -Split ";" | 
+                    Set-DistributionGroup -Identity $CurGroup.Identity -ExtensionCustomAttribute5 @{Add = "$_"}
+            }
+            if ($CurGroups.MailTipTranslations) {
+                $CurGroups.MailTipTranslations -Split ";" | 
+                    Set-DistributionGroup -Identity $CurGroup.Identity -MailTipTranslations @{Add = "$_"}
+            }
+            if ($CurGroups.EmailAddresses) {
+                $CurGroups.EmailAddresses -Split ";" | Where-Object {!($_ -clike "SMTP:*")} | 
+                    Set-DistributionGroup -Identity $CurGroup.Identity -emailaddresses @{Add = "$_"}
+            }
+            if ($CurGroups.x500) {
+                Set-DistributionGroup -Identity $CurGroup.Identity -emailaddresses @{Add = "$($CurGroups.x500)"}
+            }
+            if ($CurGroups.membersSMTP) {
+                $CurGroups.membersSMTP -Split ";" | 
+                    Add-DistributionGroupMember -Identity $CurGroup.Identity -member "$_"
+            }
+            
         }
     }
     End {
