@@ -14,7 +14,7 @@ function Import-EXOGroup {
 
 
     #>
-    
+
     [CmdletBinding()]
     Param 
     (
@@ -91,6 +91,8 @@ function Import-EXOGroup {
                     $setparams.add($h, $($sethash.item($h)))
                 }
             }
+            # if ($CurGroup.RecipientTypeDetails -eq "RoomList") {New-DistributionGroup @newparams -RoomList}
+            # else {New-DistributionGroup @newparams}
             New-DistributionGroup @newparams
             Set-DistributionGroup @setparams
         }
