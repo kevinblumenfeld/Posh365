@@ -186,4 +186,3 @@ function Import-EXOGroup {
         
     }
 }
-# Import-Csv C:\scripts\del2.csv | Import-EXOGroup
