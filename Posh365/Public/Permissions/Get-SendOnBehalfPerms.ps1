@@ -41,7 +41,7 @@ function Get-SendOnBehalfPerms {
                     Get-ADGroupMember $_ -Recursive -ErrorAction stop | 
                         ForEach-Object {
                         New-Object -TypeName psobject -property @{
-                            Mailbox    = $ADHashDN.$mailbox.DisplayName
+                            Object     = $ADHashDN.$mailbox.DisplayName
                             UPN        = $ADHashDN.$mailbox.UPN
                             Granted    = $ADHashDN[$_.distinguishedname].DisplayName
                             GrantedUPN = $ADHashDN[$_.distinguishedname].UPN
@@ -51,7 +51,7 @@ function Get-SendOnBehalfPerms {
                 } 
                 Catch {
                     New-Object -TypeName psobject -property @{
-                        Mailbox    = $ADHashDN.$mailbox.DisplayName
+                        Object     = $ADHashDN.$mailbox.DisplayName
                         UPN        = $ADHashDN.$mailbox.UPN
                         Granted    = $ADHashCN."$CN".DisplayName
                         GrantedUPN = $ADHashCN."$CN".UPN

@@ -1,7 +1,7 @@
 function Get-FullAccessPerms {
     <#
     .SYNOPSIS
-    Outputs Full Access permissions for each mailbox that has permissions assigned.
+    Outputs Full Access permissions for each object that has permissions assigned.
     This is for On-Premises Exchange 2010, 2013, 2016+
     
     .EXAMPLE
@@ -48,7 +48,7 @@ function Get-FullAccessPerms {
                     Get-ADGroupMember ($_.user -split "\\")[1] -Recursive -ErrorAction stop | 
                         ForEach-Object {
                         New-Object -TypeName psobject -property @{
-                            Mailbox    = $ADHashDN.$mailbox.DisplayName
+                            Object     = $ADHashDN.$mailbox.DisplayName
                             UPN        = $ADHashDN.$mailbox.UPN
                             Granted    = $ADHashDN[$_.distinguishedname].DisplayName
                             GrantedUPN = $ADHashDN[$_.distinguishedname].UPN
@@ -58,7 +58,7 @@ function Get-FullAccessPerms {
                 } 
                 Catch {
                     New-Object -TypeName psobject -property @{
-                        Mailbox    = $ADHashDN.$mailbox.DisplayName
+                        Object     = $ADHashDN.$mailbox.DisplayName
                         UPN        = $ADHashDN.$mailbox.UPN
                         Granted    = $ADHash[$User].DisplayName
                         GrantedUPN = $ADHash.$User.UPN

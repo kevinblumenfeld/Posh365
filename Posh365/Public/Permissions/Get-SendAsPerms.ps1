@@ -48,7 +48,7 @@
                     Get-ADGroupMember ($_.user -split "\\")[1] -Recursive -ErrorAction stop | 
                         ForEach-Object {
                         New-Object -TypeName psobject -property @{
-                            Mailbox    = $ADHashDN.$mailbox.DisplayName
+                            Object     = $ADHashDN.$mailbox.DisplayName
                             UPN        = $ADHashDN.$mailbox.UPN
                             Granted    = $ADHashDN[$_.distinguishedname].DisplayName
                             GrantedUPN = $ADHashDN[$_.distinguishedname].UPN
@@ -58,7 +58,7 @@
                 } 
                 Catch {
                     New-Object -TypeName psobject -property @{
-                        Mailbox    = $ADHashDN.$mailbox.DisplayName
+                        Object     = $ADHashDN.$mailbox.DisplayName
                         UPN        = $ADHashDN.$mailbox.UPN
                         Granted    = $ADHash."$User".DisplayName
                         GrantedUPN = $ADHash."$User".UPN

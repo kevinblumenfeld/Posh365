@@ -1,11 +1,11 @@
-﻿Function Get-MailboxPerms {
+﻿Function Get-DGPerms {
     
     <#
     .SYNOPSIS
-    By default, creates permissions reports for all mailboxes with SendAs, SendOnBehalf and FullAccess delegates.
+    By default, creates permissions reports for all DGs with SendAs & SendOnBehalf.
     Switches can be added to isolate one or more reports
     Creates individual reports for each permission type (unless skipped), and a report that combines all CSVs in chosen directory.
-    The combined report will be called, AllPermissions.csv
+    The combined report will be called, DGAllPermissions.csv
 
     If same Report Path is chosen, existing files will be overwritten.
 
@@ -20,9 +20,6 @@
     
     .EXAMPLE
     Get-MailboxPerms -ReportPath C:\PermsReports -SkipSendOnBehalf -Verbose
-
-    .EXAMPLE
-    Get-MailboxPerms -ReportPath C:\PermsReports -SkipSendAs -SkipFullAccess -Verbose
     
     .EXAMPLE
     Get-MailboxPerms -ReportPath C:\PermsReports -PowerShell2 -ExchangeServer "ExServer01" -Verbose
@@ -43,9 +40,6 @@
 
         [Parameter()]
         [switch] $SkipSendOnBehalf,
-
-        [Parameter()]
-        [switch] $SkipFullAccess,
 
         [Parameter()]
         [switch] $PowerShell2,
@@ -116,34 +110,28 @@
     Write-Verbose "Caching hash table. CN as Key and Values of DisplayName, UPN & LogonName"
     $ADHashCN = $AllADUsers | Get-ADHashCN
 
-    Write-Verbose "Retrieving distinguishedname's of all Exchange Mailboxes"
-    $allMailboxes = (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname)
+    Write-Verbose "Retrieving distinguishedname's of all Exchange Distribution Groups"
+    $AllDGDNs = Get-Recipient -RecipientTypeDetails 'MailUniversalDistributionGroup', 'MailUniversalSecurityGroup' | Select -ExpandProperty distinguishedname 
 
     if (! $SkipSendAs) {
         Write-Verbose "Getting SendAs permissions for each mailbox and writing to file"
-        $allMailboxes | Get-SendAsPerms -ADHashDN $ADHashDN -ADHash $ADHash  | Select Object, UPN, Granted, GrantedUPN, Permission |
-            Export-csv (Join-Path $ReportPath "SendAsPerms.csv") -NoTypeInformation
+        $AllDGDNs | Get-SendAsPerms -ADHashDN $ADHashDN -ADHash $ADHash  | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
+            Export-csv (Join-Path $ReportPath "DGSendAsPerms.csv") -NoTypeInformation
     }
     
     if (! $SkipSendOnBehalf) {
         Write-Verbose "Getting SendOnBehalf permissions for each mailbox and writing to file"
-        $allMailboxes | Get-SendOnBehalfPerms -ADHashCN $ADHashCN | Select Object, UPN, Granted, GrantedUPN, Permission |
-            Export-csv (Join-Path $ReportPath "SendOnBehalfPerms.csv") -NoTypeInformation
+        $AllDGDNs | Get-SendOnBehalfPerms -ADHashCN $ADHashCN | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
+            Export-csv (Join-Path $ReportPath "DGSendOnBehalfPerms.csv") -NoTypeInformation
     }
     
-    if (! $SkipFullAccess) {
-        Write-Verbose "Getting FullAccess permissions for each mailbox and writing to file"
-        $allMailboxes | Get-FullAccessPerms -ADHashDN $ADHashDN -ADHash $ADHash | Select Object, UPN, Granted, GrantedUPN, Permission |
-            Export-csv (Join-Path $ReportPath "FullAccessPerms.csv") -NoTypeInformation
-    }
-
     $AllPermissions = $null
     $Report = $ReportPath.ToString()
     $Report = $Report.TrimEnd('\') + "\*"
-    $AllPermissions = Get-ChildItem -Path $Report -Include "SendAsPerms.csv", "SendOnBehalfPerms.csv", "FullAccessPerms.csv" -Exclude "AllPermissions.csv" | % {
+    $AllPermissions = Get-ChildItem -Path $Report -Include "DGSendAsPerms.csv", "DGSendOnBehalfPerms.csv" -Exclude "DGAllPermissions.csv" | % {
         Import-Csv $_
     }
     
-    $AllPermissions | Export-Csv (Join-Path $ReportPath "AllPermissions.csv") -NoTypeInformation
-    Write-Verbose "Combined all CSV's into a single file named, AllPermissions.csv"
+    $AllPermissions | Export-Csv (Join-Path $ReportPath "DGAllPermissions.csv") -NoTypeInformation
+    Write-Verbose "Combined all CSV's into a single file named, DGAllPermissions.csv"
 }

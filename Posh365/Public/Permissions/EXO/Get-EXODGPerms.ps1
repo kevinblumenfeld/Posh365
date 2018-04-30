@@ -13,7 +13,7 @@
     Creates individual reports for each permission type (unless skipped), and a report that combines all CSVs in chosen directory.
 
     Output CSVs headers:
-    "Mailbox","MailboxPrimarySMTP","Granted","GrantedPrimarySMTP","RecipientTypeDetails","Permission"
+    "Object","ObjectPrimarySMTP","Granted","GrantedPrimarySMTP","RecipientTypeDetails","Permission"
 
     .EXAMPLE
     Get-EXODGPerms -Tenant Contoso -ReportPath C:\PermsReports -Verbose
