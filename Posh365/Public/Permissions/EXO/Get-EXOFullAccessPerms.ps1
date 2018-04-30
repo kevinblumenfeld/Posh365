@@ -43,7 +43,7 @@ function Get-EXOFullAccessPerms {
         } | ForEach-Object {
             $Type = $null
             $User = $_.User
-            Write-Verbose "Granted Full Access: `t $User"
+            Write-Verbose "Has Full Access: `t $User"
             if ($RecipientMailHash.ContainsKey($_.User)) {
                 $User = $RecipientMailHash[$_.User].Name
                 $Type = $RecipientMailHash[$_.User].RecipientTypeDetails
