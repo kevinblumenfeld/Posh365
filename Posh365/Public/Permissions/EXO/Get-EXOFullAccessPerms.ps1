@@ -1,7 +1,7 @@
 function Get-EXOFullAccessPerms {
     <#
     .SYNOPSIS
-    Outputs Full Access permissions for each mailbox that has permissions assigned.
+    Outputs Full Access permissions for each object that has permissions assigned.
     This is for On-Premises Exchange 2010, 2013, 2016+
     
     .EXAMPLE
@@ -59,8 +59,8 @@ function Get-EXOFullAccessPerms {
                 $Type = $RecipientLiveIDHash[$_.User].RecipientTypeDetails
             }
             [pscustomobject]@{
-                Mailbox              = $_.Identity
-                MailboxPrimarySMTP   = $RecipientHash[$_.Identity].PrimarySMTPAddress
+                Object              = $_.Identity
+                ObjectPrimarySMTP   = $RecipientHash[$_.Identity].PrimarySMTPAddress
                 Granted              = $User
                 GrantedPrimarySMTP   = $Email
                 RecipientTypeDetails = $Type          

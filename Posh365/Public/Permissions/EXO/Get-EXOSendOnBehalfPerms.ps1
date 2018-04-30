@@ -1,7 +1,7 @@
 function Get-EXOSendOnBehalfPerms {
     <#
     .SYNOPSIS
-    Outputs Send On Behalf permissions for each mailbox that has permissions assigned.
+    Outputs Send On Behalf permissions for each object that has permissions assigned.
     This is for Office 365
     
     .EXAMPLE
@@ -44,8 +44,8 @@ function Get-EXOSendOnBehalfPerms {
                 $Type = $RecipientHash[$_].RecipientTypeDetails
             }
             [pscustomobject]@{
-                Mailbox              = $RecipientDNHash[$SendOB].Name
-                MailboxPrimarySMTP   = $RecipientDNHash[$SendOB].PrimarySMTPAddress
+                Object               = $RecipientDNHash[$SendOB].Name
+                ObjectPrimarySMTP    = $RecipientDNHash[$SendOB].PrimarySMTPAddress
                 Granted              = $CurGranted
                 GrantedPrimarySMTP   = $Email
                 RecipientTypeDetails = $Type          

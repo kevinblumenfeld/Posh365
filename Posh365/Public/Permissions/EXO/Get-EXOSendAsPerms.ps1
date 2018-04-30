@@ -1,7 +1,7 @@
 function Get-EXOSendAsPerms {
     <#
     .SYNOPSIS
-    Outputs Send As permissions for each mailbox that has permissions assigned.
+    Outputs Send As permissions for each object that has permissions assigned.
     This is for Office 365
     
     .EXAMPLE
@@ -56,8 +56,8 @@ function Get-EXOSendAsPerms {
                 $Type = $RecipientLiveIDHash[$_.Trustee].RecipientTypeDetails
             }
             [pscustomobject]@{
-                Mailbox              = $_.Identity
-                MailboxPrimarySMTP   = $RecipientHash[$_.Identity].PrimarySMTPAddress
+                Object               = $_.Identity
+                ObjectPrimarySMTP    = $RecipientHash[$_.Identity].PrimarySMTPAddress
                 Granted              = $Trustee
                 GrantedPrimarySMTP   = $Email
                 RecipientTypeDetails = $Type          
