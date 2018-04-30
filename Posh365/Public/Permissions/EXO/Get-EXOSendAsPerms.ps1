@@ -29,6 +29,7 @@ function Get-EXOSendAsPerms {
 
     }
     Process {
+        Write-Verbose "Inspecting: `t $_"
         Get-RecipientPermission $_ |
             Where-Object {
             $_.AccessRights -like "*SendAs*" -and 
@@ -38,6 +39,7 @@ function Get-EXOSendAsPerms {
         } | ForEach-Object {
             $Trustee = $_.Trustee
             $Type = $null
+            Write-Verbose "Granted Send As: `t $Trustee"
             if ($RecipientMailHash.ContainsKey($_.Trustee)) {
                 $Trustee = $RecipientMailHash[$_.Trustee].Name
                 $Email = $RecipientMailHash[$_.Trustee].PrimarySMTPAddress

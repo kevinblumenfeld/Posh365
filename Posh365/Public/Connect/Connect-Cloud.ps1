@@ -316,6 +316,7 @@ function Connect-Cloud {
         }
         # SharePoint Online
         if ($SharePoint -or $All365) {
+            $SharePointAdminSite = 'https://' + $Tenant + '-admin.sharepoint.com'
             Try {
                 Import-Module Microsoft.Online.SharePoint.PowerShell -DisableNameChecking -ErrorAction Stop
             }
@@ -325,16 +326,17 @@ function Connect-Cloud {
             }
             if (! $MFA) {
                 Try {
-                    Connect-SPOService -Url ("https://" + $Tenant + "-admin.sharepoint.com") -credential $Credential -ErrorAction stop
+                    Connect-SPOService -Url $SharePointAdminSite -credential $Credential -ErrorAction stop
                     Write-Host "You have successfully connected to SharePoint" -foregroundcolor "magenta" -backgroundcolor "white"
                 }
                 Catch {
+                    $_
                     Write-Warning "Unable to Connect to SharePoint Online."
                 }
             }
             else {
                 Try {
-                    Connect-SPOService -Url ("https://" + $Tenant + "-admin.sharepoint.com") -ErrorAction stop
+                    Connect-SPOService -Url $SharePointAdminSite -ErrorAction stop
                     Write-Host "You have successfully connected to SharePoint" -foregroundcolor "magenta" -backgroundcolor "white"
                 }
                 Catch {

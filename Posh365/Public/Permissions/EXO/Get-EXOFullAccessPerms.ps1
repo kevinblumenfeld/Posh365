@@ -33,6 +33,7 @@ function Get-EXOFullAccessPerms {
 
     }
     Process {
+        Write-Verbose "Inspecting: `t $_"
         Get-MailboxPermission $_ |
             Where-Object {
             $_.AccessRights -like "*FullAccess*" -and 
@@ -42,6 +43,7 @@ function Get-EXOFullAccessPerms {
         } | ForEach-Object {
             $Type = $null
             $User = $_.User
+            Write-Verbose "Granted Full Access: `t $User"
             if ($RecipientMailHash.ContainsKey($_.User)) {
                 $User = $RecipientMailHash[$_.User].Name
                 $Type = $RecipientMailHash[$_.User].RecipientTypeDetails

@@ -40,15 +40,20 @@ function Get-EXOGroup {
     Begin {
         if ($DetailedReport) {
             $Selectproperties = @(
-                'Alias', 'ArbitrationMailbox', 'CustomAttribute1', 'CustomAttribute10', 'CustomAttribute11'
-                'CustomAttribute12', 'CustomAttribute13', 'CustomAttribute14', 'CustomAttribute15', 'CustomAttribute2'
-                'CustomAttribute3', 'CustomAttribute4', 'CustomAttribute5', 'CustomAttribute6', 'CustomAttribute7'
-                'CustomAttribute8', 'CustomAttribute9', 'DisplayName', 'DistinguishedName', 'ExchangeVersion'
-                'ExpansionServer', 'ExternalDirectoryObjectId', 'GroupType', 'Id', 'Identity', 'LegacyExchangeDN'
-                'MaxReceiveSize', 'MaxSendSize', 'MemberDepartRestriction', 'MemberJoinRestriction', 'Name'
+                'Name', 'DisplayName', 'Alias', 'GroupType', 'Identity', 'PrimarySmtpAddress', 'RecipientType'
+                'RecipientTypeDetails', 'WindowsEmailAddress', 'ArbitrationMailbox', 'CustomAttribute1'
+                'CustomAttribute10', 'CustomAttribute11', 'CustomAttribute12', 'CustomAttribute13'
+                'CustomAttribute14', 'CustomAttribute15', 'CustomAttribute2', 'CustomAttribute3'
+                'CustomAttribute4', 'CustomAttribute5', 'CustomAttribute6', 'CustomAttribute7'
+                'CustomAttribute8', 'CustomAttribute9', 'DistinguishedName', 'ExchangeVersion'
+                'ExpansionServer', 'ExternalDirectoryObjectId', 'Id', 'LegacyExchangeDN'
+                'MaxReceiveSize', 'MaxSendSize', 'MemberDepartRestriction', 'MemberJoinRestriction'
                 'ObjectCategory', 'ObjectState', 'OrganizationalUnit', 'OrganizationId', 'OriginatingServer'
-                'PrimarySmtpAddress', 'RecipientType', 'RecipientTypeDetails', 'SamAccountName'
-                'SendModerationNotifications', 'SimpleDisplayName', 'WindowsEmailAddress'
+                'SamAccountName', 'SendModerationNotifications', 'SimpleDisplayName'
+                'BypassNestedModerationEnabled', 'EmailAddressPolicyEnabled', 'HiddenFromAddressListsEnabled'
+                'IsDirSynced', 'IsValid', 'MigrationToUnifiedGroupInProgress', 'ModerationEnabled'
+                'ReportToManagerEnabled', 'ReportToOriginatorEnabled', 'RequireSenderAuthenticationEnabled'
+                'SendOofMessageToOriginatorEnabled'
             )
     
             $CalculatedProps = @(

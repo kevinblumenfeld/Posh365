@@ -42,6 +42,7 @@ function Get-EXOMailbox {
     Begin {
         if ($DetailedReport) {
             $Selectproperties = @(
+                'Name', 'RecipientTypeDetails', 'DisplayName', 'UserPrincipalName', 'Identity', 'PrimarySmtpAddress'
                 'AddressBookPolicy', 'ArbitrationMailbox', 'ArchiveDatabase', 'ArchiveDomain', 'DataEncryptionPolicy', 'DefaultPublicFolderMailbox'
                 'DisabledArchiveDatabase', 'EffectivePublicFolderMailbox', 'EndDateForRetentionHold', 'ForwardingAddress', 'ForwardingSmtpAddress', 'InactiveMailboxRetireTime'
                 'LastExchangeChangedTime', 'LitigationHoldDate', 'MailboxContainerGuid', 'MailboxMoveSourceMDB', 'MailboxMoveTargetMDB', 'MailboxProvisioningConstraint'
@@ -60,14 +61,14 @@ function Get-EXOMailbox {
                 'StsRefreshTokensValidFrom', 'WhenChanged', 'WhenChangedUTC', 'WhenCreated', 'WhenCreatedUTC', 'WhenMailboxCreated', 'ArchiveGuid', 'DisabledArchiveGuid', 'ExchangeGuid'
                 'Guid', 'AdminDisplayVersion', 'Alias', 'ArchiveQuota', 'ArchiveRelease', 'ArchiveState', 'ArchiveStatus', 'ArchiveWarningQuota', 'AuditLogAgeLimit', 'CalendarLoggingQuota'
                 'CustomAttribute1', 'CustomAttribute10', 'CustomAttribute11', 'CustomAttribute12', 'CustomAttribute13', 'CustomAttribute14', 'CustomAttribute15', 'CustomAttribute2'
-                'CustomAttribute3', 'CustomAttribute4', 'CustomAttribute5', 'CustomAttribute6', 'CustomAttribute7', 'CustomAttribute8', 'CustomAttribute9', 'Database', 'DisplayName'
-                'DistinguishedName', 'ExchangeSecurityDescriptor', 'ExchangeUserAccountControl', 'ExchangeVersion', 'ExternalDirectoryObjectId', 'ExternalOofOptions', 'Id', 'Identity'
+                'CustomAttribute3', 'CustomAttribute4', 'CustomAttribute5', 'CustomAttribute6', 'CustomAttribute7', 'CustomAttribute8', 'CustomAttribute9', 'Database'
+                'DistinguishedName', 'ExchangeSecurityDescriptor', 'ExchangeUserAccountControl', 'ExchangeVersion', 'ExternalDirectoryObjectId', 'ExternalOofOptions', 'Id'
                 'ImmutableId', 'IssueWarningQuota', 'JournalArchiveAddress', 'LegacyExchangeDN', 'LinkedMasterAccount', 'LitigationHoldDuration', 'LitigationHoldOwner'
                 'MailboxMoveBatchName', 'MailboxMoveFlags', 'MailboxMoveRemoteHostName', 'MailboxMoveStatus', 'MailboxPlan', 'MailboxRelease', 'MaxReceiveSize', 'MaxSendSize'
-                'MicrosoftOnlineServicesID', 'Name', 'NetID', 'ObjectCategory', 'ObjectState', 'Office', 'OrganizationalUnit', 'OrganizationId', 'OriginatingServer', 'PrimarySmtpAddress'
-                'ProhibitSendQuota', 'ProhibitSendReceiveQuota', 'RecipientLimits', 'RecipientType', 'RecipientTypeDetails', 'RecoverableItemsQuota', 'RecoverableItemsWarningQuota'
+                'MicrosoftOnlineServicesID', 'NetID', 'ObjectCategory', 'ObjectState', 'Office', 'OrganizationalUnit', 'OrganizationId', 'OriginatingServer'
+                'ProhibitSendQuota', 'ProhibitSendReceiveQuota', 'RecipientLimits', 'RecipientType', 'RecoverableItemsQuota', 'RecoverableItemsWarningQuota'
                 'RemoteRecipientType', 'RetainDeletedItemsFor', 'RetentionComment', 'RetentionPolicy', 'RetentionUrl', 'RoleAssignmentPolicy', 'RulesQuota', 'SamAccountName'
-                'SendModerationNotifications', 'ServerLegacyDN', 'ServerName', 'SharingPolicy', 'SimpleDisplayName', 'SourceAnchor', 'UsageLocation', 'UserPrincipalName'
+                'SendModerationNotifications', 'ServerLegacyDN', 'ServerName', 'SharingPolicy', 'SimpleDisplayName', 'SourceAnchor', 'UsageLocation'
                 'WindowsEmailAddress', 'WindowsLiveID'
             )
 
@@ -115,7 +116,7 @@ function Get-EXOMailbox {
         }
         else {
             $Selectproperties = @(
-                'RecipientTypeDetails', 'Name', 'DisplayName', 'UserPrincipalName', 'Identity', 'PrimarySmtpAddress', 'Alias'
+                'Name', 'RecipientTypeDetails', 'DisplayName', 'UserPrincipalName', 'Identity', 'PrimarySmtpAddress', 'Alias'
                 'ForwardingAddress', 'ForwardingSmtpAddress', 'LitigationHoldDate', 'AccountDisabled', 'DeliverToMailboxAndForward'
                 'HiddenFromAddressListsEnabled', 'IsDirSynced', 'LitigationHoldEnabled', 'LitigationHoldDuration'
                 'LitigationHoldOwner', 'Office', 'RetentionPolicy', 'WindowsEmailAddress'

@@ -29,21 +29,19 @@ function Import-EXOGroup {
         ForEach ($CurGroup in $Groups) {
             $newhash = @{
                 Alias                              = $CurGroup.Alias
-                BypassNestedModerationEnabled      = $CurGroup.BypassNestedModerationEnabled
+                BypassNestedModerationEnabled      = [bool]::Parse($CurGroup.BypassNestedModerationEnabled)
                 DisplayName                        = $CurGroup.DisplayName
                 IgnoreNamingPolicy                 = $CurGroup.IgnoreNamingPolicy
                 MemberDepartRestriction            = $CurGroup.MemberDepartRestriction
                 MemberJoinRestriction              = $CurGroup.MemberJoinRestriction
-                ModerationEnabled                  = $CurGroup.ModerationEnabled
+                ModerationEnabled                  = [bool]::Parse($CurGroup.ModerationEnabled)
                 Name                               = $CurGroup.Name
                 Notes                              = $CurGroup.Notes
                 PrimarySmtpAddress                 = $CurGroup.PrimarySmtpAddress
-                RequireSenderAuthenticationEnabled = $CurGroup.RequireSenderAuthenticationEnabled
+                RequireSenderAuthenticationEnabled = [bool]::Parse($CurGroup.RequireSenderAuthenticationEnabled)
                 SendModerationNotifications        = $CurGroup.SendModerationNotifications
-                Type                               = $CurGroup.Type
             }            
             $sethash = @{
-                BypassSecurityGroupManagerCheck    = $CurGroup.BypassSecurityGroupManagerCheck
                 CustomAttribute1                   = $CurGroup.CustomAttribute1
                 CustomAttribute10                  = $CurGroup.CustomAttribute10
                 CustomAttribute11                  = $CurGroup.CustomAttribute11
@@ -59,14 +57,14 @@ function Import-EXOGroup {
                 CustomAttribute7                   = $CurGroup.CustomAttribute7
                 CustomAttribute8                   = $CurGroup.CustomAttribute8
                 CustomAttribute9                   = $CurGroup.CustomAttribute9
-                HiddenFromAddressListsEnabled      = $CurGroup.HiddenFromAddressListsEnabled
+                HiddenFromAddressListsEnabled      = [bool]::Parse($CurGroup.HiddenFromAddressListsEnabled)
                 Identity                           = $CurGroup.Identity
                 RejectMessagesFrom                 = $CurGroup.RejectMessagesFrom
                 RejectMessagesFromDLMembers        = $CurGroup.RejectMessagesFromDLMembers
                 RejectMessagesFromSendersOrMembers = $CurGroup.RejectMessagesFromSendersOrMembers
-                ReportToManagerEnabled             = $CurGroup.ReportToManagerEnabled
-                ReportToOriginatorEnabled          = $CurGroup.ReportToOriginatorEnabled
-                SendOofMessageToOriginatorEnabled  = $CurGroup.SendOofMessageToOriginatorEnabled
+                ReportToManagerEnabled             = [bool]::Parse($CurGroup.ReportToManagerEnabled)
+                ReportToOriginatorEnabled          = [bool]::Parse($CurGroup.ReportToOriginatorEnabled)
+                SendOofMessageToOriginatorEnabled  = [bool]::Parse($CurGroup.SendOofMessageToOriginatorEnabled)
                 SimpleDisplayName                  = $CurGroup.SimpleDisplayName
                 WindowsEmailAddress                = $CurGroup.WindowsEmailAddress
 
@@ -83,13 +81,23 @@ function Import-EXOGroup {
                     $setparams.add($h, $($sethash.item($h)))
                 }
             }
-            if ($CurGroup.RecipientTypeDetails -ne "RoomList") {
-                New-DistributionGroup @newparams -Verbose
-            }
-            else {
-                New-DistributionGroup @newparams -RoomList -Verbose
-            }
+            $type = $CurGroup.RecipientTypeDetails
 
+            switch ( $type ) {
+                MailUniversalDistributionGroup {
+                    $newparams['Type'] = "Distribution"
+                }
+                MailNonUniversalGroup {
+                    $newparams['Type'] = "Distribution"
+                }
+                MailUniversalSecurityGroup {
+                    $newparams['Type'] = "Security"
+                }
+                RoomList {
+                    $newparams['Roomlist'] = $true
+                }
+            }
+            New-DistributionGroup @newparams
             Set-DistributionGroup @setparams
 
             if ($CurGroup.AcceptMessagesOnlyFrom) {
