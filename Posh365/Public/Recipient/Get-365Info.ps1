@@ -19,7 +19,7 @@ function Get-365Info {
     8. Licenses assigned to each user broken out by Options
     9. Retention Policies and linked Retention Tags in a single report
     
-    If using the -Filtered switch, it will be necessary to replace domain placeholders in script (e.g. brileyfbr.com etc.)
+    If using the -Filtered switch, it will be necessary to replace domain placeholders in script (e.g. contoso.com etc.)
     The filters can be adjusted to anything supported by the -Filter parameter (OPath filters)
 
     .EXAMPLE
@@ -115,44 +115,44 @@ function Get-365Info {
         else {
 
             Write-Verbose "Gathering 365 Recipients - filtered"
-            '{UserPrincipalName -like "*brileyfbr.com" -or 
-            emailaddresses -like "*brileyfbr.com" -or 
-            ExternalEmailAddress -like "*brileyfbr.com" -or 
-            PrimarySmtpAddress -like "*brileyfbr.com"}' | Get-365Recipient | Export-Csv .\$RecipientFileName -notypeinformation -encoding UTF8
+            '{UserPrincipalName -like "*contoso.com" -or 
+            emailaddresses -like "*contoso.com" -or 
+            ExternalEmailAddress -like "*contoso.com" -or 
+            PrimarySmtpAddress -like "*contoso.com"}' | Get-365Recipient | Export-Csv .\$RecipientFileName -notypeinformation -encoding UTF8
             
-            '{UserPrincipalName -like "*brileyfbr.com" -or 
-            emailaddresses -like "*brileyfbr.com" -or 
-            ExternalEmailAddress -like "*brileyfbr.com" -or 
-            PrimarySmtpAddress -like "*brileyfbr.com"}' | Get-365Recipient -DetailedReport | Export-Csv .\$RecipientFileNameDetailed -notypeinformation -encoding UTF8
+            '{UserPrincipalName -like "*contoso.com" -or 
+            emailaddresses -like "*contoso.com" -or 
+            ExternalEmailAddress -like "*contoso.com" -or 
+            PrimarySmtpAddress -like "*contoso.com"}' | Get-365Recipient -DetailedReport | Export-Csv .\$RecipientFileNameDetailed -notypeinformation -encoding UTF8
             
             Write-Verbose "Gathering MsolUsers - filtered"
-            'brileyfbr.com' | Get-365MsolUser | Export-Csv .\$MsolUserFileName -notypeinformation -encoding UTF8
-            'brileyfbr.com' | Get-365MsolUser -DetailedReport | Export-Csv .\$MsolUserFileNameDetailed -notypeinformation -encoding UTF8
+            'contoso.com' | Get-365MsolUser | Export-Csv .\$MsolUserFileName -notypeinformation -encoding UTF8
+            'contoso.com' | Get-365MsolUser -DetailedReport | Export-Csv .\$MsolUserFileNameDetailed -notypeinformation -encoding UTF8
     
             Write-Verbose "Gathering MsolGroups - filtered"
-            Get-MsolGroup -All | Where-Object {$_.proxyaddresses -like "*brileyfbr.com"} | Select -ExpandProperty ObjectId | Get-365MsolGroup | Export-Csv .\$MsolGroupFileName -notypeinformation -encoding UTF8
+            Get-MsolGroup -All | Where-Object {$_.proxyaddresses -like "*contoso.com"} | Select -ExpandProperty ObjectId | Get-365MsolGroup | Export-Csv .\$MsolGroupFileName -notypeinformation -encoding UTF8
     
             Write-Verbose "Gathering Distribution & Mail-Enabled Security Groups - filtered"
-            $DGs = Get-DistributionGroup -Filter "emailaddresses -like '*brileyfbr.com*'" -ResultSize Unlimited 
+            $DGs = Get-DistributionGroup -Filter "emailaddresses -like '*contoso.com*'" -ResultSize Unlimited 
             $DGs | Select -ExpandProperty Name | Get-EXOGroup | Export-Csv .\$EXOGroupFileName -notypeinformation -encoding UTF8
             $DGs | Select -ExpandProperty Name | Get-EXOGroup -DetailedReport | Export-Csv .\$EXOGroupFileNameDetailed -notypeinformation -encoding UTF8
     
             Write-Verbose "Gathering Exchange Online Mailboxes - filtered"
-            '{emailaddresses -like "*brileyfbr.com"}' | Get-EXOMailbox | Export-Csv .\$EXOMailboxFileName -notypeinformation -encoding UTF8
-            '{emailaddresses -like "*brileyfbr.com"}' | Get-EXOMailbox -DetailedReport | Export-Csv .\$EXOMailboxFileNameDetailed -notypeinformation -encoding UTF8
+            '{emailaddresses -like "*contoso.com"}' | Get-EXOMailbox | Export-Csv .\$EXOMailboxFileName -notypeinformation -encoding UTF8
+            '{emailaddresses -like "*contoso.com"}' | Get-EXOMailbox -DetailedReport | Export-Csv .\$EXOMailboxFileNameDetailed -notypeinformation -encoding UTF8
             
             Write-Verbose "Gathering Exchange Online Archive Mailboxes - filtered"
-            '{emailaddresses -like "*brileyfbr.com"}' | Get-EXOMailbox -ArchivesOnly | Export-Csv .\$EXOArchiveMailboxFileName -notypeinformation -encoding UTF8
-            '{emailaddresses -like "*brileyfbr.com"}' | Get-EXOMailbox -ArchivesOnly -DetailedReport | Export-Csv .\$EXOArchiveMailboxFileNameDetailed -notypeinformation -encoding UTF8
+            '{emailaddresses -like "*contoso.com"}' | Get-EXOMailbox -ArchivesOnly | Export-Csv .\$EXOArchiveMailboxFileName -notypeinformation -encoding UTF8
+            '{emailaddresses -like "*contoso.com"}' | Get-EXOMailbox -ArchivesOnly -DetailedReport | Export-Csv .\$EXOArchiveMailboxFileNameDetailed -notypeinformation -encoding UTF8
 
             Write-Verbose "Gathering Exchange Online Resource Mailboxes and Calendar Processing"
-            '{emailaddresses -like "*brileyfbr.com"}' | Get-EXOResourceMailbox | Export-Csv .\$EXOResourceMailboxFileName -notypeinformation -encoding UTF8
+            '{emailaddresses -like "*contoso.com"}' | Get-EXOResourceMailbox | Export-Csv .\$EXOResourceMailboxFileName -notypeinformation -encoding UTF8
 
             Write-Verbose "Gathering Office 365 Licenses - filtered"
-            'brileyfbr.com' | Get-CloudLicense
+            'contoso.com' | Get-CloudLicense
             
             Write-Verbose "Gathering Mailbox Delegate Permissions - filtered"
-            $Recipients = Get-Recipient -Filter {EmailAddresses -like "*brileyfbr.com"} -ResultSize Unlimited 
+            $Recipients = Get-Recipient -Filter {EmailAddresses -like "*contoso.com"} -ResultSize Unlimited 
             $Recipients | Select -ExpandProperty name | Get-EXOMailboxPerms -Tenant $Tenant -ReportPath .\
                 
             Write-Verbose "Gathering Distribution Group Delegate Permissions - filtered"
