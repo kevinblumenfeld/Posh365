@@ -44,13 +44,12 @@
                 !($_.User.tostring().startswith('S-1-5-21-'))
             } | ForEach-Object {
                 $User = $_.User
-                write-host "Granted     $($ADHashDG.$User.DisplayName) "
                 New-Object -TypeName PSObject -property @{
                     Object      = $ADHashDGDN.$DG.DisplayName
                     PrimarySMTP = $ADHashDGDN.$DG.PrimarySMTPAddress
-                    Granted     = $ADHashDG.$User.DisplayName
-                    GrantedUPN  = $ADHashDG.$User.UPN
-                    GrantedSMTP = $ADHashDG.$User.PrimarySMTPAddress
+                    Granted     = $ADHashDG."$User".DisplayName
+                    GrantedUPN  = $ADHashDG."$User".UserPrincipalName
+                    GrantedSMTP = $ADHashDG."$User".PrimarySMTPAddress
                     Permission  = "SendAs"  
                 }
             } 

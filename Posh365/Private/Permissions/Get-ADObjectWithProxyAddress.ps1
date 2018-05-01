@@ -20,7 +20,7 @@
         throw
     }
     $Selectproperties = @(
-        'distinguishedname', 'canonicalname', 'displayname'
+        'UserPrincipalName','distinguishedname', 'canonicalname', 'displayname'
     )
     $CalculatedProps = @(
         @{n = "logon"; e = {($DomainNameHash.($_.distinguishedname -replace '^.+?DC=' -replace ',DC=', '.')) + "\" + $_.samaccountname}},
