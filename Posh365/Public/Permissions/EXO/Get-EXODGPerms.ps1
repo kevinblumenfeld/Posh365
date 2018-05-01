@@ -19,7 +19,7 @@
     Get-EXODGPerms -Tenant Contoso -ReportPath C:\PermsReports -Verbose
     
     .EXAMPLE
-    Get-Recipient -Filter {EmailAddresses -like "*contoso.com"}  | Select -ExpandProperty name | Get-EXODGPerms -Tenant Contoso -ReportPath C:\PermsReports
+    Get-Recipient -Filter {EmailAddresses -like "*contoso.com"} -ResultSize Unlimited | Select -ExpandProperty name | Get-EXODGPerms -Tenant Contoso -ReportPath C:\PermsReports
     
     .EXAMPLE
     Get-EXODGPerms -Tenant Contoso -ReportPath C:\PermsReports -SkipFullAccess -Verbose
@@ -78,7 +78,7 @@
         if ($SpecificUsersandGroups) {
             $each = foreach ($CurUserGroup in $SpecificUsersandGroups) {
                 $filter = {name -eq '{0}'} -f $CurUserGroup
-                Get-Recipient -Filter $filter -RecipientTypeDetails UserMailbox, RoomMailbox, EquipmentMailbox, SharedMailbox, MailUniversalDistributionGroup, MailUniversalSecurityGroup -ErrorAction SilentlyContinue
+                Get-Recipient -ResultSize Unlimited -Filter $filter -RecipientTypeDetails UserMailbox, RoomMailbox, EquipmentMailbox, SharedMailbox, MailUniversalDistributionGroup, MailUniversalSecurityGroup -ErrorAction SilentlyContinue
             }
             if ($each) {
                 $allrecipients.add($each)

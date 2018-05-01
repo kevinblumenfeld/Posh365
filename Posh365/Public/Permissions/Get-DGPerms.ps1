@@ -94,7 +94,7 @@
     $ADHashDGDN = $AllADObjects | Get-ADHashDGDN
 
     Write-Verbose "Retrieving distinguishedname's of all Exchange Distribution Groups"
-    $AllDGDNs = Get-Recipient -RecipientTypeDetails 'MailUniversalDistributionGroup', 'MailUniversalSecurityGroup' | Select -ExpandProperty distinguishedname 
+    $AllDGDNs = Get-Recipient -ResultSize Unlimited -RecipientTypeDetails 'MailUniversalDistributionGroup', 'MailUniversalSecurityGroup' | Select -ExpandProperty distinguishedname 
 
     Write-Verbose "Getting SendAs permissions for each mailbox and writing to file"
     $AllDGDNs | Get-DGSendAsPerms -ADHashDGDN $ADHashDGDN -ADHashDG $ADHashDG  | Select Object, PrimarySMTP, Granted, GrantedUPN, GrantedSMTP, Permission |

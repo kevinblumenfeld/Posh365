@@ -84,14 +84,14 @@
         if ($SpecificUsersandGroups) {
             $each = foreach ($CurUserGroup in $SpecificUsersandGroups) {
                 $filter = {name -eq '{0}'} -f $CurUserGroup
-                Get-Recipient -Filter $filter -RecipientTypeDetails UserMailbox, RoomMailbox, EquipmentMailbox, SharedMailbox, MailUniversalDistributionGroup, MailUniversalSecurityGroup -ErrorAction SilentlyContinue
+                Get-Recipient -ResultSize Unlimited -Filter $filter -RecipientTypeDetails UserMailbox, RoomMailbox, EquipmentMailbox, SharedMailbox, MailUniversalDistributionGroup, MailUniversalSecurityGroup -ErrorAction SilentlyContinue
             }
             if ($each) {
                 $allrecipients.add($each)
             }
         }
         else {
-            $AllRecipients = Get-Recipient -ResultSize Unlimited -RecipientTypeDetails UserMailbox, RoomMailbox, EquipmentMailbox, SharedMailbox, MailUniversalDistributionGroup, MailUniversalSecurityGroup
+            $AllRecipients = Get-Recipient -ResultSize Unlimited -ResultSize Unlimited -RecipientTypeDetails UserMailbox, RoomMailbox, EquipmentMailbox, SharedMailbox, MailUniversalDistributionGroup, MailUniversalSecurityGroup
         }
     }
     End {

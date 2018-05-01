@@ -317,7 +317,7 @@ End Sub
             Out-File -FilePath $LogFile -InputObject $headerstring -Encoding UTF8 -append 
             write-host ("Gathering users with the following subscription: " + $license.accountskuid) 
             If ($DomainFilter) {
-                $users = Get-MsolUser -Domain $DomainFilter | where {$_.isLicensed -eq "True"}
+                $users = Get-MsolUser -all -Domain $DomainFilter | where {$_.isLicensed -eq "True"}
             }
             else {
                 $users = Get-MsolUser -all | where {$_.isLicensed -eq "True"}
