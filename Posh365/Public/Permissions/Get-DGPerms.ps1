@@ -13,16 +13,16 @@
     "Object","UPN","Granted","GrantedUPN","Permission"
 
     .EXAMPLE
-    Get-MailboxPerms -ReportPath C:\PermsReports -Verbose
+    Get-DGPerms -ReportPath C:\PermsReports -Verbose
     
     .EXAMPLE
-    Get-MailboxPerms -ReportPath C:\PermsReports -SkipFullAccess -Verbose
+    Get-DGPerms -ReportPath C:\PermsReports -SkipFullAccess -Verbose
     
     .EXAMPLE
-    Get-MailboxPerms -ReportPath C:\PermsReports -SkipSendOnBehalf -Verbose
+    Get-DGPerms -ReportPath C:\PermsReports -SkipSendOnBehalf -Verbose
     
     .EXAMPLE
-    Get-MailboxPerms -ReportPath C:\PermsReports -PowerShell2 -ExchangeServer "ExServer01" -Verbose
+    Get-DGPerms -ReportPath C:\PermsReports -PowerShell2 -ExchangeServer "ExServer01" -Verbose
     ***ONLY PS2: When running from PowerShell 2 (Exchange 2010 Server)***
 
     ***FIRST***: Be sure to dot-source the function with the below command (change the path):
@@ -74,7 +74,7 @@
         if (!$ExchangeServer) {
             Write-Warning "********************************************************************************************"
             Write-Warning "               Re-Run the command specifying the -ExchangeServer parameter                  "
-            Write-Warning "ex. Get-MailboxPerms -ReportPath C:\PermsReports -PowerShell2 -ExchangeServer `"ExServer01`""
+            Write-Warning "ex. Get-DGPerms -ReportPath C:\PermsReports -PowerShell2 -ExchangeServer `"ExServer01`""
             Write-Warning "                               Script is terminating                                        "
             Write-Warning "********************************************************************************************"
             throw
@@ -99,29 +99,32 @@
     $DomainNameHash = Get-DomainNameHash
 
     Write-Verbose "Importing Active Directory Users that have at least one proxy address"
-    $AllADUsers = Get-ADUsersWithProxyAddress -DomainNameHash $DomainNameHash
+    $AllADObjects = Get-ADObjectWithProxyAddress -DomainNameHash $DomainNameHash
 
     Write-Verbose "Caching hash table. LogonName as Key and Values of DisplayName & UPN"
-    $ADHash = $AllADUsers | Get-ADHash
+    $ADHashDG = $AllADObjects | Get-ADHashDG
 
     Write-Verbose "Caching hash table. DN as Key and Values of DisplayName, UPN & LogonName"
-    $ADHashDN = $AllADUsers | Get-ADHashDN
+    $ADHashDN = $AllADObjects | Get-ADHashDN
+
+    Write-Verbose "Caching hash table. DN as Key and Values of DisplayName, UPN & LogonName"
+    $ADHashDGDN = $AllADObjects | Get-ADHashDGDN
 
     Write-Verbose "Caching hash table. CN as Key and Values of DisplayName, UPN & LogonName"
-    $ADHashCN = $AllADUsers | Get-ADHashCN
+    $ADHashCN = $AllADObjects | Get-ADHashCN
 
     Write-Verbose "Retrieving distinguishedname's of all Exchange Distribution Groups"
     $AllDGDNs = Get-Recipient -RecipientTypeDetails 'MailUniversalDistributionGroup', 'MailUniversalSecurityGroup' | Select -ExpandProperty distinguishedname 
 
     if (! $SkipSendAs) {
         Write-Verbose "Getting SendAs permissions for each mailbox and writing to file"
-        $AllDGDNs | Get-SendAsPerms -ADHashDN $ADHashDN -ADHash $ADHash  | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
+        $AllDGDNs | Get-DGSendAsPerms -ADHashDGDN $ADHashDGDN -ADHashDG $ADHashDG  | Select Object, PrimarySMTP, Granted, GrantedUPN, GrantedSMTP, Permission |
             Export-csv (Join-Path $ReportPath "DGSendAsPerms.csv") -NoTypeInformation
     }
     
     if (! $SkipSendOnBehalf) {
         Write-Verbose "Getting SendOnBehalf permissions for each mailbox and writing to file"
-        $AllDGDNs | Get-SendOnBehalfPerms -ADHashCN $ADHashCN | Select Mailbox, UPN, Granted, GrantedUPN, Permission |
+        $AllDGDNs | Get-SendOnBehalfPerms -ADHashCN $ADHashCN | Select Object, PrimarySMTP, Granted, GrantedUPN, GrantedSMTP, Permission |
             Export-csv (Join-Path $ReportPath "DGSendOnBehalfPerms.csv") -NoTypeInformation
     }
     
