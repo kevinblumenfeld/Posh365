@@ -37,6 +37,7 @@ function Get-FullAccessPerms {
     Process {
         ForEach ($curDN in $DistinguishedName) {
             $mailbox = $curDN
+            Write-Verbose "Inspecting: `t $mailbox"
             Get-MailboxPermission $curDN |
                 Where-Object {
                 $_.AccessRights -like "*FullAccess*" -and 
@@ -44,6 +45,7 @@ function Get-FullAccessPerms {
                 !$_.user.tostring().startswith('NT AUTHORITY\SELF')
             } | ForEach-Object {
                 $User = $_.User
+                Write-Verbose "Has Full Access: `t $User"
                 try {
                     Get-ADGroupMember ($_.user -split "\\")[1] -Recursive -ErrorAction stop | 
                         ForEach-Object {

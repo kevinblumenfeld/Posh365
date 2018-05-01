@@ -1,5 +1,5 @@
 ﻿Function Get-MailboxPerms {
-    
+    ##
     <#
     .SYNOPSIS
     By default, creates permissions reports for all mailboxes with SendAs, SendOnBehalf and FullAccess delegates.

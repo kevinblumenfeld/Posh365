@@ -34,9 +34,11 @@ function Get-SendOnBehalfPerms {
     Process {
         ForEach ($curDN in $DistinguishedName) {
             $mailbox = $curDN
+            Write-Verbose "Inspecting: `t $Mailbox"
             (Get-Mailbox $curDN -erroraction silentlycontinue).GrantSendOnBehalfTo |
                 where-object {$_ -ne $null}  | ForEach-Object {
                 $CN = $_
+                Write-Verbose "Has Send On Behalf: `t $CN"
                 try {
                     Get-ADGroupMember $_ -Recursive -ErrorAction stop | 
                         ForEach-Object {

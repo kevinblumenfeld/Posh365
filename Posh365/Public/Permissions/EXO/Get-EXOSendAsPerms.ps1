@@ -33,7 +33,7 @@ function Get-EXOSendAsPerms {
         Get-RecipientPermission $_ |
             Where-Object {
             $_.AccessRights -like "*SendAs*" -and 
-            !$_.IsInherited -and !$_.identity.startswith('S-1-5-21-') -and 
+            !$_.IsInherited -and !$_.trustee.startswith('S-1-5-21-') -and 
             !$_.trustee.startswith('NT AUTHORITY\SELF') -and !$_.trustee.startswith('NULL SID') -and
             !$_.trustee.contains('\')
         } | ForEach-Object {

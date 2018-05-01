@@ -2,9 +2,7 @@
     
     <#
     .SYNOPSIS
-    By default, creates permissions reports for all DGs with SendAs & SendOnBehalf.
-    Switches can be added to isolate one or more reports
-    Creates individual reports for each permission type (unless skipped), and a report that combines all CSVs in chosen directory.
+    By default, creates permissions reports for all DGs with SendAs Permissions.
     The combined report will be called, DGAllPermissions.csv
 
     If same Report Path is chosen, existing files will be overwritten.
@@ -14,12 +12,6 @@
 
     .EXAMPLE
     Get-DGPerms -ReportPath C:\PermsReports -Verbose
-    
-    .EXAMPLE
-    Get-DGPerms -ReportPath C:\PermsReports -SkipFullAccess -Verbose
-    
-    .EXAMPLE
-    Get-DGPerms -ReportPath C:\PermsReports -SkipSendOnBehalf -Verbose
     
     .EXAMPLE
     Get-DGPerms -ReportPath C:\PermsReports -PowerShell2 -ExchangeServer "ExServer01" -Verbose
@@ -34,12 +26,6 @@
     param (
         [Parameter(Mandatory = $true)]
         [System.IO.FileInfo] $ReportPath,
-
-        [Parameter()]
-        [switch] $SkipSendAs,
-
-        [Parameter()]
-        [switch] $SkipSendOnBehalf,
 
         [Parameter()]
         [switch] $PowerShell2,
@@ -105,33 +91,19 @@
     $ADHashDG = $AllADObjects | Get-ADHashDG
 
     Write-Verbose "Caching hash table. DN as Key and Values of DisplayName, UPN & LogonName"
-    $ADHashDN = $AllADObjects | Get-ADHashDN
-
-    Write-Verbose "Caching hash table. DN as Key and Values of DisplayName, UPN & LogonName"
     $ADHashDGDN = $AllADObjects | Get-ADHashDGDN
-
-    Write-Verbose "Caching hash table. CN as Key and Values of DisplayName, UPN & LogonName"
-    $ADHashCN = $AllADObjects | Get-ADHashCN
 
     Write-Verbose "Retrieving distinguishedname's of all Exchange Distribution Groups"
     $AllDGDNs = Get-Recipient -RecipientTypeDetails 'MailUniversalDistributionGroup', 'MailUniversalSecurityGroup' | Select -ExpandProperty distinguishedname 
 
-    if (! $SkipSendAs) {
-        Write-Verbose "Getting SendAs permissions for each mailbox and writing to file"
-        $AllDGDNs | Get-DGSendAsPerms -ADHashDGDN $ADHashDGDN -ADHashDG $ADHashDG  | Select Object, PrimarySMTP, Granted, GrantedUPN, GrantedSMTP, Permission |
-            Export-csv (Join-Path $ReportPath "DGSendAsPerms.csv") -NoTypeInformation
-    }
-    
-    if (! $SkipSendOnBehalf) {
-        Write-Verbose "Getting SendOnBehalf permissions for each mailbox and writing to file"
-        $AllDGDNs | Get-SendOnBehalfPerms -ADHashCN $ADHashCN | Select Object, PrimarySMTP, Granted, GrantedUPN, GrantedSMTP, Permission |
-            Export-csv (Join-Path $ReportPath "DGSendOnBehalfPerms.csv") -NoTypeInformation
-    }
+    Write-Verbose "Getting SendAs permissions for each mailbox and writing to file"
+    $AllDGDNs | Get-DGSendAsPerms -ADHashDGDN $ADHashDGDN -ADHashDG $ADHashDG  | Select Object, PrimarySMTP, Granted, GrantedUPN, GrantedSMTP, Permission |
+        Export-csv (Join-Path $ReportPath "DGSendAsPerms.csv") -NoTypeInformation
     
     $AllPermissions = $null
     $Report = $ReportPath.ToString()
     $Report = $Report.TrimEnd('\') + "\*"
-    $AllPermissions = Get-ChildItem -Path $Report -Include "DGSendAsPerms.csv", "DGSendOnBehalfPerms.csv" -Exclude "DGAllPermissions.csv" | % {
+    $AllPermissions = Get-ChildItem -Path $Report -Include "DGSendAsPerms.csv" -Exclude "DGAllPermissions.csv" | % {
         Import-Csv $_
     }
     
