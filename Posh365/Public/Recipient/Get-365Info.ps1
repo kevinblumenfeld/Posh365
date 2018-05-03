@@ -133,9 +133,8 @@ function Get-365Info {
             Get-MsolGroup -All | Where-Object {$_.proxyaddresses -like "*contoso.com"} | Select -ExpandProperty ObjectId | Get-365MsolGroup | Export-Csv .\$MsolGroupFileName -notypeinformation -encoding UTF8
     
             Write-Verbose "Gathering Distribution & Mail-Enabled Security Groups - filtered"
-            $DGs = Get-DistributionGroup -Filter "emailaddresses -like '*contoso.com*'" -ResultSize Unlimited 
-            $DGs | Select -ExpandProperty Name | Get-EXOGroup | Export-Csv .\$EXOGroupFileName -notypeinformation -encoding UTF8
-            $DGs | Select -ExpandProperty Name | Get-EXOGroup -DetailedReport | Export-Csv .\$EXOGroupFileNameDetailed -notypeinformation -encoding UTF8
+            Get-DistributionGroup -Filter "emailaddresses -like '*contoso.com*'" -ResultSize Unlimited | Select -ExpandProperty Name | Get-EXOGroup | Export-Csv .\$EXOGroupFileName -notypeinformation -encoding UTF8
+            Get-DistributionGroup -Filter "emailaddresses -like '*contoso.com*'" -ResultSize Unlimited | Select -ExpandProperty Name | Get-EXOGroup -DetailedReport | Export-Csv .\$EXOGroupFileNameDetailed -notypeinformation -encoding UTF8
     
             Write-Verbose "Gathering Exchange Online Mailboxes - filtered"
             '{emailaddresses -like "*contoso.com"}' | Get-EXOMailbox | Export-Csv .\$EXOMailboxFileName -notypeinformation -encoding UTF8
@@ -151,12 +150,11 @@ function Get-365Info {
             Write-Verbose "Gathering Office 365 Licenses - filtered"
             'contoso.com' | Get-CloudLicense
             
-            Write-Verbose "Gathering Mailbox Delegate Permissions - filtered"
-            $Recipients = Get-Recipient -Filter {EmailAddresses -like "*contoso.com"} -ResultSize Unlimited 
-            $Recipients | Select -ExpandProperty name | Get-EXOMailboxPerms -Tenant $Tenant -ReportPath .\
+            Write-Verbose "Gathering Mailbox Delegate Permissions - filtered" 
+            Get-Recipient -Filter {EmailAddresses -like "*contoso.com"} -ResultSize Unlimited | Select -ExpandProperty name | Get-EXOMailboxPerms -Tenant $Tenant -ReportPath .\
                 
             Write-Verbose "Gathering Distribution Group Delegate Permissions - filtered"
-            $Recipients  | Select -ExpandProperty name | Get-EXODGPerms -Tenant $Tenant -ReportPath .\
+            Get-Recipient -Filter {EmailAddresses -like "*contoso.com"} -ResultSize Unlimited | Select -ExpandProperty name | Get-EXODGPerms -Tenant $Tenant -ReportPath .\
     
         }
 

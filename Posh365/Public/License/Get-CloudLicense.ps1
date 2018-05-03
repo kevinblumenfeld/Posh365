@@ -19,6 +19,65 @@
     
     .EXAMPLE
     'contoso.com','fabrikam.com' | Get-CloudLicense
+        
+    .EXAMPLE
+    MACRO TO SEPARATE EACH SKU INTO ITS OWN EXCEL TAB
+    
+    #############################################################        
+    Below is Excel Macro to separate each SKU into its own tab
+    ALT + F11 / Right-Click Sheet1 > Insert > Module /
+    Copy & Paste text below (from Option Explicit to End Sub) /
+    ALT + Q / ALT + F8 / Click Run (large tenants take some time)
+    #############################################################
+
+
+        Option Explicit
+    Sub createsheetabs()
+        Application.ScreenUpdating = False
+        Dim ws As Worksheet, lrow As Long, wk As Worksheet
+        Dim ws1 As Worksheet
+        Dim i As Long
+        Dim rwIn As Long, rwOut As Long
+        Dim EmptyCount As Integer
+        
+        Set ws = ActiveSheet
+        For Each wk In ActiveWorkbook.Worksheets
+            Application.DisplayAlerts = False
+            If wk.Name <> ws.Name Then
+                wk.Delete
+            End If
+            Application.DisplayAlerts = True
+        Next wk
+        lrow = ws.Cells(Cells.Rows.Count, "A").End(xlUp).Row
+        rwIn = 1
+        While rwIn < lrow
+            If InStr(1, ws.Range("C" & rwIn), "AccountSku", vbTextCompare) > 0 And InStr(1, ws.Range("C" & rwIn + 1), "AccountSku", vbTextCompare) = 0 Then
+                'Make sheet
+                Sheets.Add after:=Sheets(Sheets.Count)
+                Set ws1 = ActiveSheet
+                If ws.Range("C" & rwIn + 1) = "" Then
+                    EmptyCount = EmptyCount + 1
+                    ws1.Name = "Empty" & EmptyCount
+                Else
+                    ws1.Name = Left(ws.Range("C" & rwIn + 1), 25)
+                End If
+                ws.Range("C" & rwIn).EntireRow.Copy ws1.Range("a1")
+                rwOut = 1
+                i = 0
+                'Add data
+                While InStr(1, ws.Range("C" & rwIn + 1), "AccountSku", vbTextCompare) = 0 And rwIn < lrow
+                    rwIn = rwIn + 1
+                    rwOut = rwOut + 1
+                    ws.Range("C" & rwIn).EntireRow.Copy ws1.Range("A" & rwOut)
+                    i = i + 1
+                Wend
+                ws1.Cells.EntireColumn.AutoFit
+                ws1.Name = ws1.Name & "-" & i
+            End If
+            rwIn = rwIn + 1
+        Wend
+        Application.ScreenUpdating = True
+    End Sub
     
     #>
 
@@ -30,64 +89,6 @@
 
     Begin {
 
-        <#
-#############################################################        
-Below is Excel Macro to separate each SKU into its own tab
-ALT + F11 / Right-Click Sheet1 > Insert > Module /
-Copy & Paste text below (from Option Explicit to End Sub) /
-ALT + Q / ALT + F8 / Click Run (large tenants take some time)
-#############################################################
-
-
-    Option Explicit
-Sub createsheetabs()
-    Application.ScreenUpdating = False
-    Dim ws As Worksheet, lrow As Long, wk As Worksheet
-    Dim ws1 As Worksheet
-    Dim i As Long
-    Dim rwIn As Long, rwOut As Long
-    Dim EmptyCount As Integer
-    
-    Set ws = ActiveSheet
-    For Each wk In ActiveWorkbook.Worksheets
-        Application.DisplayAlerts = False
-        If wk.Name <> ws.Name Then
-            wk.Delete
-        End If
-        Application.DisplayAlerts = True
-    Next wk
-    lrow = ws.Cells(Cells.Rows.Count, "A").End(xlUp).Row
-    rwIn = 1
-    While rwIn < lrow
-        If InStr(1, ws.Range("C" & rwIn), "AccountSku", vbTextCompare) > 0 And InStr(1, ws.Range("C" & rwIn + 1), "AccountSku", vbTextCompare) = 0 Then
-            'Make sheet
-            Sheets.Add after:=Sheets(Sheets.Count)
-            Set ws1 = ActiveSheet
-            If ws.Range("C" & rwIn + 1) = "" Then
-                EmptyCount = EmptyCount + 1
-                ws1.Name = "Empty" & EmptyCount
-            Else
-                ws1.Name = Left(ws.Range("C" & rwIn + 1), 25)
-            End If
-            ws.Range("C" & rwIn).EntireRow.Copy ws1.Range("a1")
-            rwOut = 1
-            i = 0
-            'Add data
-            While InStr(1, ws.Range("C" & rwIn + 1), "AccountSku", vbTextCompare) = 0 And rwIn < lrow
-                rwIn = rwIn + 1
-                rwOut = rwOut + 1
-                ws.Range("C" & rwIn).EntireRow.Copy ws1.Range("A" & rwOut)
-                i = i + 1
-            Wend
-            ws1.Cells.EntireColumn.AutoFit
-            ws1.Name = ws1.Name & "-" & i
-        End If
-        rwIn = rwIn + 1
-    Wend
-    Application.ScreenUpdating = True
-End Sub
-
-#>
 
     }
     Process {

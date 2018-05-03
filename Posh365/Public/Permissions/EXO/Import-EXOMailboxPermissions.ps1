@@ -4,7 +4,8 @@ function Import-EXOMailboxPermissions {
     Applies permissions to Exchange Online Mailboxes
     
     .DESCRIPTION
-    Applies permissions to Exchange Online Mailboxes
+    Applies permissions to Exchange Online Mailboxes Full Access will automap the mailbox
+    In other words, Outlook automatically opens the mailbox where the user is assigned Full Access permission.
 
     .EXAMPLE
     Import-Csv .\contoso-EXOPermissions_All.csv | Import-EXOMailboxPermissions
@@ -34,7 +35,7 @@ function Import-EXOMailboxPermissions {
                 }
                 FullAccess {
                     Write-Verbose "Granting $($CurPermission.Granted) $($CurPermission.Permission) permission over $($CurPermission.Mailbox)"
-                    Add-ObjectPermission -Identity $CurPermission.ObjectPrimarySMTP -User $CurPermission.GrantedPrimarySMTP -AccessRights FullAccess -InheritanceType All -Confirm:$False
+                    Add-MailboxPermission -Identity $CurPermission.ObjectPrimarySMTP -User $CurPermission.GrantedPrimarySMTP -AccessRights FullAccess -InheritanceType All -Confirm:$False
                 }
             }
         }
