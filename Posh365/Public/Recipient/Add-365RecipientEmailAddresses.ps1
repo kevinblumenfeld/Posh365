@@ -32,7 +32,7 @@ Add Recipients Email Addresses
         $hashold.add($_.DisplayName, ($_.primarysmtpaddress))
     }
 
-    $Newt = Import-Csv $NewTenantFile | Select -First 11 | Where-Object {
+    $Newt = Import-Csv $NewTenantFile | Where-Object {
         $_.RecipientTypeDetails -eq 'UserMailbox' -and
         $_.EmailAddresses -cmatch 'SMTP:' -and
         $_.EmailAddresses -match "@jsltechincgc.onmicrosoft.com"
@@ -78,7 +78,7 @@ Add Recipients Email Addresses
                 Out-file $FailLog -Encoding UTF8 -append
         }
     }
-    $AllOld = Import-Csv $AllOldFile | Select -first 10
+    $AllOld = Import-Csv $AllOldFile
     Foreach ($CurAllOld in $AllOld) {
         $Secondary = $CurAllOld.EmailAddresses -split ';' |  Where-Object {
             $_ -clike "smtp:*" -and
