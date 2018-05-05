@@ -95,6 +95,32 @@ Add Recipients Email Addresses
             }        
         }
     }
+
+    $SIP = Get-365RecipientEmailAddresses | Where-Object {
+        $_.emailaddress -like "SIP:*"
+    }
+    Foreach ($CurSIP in $SIP) {
+        Write-Host "----------"
+        Write-Host "DisplayName      : $($CurSIP.DisplayName)"
+        Write-Host "Remove SIP       : $($CurSIP.EmailAddress)"
+        Write-Host "Add SIP          : $("SIP:" + $CurSIP.PrimarySMTPAddress)"
+        Write-Host "----------"
+        Set-Mailbox -Identity $CurSIP.DisplayName -EmailAddresses @{
+            Remove = $CurSIP.EmailAddress
+            Add    = "SIP:" + $CurSIP.PrimarySMTPAddress
+        }
+    }
+
+    <#
+    Get-365MsolUser | Where-Object {
+        $_.userprincipalname -notlike "*sada*" -and $_.userprincipalname -notlike "*admin*"
+    } | select UserPrincipalName, @{
+        n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses |  Where-Object {$_ -cmatch "SMTP:*"}).Substring(5)
+        }
+    } | Set-MsolUserPrincipalName -UserPrincipalName $_.UserPrincipalName -NewUserPrincipalName $_.PrimarySMTPAddress
+#>
+
+        
     $ErrorActionPreference = $currentErrorActionPrefs
 }
 Add-365RecipientEmailAddresses -verbose
