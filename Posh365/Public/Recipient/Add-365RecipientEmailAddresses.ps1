@@ -4,7 +4,7 @@ function Add-365RecipientEmailAddresses {
 Add Recipients Email Addresses
 
 .DESCRIPTION
-Add Recipients Email Addresses
+Add Recipients Email Addresses and other functions
 
 .EXAMPLE
 
@@ -39,9 +39,7 @@ Add Recipients Email Addresses
     } 
     ForEach ($CurNewt in $Newt) {
         Try {
-            
             ## Verify Case of domain.onmicrosoft.com address as case dependent command follows ##
-
             $Remove = $CurNewt.EmailAddresses -split ';' | Where-Object {
                 $_ -clike "SMTP:*@jsltechincgc.onmicrosoft.com"
             }
@@ -63,7 +61,6 @@ Add Recipients Email Addresses
             Write-Verbose "AddBackonMicrosoft      : `t $("smtp:" + ($Remove.substring(5)))"
             Write-Verbose "CurPrimary              : `t $CurPrimary"
             Write-Verbose "----------"
-
 
             if ($Remove) {
                 Set-Mailbox -Identity $DisplayName -EmailAddresses @{
@@ -112,15 +109,41 @@ Add Recipients Email Addresses
     }
 
     <#
-    Get-365MsolUser | Where-Object {
-        $_.userprincipalname -notlike "*sada*" -and $_.userprincipalname -notlike "*admin*"
-    } | select UserPrincipalName, @{
-        n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses |  Where-Object {$_ -cmatch "SMTP:*"}).Substring(5)
-        }
-    } | Set-MsolUserPrincipalName -UserPrincipalName $_.UserPrincipalName -NewUserPrincipalName $_.PrimarySMTPAddress
+
+    # Modify UPN to Match PrimarySMTPAddress
+    $UPNandPrimary = @(
+        @{n = "UserPrincipalName" ; e = {$_.UserPrincipalName}},
+        @{n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses -split ";" |  Where-Object {$_ -cmatch "SMTP:*"}).Substring(5)}}
+    )
+
+    $UP = Get-365MsolUser  | Where-Object {
+        $_.userprincipalname -notlike "*sada*" -and
+        $_.userprincipalname -notlike "*admin*"
+    } | Select-Object $UPNandPrimary
+
+    foreach ($CurUP in $UP) {Set-MsolUserPrincipalName -UserPrincipalName $CurUP.UserPrincipalName -NewUserPrincipalName $CurUP.PrimarySMTPAddress}
 #>
 
-        
+    <#
+    $Fwd = Import-Csv "C:\Scripts\JSLOLD\testmay37pm\JSL_Forwards.csv"
+
+    foreach ($CurFwd in $Fwd) {
+        $FwdHash = @{    
+            Identity                   = $CurFwd.DisplayName
+            DeliverToMailboxAndForward = $True
+            ForwardingSmtpAddress      = $CurFwd.ForwardingSmtpAddress
+        }        
+        $params = @{}
+        if ($CurFwd.ForwardingSmtpAddress) {
+            ForEach ($key in $FwdHash.keys) {
+                if ($($FwdHash.item($key))) {
+                    $params.add($key, $($FwdHash.item($key)))
+                }
+            }   
+            Set-Mailbox @params
+        }
+    }
+    #>
     $ErrorActionPreference = $currentErrorActionPrefs
 }
-Add-365RecipientEmailAddresses -verbose
+
