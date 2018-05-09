@@ -16,12 +16,12 @@ Add Recipients Email Addresses and other functions
 
     $currentErrorActionPrefs = $ErrorActionPreference
     $ErrorActionPreference = 'Stop'
-    $OutputPath = 'C:\Scripts\JSLOLD'
+    $OutputPath = 'C:\Scripts\ContosoOLD'
     $LogFile = ($(get-date -Format yyyy-MM-dd_HH-mm-ss) + "-Failed.csv")
 
-    $NewTenantFile = 'C:\Scripts\JSLNEW\JSLTECHINCGCmbx.csv'
-    $OldTenantFile = 'C:\Scripts\JSLOLD\FINAL.csv'
-    $AllOldFile = 'C:\Scripts\JSLOLD\JSLMBXOLD.csv'
+    $NewTenantFile = 'C:\Scripts\ContosoNEW\ContosoTECHINCGCmbx.csv'
+    $OldTenantFile = 'C:\Scripts\ContosoOLD\FINAL.csv'
+    $AllOldFile = 'C:\Scripts\ContosoOLD\ContosoMBXOLD.csv'
 
     $FailLog = Join-Path $OutputPath $LogFile
     $errheaderstring = "DisplayName,RemovePrimary,RemoveSecondaryToMakePrimary,AddPrimary,AddBackonMicrosoft,RemoveCurPrimary,Error"
@@ -35,13 +35,13 @@ Add Recipients Email Addresses and other functions
     $Newt = Import-Csv $NewTenantFile | Where-Object {
         $_.RecipientTypeDetails -eq 'UserMailbox' -and
         $_.EmailAddresses -cmatch 'SMTP:' -and
-        $_.EmailAddresses -match "@jsltechincgc.onmicrosoft.com"
+        $_.EmailAddresses -match "@Contosotechincgc.onmicrosoft.com"
     } 
     ForEach ($CurNewt in $Newt) {
         Try {
             ## Verify Case of domain.onmicrosoft.com address as case dependent command follows ##
             $Remove = $CurNewt.EmailAddresses -split ';' | Where-Object {
-                $_ -clike "SMTP:*@jsltechincgc.onmicrosoft.com"
+                $_ -clike "SMTP:*@Contosotechincgc.onmicrosoft.com"
             }
 
             $DisplayName = $CurNewt.DisplayName
@@ -125,7 +125,7 @@ Add Recipients Email Addresses and other functions
 #>
 
     <#
-    $Fwd = Import-Csv "C:\Scripts\JSLOLD\testmay37pm\JSL_Forwards.csv"
+    $Fwd = Import-Csv "C:\Scripts\ContosoOLD\testmay37pm\Contoso_Forwards.csv"
 
     foreach ($CurFwd in $Fwd) {
         $FwdHash = @{    
