@@ -39,29 +39,32 @@ function Get-ActiveDirectoryUser {
     Begin {
         if ($DetailedReport) {
             $Selectproperties = @(
-                'AccountNotDelegated', 'AllowReversiblePasswordEncryption', 'CannotChangePassword', 'Deleted', 'DoesNotRequirePreAuth', 'Enabled'
+                'DisplayName', 'UserPrincipalName', 'mail', 'CN', 'mailNickname', 'Name', 'GivenName', 'Surname', 'StreetAddress'
+                'City', 'State', 'Country', 'PostalCode', 'Company', 'Title', 'Department', 'Description', 'OfficePhone'
+                'MobilePhone', 'HomePhone', 'Fax', 'SamAccountName', 'DistinguishedName', 'Office', 'Enabled'
+                'whenChanged', 'whenCreated', 'adminCount', 'Memberof', 'msExchPoliciesExcluded', 'proxyAddresses'
+                'AccountNotDelegated', 'AllowReversiblePasswordEncryption', 'CannotChangePassword', 'Deleted', 'DoesNotRequirePreAuth'
                 'HomedirRequired', 'isDeleted', 'LockedOut', 'mAPIRecipient', 'mDBUseDefaults', 'MNSLogonAccount', 'msExchHideFromAddressLists'
                 'msNPAllowDialin', 'PasswordExpired', 'PasswordNeverExpires', 'PasswordNotRequired', 'ProtectedFromAccidentalDeletion'
                 'SmartcardLogonRequired', 'TrustedForDelegation', 'TrustedToAuthForDelegation', 'UseDESKeyOnly', 'logonHours'
                 'msExchMailboxGuid', 'replicationSignature', 'AccountExpirationDate', 'AccountLockoutTime', 'Created', 'createTimeStamp'
-                'LastBadPasswordAttempt', 'LastLogonDate', 'Modified', 'modifyTimeStamp', 'msTSExpireDate', 'PasswordLastSet', 'whenChanged'
-                'whenCreated', 'msExchMailboxSecurityDescriptor', 'nTSecurityDescriptor', 'adminCount', 'BadLogonCount', 'codePage', 'countryCode'
+                'LastBadPasswordAttempt', 'LastLogonDate', 'Modified', 'modifyTimeStamp', 'msTSExpireDate', 'PasswordLastSet'
+                'msExchMailboxSecurityDescriptor', 'nTSecurityDescriptor', 'BadLogonCount', 'codePage', 'countryCode'
                 'deletedItemFlags', 'dLMemDefault', 'garbageCollPeriod', 'instanceType', 'msDS-SupportedEncryptionTypes'
                 'msDS-User-Account-Control-Computed', 'msExchALObjectVersion', 'msExchMobileMailboxFlags', 'msExchRecipientDisplayType'
                 'msExchUserAccountControl', 'primaryGroupID', 'replicatedObjectVersion', 'sAMAccountType', 'sDRightsEffective'
                 'userAccountControl', 'accountExpires', 'lastLogonTimestamp', 'lockoutTime', 'msExchRecipientTypeDetails', 'msExchVersion'
-                'pwdLastSet', 'uSNChanged', 'uSNCreated', 'ObjectGUID', 'objectSid', 'SID', 'autoReplyMessage', 'CanonicalName', 'City', 'CN'
-                'Company', 'Country', 'Department', 'Description', 'DisplayName', 'displayNamePrintable', 'DistinguishedName', 'Division'
-                'EmailAddress', 'EmployeeID', 'EmployeeNumber', 'Fax', 'GivenName', 'HomeDirectory', 'HomeDrive', 'homeMDB', 'homeMTA'
-                'HomePage', 'HomePhone', 'Initials', 'LastKnownParent', 'legacyExchangeDN', 'LogonWorkstations', 'mail', 'mailNickname'
-                'Manager', 'MobilePhone', 'msExchHomeServerName', 'msExchUserCulture', 'msTSLicenseVersion', 'msTSManagingLS', 'Name'
-                'ObjectCategory', 'ObjectClass', 'Office', 'OfficePhone', 'Organization', 'OtherName', 'POBox', 'PostalCode', 'PrimaryGroup'
-                'ProfilePath', 'SamAccountName', 'ScriptPath', 'sn', 'State', 'StreetAddress', 'Surname', 'textEncodedORAddress', 'Title'
-                'userParameters', 'UserPrincipalName'
+                'pwdLastSet', 'uSNChanged', 'uSNCreated', 'ObjectGUID', 'objectSid', 'SID', 'autoReplyMessage', 'CanonicalName'
+                'displayNamePrintable', 'Division', 'EmployeeID', 'EmployeeNumber', 'HomeDirectory', 'HomeDrive', 'homeMDB', 'homeMTA'
+                'HomePage', 'Initials', 'LastKnownParent', 'legacyExchangeDN', 'LogonWorkstations'
+                'Manager', 'msExchHomeServerName', 'msExchUserCulture', 'msTSLicenseVersion', 'msTSManagingLS'
+                'ObjectCategory', 'ObjectClass', 'Organization', 'OtherName', 'POBox', 'PrimaryGroup'
+                'ProfilePath', 'ScriptPath', 'sn', 'textEncodedORAddress', 'userParameters'
             )
 
             $CalculatedProps = @(
                 @{n = "OU" ; e = {$_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'}},
+                @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "altRecipientBL" ; e = {($_.altRecipientBL | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "AuthenticationPolicy" ; e = {($_.AuthenticationPolicy | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "AuthenticationPolicySilo" ; e = {($_.AuthenticationPolicySilo | Where-Object {$_ -ne $null}) -join ";" }},
@@ -75,7 +78,6 @@ function Get-ActiveDirectoryUser {
                 @{n = "msExchPoliciesExcluded" ; e = {($_.msExchPoliciesExcluded | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "PrincipalsAllowedToDelegateToAccount" ; e = {($_.PrincipalsAllowedToDelegateToAccount | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "protocolSettings" ; e = {($_.protocolSettings | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "publicDelegatesBL" ; e = {($_.publicDelegatesBL | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "securityProtocol" ; e = {($_.securityProtocol | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "ServicePrincipalNames" ; e = {($_.ServicePrincipalNames | Where-Object {$_ -ne $null}) -join ";" }},
@@ -86,23 +88,23 @@ function Get-ActiveDirectoryUser {
         }
         else {
             $Props = @(
-                'DisplayName', 'CN', 'UserPrincipalName', 'mail', 'mailNickname', 'Name', 'GivenName', 'Surname', 'StreetAddress',
+                'DisplayName', 'UserPrincipalName', 'mail', 'CN', 'mailNickname', 'Name', 'GivenName', 'Surname', 'StreetAddress',
                 'City', 'State', 'Country', 'PostalCode', 'Company', 'Title', 'Department', 'Description', 'OfficePhone'
                 'MobilePhone', 'HomePhone', 'Fax', 'SamAccountName', 'DistinguishedName', 'Office', 'Enabled'
                 'whenChanged', 'whenCreated', 'adminCount', 'Memberof', 'msExchPoliciesExcluded', 'proxyAddresses'
             )
             $Selectproperties = @(
-                'DisplayName', 'CN', 'UserPrincipalName', 'mail', 'mailNickname', 'Name', 'GivenName', 'Surname', 'StreetAddress',
+                'DisplayName', 'UserPrincipalName', 'mail', 'CN', 'mailNickname', 'Name', 'GivenName', 'Surname', 'StreetAddress',
                 'City', 'State', 'Country', 'PostalCode', 'Company', 'Title', 'Department', 'Description', 'OfficePhone'
                 'MobilePhone', 'HomePhone', 'Fax', 'SamAccountName', 'DistinguishedName', 'Office', 'Enabled'
                 'whenChanged', 'whenCreated', 'adminCount'
             )
             
             $CalculatedProps = @(
+                @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "OU" ; e = {$_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'}},
                 @{n = "MemberOf" ; e = {($_.MemberOf | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "msExchPoliciesExcluded" ; e = {($_.msExchPoliciesExcluded | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join ";" }} 
+                @{n = "msExchPoliciesExcluded" ; e = {($_.msExchPoliciesExcluded | Where-Object {$_ -ne $null}) -join ";" }}
             )
         }
     }
