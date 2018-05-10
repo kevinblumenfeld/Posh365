@@ -9,17 +9,42 @@ Import ProxyAddresses into Active Directory
 .PARAMETER Row
 Parameter description
 
+.PARAMETER JoinType
+Parameter description
+
+.PARAMETER Match
+Parameter description
+
+.PARAMETER caseMatch
+Parameter description
+
+.PARAMETER matchAnd
+Parameter description
+
+.PARAMETER caseMatchAnd
+Parameter description
+
+.PARAMETER MatchNotAnd
+Parameter description
+
+.PARAMETER caseMatchNotAnd
+Parameter description
+
 .EXAMPLE
-Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -Match @("SPO:","brann")
+Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -caseMatchAnd "brann" -MatchNotAnd @("JAIME") -JoinType and
 
 .NOTES
 Input of ProxyAddresses are exptected to be semicolon seperated
+
 #>
     [CmdletBinding()]
     param (
 
         [Parameter(ValueFromPipeline = $true, Mandatory = $true)]
         $Row,
+        [Parameter()]
+        [ValidateSet("and", "or")]
+        $JoinType,
         [Parameter()]
         $Match,
         [Parameter()]
@@ -34,30 +59,51 @@ Input of ProxyAddresses are exptected to be semicolon seperated
         $caseMatchNotAnd
     )
     Begin {
+        $filterElements = New-Object System.Collections.Generic.List[String]
         if ($Match) {
             $paramMatch = foreach ($curMatch in $Match) {
                 '$_ -match "{0}"' -f $curMatch
             }
-            $filter = [ScriptBlock]::Create($paramMatch -join " -or ")
+            $filterElements.Add($paramMatch -join " -or ")
         }
         if ($caseMatch) {
             $paramMatch = foreach ($curMatch in $caseMatch) {
                 '$_ -cmatch "{0}"' -f $curMatch
             }
-            $filter = [ScriptBlock]::Create($paramMatch -join " -or ")
+            $filterElements.Add($paramMatch -join " -or ")
         }
         if ($matchAnd) {
             $paramMatch = foreach ($curMatchAnd in $matchAnd) {
                 '$_ -match "{0}"' -f $curMatchAnd
             }
-            $filter = [ScriptBlock]::Create($paramMatch -join " -and ")
+            $filterElements.Add($paramMatch -join " -and ")
         }
         if ($caseMatchAnd) {
             $paramMatch = foreach ($curcaseMatchAnd in $caseMatchAnd) {
                 '$_ -cmatch "{0}"' -f $curcaseMatchAnd
             }
-            $filter = [ScriptBlock]::Create($paramMatch -join " -and ")
+            $filterElements.Add($paramMatch -join " -and ")
         }
+        if ($matchNotAnd) {
+            $paramMatch = foreach ($curMatchNotAnd in $matchNotAnd) {
+                '$_ -notmatch "{0}"' -f $curMatchNotAnd
+            }
+            $filterElements.Add($paramMatch -join " -and ")
+        }
+        if ($caseMatchNotAnd) {
+            $paramMatch = foreach ($curCaseMatchNotAnd in $caseMatchNotAnd) {
+                '$_ -cnotmatch "{0}"' -f $curCaseMatchNotAnd
+            }
+            $filterElements.Add($paramMatch -join " -and ")
+        }
+        if ($JoinType -eq 'and') {
+            $filterString = '(' + ($filterElements -join ') -and (') + ')'
+        }
+        else {
+            $filterString = '(' + ($filterElements -join ') -or (') + ')'
+        }
+        
+        $filter = [ScriptBlock]::Create($filterString)
         write-host $filter
     }
     Process {
@@ -70,4 +116,4 @@ Input of ProxyAddresses are exptected to be semicolon seperated
 
     }
 }
-# Import-Csv "C:\Scripts\contoso-EXOMailbox_Detailed.csv" | Import-ADProxyAddress -caseMatch @("SPO:","SMTP:") -Match "onmicrosoft.com" -caseMatchAnd @("brann","jsltechinc.com")
+
