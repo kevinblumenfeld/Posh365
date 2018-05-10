@@ -42,69 +42,57 @@ Input of ProxyAddresses are exptected to be semicolon seperated
 
         [Parameter(ValueFromPipeline = $true, Mandatory = $true)]
         $Row,
+
         [Parameter()]
         [ValidateSet("and", "or")]
-        $JoinType,
+        [String]$JoinType,
+
         [Parameter()]
-        $Match,
+        [String[]]$Match,
+
         [Parameter()]
-        $caseMatch,
+        [String[]]$caseMatch,
+
         [Parameter()]
-        $matchAnd,
+        [String[]]$matchAnd,
+
         [Parameter()]
-        $caseMatchAnd,
+        [String[]]$caseMatchAnd,
+
         [Parameter()]
-        $MatchNotAnd,
+        [String[]]$MatchNotAnd,
+
         [Parameter()]
-        $caseMatchNotAnd
+        [String[]]$caseMatchNotAnd
     )
     Begin {
-        $filterElements = New-Object System.Collections.Generic.List[String]
-        if ($Match) {
-            $paramMatch = foreach ($curMatch in $Match) {
-                '$_ -match "{0}"' -f $curMatch
+        $filterElements = $psboundparameters.Keys | Where-Object { $_ -match 'Match' } | ForEach-Object {
+            # Could do if
+            if ($_.EndsWith('And')) {
+                $logicOperator = ' -and '
             }
-            $filterElements.Add($paramMatch -join " -or ")
-        }
-        if ($caseMatch) {
-            $paramMatch = foreach ($curMatch in $caseMatch) {
-                '$_ -cmatch "{0}"' -f $curMatch
+            else {
+                $logicOperator = ' -or '
             }
-            $filterElements.Add($paramMatch -join " -or ")
-        }
-        if ($matchAnd) {
-            $paramMatch = foreach ($curMatchAnd in $matchAnd) {
-                '$_ -match "{0}"' -f $curMatchAnd
+
+            # Or switch
+            $comparisonOperator = switch ($_) {
+                { $_.StartsWith('case') } { '-cmatch' }
+                default { '-match' }
             }
-            $filterElements.Add($paramMatch -join " -and ")
-        }
-        if ($caseMatchAnd) {
-            $paramMatch = foreach ($curcaseMatchAnd in $caseMatchAnd) {
-                '$_ -cmatch "{0}"' -f $curcaseMatchAnd
+
+            if ($_.Contains('Not')) {
+                $comparisonOperator = $comparisonOperator -replace '^-(c?)', '-$1not'
             }
-            $filterElements.Add($paramMatch -join " -and ")
-        }
-        if ($matchNotAnd) {
-            $paramMatch = foreach ($curMatchNotAnd in $matchNotAnd) {
-                '$_ -notmatch "{0}"' -f $curMatchNotAnd
+
+            $elements = foreach ($value in $psboundparameters[$_]) {
+                '$_ {0} "{1}"' -f $comparisonOperator, $value
             }
-            $filterElements.Add($paramMatch -join " -and ")
+            $elements -join $logicOperator
         }
-        if ($caseMatchNotAnd) {
-            $paramMatch = foreach ($curCaseMatchNotAnd in $caseMatchNotAnd) {
-                '$_ -cnotmatch "{0}"' -f $curCaseMatchNotAnd
-            }
-            $filterElements.Add($paramMatch -join " -and ")
-        }
-        if ($JoinType -eq 'and') {
-            $filterString = '(' + ($filterElements -join ') -and (') + ')'
-        }
-        else {
-            $filterString = '(' + ($filterElements -join ') -or (') + ')'
-        }
-        
+        $filterString = '({0})' -f ($filterElements -join (') -{0} (' -f $JoinType))
         $filter = [ScriptBlock]::Create($filterString)
-        write-host $filter
+        Write-Verbose "Filter used: $filter"
     }
     Process {
         ForEach ($CurRow in $Row) {
@@ -113,7 +101,6 @@ Input of ProxyAddresses are exptected to be semicolon seperated
         }
     }
     End {
-
+        Write-Verbose "Filter used: $filter"
     }
 }
-
