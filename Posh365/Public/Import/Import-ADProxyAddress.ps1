@@ -31,7 +31,10 @@ Parameter description
 Parameter description
 
 .EXAMPLE
-Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -caseMatchAnd "brann" -MatchNotAnd @("JAIME") -JoinType and
+Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -caseMatchAnd "brann" -MatchNotAnd @("JAIME","John") -JoinType and
+
+.EXAMPLE
+Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -caseMatchAnd "Harry Franklin" -MatchNotAnd @("JAIME","John") -JoinType or
 
 .NOTES
 Input of ProxyAddresses are exptected to be semicolon seperated
