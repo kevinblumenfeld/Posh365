@@ -46,7 +46,7 @@ Input of ProxyAddresses are exptected to be semicolon seperated
         [Parameter(ValueFromPipeline = $true, Mandatory = $true)]
         $Row,
 
-        [Parameter()]
+        [Parameter(Mandatory = $true)]
         [ValidateSet("and", "or")]
         [String]$JoinType,
 
@@ -63,22 +63,36 @@ Input of ProxyAddresses are exptected to be semicolon seperated
         [String[]]$caseMatchAnd,
 
         [Parameter()]
+        [String[]]$MatchNot,
+
+        [Parameter()]
+        [String[]]$caseMatchNot,
+        
+        [Parameter()]
         [String[]]$MatchNotAnd,
 
         [Parameter()]
-        [String[]]$caseMatchNotAnd
+        [String[]]$caseMatchNotAnd,
+        
+        [Parameter()]
+        [Switch]$WhatIf
     )
     Begin {
+        $OutputPath = '.\'
+        $LogFileName = ($(get-date -Format yyyy-MM-dd_HH-mm-ss) + "-DryRun.csv")
+        $Log = Join-Path $OutputPath $LogFileName
+        $Header = "DisplayName,EmailAdddresses"
+        Out-File -FilePath $Log -InputObject $Header -Encoding UTF8 -append
+
         $filterElements = $psboundparameters.Keys | Where-Object { $_ -match 'Match' } | ForEach-Object {
-            # Could do if
+
             if ($_.EndsWith('And')) {
                 $logicOperator = ' -and '
             }
             else {
                 $logicOperator = ' -or '
             }
-
-            # Or switch
+            
             $comparisonOperator = switch ($_) {
                 { $_.StartsWith('case') } { '-cmatch' }
                 default { '-match' }
@@ -95,15 +109,23 @@ Input of ProxyAddresses are exptected to be semicolon seperated
         }
         $filterString = '({0})' -f ($filterElements -join (') -{0} (' -f $JoinType))
         $filter = [ScriptBlock]::Create($filterString)
-        Write-Verbose "Filter used: $filter"
+        Write-Verbose "Filter being used: $filter"
     }
     Process {
         ForEach ($CurRow in $Row) {
-            $CurRow.EmailAddresses -split ";" | 
-                Where-Object $filter
+            $address = ($CurRow.EmailAddresses -split ";" | 
+                    Where-Object $filter) -join ","
+            if (! $WhatIf) {
+                
+            }
+            else {
+                if ($address) {
+                    "`"" + $CurRow.DisplayName + "`"" + "," + "`"" + $address + "`"" | Out-File -FilePath $Log -Encoding UTF8 -append
+                }
+            }
         }
     }
     End {
-        Write-Verbose "Filter used: $filter"
+
     }
 }
