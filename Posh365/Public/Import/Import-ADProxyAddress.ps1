@@ -144,7 +144,7 @@ function Import-ADProxyAddress {
                 try {
                     $errorActionPreference = 'Stop'
                     $DisplayName = $_.CurRow.Displayname
-                    $user = Get-ADUser -Filter { displayName -eq $displayName } -Properties proxyAddresses, mail
+                    $user = Get-ADUser -Filter {displayName -eq $DisplayName} -Properties proxyAddresses, mail
 
                     if ($FirstClearAllProxyAddresses) {
                         $user | Set-ADUser -clear ProxyAddresses
@@ -175,7 +175,7 @@ function Import-ADProxyAddress {
                         UPNandMail  = $UPNandMail
                         Addresses   = $Address -join ','
                         
-                    } | Export-Csv $ErrorLog -Append
+                    } | Export-Csv $ErrorLog -Append -NoTypeInformation -Encoding UTF8
                 }
             }
             else {
@@ -184,7 +184,7 @@ function Import-ADProxyAddress {
                         DisplayName = $DisplayName
                         UPNandMail  = $UPNandMail
                         Addresses   = $Address -join ','
-                    } | Export-Csv $Log -Append
+                    } | Export-Csv $Log -Append -NoTypeInformation -Encoding UTF8
                 }
             }
         }
