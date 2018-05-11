@@ -103,7 +103,7 @@ function Import-ADProxyAddress {
 
     )
     Begin {
-        Import-Module ActiveDirectory
+        Import-Module ActiveDirectory -Verbose:$False
         $OutputPath = '.\'
         $LogFileName = $(get-date -Format yyyy-MM-dd_HH-mm-ss)
         $Log = Join-Path $OutputPath ($LogFileName + "-WhatIf_Import.csv")
@@ -139,22 +139,22 @@ function Import-ADProxyAddress {
     Process {
         ForEach ($CurRow in $Row) {
             # Add Error Handling for more than one SMTP:
+            $Display = $CurRow.Displayname
             $Address = $CurRow.EmailAddresses -split ";" | Where-Object $filter
-
             $PrimarySMTP = $CurRow.EmailAddresses -split ";" | Where-Object {$_ -cmatch 'SMTP:'}
             
             if ($PrimarySMTP) {
                 $UPNandMail = $PrimarySMTP.Substring(5)   
             }
-            if ($pscmdlet.ShouldProcess('Setting AD User Attributes')) {
+            if (! $LogOnly) {
                 try {
                     $errorActionPreference = 'Stop'
-                    $DisplayName = $CurRow.Displayname
-                    $user = Get-ADUser -Filter { displayName -eq $displayName } -Properties proxyAddresses, mail, objectGUID
+                    $user = Get-ADUser -Filter { displayName -eq $Display } -Properties proxyAddresses, mail, objectGUID
                     $ObjectGUID = $user.objectGUID
 
                     if ($FirstClearAllProxyAddresses) {
                         $user | Set-ADUser -clear ProxyAddresses
+                        Write-Verbose "$Display `t Cleared ProxyAddresses"
                     }
 
                     $params = @{}
@@ -168,33 +168,37 @@ function Import-ADProxyAddress {
 
                     if ($params.Count -gt 0) {
                         $user | Set-ADUser @params
+                        If ($UpdateUPN) {
+                            Write-Verbose "$Display `t Set UserPrincipalName $UPNandMail"
+                        }
+                        if ($UpdateEmailAddress) {
+                            Write-Verbose "$Display `t Set EmailAddress $UPNandMail"
+                        }
                     }
 
                     $Address | ForEach-Object {
-                        Set-ADUser -Identity $ObjectGUID -Add @{ProxyAddresses = "$_"} -Verbose
+                        Set-ADUser -Identity $ObjectGUID -Add @{ProxyAddresses = "$_"}
+                        Write-Verbose "$Display `t Set ProxyAddress $($_)"
                     }
                 }
                 catch {
                     [PSCustomObject]@{
-                        DisplayName = $DisplayName
+                        DisplayName = $Display
                         Error       = $_
                         UPNandMail  = $UPNandMail
                         Addresses   = $Address -join ','
                         
                     } | Export-Csv $ErrorLog -Append -NoTypeInformation -Encoding UTF8
                 }
-                if ($LogOnly) {
-                    if ($Address) {
-                        [PSCustomObject]@{
-                            DisplayName = $DisplayName
-                            UPNandMail  = $UPNandMail
-                            Addresses   = $Address -join ','
-                        } | Export-Csv $Log -Append -NoTypeInformation -Encoding UTF8
-                    }
-                }
             }
             else {
-
+                if ($Address) {
+                    [PSCustomObject]@{
+                        DisplayName = $Display
+                        UPNandMail  = $UPNandMail
+                        Addresses   = $Address -join ','
+                    } | Export-Csv $Log -Append -NoTypeInformation -Encoding UTF8
+                }
             }
         }
     }
