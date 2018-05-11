@@ -96,10 +96,14 @@ function Import-ADProxyAddress {
         [Switch]$UpdateUPN,
 
         [Parameter()]
-        [Switch]$UpdateEmailAddress
+        [Switch]$UpdateEmailAddress,
+
+        [Parameter()]
+        [Switch]$LogOnly
 
     )
     Begin {
+        Import-Module ActiveDirectory
         $OutputPath = '.\'
         $LogFileName = $(get-date -Format yyyy-MM-dd_HH-mm-ss)
         $Log = Join-Path $OutputPath ($LogFileName + "-WhatIf_Import.csv")
@@ -138,13 +142,16 @@ function Import-ADProxyAddress {
             $Address = $CurRow.EmailAddresses -split ";" | Where-Object $filter
 
             $PrimarySMTP = $CurRow.EmailAddresses -split ";" | Where-Object {$_ -cmatch 'SMTP:'}
-                    
-            $UPNandMail = $PrimarySMTP.Substring(5)
+            
+            if ($PrimarySMTP) {
+                $UPNandMail = $PrimarySMTP.Substring(5)   
+            }
             if ($pscmdlet.ShouldProcess('Setting AD User Attributes')) {
                 try {
                     $errorActionPreference = 'Stop'
-                    $DisplayName = $_.CurRow.Displayname
-                    $user = Get-ADUser -Filter {displayName -eq $DisplayName} -Properties proxyAddresses, mail
+                    $DisplayName = $CurRow.Displayname
+                    $user = Get-ADUser -Filter { displayName -eq $displayName } -Properties proxyAddresses, mail, objectGUID
+                    $ObjectGUID = $user.objectGUID
 
                     if ($FirstClearAllProxyAddresses) {
                         $user | Set-ADUser -clear ProxyAddresses
@@ -164,8 +171,7 @@ function Import-ADProxyAddress {
                     }
 
                     $Address | ForEach-Object {
-                        Get-ADUser -Filter {DisplayName -eq $DisplayName} -Properties ProxyAddresses |
-                            Set-ADUser -Add @{ProxyAddresses = "$_"}
+                        Set-ADUser -Identity $ObjectGUID -Add @{ProxyAddresses = "$_"} -Verbose
                     }
                 }
                 catch {
@@ -177,15 +183,18 @@ function Import-ADProxyAddress {
                         
                     } | Export-Csv $ErrorLog -Append -NoTypeInformation -Encoding UTF8
                 }
+                if ($LogOnly) {
+                    if ($Address) {
+                        [PSCustomObject]@{
+                            DisplayName = $DisplayName
+                            UPNandMail  = $UPNandMail
+                            Addresses   = $Address -join ','
+                        } | Export-Csv $Log -Append -NoTypeInformation -Encoding UTF8
+                    }
+                }
             }
             else {
-                if ($Address) {
-                    [PSCustomObject]@{
-                        DisplayName = $DisplayName
-                        UPNandMail  = $UPNandMail
-                        Addresses   = $Address -join ','
-                    } | Export-Csv $Log -Append -NoTypeInformation -Encoding UTF8
-                }
+
             }
         }
     }
