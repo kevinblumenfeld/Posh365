@@ -180,6 +180,7 @@ function Import-EXOGroup {
             if ($CurGroup.x500) {
                 Set-DistributionGroup -Identity $CurGroup.Identity -emailaddresses @{Add = "$($CurGroup.x500)"}
             }
+            # Move to its own function!
             if ($CurGroup.membersSMTP) {
                 $CurGroup.membersSMTP -Split ";" | ForEach-Object {
                     Add-DistributionGroupMember -Identity $CurGroup.Identity -member "$_"

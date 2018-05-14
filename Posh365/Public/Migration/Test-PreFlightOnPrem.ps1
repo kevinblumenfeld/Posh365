@@ -13,8 +13,8 @@
     foreach ($mailbox in $mailboxes) {
         $upn = $mailbox.MailUser
 
-        $percent = [int](($i / $Count) * 100)
-        Write-Progress -Activity "Running PreChecks" -Status "Processing $upn ($i of $Count)" -PercentComplete $percent
+        $percent = [int](($i / $count) * 100)
+        Write-Progress -Activity "Running PreChecks" -Status "Processing $upn ($i of $count)" -PercentComplete $percent
 
         Write-Host "`nBEGIN CHECKS FOR " -NoNewline
         Write-Host " $upn `n" -ForegroundColor Yellow
@@ -24,9 +24,9 @@
 
         Write-Host "`tForwarders: " -NoNewLine
         if ($onPremMailbox.ForwardingAddress -ne $NULL) {
-            $rcpt = Get-Recipient $onPremMailbox.ForwardingAddress
-            $mailbox.ForwardingAddress = $rcpt.PrimarySmtpAddress
-            Write-Host "$($rcpt.PrimarySmtpAddress)" -ForegroundColor Cyan
+            $forward = Get-Recipient $onPremMailbox.ForwardingAddress
+            $mailbox.ForwardingAddress = $forward.PrimarySmtpAddress
+            Write-Host "$($forward.PrimarySmtpAddress)" -ForegroundColor Cyan
         }
         else {
             Write-Host "Not Found" -ForegroundColor Green
@@ -36,11 +36,11 @@
         $casOnPremMailbox = Get-CASMailbox -Identity $upn -ErrorAction SilentlyContinue
         Write-Host "`tActiveSync: " -NoNewLine
         if ($casOnPremMailbox.ActiveSyncenabled -eq $TRUE) {
-            $mailbox.ActiveSyncEnabled = $TRUE
+            $mailbox.ActiveSyncEnabled = "TRUE"
             Write-Host "Enabled" -ForegroundColor Cyan
         }
         else {
-            $mailbox.ActiveSyncEnabled = $FALSE
+            $mailbox.ActiveSyncEnabled = "FALSE"
             Write-Host "Disabled" -ForegroundColor Red
         }
         $i++
