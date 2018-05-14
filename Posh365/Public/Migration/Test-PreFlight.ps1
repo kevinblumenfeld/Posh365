@@ -138,8 +138,7 @@
         else {
             Write-Host "PREFLIGHT ALREADY COMPLETE: SKIPPING CHECKS FOR $upn"
         }
-	
         $i++
     }
-    $mailboxes | Export-Csv $csvfile -NoTypeInformation
+    $mailboxes | Export-Csv $csvfile -NoTypeInformation -Encoding UTF8
 }
