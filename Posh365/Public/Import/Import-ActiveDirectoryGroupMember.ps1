@@ -1,18 +1,18 @@
 function Import-ActiveDirectoryGroupMember { 
     <#
-    .SYNOPSIS
-    Import Active Directory Group Members
-    
-    .DESCRIPTION
-    Import Active Directory Group Members
-    
-    .PARAMETER Groups
-    CSV of new AD Groups and Member
-    
-    .EXAMPLE
-    Import-Csv .\GroupsAndMembers.csv | Import-ActiveDirectoryGroupMember
+.SYNOPSIS
+Import Active Directory Group Members
 
-    #>
+.DESCRIPTION
+Import Active Directory Group Members
+
+.PARAMETER Groups
+CSV of new AD Groups and Members
+
+.EXAMPLE
+Import-Csv .\GroupsAndMembers.csv | Import-ActiveDirectoryGroupMember
+
+#>
 
     [CmdletBinding()]
     param (
@@ -24,39 +24,42 @@ function Import-ActiveDirectoryGroupMember {
         Import-Module ActiveDirectory -Verbose:$False
         $OutputPath = '.\'
         $LogFileName = $(get-date -Format yyyy-MM-dd_HH-mm-ss)
-        $Log = Join-Path $OutputPath ($LogFileName + "-WhatIf_Import.csv")
         $ErrorLog = Join-Path $OutputPath ($LogFileName + "-Error_Log.csv")
-    
-        
+
         $DomainNameHash = Get-DomainNameHash
 
-        Write-Verbose "Importing Active Directory Users that have at least one proxy address"
-        $AllADUsers = Get-ADUGroupsWithProxyAddress -DomainNameHash $DomainNameHash
+        Write-Verbose "Importing Active Directory Objects that have at least one proxy address"
+        $AllADObjects = Get-ADObjectWithProxyAddress -DomainNameHash $DomainNameHash
 
-        Write-Verbose "Caching hash table. DisplayName attribute as key and value of ObjectGuid"
-        $ADHashMailToGuid = $AllADUsers | Get-ADHashMailToGuid
+        Write-Verbose "Caching hash table. Mail attribute as key and value of ObjectGuid"
+        $ADHashMailToGuid = $AllADObjects | Get-ADHashMailToGuid -erroraction silentlycontinue
     }
     Process {
         ForEach ($CurGroup in $Groups) {
-            $setparams = @{}
-            ForEach ($h in $sethash.keys) {
-                if ($($sethash.item($h))) {
-                    $setparams.add($h, $($sethash.item($h)))
+            try {
+                $errorActionPreference = 'Stop'
+                $Filter = {DisplayName -eq "{0}"} -f $CurGroup.DisplayName
+                $Group = Get-ADGroup -filter $Filter
+                Write-Verbose "Group: $($CurGroup.DisplayName)"
+                if ($CurGroup.MembersSMTP) {
+                    $CurGroup.MembersSMTP -Split ";" | ForEach-Object {
+                        $EachMember = $_
+                        Add-ADGroupMember -Identity $Group.ObjectGuid -Members $ADHashMailToGuid[$EachMember]
+                        Write-Verbose "Member Added: $EachMember"
+                    }
                 }
             }
-
-            $filter = '{0} -eq {1}' -f $CurGroup.DisplayName
-            $Group = Get-ADGroup -filter $filter
-
-            if ($CurGroup.MembersSMTP) {
-                $CurGroup.MembersSMTP -Split ";" | ForEach-Object {
-                    Set-DistributionGroup -Identity $Group.ObjectGuid -ManagedBy @{Add = "$ADHashMailToGuid[$_]"}
-                }
+            catch {
+                [PSCustomObject]@{
+                    DisplayName = $Group.DisplayName
+                    Error       = $_
+                    Member      = $EachMember
+                    Members     = $CurGroup.MembersSMTP
+                } | Export-Csv $ErrorLog -Append -NoTypeInformation -Encoding UTF8
             }
-            Set-ADGroup -identity $Group.ObjectGUID 
         }
     }
     End {
-        
+
     }
 }
