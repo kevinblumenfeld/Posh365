@@ -99,10 +99,24 @@ function Import-ADProxyAddress {
         [Switch]$UpdateEmailAddress,
 
         [Parameter()]
+        [string[]]$Domain,
+
+        [Parameter()]
+        [string[]]$NewDomain,
+
+        [Parameter()]
         [Switch]$LogOnly
 
     )
     Begin {
+        if ($Domain -and (! $NewDomain)) {
+            Write-Warning "Must use NewDomain parameter when specifying Domain parameter"
+            break
+        }
+        if ($NewDomain -and (! $Domain)) {
+            Write-Warning "Must use Domain parameter when specifying NewDomain parameter"
+            break
+        }
         Import-Module ActiveDirectory -Verbose:$False
         $OutputPath = '.\'
         $LogFileName = $(get-date -Format yyyy-MM-dd_HH-mm-ss)
@@ -141,6 +155,11 @@ function Import-ADProxyAddress {
             # Add Error Handling for more than one SMTP:
             $Display = $CurRow.Displayname
             $Address = $CurRow.EmailAddresses -split ";" | Where-Object $filter
+            if ($Domain) {
+                $Address = $Address | ForEach-Object {
+                    $_ -replace ([Regex]::Escape($Domain), $NewDomain)
+                }
+            }
             $PrimarySMTP = $CurRow.EmailAddresses -split ";" | Where-Object {$_ -cmatch 'SMTP:'}
             
             if ($PrimarySMTP) {
