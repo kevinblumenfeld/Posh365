@@ -46,22 +46,21 @@ function New-ActiveDirectoryUser {
     }
     Process {
         ForEach ($CurRow in $Row) {
-            # Add Error Handling for more than one SMTP:
             $Display = $CurRow.Displayname
             $Name = $Display.Substring(0, 15)
             $i = 2
             Write-Verbose "Display Name: $Display"
-            Write-Verbose "Name: $Name"
             while (Get-ADUser -filter {samaccountname -eq $name}) {
                 $charsForIteration = ([string]$i).Length
                 $name = ($name.Substring(0, (15 - $charsForIteration)) + $i)
-                Write-Verbose "Name: $Name"
                 $i++
             }
+            Write-Verbose "Name: $Name"
             $PrimarySMTP = $CurRow.EmailAddresses -split ";" | Where-Object {$_ -cmatch 'SMTP:'}
             
             if ($PrimarySMTP) {
                 $UPNandMail = ($PrimarySMTP.Substring(5)).ToLower()
+                Write-Verbose "UPNandMail: $UPNandMail"
             }
             if (! $LogOnly) {
                 try {
