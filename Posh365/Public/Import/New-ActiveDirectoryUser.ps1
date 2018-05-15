@@ -1,52 +1,22 @@
 function New-ActiveDirectoryUser { 
     <#
     .SYNOPSIS
-    Import ProxyAddresses into Active Directory
+    Create New Active Directory Users
 
     .DESCRIPTION
-    Import ProxyAddresses into Active Directory
+    Create New Active Directory Users - Mainly for Shared and Resource Mailbox as object is disabled with random password
 
     .PARAMETER Row
     Parameter description
     
-    .PARAMETER JoinType
+    .PARAMETER OU
     Parameter description
     
-    .PARAMETER Match
-    Parameter description
-    
-    .PARAMETER caseMatch
-    Parameter description
-    
-    .PARAMETER matchAnd
-    Parameter description
-    
-    .PARAMETER caseMatchAnd
-    Parameter description
-    
-    .PARAMETER MatchNot
-    Parameter description
-    
-    .PARAMETER caseMatchNot
-    Parameter description
-    
-    .PARAMETER MatchNotAnd
-    Parameter description
-    
-    .PARAMETER caseMatchNotAnd
+    .PARAMETER LogOnly
     Parameter description
 
-    .PARAMETER UpdateUPN
-    Parameter description
-    
-    .PARAMETER UpdateEmailAddress
-    Parameter description
-    
     .EXAMPLE
-    Import-Csv .\CSVofADUsers.csv | New-ActiveDirectoryUser -caseMatchAnd "brann" -MatchNotAnd @("JAIME","John") -JoinType and
-
-    .EXAMPLE
-    Import-Csv .\CSVofADUsers.csv | New-ActiveDirectoryUser -caseMatchAnd "Harry Franklin" -MatchNotAnd @("JAIME","John") -JoinType or
+    Import-Csv .\Shared_and_Resource_Mailboxes.csv | | New-ActiveDirectoryUser -OU "OU=Shared,OU=CORP,DC=contoso,DC=com"
 
     .NOTES
     Input of ProxyAddresses are expected to be semicolon seperated.  Password is set to Random Password
@@ -79,10 +49,19 @@ function New-ActiveDirectoryUser {
             # Add Error Handling for more than one SMTP:
             $Display = $CurRow.Displayname
             $Name = $Display.Substring(0, 15)
+            $i = 2
+            Write-Verbose "Display Name: $Display"
+            Write-Verbose "Name: $Name"
+            while (Get-ADUser -filter {samaccountname -eq $name}) {
+                $charsForIteration = ([string]$i).Length
+                $name = ($name.Substring(0, (15 - $charsForIteration)) + $i)
+                Write-Verbose "Name: $Name"
+                $i++
+            }
             $PrimarySMTP = $CurRow.EmailAddresses -split ";" | Where-Object {$_ -cmatch 'SMTP:'}
             
             if ($PrimarySMTP) {
-                $UPNandMail = $PrimarySMTP.Substring(5)   
+                $UPNandMail = ($PrimarySMTP.Substring(5)).ToLower()
             }
             if (! $LogOnly) {
                 try {
@@ -95,6 +74,7 @@ function New-ActiveDirectoryUser {
                         Enabled               = $False
                         PasswordNotRequired   = $true
                         ChangePasswordAtLogon = $false
+                        PasswordNeverExpires  = $True
                     }
                     $HashNulls = $NewADUser.GetEnumerator() | Where-Object {
                         $_.Value -eq $null 

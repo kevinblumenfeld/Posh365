@@ -163,7 +163,7 @@ function Import-ADProxyAddress {
             $PrimarySMTP = $CurRow.EmailAddresses -split ";" | Where-Object {$_ -cmatch 'SMTP:'}
             
             if ($PrimarySMTP) {
-                $UPNandMail = $PrimarySMTP.Substring(5)   
+                $UPNandMail = ($PrimarySMTP.Substring(5)).ToLower()
             }
             if (! $LogOnly) {
                 try {
