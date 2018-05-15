@@ -82,7 +82,11 @@ function New-ActiveDirectoryUser {
                         $NewADUser.remove($_.key)
                     }
                     New-ADUser @NewADUser
-
+                    $distinguishedName = $null
+                    $distinguishedName = (Get-ADUser -filter {displayName -eq $Display}).distinguishedname
+                    if ($distinguishedName) {
+                        Rename-ADObject $distinguishedName -NewName $Display
+                    }
                 }
                 catch {
                     [PSCustomObject]@{
