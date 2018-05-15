@@ -98,14 +98,7 @@ function New-ActiveDirectoryGroup {
         $filterString = '({0})' -f ($filterElements -join (') -{0} (' -f $JoinType))
         $filter = [ScriptBlock]::Create($filterString)
         Write-Verbose "Filter being used: $filter"
-    
-        $DomainNameHash = Get-DomainNameHash
 
-        Write-Verbose "Importing Active Directory Users that have at least one proxy address"
-        $AllADUsers = Get-ADUsersWithProxyAddress -DomainNameHash $DomainNameHash
-
-        Write-Verbose "Caching hash table. DisplayName attribute as key and value of ObjectGuid"
-        $ADHashDisplayToGuid = $AllADUsers | Get-ADHashDisplayNameToGuid
     }
     Process {
         ForEach ($CurGroup in $Group) {            
@@ -132,7 +125,7 @@ function New-ActiveDirectoryGroup {
             $distinguishedName = $ADGroup.distinguishedname
 
             if ($distinguishedName) {
-                Rename-ADObject $distinguishedName -NewName $Display
+                Rename-ADObject $distinguishedName -NewName $CurGroup.DisplayName
             }
 
             $PrimarySMTP = $CurGroup.EmailAddresses -split ";" | Where-Object {$_ -cmatch "SMTP:"}
