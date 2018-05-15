@@ -99,10 +99,10 @@ function Import-ADProxyAddress {
         [Switch]$UpdateEmailAddress,
 
         [Parameter()]
-        [string[]]$Domain,
+        [string]$Domain,
 
         [Parameter()]
-        [string[]]$NewDomain,
+        [string]$NewDomain,
 
         [Parameter()]
         [Switch]$LogOnly

@@ -49,9 +49,23 @@ function New-ActiveDirectoryGroup {
         [String[]]$caseMatchNotAnd,
             
         [Parameter(Mandatory = $true)]
-        [String]$OU
+        [String]$OU,
+        
+        [Parameter()]
+        [string]$Domain,
+
+        [Parameter()]
+        [string]$NewDomain
     )
     Begin {
+        if ($Domain -and (! $NewDomain)) {
+            Write-Warning "Must use NewDomain parameter when specifying Domain parameter"
+            break
+        }
+        if ($NewDomain -and (! $Domain)) {
+            Write-Warning "Must use Domain parameter when specifying NewDomain parameter"
+            break
+        }
         Import-Module ActiveDirectory -Verbose:$False
         $OutputPath = '.\'
         $LogFileName = $(get-date -Format yyyy-MM-dd_HH-mm-ss)
@@ -96,28 +110,42 @@ function New-ActiveDirectoryGroup {
     Process {
         ForEach ($CurGroup in $Group) {            
 
-            $newhash = @{
+            $newGroup = @{
                 DisplayName   = $CurGroup.DisplayName
                 Name          = $CurGroup.Name
                 GroupCategory = "Distribution"
                 GroupScope    = "Universal"
                 Path          = $OU
             }            
-            $newparams = @{}
-            ForEach ($h in $newhash.keys) {
-                if ($($newhash.item($h))) {
-                    $newparams.add($h, $($newhash.item($h)))
-                }
-            }          
-            New-ADGroup @newparams
-            $adfilter = 'Name -eq "{0}"' -f $CurGroup.Name
-            $adGroup = Get-ADGroup -filter $adfilter
+            $HashNulls = $newGroup.GetEnumerator() | Where-Object {
+                $_.Value -eq $null 
+            }
+            $HashNulls | ForEach-Object {
+                $newGroup.remove($_.key)
+            }
+
+            New-ADGroup @newGroup
+
+            $ADFilter = 'DisplayName -eq "{0}"' -f $CurGroup.DisplayName
+            $ADGroup = Get-ADGroup -filter $ADFilter
+            $distinguishedName = $null
+            $distinguishedName = $ADGroup.distinguishedname
+
+            if ($distinguishedName) {
+                Rename-ADObject $distinguishedName -NewName $Display
+            }
+
             $PrimarySMTP = $CurGroup.EmailAddresses -split ";" | Where-Object {$_ -cmatch "SMTP:"}
             $PrimarySMTP = $PrimarySMTP.Substring(5)
-            Set-ADGroup -Identity $adGroup.ObjectGUID -Add @{Mail = $PrimarySMTP}
+            Set-ADGroup -Identity $ADGroup.ObjectGUID -Add @{Mail = $PrimarySMTP}
             $Address = $CurGroup.EmailAddresses -split ";" | Where-Object $filter
+            if ($Domain) {
+                $Address = $Address | ForEach-Object {
+                    $_ -replace ([Regex]::Escape($Domain), $NewDomain)
+                }
+            }
             $Address | ForEach-Object {
-                Set-ADGroup -Identity $adGroup.ObjectGUID -Add @{ProxyAddresses = "$_"}
+                Set-ADGroup -Identity $ADGroup.ObjectGUID -Add @{ProxyAddresses = "$_"}
                 Write-Verbose "$($CurGroup.Displayname) `t Set ProxyAddress $($_)"
             }
         }
