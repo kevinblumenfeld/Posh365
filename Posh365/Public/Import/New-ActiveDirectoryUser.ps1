@@ -78,6 +78,7 @@ function New-ActiveDirectoryUser {
         ForEach ($CurRow in $Row) {
             # Add Error Handling for more than one SMTP:
             $Display = $CurRow.Displayname
+            $Name = $Display.Substring(0, 15)
             $PrimarySMTP = $CurRow.EmailAddresses -split ";" | Where-Object {$_ -cmatch 'SMTP:'}
             
             if ($PrimarySMTP) {
@@ -88,7 +89,7 @@ function New-ActiveDirectoryUser {
                     $errorActionPreference = 'Stop'
                     $NewADUser = @{
                         Path                  = $OU 
-                        Name                  = $Display 
+                        Name                  = $Name 
                         DisplayName           = $Display
                         UserPrincipalName     = $UPNandMail 
                         Enabled               = $False
