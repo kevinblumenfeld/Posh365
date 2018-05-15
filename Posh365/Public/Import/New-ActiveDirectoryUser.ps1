@@ -47,12 +47,12 @@ function New-ActiveDirectoryUser {
     Process {
         ForEach ($CurRow in $Row) {
             $Display = $CurRow.Displayname
-            $Name = $Display.Substring(0, 15)
+            $Name = -join ([char[]]$display | select -first 15)
             $i = 2
             Write-Verbose "Display Name: $Display"
             while (Get-ADUser -filter {samaccountname -eq $name}) {
                 $charsForIteration = ([string]$i).Length
-                $name = ($name.Substring(0, (15 - $charsForIteration)) + $i)
+                $name = -join ([char[]]$display | select -first (15 - $charsForIteration)) + $i
                 $i++
             }
             Write-Verbose "Name: $Name"
@@ -87,6 +87,7 @@ function New-ActiveDirectoryUser {
                 catch {
                     [PSCustomObject]@{
                         DisplayName = $Display
+                        Name        = $Name
                         Error       = $_
                         UPNandMail  = $UPNandMail
                         PrimarySMTP = $PrimarySMTP
@@ -97,6 +98,7 @@ function New-ActiveDirectoryUser {
             else {
                 [PSCustomObject]@{
                     DisplayName = $Display
+                    Name        = $Name
                     Path        = $OU
                     UPNandMail  = $UPNandMail
                     PrimarySMTP = $PrimarySMTP
