@@ -18,7 +18,7 @@ Import-Csv .\GroupsAndMembers.csv | Import-ActiveDirectoryGroupMember
     param (
 
         [Parameter(ValueFromPipeline = $true, Mandatory = $true)]
-        $Groups
+        $Group
     )
     Begin {
         Import-Module ActiveDirectory -Verbose:$False
@@ -35,7 +35,7 @@ Import-Csv .\GroupsAndMembers.csv | Import-ActiveDirectoryGroupMember
         $ADHashMailToGuid = $AllADObjects | Get-ADHashMailToGuid -erroraction silentlycontinue
     }
     Process {
-        ForEach ($CurGroup in $Groups) {
+        ForEach ($CurGroup in $Group) {
             try {
                 $errorActionPreference = 'Stop'
                 $Filter = {DisplayName -eq "{0}"} -f $CurGroup.DisplayName
@@ -51,7 +51,7 @@ Import-Csv .\GroupsAndMembers.csv | Import-ActiveDirectoryGroupMember
             }
             catch {
                 [PSCustomObject]@{
-                    DisplayName = $Group.DisplayName
+                    DisplayName = $CurGroup.DisplayName
                     Error       = $_
                     Member      = $EachMember
                     Members     = $CurGroup.MembersSMTP
