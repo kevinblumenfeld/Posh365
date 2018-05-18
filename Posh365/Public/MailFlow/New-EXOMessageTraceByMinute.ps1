@@ -46,13 +46,31 @@ Function New-EXOMessageTraceByMinute {
     [CmdletBinding()]
     param
     (
-        [string]$SenderAddress,
-        [string]$RecipientAddress,
-        [int]$StartDate,
-        [int]$EndDate,
+        [Parameter()]
+        [string] $SenderAddress,
+
+        [Parameter()]
+        [string] $RecipientAddress,
+
+        [Parameter()]
+        [int] $StartDate = "10",
+
+        [Parameter()]
+        [int] $EndDate,
+
+        [Parameter()]
+        [string] $Subject,
+
+        [Parameter()]
         [string]$FromIP,
+
+        [Parameter()]
         [string]$ToIP,
+
+        [Parameter()]
         [string]$Status,
+
+        [Parameter()]
         [string]$FilePath
     )
 
@@ -61,6 +79,8 @@ Function New-EXOMessageTraceByMinute {
         [string]$SenderAddress
         [string]$RecipientAddress
         [string]$Subject
+        [string]$MessageId
+        [string]$MessageTraceId
         [string]$Status
     }
 
@@ -82,7 +102,7 @@ Function New-EXOMessageTraceByMinute {
     $params = @{}
 
     foreach ($cmdletParam in $cmdletParams) {
-        if ($cmdletParam -notmatch "FilePath|Debug|Verbose|ErrorAction|WarningAction|InformationAction|ErrorVariable|WarningVariable|InformationVariable|OutVariable|OutBuffer|PipelineVariable") {
+        if ($cmdletParam -notmatch "Subject|FilePath|Debug|Verbose|ErrorAction|WarningAction|InformationAction|ErrorVariable|WarningVariable|InformationVariable|OutVariable|OutBuffer|PipelineVariable") {
             if ([string]::IsNullOrWhiteSpace((Get-Variable -Name $cmdletParam).Value) -ne $true) {
                 $params.Add($cmdletParam, (Get-Variable -Name $cmdletParam).Value)
             }
@@ -96,7 +116,12 @@ Function New-EXOMessageTraceByMinute {
     do {
         Write-Verbose "Checking message trace results on page $counter."
         try {
-            $messageTrace = Get-MessageTrace @params -Page $counter
+            if (! $Subject) {
+                $messageTrace = Get-MessageTrace @params -Page $counter
+            }
+            else {
+                $messageTrace = Get-MessageTrace @params -Page $counter | Where-Object {$_.Subject -match "$Subject"}
+            }
 
             if ($messageTrace) {
                 $messageTrace | ForEach-Object {
@@ -104,7 +129,9 @@ Function New-EXOMessageTraceByMinute {
                     $messageTraceResults.Received = $_.Received
                     $messageTraceResults.SenderAddress = $_.SenderAddress
                     $messageTraceResults.RecipientAddress = $_.RecipientAddress
-                    $messageTraceResults.Subject = $_.Subject
+                    $messageTraceResults.Subject = $_.Subject                    
+                    $messageTraceResults.MessageTraceId = $_.MessageTraceId
+                    $messageTraceResults.MessageId = $_.MessageId
                     $messageTraceResults.Status = $_.Status
                     [void]$allMessageTraceResults.Add($messageTraceResults)
                 }
