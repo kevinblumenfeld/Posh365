@@ -1,10 +1,10 @@
 Function New-EXOMessageTrace {
     <#
     .SYNOPSIS
-    Search message trace logs in Exchange Online "by day" start and end times
+    Search message trace logs in Exchange Online by minute start and end times
 
     .DESCRIPTION
-    Search message trace logs in Exchange Online by day start and end times
+    Search message trace logs in Exchange Online by minute start and end times
 
     Many thanks to Matt Marchese for this function.
     The original function was written by Matt Marchese, https://github.com/General-Gouda
@@ -14,19 +14,28 @@ Function New-EXOMessageTrace {
     
     .PARAMETER RecipientAddress
     Recipients Email Address
+
+    .PARAMETER StartSearchMinutesAgo
+    Number of minutes from today to start the search
     
-    .PARAMETER StartDate
-    Number of days from today to start the search.
+    .PARAMETER EndSearchMinutesAgo
+    Number of minutes from today to end the search. Now (the number "0") is the default
     
-    .PARAMETER EndDate
-    Number of days from today to end the search. Now (the number "0") is the default.
+    .PARAMETER Subject
+    Partial or full subject of message(s) of which are being searched
+    
+    .PARAMETER SelectMessageForDetails
+    Switch that allows for selection of one or more messages via Out-GridView.
+    Resultingly, the MessageTraceDetails will be shown for each.
+    The output is one Out-GridView per message selected.
+    The title of the Out-Grid shows the original message details.
     
     .PARAMETER FromIP
     The IP address from which the email originated.
     
     .PARAMETER ToIP
     The IP address to which the email was destined.
-    
+
     .PARAMETER Status
     The Status parameter filters the results by the delivery status of the message. Valid values for this parameter are:
 
@@ -36,79 +45,101 @@ Function New-EXOMessageTrace {
     Delivered: The message was delivered to its destination.
     Expanded: There was no message delivery because the message was addressed to a distribution group, and the membership of the distribution was expanded.
     
-    .PARAMETER FilePath
-    To Export to file, the location of the file.
-    
     .EXAMPLE
-    New-EXOMessageTrace -SenderAddress "User@domain.com" -RecipientAddress "recipient@domain.com" -StartDate 3 -EndDate 2 -FromIP "xx.xx.xx.xx" -FilePath "C:\Output\FileName.csv"
+    New-EXOMessageTrace -StartSearchMinutesAgo 10 -EndSearchMinutesAgo 5 -Subject "Letter from the CEO" -SelectMessageForDetails
+
+    .EXAMPLE
+    New-EXOMessageTrace -SenderAddress "User@domain.com" -RecipientAddress "recipient@domain.com" -StartSearchMinutesAgo 15 -FromIP "xx.xx.xx.xx"
 
     #>  
     [CmdletBinding()]
     param
     (
-        [string]$SenderAddress,
-        [string]$RecipientAddress,
-        [int]$StartDate,
-        [int]$EndDate,
-        [string]$FromIP,
-        [string]$ToIP,
-        [string]$Status,
-        [string]$FilePath
-    )
+        [Parameter()]
+        [string] $SenderAddress,
 
-    class MessageTraceResults {
-        [string]$Received
-        [string]$SenderAddress
-        [string]$RecipientAddress
-        [string]$Subject
-        [string]$Status
-    }
+        [Parameter()]
+        [string] $RecipientAddress,
+
+        [Parameter()]
+        [int] $StartSearchMinutesAgo = "10",
+
+        [Parameter()]
+        [int] $EndSearchMinutesAgo,
+
+        [Parameter()]
+        [string] $Subject,
+
+        [Parameter()]
+        [switch] $SelectMessageForDetails,
+
+        [Parameter()]
+        [string] $FromIP,
+
+        [Parameter()]
+        [string] $ToIP,
+
+        [Parameter()]
+        [string] $Status
+    )
 
     $currentErrorActionPrefs = $ErrorActionPreference
     $ErrorActionPreference = 'Stop'
 
-    if ($StartDate) {
-        [DateTime]$StartDate = ((Get-Date).AddDays( - $StartDate))
-        $StartDate = $StartDate.ToUniversalTime()
+    if ($StartSearchMinutesAgo) {
+        [DateTime]$StartSearchMinutesAgo = ((Get-Date).AddMinutes( - $StartSearchMinutesAgo))
+        $StartSearchMinutesAgo = $StartSearchMinutesAgo.ToUniversalTime()
     }
 
-    if ($StartDate) {
-        [DateTime]$EndDate = ((Get-Date).AddDays( - $EndDate))
-        $EndDate = $EndDate.ToUniversalTime()
+    if ($StartSearchMinutesAgo) {
+        [DateTime]$EndSearchMinutesAgo = ((Get-Date).AddMinutes( - $EndSearchMinutesAgo))
+        $EndSearchMinutesAgo = $EndSearchMinutesAgo.ToUniversalTime()
     }
 
     $cmdletParams = (Get-Command $PSCmdlet.MyInvocation.InvocationName).Parameters.Keys
 
     $params = @{}
-
+    $NotArray = 'StartSearchMinutesAgo', 'EndSearchMinutesAgo', 'SelectMessageForDetails', 'Subject', 'FilePath', 'Debug', 'Verbose', 'ErrorAction', 'WarningAction', 'InformationAction', 'ErrorVariable', 'WarningVariable', 'InformationVariable', 'OutVariable', 'OutBuffer', 'PipelineVariable'
     foreach ($cmdletParam in $cmdletParams) {
-        if ($cmdletParam -notmatch "FilePath|Debug|Verbose|ErrorAction|WarningAction|InformationAction|ErrorVariable|WarningVariable|InformationVariable|OutVariable|OutBuffer|PipelineVariable") {
+        if ($cmdletParam -notin $NotArray) {
             if ([string]::IsNullOrWhiteSpace((Get-Variable -Name $cmdletParam).Value) -ne $true) {
                 $params.Add($cmdletParam, (Get-Variable -Name $cmdletParam).Value)
             }
         }
     }
+    $params.Add('StartDate', $StartSearchMinutesAgo)
+    $params.Add('EndDate', $EndSearchMinutesAgo)
+
 
     $counter = 1
     $continue = $false
-    $allMessageTraceResults = New-Object System.Collections.ArrayList
+    $allMessageTraceResults = [System.Collections.Generic.List[PSObject]]::New()
 
     do {
         Write-Verbose "Checking message trace results on page $counter."
         try {
-            $messageTrace = Get-MessageTrace @params -Page $counter
+            if (-not $Subject) {
+                $messageTrace = Get-MessageTrace @params -Page $counter
+            }
+            else {
+                $messageTrace = Get-MessageTrace @params -Page $counter | Where-Object {$_.Subject -match "$Subject"}
+            }
 
             if ($messageTrace) {
                 $messageTrace | ForEach-Object {
-                    $messageTraceResults = New-Object MessageTraceResults
-                    $messageTraceResults.Received = $_.Received
-                    $messageTraceResults.SenderAddress = $_.SenderAddress
-                    $messageTraceResults.RecipientAddress = $_.RecipientAddress
-                    $messageTraceResults.Subject = $_.Subject
-                    $messageTraceResults.Status = $_.Status
-                    [void]$allMessageTraceResults.Add($messageTraceResults)
+                    $messageTraceResults = [PSCustomObject]@{
+                        Received         = $_.Received
+                        Status           = $_.Status
+                        SenderAddress    = $_.SenderAddress
+                        RecipientAddress = $_.RecipientAddress
+                        Subject          = $_.Subject
+                        FromIP           = $_.FromIP
+                        ToIP             = $_.ToIP                                                
+                        MessageTraceId   = $_.MessageTraceId
+                        MessageId        = $_.MessageId
+                    }
+                    $allMessageTraceResults.Add($messageTraceResults)
                 }
-
                 $counter++
                 Start-Sleep -Seconds 2
             }
@@ -125,11 +156,24 @@ Function New-EXOMessageTrace {
 
     if ($allMessageTraceResults.count -gt 0) {
         Write-Verbose "`n$($allMessageTraceResults.count) results returned."
-        $allMessageTraceResults
-
-        if ($FilePath) {
-            Write-Verbose "Writing results to $FilePath"
-            $allMessageTraceResults | Export-Csv $FilePath -NoTypeInformation
+        if (-not $SelectMessageForDetails) {
+            $allMessageTraceResults | Out-GridView
+        }
+        else {
+            $WantsDetailOnTheseMessages = $allMessageTraceResults | Out-GridView -PassThru
+            if ($WantsDetailOnTheseMessages) {
+                Foreach ($Wants in $WantsDetailOnTheseMessages) {
+                    $Splat = @{
+                        MessageTraceID   = $Wants.MessageTraceID
+                        SenderAddress    = $Wants.SenderAddress
+                        RecipientAddress = $Wants.RecipientAddress
+                        MessageId        = $Wants.MessageId
+                    }
+                    Get-MessageTraceDetail @Splat |
+                        Select-Object Date, Event, Action, Detail, Data, MessageTraceID, MessageID | 
+                        Out-GridView -Title "DATE: $($Wants.Received) STATUS: $($Wants.Status) FROM: $($Wants.SenderAddress) TO: $($Wants.RecipientAddress) TRACEID: $($Wants.MessageTraceId)" 
+                }
+            }
         }
     }
     else {
