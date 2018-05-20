@@ -1,22 +1,19 @@
-Function New-EXOMessageTrace {
+Function New-EXOMailTransportRuleReport {
     <#
     .SYNOPSIS
-    Search message trace logs in Exchange Online by minute start and end times
+    View the details of messages that matched the conditions defined by any transport rules
 
     .DESCRIPTION
-    Search message trace logs in Exchange Online by minute start and end times
-
-    Many thanks to Matt Marchese for this function.
-    The original function was written by Matt Marchese, https://github.com/General-Gouda
+    View the details of messages that matched the conditions defined by any transport rules
     
     .PARAMETER SenderAddress
     Senders Email Address
     
     .PARAMETER RecipientAddress
     Recipients Email Address
-
+    
     .PARAMETER StartSearchMinutesAgo
-    Number of minutes from today to start the search. Default is 10 Minutes
+    Number of minutes from today to start the search. Default is 400 Minutes.  The reports are delay by several hours.
     
     .PARAMETER EndSearchMinutesAgo
     Number of minutes from today to end the search. "Now" is the default, the number "0"
@@ -24,34 +21,25 @@ Function New-EXOMessageTrace {
     .PARAMETER Subject
     Partial or full subject of message(s) of which are being searched
     
+    .PARAMETER SpecifyActions
+    Allows user to pick from a list of Action to include in the search
+    
+    .PARAMETER SpecifyTransportRules
+    Allows user to pick from a list of Transport Rules to include in the search
+
     .PARAMETER SelectMessageForDetails
     Switch that allows for selection of one or more messages via Out-GridView.
     Resultingly, the MessageTraceDetails will be shown for each.
     The output is one Out-GridView per message selected.
     The title of the Out-Grid shows the original message details.
     
-    .PARAMETER FromIP
-    The IP address from which the email originated.
-    
-    .PARAMETER ToIP
-    The IP address to which the email was destined.
-
-    .PARAMETER Status
-    The Status parameter filters the results by the delivery status of the message. Valid values for this parameter are:
-
-    None: The message has no delivery status because it was rejected or redirected to a different recipient.
-    Failed: Message delivery was attempted and it failed or the message was filtered as spam or malware, or by transport rules.
-    Pending: Message delivery is underway or was deferred and is being retried.
-    Delivered: The message was delivered to its destination.
-    Expanded: There was no message delivery because the message was addressed to a distribution group, and the membership of the distribution was expanded.
-    
     .EXAMPLE
-    New-EXOMessageTrace -StartSearchMinutesAgo 10 -EndSearchMinutesAgo 5 -Subject "Letter from the CEO" -SelectMessageForDetails
+    New-EXOMailTransportRuleReport -StartSearchMinutesAgo 1500 -SpecifyActions -SpecifyTransportRules -SelectMessageForDetails -Subject "Letter from the CEO"
 
     .EXAMPLE
-    New-EXOMessageTrace -SenderAddress "User@domain.com" -RecipientAddress "recipient@domain.com" -StartSearchMinutesAgo 15 -FromIP "xx.xx.xx.xx"
+    New-EXOMailTransportRuleReport -StartSearchMinutesAgo 400 -SpecifyActions -SpecifyTransportRules -SelectMessageForDetails
 
-    #>  
+    #>
     [CmdletBinding()]
     param
     (
@@ -62,7 +50,7 @@ Function New-EXOMessageTrace {
         [string] $RecipientAddress,
 
         [Parameter()]
-        [int] $StartSearchMinutesAgo = "10",
+        [int] $StartSearchMinutesAgo = "400",
 
         [Parameter()]
         [int] $EndSearchMinutesAgo,
@@ -71,16 +59,13 @@ Function New-EXOMessageTrace {
         [string] $Subject,
 
         [Parameter()]
-        [switch] $SelectMessageForDetails,
+        [switch] $SpecifyActions,
 
         [Parameter()]
-        [string] $FromIP,
+        [switch] $SpecifyTransportRules,
 
         [Parameter()]
-        [string] $ToIP,
-
-        [Parameter()]
-        [string] $Status
+        [switch] $SelectMessageForDetails
     )
 
     $currentErrorActionPrefs = $ErrorActionPreference
@@ -96,10 +81,11 @@ Function New-EXOMessageTrace {
         $EndSearchMinutesAgo = $EndSearchMinutesAgo.ToUniversalTime()
     }
 
+
     $cmdletParams = (Get-Command $PSCmdlet.MyInvocation.InvocationName).Parameters.Keys
 
     $params = @{}
-    $NotArray = 'StartSearchMinutesAgo', 'EndSearchMinutesAgo', 'SelectMessageForDetails', 'Subject', 'Debug', 'Verbose', 'ErrorAction', 'WarningAction', 'InformationAction', 'ErrorVariable', 'WarningVariable', 'InformationVariable', 'OutVariable', 'OutBuffer', 'PipelineVariable'
+    $NotArray = 'SpecifyActions', 'SpecifyTransportRules', 'StartSearchMinutesAgo', 'EndSearchMinutesAgo', 'SelectMessageForDetails', 'Subject', 'FilePath', 'Debug', 'Verbose', 'ErrorAction', 'WarningAction', 'InformationAction', 'ErrorVariable', 'WarningVariable', 'InformationVariable', 'OutVariable', 'OutBuffer', 'PipelineVariable'
     foreach ($cmdletParam in $cmdletParams) {
         if ($cmdletParam -notin $NotArray) {
             if ([string]::IsNullOrWhiteSpace((Get-Variable -Name $cmdletParam).Value) -ne $true) {
@@ -110,33 +96,45 @@ Function New-EXOMessageTrace {
     $params.Add('StartDate', $StartSearchMinutesAgo)
     $params.Add('EndDate', $EndSearchMinutesAgo)
 
+    if ($SpecifyActions) {
+        $Actions = (Get-MailFilterListReport -SelectionTarget Actions).Value | Out-GridView -PassThru -Title "Pick from the list of Actions by holding the Control Key and select one or more.  Then click OK."
+        $params.Add('Action', $Actions)
+    }
 
+    if ($SpecifyTransportRules) {
+        $TransportRules = (Get-MailFilterListReport -SelectionTarget TransportRule).Value | Out-GridView -PassThru  -Title "Pick from the list of Transport Rules by holding the Control Key and select one or more.  Then click OK."
+        $params.Add('TransportRule', $TransportRules)
+    }
+    
     $counter = 1
-    $continue = $false
+    $continue = $true
     $allMessageTraceResults = [System.Collections.Generic.List[PSObject]]::New()
 
     do {
         Write-Verbose "Checking message trace results on page $counter."
         try {
             if (-not $Subject) {
-                $messageTrace = Get-MessageTrace @params -Page $counter
+                $messageTrace = Get-MailDetailTransportRuleReport @params -Page $counter
             }
             else {
-                $messageTrace = Get-MessageTrace @params -Page $counter | Where-Object {$_.Subject -match "$Subject"}
+                $messageTrace = Get-MailDetailTransportRuleReport @params -Page $counter | Where-Object {$_.Subject -match "$Subject"}
             }
 
             if ($messageTrace) {
                 $messageTrace | ForEach-Object {
                     $messageTraceResults = [PSCustomObject]@{
-                        Received         = $_.Received
-                        Status           = $_.Status
+                        Date             = $_.Date
+                        TransportRule    = $_.TransportRule
                         SenderAddress    = $_.SenderAddress
                         RecipientAddress = $_.RecipientAddress
                         Subject          = $_.Subject
-                        FromIP           = $_.FromIP
-                        ToIP             = $_.ToIP                                                
+                        Direction        = $_.Direction
+                        EventType        = $_.EventType
+                        Action           = $_.Action
+                        MessageSize      = $_.MessageSize
                         MessageTraceId   = $_.MessageTraceId
                         MessageId        = $_.MessageId
+                        Domain           = $_.Domain
                     }
                     $allMessageTraceResults.Add($messageTraceResults)
                 }
@@ -145,19 +143,19 @@ Function New-EXOMessageTrace {
             }
             else {
                 Write-Verbose "`tNo results found on page $counter."
-                $continue = $true
+                $continue = $false
             }
         }
         catch {
             Write-Verbose "`tException gathering message trace data on page $counter. Trying again in 30 seconds."
             Start-Sleep -Seconds 30
         }
-    } while ($continue -eq $false)
+    } while ($continue)
 
     if ($allMessageTraceResults.count -gt 0) {
         Write-Verbose "`n$($allMessageTraceResults.count) results returned."
         if (-not $SelectMessageForDetails) {
-            $allMessageTraceResults | Out-GridView
+            $allMessageTraceResults | Out-GridView -Title "Mail Detail Transport Rule Report"
         }
         else {
             $WantsDetailOnTheseMessages = $allMessageTraceResults | Out-GridView -PassThru
@@ -171,7 +169,7 @@ Function New-EXOMessageTrace {
                     }
                     Get-MessageTraceDetail @Splat |
                         Select-Object Date, Event, Action, Detail, Data, MessageTraceID, MessageID | 
-                        Out-GridView -Title "DATE: $($Wants.Received) STATUS: $($Wants.Status) FROM: $($Wants.SenderAddress) TO: $($Wants.RecipientAddress) TRACEID: $($Wants.MessageTraceId)" 
+                        Out-GridView -Title "DATE: $($Wants.Date) TRANSPORT RULE: $($Wants.TransportRule) FROM: $($Wants.SenderAddress) TO: $($Wants.RecipientAddress) TRACEID: $($Wants.MessageTraceId)" 
                 }
             }
         }
