@@ -42,7 +42,7 @@ Function Get-EXOMigrationStatistics {
     if ($WantsDetailOnTheseMigrationUsers) {
         Foreach ($Wants in $WantsDetailOnTheseMigrationUsers) {
             $UserStats = Get-MigrationUserStatistics -Identity $Wants.Guid -IncludeReport
-            $UserStats.Report.Entries | Select-Object CreationTime, @{n = 'Migration User Statistics Report'; e = {$_.message}} |
+            $UserStats.Report.Entries | Select-Object CreationTime, @{n = 'Migration User Statistics Report'; e = {$_.message}} | Sort-Object CreationTime -Descending |
                 Out-GridView -Title "ID: $($Wants.Identity) EMAIL: $($Wants.MailboxEmailAddress) STATUS: $($Wants.Status) SYNCED: $($Wants.SyncedItemCount) SKIPPED: $($Wants.SkippedItemCount)" 
         }
     }

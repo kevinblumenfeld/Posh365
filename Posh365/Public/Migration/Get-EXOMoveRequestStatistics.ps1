@@ -44,7 +44,7 @@ Function Get-EXOMoveRequestStatistics {
     if ($WantsDetailOnTheseMoveRequests) {
         Foreach ($Wants in $WantsDetailOnTheseMoveRequests) {
             $MoveStats = Get-MoveRequestStatistics -Identity $Wants.Guid -IncludeReport
-            $MoveStats.Report.Entries | Select-Object CreationTime, @{n = 'Move Request Statistics Report'; e = {$_.message}} |
+            $MoveStats.Report.Entries | Select-Object CreationTime, @{n = 'Move Request Statistics Report'; e = {$_.message}} | Sort-Object CreationTime -Descending |
                 Out-GridView -Title "Name: $($Wants.DisplayName) STATUS: $($Wants.Status) BATCH: $($Wants.BatchName)" 
         }
     }
