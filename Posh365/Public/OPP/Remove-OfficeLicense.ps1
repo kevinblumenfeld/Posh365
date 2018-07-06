@@ -7,7 +7,7 @@ Often used when moving from one Office 365 tenant to another.
 #>
 
     # store the license info into an array (uncomment line below)
-    $license = cscript ‘C:\Program Files (x86)\Microsoft Office\Office15\OSPP.VBS’ /dstatus
+    $license = cscript "C:\Program Files (x86)\Microsoft Office\Office15\OSPP.VBS" /dstatus
 
     #license name from /dstatus
     $o365 = “ADJUST_HERE_OfficeO365ProPlusR_Subscription1 edition”
