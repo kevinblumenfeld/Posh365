@@ -71,9 +71,6 @@ Function New-EXOMessageTrace {
         [string] $Subject,
 
         [Parameter()]
-        [switch] $SelectMessageForDetails,
-
-        [Parameter()]
         [string] $FromIP,
 
         [Parameter()]
@@ -99,7 +96,7 @@ Function New-EXOMessageTrace {
     $cmdletParams = (Get-Command $PSCmdlet.MyInvocation.InvocationName).Parameters.Keys
 
     $params = @{}
-    $NotArray = 'StartSearchMinutesAgo', 'EndSearchMinutesAgo', 'SelectMessageForDetails', 'Subject', 'Debug', 'Verbose', 'ErrorAction', 'WarningAction', 'InformationAction', 'ErrorVariable', 'WarningVariable', 'InformationVariable', 'OutVariable', 'OutBuffer', 'PipelineVariable'
+    $NotArray = 'StartSearchMinutesAgo', 'EndSearchMinutesAgo', 'Subject', 'Debug', 'Verbose', 'ErrorAction', 'WarningAction', 'InformationAction', 'ErrorVariable', 'WarningVariable', 'InformationVariable', 'OutVariable', 'OutBuffer', 'PipelineVariable'
     foreach ($cmdletParam in $cmdletParams) {
         if ($cmdletParam -notin $NotArray) {
             if ([string]::IsNullOrWhiteSpace((Get-Variable -Name $cmdletParam).Value) -ne $true) {
@@ -156,23 +153,18 @@ Function New-EXOMessageTrace {
 
     if ($allMessageTraceResults.count -gt 0) {
         Write-Verbose "`n$($allMessageTraceResults.count) results returned."
-        if (-not $SelectMessageForDetails) {
-            $allMessageTraceResults | Out-GridView
-        }
-        else {
-            $WantsDetailOnTheseMessages = $allMessageTraceResults | Out-GridView -PassThru
-            if ($WantsDetailOnTheseMessages) {
-                Foreach ($Wants in $WantsDetailOnTheseMessages) {
-                    $Splat = @{
-                        MessageTraceID   = $Wants.MessageTraceID
-                        SenderAddress    = $Wants.SenderAddress
-                        RecipientAddress = $Wants.RecipientAddress
-                        MessageId        = $Wants.MessageId
-                    }
-                    Get-MessageTraceDetail @Splat |
-                        Select-Object Date, Event, Action, Detail, Data, MessageTraceID, MessageID | 
-                        Out-GridView -Title "DATE: $($Wants.Received) STATUS: $($Wants.Status) FROM: $($Wants.SenderAddress) TO: $($Wants.RecipientAddress) TRACEID: $($Wants.MessageTraceId)" 
+
+        $WantsDetailOnTheseMessages = $allMessageTraceResults | Out-GridView -PassThru -Title "Message Trace Results. Select one or more then click OK for detailed report."
+        if ($WantsDetailOnTheseMessages) {
+            Foreach ($Wants in $WantsDetailOnTheseMessages) {
+                $Splat = @{
+                    MessageTraceID   = $Wants.MessageTraceID
+                    RecipientAddress = $Wants.RecipientAddress
+                    MessageId        = $Wants.MessageId
                 }
+                Get-MessageTraceDetail @Splat |
+                    Select-Object Date, Event, Action, Detail, Data, MessageTraceID, MessageID | 
+                    Out-GridView -Title "DATE: $($Wants.Received) STATUS: $($Wants.Status) FROM: $($Wants.SenderAddress) TO: $($Wants.RecipientAddress) TRACEID: $($Wants.MessageTraceId)" 
             }
         }
     }
