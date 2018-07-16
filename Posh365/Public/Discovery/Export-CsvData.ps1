@@ -1,10 +1,10 @@
 ﻿function Export-CsvData { 
     <#
 .SYNOPSIS
-Export ProxyAddresses from a CSV and output one per line.  Filtering if desired
+Export ProxyAddresses from a CSV and output one per line.  Filtering if desired.  Automatically a csv will be exported.
 
 .DESCRIPTION
-Export ProxyAddresses from a CSV and output one per line.  Filtering if desired
+Export ProxyAddresses from a CSV and output one per line.  Filtering if desired.  Automatically a csv will be exported.
 
 .PARAMETER Row
 Parameter description
@@ -49,7 +49,7 @@ Import-Csv .\CSVofADUsers.csv | Export-CsvData -caseMatchAnd "brann" -MatchNotAn
 Import-Csv .\CSVofADUsers.csv | Export-CsvData -caseMatchAnd "Harry Franklin" -MatchNotAnd @("JAIME","John") -JoinType or
 
 .NOTES
-Input of ProxyAddresses are expected to be semicolon separated
+Input of ProxyAddresses are expected to be semicolon separated.
 
 #>
     [CmdletBinding(SupportsShouldProcess)]

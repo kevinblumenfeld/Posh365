@@ -46,13 +46,19 @@ function Import-ADProxyAddress {
     Parameter description
     
     .EXAMPLE
-    Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -caseMatchAnd "brann" -MatchNotAnd @("JAIME","John") -JoinType and
+    Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -caseMatchAnd @("SMTP:","contoso.com") -JoinType and
 
     .EXAMPLE
-    Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -caseMatchAnd "Harry Franklin" -MatchNotAnd @("JAIME","John") -JoinType or
+    Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -caseMatchAnd @("smtp:","onmicrosoft.com") -JoinType and
+
+    .EXAMPLE
+    Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -caseMatch "brann" -MatchNotAnd @("JAIME","John") -JoinType and
+
+    .EXAMPLE
+    Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -caseMatch "Harry Franklin" -MatchNotAnd @("JAIME","John") -JoinType or
 
     .NOTES
-    Input of ProxyAddresses are exptected to be semicolon seperated
+    Input of ProxyAddresses are expected to be semicolon separated
     
     #>
     [CmdletBinding(SupportsShouldProcess)]
