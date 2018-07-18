@@ -164,6 +164,14 @@ Input of ProxyAddresses are expected to be semicolon separated.
                     } | Export-Csv $Log -Append -NoTypeInformation -Encoding UTF8
                 } 
             }
+            else {
+                [PSCustomObject]@{
+                    DisplayName          = $Display
+                    PrimarySmtpAddress   = $PrimarySmtpAddress
+                    RecipientTypeDetails = $RecipientTypeDetails
+                    EmailAddress         = "NONE"
+                } | Export-Csv $Log -Append -NoTypeInformation -Encoding UTF8
+            }
         }
     }
     End {

@@ -111,6 +111,9 @@ function Import-ADProxyAddress {
         [string]$NewDomain,
 
         [Parameter()]
+        [string]$ChangeDomainOnPrimarySmtpUpnMail,
+
+        [Parameter()]
         [Switch]$LogOnly
 
     )
@@ -121,6 +124,10 @@ function Import-ADProxyAddress {
         }
         if ($NewDomain -and (! $Domain)) {
             Write-Warning "Must use Domain parameter when specifying NewDomain parameter"
+            break
+        }
+        if ($ChangeDomainOnPrimarySmtpUpnMail -and (! $Domain)) {
+            Write-Warning "Must use Domain and NewDomain parameters when specifying ChangeDomainOnPrimarySmtpUpnMail parameter"
             break
         }
         Import-Module ActiveDirectory -Verbose:$False
@@ -161,16 +168,26 @@ function Import-ADProxyAddress {
             # Add Error Handling for more than one SMTP:
             $Display = $CurRow.Displayname
             $Address = $CurRow.EmailAddresses -split ";" | Where-Object $filter
-            if ($Domain) {
+            if ($Domain -and (! $ChangeDomainOnPrimarySmtpUpnMail)) {
                 $Address = $Address | ForEach-Object {
                     $_ -replace ([Regex]::Escape($Domain), $NewDomain)
                 }
             }
             $PrimarySMTP = $CurRow.EmailAddresses -split ";" | Where-Object {$_ -cmatch 'SMTP:'}
-            
+
             if ($PrimarySMTP) {
                 $UPNandMail = ($PrimarySMTP.Substring(5)).ToLower()
             }
+            if ($ChangeDomainOnPrimarySmtpUpnMail) {
+                $ChangePrimaryToSecondary = "smtp:{0}" -f $UPNandMail
+                $Address = $PrimarySMTP | ForEach-Object {
+                    $_ -replace ([Regex]::Escape($Domain), $NewDomain)
+                }
+                $UPNandMail = $UPNandMail | ForEach-Object {
+                    $_ -replace ([Regex]::Escape($Domain), $NewDomain)
+                }
+            }
+            
             if (! $LogOnly) {
                 try {
                     $errorActionPreference = 'Stop'
