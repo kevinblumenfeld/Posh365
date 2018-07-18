@@ -1,5 +1,6 @@
 function Import-ADProxyAddress { 
     <#
+    
     .SYNOPSIS
     Import ProxyAddresses into Active Directory
 
@@ -8,45 +9,73 @@ function Import-ADProxyAddress {
 
     .PARAMETER Row
     Parameter description
-    
+
     .PARAMETER JoinType
     Parameter description
-    
+
     .PARAMETER Match
     Parameter description
-    
+
     .PARAMETER caseMatch
     Parameter description
-    
+
     .PARAMETER matchAnd
     Parameter description
-    
+
     .PARAMETER caseMatchAnd
     Parameter description
-    
+
     .PARAMETER MatchNot
     Parameter description
-    
+
     .PARAMETER caseMatchNot
     Parameter description
-    
+
     .PARAMETER MatchNotAnd
     Parameter description
-    
+
     .PARAMETER caseMatchNotAnd
     Parameter description
-    
+
     .PARAMETER FirstClearAllProxyAddresses
     Parameter description
-    
+
     .PARAMETER UpdateUPN
     Parameter description
-    
+
     .PARAMETER UpdateMailAttribute
     Parameter description
-    
 
-    
+    .PARAMETER Domain
+    Parameter description
+
+    .PARAMETER NewDomain
+    Parameter description
+
+    .PARAMETER ChangeDomainOnPrimarySmtpUpnMail
+    Parameter description
+
+    .PARAMETER LogOnly
+    Parameter description
+
+    .EXAMPLE
+    Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -caseMatchAnd @("SMTP:","contoso.com") -JoinType and
+
+    .EXAMPLE
+    Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -ChangeDomainOnPrimarySmtpUpnMail -Domain "contoso.com" -NewDomain "fabrikam.com" -UpdateUPN -UpdateMailAttribute -JoinType and
+
+    .EXAMPLE
+    Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -caseMatchAnd @("smtp:","onmicrosoft.com") -JoinType and
+
+    .EXAMPLE
+    Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -caseMatch "brann" -MatchNotAnd @("JAIME","John") -JoinType and
+
+    .EXAMPLE
+    Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -caseMatch "Harry Franklin" -MatchNotAnd @("JAIME","John") -JoinType or
+
+    .NOTES
+    Input of ProxyAddresses are expected to be semicolon separated
+
     #>
     [CmdletBinding(SupportsShouldProcess)]
     param (
