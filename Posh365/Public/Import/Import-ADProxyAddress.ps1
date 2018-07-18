@@ -42,23 +42,10 @@ function Import-ADProxyAddress {
     .PARAMETER UpdateUPN
     Parameter description
     
-    .PARAMETER UpdateEmailAddress
+    .PARAMETER UpdateMailAttribute
     Parameter description
     
-    .EXAMPLE
-    Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -caseMatchAnd @("SMTP:","contoso.com") -JoinType and
 
-    .EXAMPLE
-    Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -caseMatchAnd @("smtp:","onmicrosoft.com") -JoinType and
-
-    .EXAMPLE
-    Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -caseMatch "brann" -MatchNotAnd @("JAIME","John") -JoinType and
-
-    .EXAMPLE
-    Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -caseMatch "Harry Franklin" -MatchNotAnd @("JAIME","John") -JoinType or
-
-    .NOTES
-    Input of ProxyAddresses are expected to be semicolon separated
     
     #>
     [CmdletBinding(SupportsShouldProcess)]
@@ -102,7 +89,7 @@ function Import-ADProxyAddress {
         [Switch]$UpdateUPN,
 
         [Parameter()]
-        [Switch]$UpdateEmailAddress,
+        [Switch]$UpdateMailAttribute,
 
         [Parameter()]
         [string]$Domain,
@@ -118,15 +105,15 @@ function Import-ADProxyAddress {
 
     )
     Begin {
-        if ($Domain -and (! $NewDomain)) {
+        if ($Domain -and (-not $NewDomain)) {
             Write-Warning "Must use NewDomain parameter when specifying Domain parameter"
             break
         }
-        if ($NewDomain -and (! $Domain)) {
+        if ($NewDomain -and (-not $Domain)) {
             Write-Warning "Must use Domain parameter when specifying NewDomain parameter"
             break
         }
-        if ($ChangeDomainOnPrimarySmtpUpnMail -and (! $Domain)) {
+        if ($ChangeDomainOnPrimarySmtpUpnMail -and (-not $Domain)) {
             Write-Warning "Must use Domain and NewDomain parameters when specifying ChangeDomainOnPrimarySmtpUpnMail parameter"
             break
         }
@@ -167,8 +154,8 @@ function Import-ADProxyAddress {
         ForEach ($CurRow in $Row) {
             # Add Error Handling for more than one SMTP:
             $Display = $CurRow.Displayname
-            $Address = $CurRow.EmailAddresses -split ";" | Where-Object $filter
-            if ($Domain -and (! $ChangeDomainOnPrimarySmtpUpnMail)) {
+            [System.Collections.Generic.List[String]]$Address = $CurRow.EmailAddresses -split ";" | Where-Object $filter
+            if ($Domain -and (-not $ChangeDomainOnPrimarySmtpUpnMail)) {
                 $Address = $Address | ForEach-Object {
                     $_ -replace ([Regex]::Escape($Domain), $NewDomain)
                 }
@@ -183,12 +170,13 @@ function Import-ADProxyAddress {
                 $Address = $PrimarySMTP | ForEach-Object {
                     $_ -replace ([Regex]::Escape($Domain), $NewDomain)
                 }
+                $Address.AddRange($ChangePrimaryToSecondary)
                 $UPNandMail = $UPNandMail | ForEach-Object {
                     $_ -replace ([Regex]::Escape($Domain), $NewDomain)
                 }
             }
             
-            if (! $LogOnly) {
+            if (-not $LogOnly) {
                 try {
                     $errorActionPreference = 'Stop'
                     $user = Get-ADUser -Filter { displayName -eq $Display } -Properties proxyAddresses, mail, objectGUID
@@ -204,7 +192,7 @@ function Import-ADProxyAddress {
                         $params.UserPrincipalName = $UPNandMail
                     }
     
-                    if ($UpdateEmailAddress) {
+                    if ($UpdateMailAttribute) {
                         $params.EmailAddress = $UPNandMail
                     }
 
@@ -213,11 +201,13 @@ function Import-ADProxyAddress {
                         If ($UpdateUPN) {
                             Write-Verbose "$Display `t Set UserPrincipalName $UPNandMail"
                         }
-                        if ($UpdateEmailAddress) {
-                            Write-Verbose "$Display `t Set EmailAddress $UPNandMail"
+                        if ($UpdateMailAttribute) {
+                            Write-Verbose "$Display `t Set Mail Attribute $UPNandMail"
                         }
                     }
-
+                    if ($ChangeDomainOnPrimarySmtpUpnMail) {
+                        Set-ADUser -Identity $ObjectGUID -remove @{ProxyAddresses = $PrimarySMTP}
+                    }
                     $Address | ForEach-Object {
                         Set-ADUser -Identity $ObjectGUID -Add @{ProxyAddresses = "$_"}
                         Write-Verbose "$Display `t Set ProxyAddress $($_)"
