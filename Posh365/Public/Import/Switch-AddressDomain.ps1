@@ -1,41 +1,42 @@
 function Switch-AddressDomain { 
     <#
-    .SYNOPSIS
-    Modifies PrimarySMTPAddress via Active Directory by changing domain from old to new.  Makes the primary address a secondary smtp address.
-    Optionally, changes the UPN and mail attributes.
 
-    .DESCRIPTION
-    Modifies PrimarySMTPAddress via Active Directory by changing domain from old to new.  Makes the primary address a secondary smtp address.
-    Optionally, changes the UPN and mail attributes.
-    
-    .PARAMETER Row
-    Parameter description
-    
-    .PARAMETER FirstClearAllProxyAddresses
-    Parameter description
-    
-    .PARAMETER SwitchUPNDomain
-    Parameter description
-    
-    .PARAMETER SwitchMailDomain
-    Parameter description
-    
-    .PARAMETER OldDomain
-    Parameter description
-    
-    .PARAMETER NewDomain
-    Parameter description
-    
-    .PARAMETER LogOnly
-    Parameter description
-    
-    .EXAMPLE
-    Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -Domain "contoso.com" -NewDomain "fabrikam.com" -UpdateUPN -UpdateMailAttribute -JoinType and
+.SYNOPSIS
+Modifies PrimarySMTPAddress via Active Directory by changing domain from old to new.  Makes the primary address a secondary (additional) smtp address.
+Optionally, changes the UPN, changes the mail attributes or clears all proxy addresses first.
 
-    .NOTES
-    Input of ProxyAddresses are expected to be semicolon separated and header should be "EmailAddresses"
+.DESCRIPTION
+Modifies PrimarySMTPAddress via Active Directory by changing domain from old to new.  Makes the primary address a secondary (additional) smtp address.
+Optionally, changes the UPN, changes the mail attributes or clears all proxy addresses first.
 
-    #>
+.PARAMETER Row
+Input of a CSV that includes a minimum of Distinguished Names
+
+.PARAMETER OldDomain
+The domain from which are going to change the primary SMTP suffix
+
+.PARAMETER NewDomain
+The domain to which are going to change the primary SMTP suffix
+
+.PARAMETER SwitchUPNDomain
+Changes the suffix of the UPN
+
+.PARAMETER SwitchMailDomain
+Changes the suffix of the Mail domain (this has not ProxyAddresses attribute)
+
+.PARAMETER FirstClearAllProxyAddresses
+This should be used with extreme caution and is self explanatory.
+
+.PARAMETER LogOnly
+Run this first.  Outputs log file of "what-if"
+
+.EXAMPLE
+Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -Domain "contoso.com" -NewDomain "fabrikam.com" -UpdateUPN -UpdateMailAttribute -LogOnly
+
+.NOTES
+Input of ProxyAddresses are expected to be semicolon separated and header should be "EmailAddresses"
+
+#>
     [CmdletBinding(SupportsShouldProcess)]
     param (
 
@@ -79,7 +80,6 @@ function Switch-AddressDomain {
     }
     Process {
         ForEach ($CurRow in $Row) {
-            $Address = New-Object System.Collections.Generic.List[String]
             $DistinguishedName = $CurRow.DistinguishedName
             $ADUser = Get-ADUser -Filter {DistinguishedName -eq $DistinguishedName} -Properties proxyAddresses, mail, ObjectGUID, DisplayName
             $DisplayName = $ADuser.DisplayName
@@ -104,10 +104,14 @@ function Switch-AddressDomain {
 
             $NewAlternateFromOldPrimary = "smtp:{0}" -f $NewUPNandMail
 
-            $Address.Add($NewPrimarySMTP)
-            $Address.Add($NewAlternateFromOldPrimary)
+            $Address = @(
+                $NewPrimarySMTP
+                $NewAlternateFromOldPrimary
+            )
+
             if ($NewSIP) {
-                $Address.Add($NewSIP)
+                $Address += $NewSIP
+                # $Address.Add($NewSIP)
             }
 
             if (-not $LogOnly) {
