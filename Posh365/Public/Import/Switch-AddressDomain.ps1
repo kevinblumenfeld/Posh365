@@ -19,10 +19,10 @@ The domain from which are going to change the primary SMTP suffix
 The domain to which are going to change the primary SMTP suffix
 
 .PARAMETER SwitchUPNDomain
-Changes the suffix of the UPN
+UserPrincipalName becomes the Primary SMTP address
 
 .PARAMETER SwitchMailDomain
-Changes the suffix of the Mail domain (this is not ProxyAddresses attribute)
+Mail attribute becomes the Primary SMTP address
 
 .PARAMETER FirstClearAllProxyAddresses
 This should be used with extreme caution and is self explanatory.
