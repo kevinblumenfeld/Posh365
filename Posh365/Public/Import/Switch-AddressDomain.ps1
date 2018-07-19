@@ -22,7 +22,7 @@ The domain to which are going to change the primary SMTP suffix
 Changes the suffix of the UPN
 
 .PARAMETER SwitchMailDomain
-Changes the suffix of the Mail domain (this has not ProxyAddresses attribute)
+Changes the suffix of the Mail domain (this is not ProxyAddresses attribute)
 
 .PARAMETER FirstClearAllProxyAddresses
 This should be used with extreme caution and is self explanatory.
@@ -31,10 +31,13 @@ This should be used with extreme caution and is self explanatory.
 Run this first.  Outputs log file of "what-if"
 
 .EXAMPLE
-Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -Domain "contoso.com" -NewDomain "fabrikam.com" -UpdateUPN -UpdateMailAttribute -LogOnly
+Import-Csv .\CsvOfDNs.csv | Switch-AddressDomain -OldDomain "contoso.com" -NewDomain "fabrikam.com" -SwitchUPNDomain -SwitchMailDomain -LogOnly -Verbose
+
+.EXAMPLE
+Import-Csv .\CsvOfDNs.csv | Switch-AddressDomain -OldDomain "contoso.com" -NewDomain "fabrikam.com" -SwitchUPNDomain -SwitchMailDomain -Verbose
 
 .NOTES
-Input of ProxyAddresses are expected to be semicolon separated and header should be "EmailAddresses"
+Input of Distinguished Names are expected in CSV with DistinguishedName header in your CSV
 
 #>
     [CmdletBinding(SupportsShouldProcess)]
@@ -64,11 +67,11 @@ Input of ProxyAddresses are expected to be semicolon separated and header should
     )
     Begin {
         if ($OldDomain -and (-not $NewDomain)) {
-            Write-Warning "Must use NewDomain parameter when specifying Domain parameter"
+            Write-Warning "Must use NewDomain parameter when specifying OldDomain parameter"
             break
         }
         if ($NewDomain -and (-not $OldDomain)) {
-            Write-Warning "Must use Domain parameter when specifying NewDomain parameter"
+            Write-Warning "Must use OldDomain parameter when specifying NewDomain parameter"
             break
         }
 
@@ -102,7 +105,7 @@ Input of ProxyAddresses are expected to be semicolon separated and header should
                 $_ -replace ([Regex]::Escape($OldDomain), $NewDomain)
             }
 
-            $NewAlternateFromOldPrimary = "smtp:{0}" -f $NewUPNandMail
+            $NewAlternateFromOldPrimary = "smtp:{0}" -f $OldPrimarySMTPTrimmed
 
             $Address = @(
                 $NewPrimarySMTP
