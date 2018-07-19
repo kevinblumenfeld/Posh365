@@ -43,19 +43,19 @@ function Switch-AddressDomain {
         $Row,
 
         [Parameter()]
-        [Switch]$FirstClearAllProxyAddresses,
+        [string]$OldDomain,
+
+        [Parameter()]
+        [string]$NewDomain,
         
         [Parameter()]
         [Switch]$SwitchUPNDomain,
 
         [Parameter()]
         [Switch]$SwitchMailDomain,
-
+        
         [Parameter()]
-        [string]$OldDomain,
-
-        [Parameter()]
-        [string]$NewDomain,
+        [Switch]$FirstClearAllProxyAddresses,
 
         [Parameter()]
         [Switch]$LogOnly
@@ -79,9 +79,9 @@ function Switch-AddressDomain {
     }
     Process {
         ForEach ($CurRow in $Row) {
-
+            $Address = New-Object System.Collections.Generic.List[String]
             $DistinguishedName = $CurRow.DistinguishedName
-            $ADUser = Get-ADUser -Filter {DistinguishedName -eq $DistinguishedName} -Properties proxyAddresses, mail, ObjectGUID
+            $ADUser = Get-ADUser -Filter {DistinguishedName -eq $DistinguishedName} -Properties proxyAddresses, mail, ObjectGUID, DisplayName
             $DisplayName = $ADuser.DisplayName
             $Mail = $ADuser.Mail
             $ObjectGUID = $ADUser.ObjectGUID
@@ -106,7 +106,9 @@ function Switch-AddressDomain {
 
             $Address.Add($NewPrimarySMTP)
             $Address.Add($NewAlternateFromOldPrimary)
-            $Address.Add($NewSIP)
+            if ($NewSIP) {
+                $Address.Add($NewSIP)
+            }
 
             if (-not $LogOnly) {
                 try {
@@ -120,12 +122,12 @@ function Switch-AddressDomain {
                     $params = @{}
                     if ($SwitchUPNDomain) {
                         $params.UserPrincipalName = $NewUPNandMail
-                        Write-Verbose "$Display `t Setting UserPrincipalName $NewUPNandMail"
+                        Write-Verbose "$DisplayName `t Setting UserPrincipalName $NewUPNandMail"
                     }
     
                     if ($SwitchMailDomain) {
                         $params.EmailAddress = $NewUPNandMail
-                        Write-Verbose "$Display `t Setting Mail Attribute $NewUPNandMail"
+                        Write-Verbose "$DisplayName `t Setting Mail Attribute $NewUPNandMail"
                     }
 
                     if ($params.Count -gt 0) {
@@ -136,36 +138,38 @@ function Switch-AddressDomain {
 
                     $Address | ForEach-Object {
                         Set-ADUser -Identity $ObjectGUID -Add @{ProxyAddresses = "$_"}
-                        Write-Verbose "$Display `t Set ProxyAddress $($_)"
+                        Write-Verbose "$DisplayName `t Set ProxyAddress $($_)"
                     }
                 }
                 catch {
                     [PSCustomObject]@{
-                        DisplayName    = $Display
-                        ObjectGUID     = $ObjectGUID
-                        Error          = $_
-                        OldMail        = $Mail
-                        OldUPN         = $UserPrincipalName
-                        NewUPNandMail  = $NewUPNandMail
-                        NewPrimarySMTP = $NewPrimarySMTP
-                        NewSIP         = $NewSIP
-                        NewAlternate   = $NewAlternateFromOldPrimary
-                        Addresses      = $Address -join ';'
+                        DisplayName       = $DisplayName
+                        ObjectGUID        = $ObjectGUID
+                        Error             = $_
+                        OldMail           = $Mail
+                        OldUPN            = $UserPrincipalName
+                        NewUPNandMail     = $NewUPNandMail
+                        NewPrimarySMTP    = $NewPrimarySMTP
+                        NewSIP            = $NewSIP
+                        NewAlternate      = $NewAlternateFromOldPrimary
+                        Addresses         = $Address -join ';'
+                        DistinguishedName = $DistinguishedName
                     } | Export-Csv $ErrorLog -Append -NoTypeInformation -Encoding UTF8
                 }
             }
             else {
                 if ($Address) {
                     [PSCustomObject]@{
-                        DisplayName    = $Display
-                        ObjectGUID     = $ObjectGUID
-                        OldMail        = $Mail
-                        OldUPN         = $UserPrincipalName
-                        NewUPNandMail  = $NewUPNandMail
-                        NewPrimarySMTP = $NewPrimarySMTP
-                        NewSIP         = $NewSIP
-                        NewAlternate   = $NewAlternateFromOldPrimary
-                        Addresses      = $Address -join ';'
+                        DisplayName       = $DisplayName
+                        ObjectGUID        = $ObjectGUID
+                        OldMail           = $Mail
+                        OldUPN            = $UserPrincipalName
+                        NewUPNandMail     = $NewUPNandMail
+                        NewPrimarySMTP    = $NewPrimarySMTP
+                        NewSIP            = $NewSIP
+                        NewAlternate      = $NewAlternateFromOldPrimary
+                        Addresses         = $Address -join ';'
+                        DistinguishedName = $DistinguishedName
                     } | Export-Csv $Log -Append -NoTypeInformation -Encoding UTF8
                 }
             }
