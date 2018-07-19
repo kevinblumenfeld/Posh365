@@ -24,6 +24,9 @@ UserPrincipalName becomes the Primary SMTP address
 .PARAMETER SwitchMailDomain
 Mail attribute becomes the Primary SMTP address
 
+.PARAMETER SwitchMsRTCSIP
+msRTCSIP-PrimaryUserAddress attribute becomes the Primary SMTP address
+
 .PARAMETER FirstClearAllProxyAddresses
 This should be used with extreme caution and is self explanatory.
 
@@ -59,10 +62,13 @@ Input of Distinguished Names are expected in CSV with DistinguishedName header i
         [Switch]$SwitchMailDomain,
         
         [Parameter()]
-        [Switch]$FirstClearAllProxyAddresses,
+        [Switch]$SwitchMsRTCSIP,
+        
+        [Parameter()]
+        [Switch]$LogOnly,
 
         [Parameter()]
-        [Switch]$LogOnly
+        [Switch]$FirstClearAllProxyAddresses
 
     )
     Begin {
@@ -99,6 +105,7 @@ Input of Distinguished Names are expected in CSV with DistinguishedName header i
             $NewSIP = $OldSIP | ForEach-Object {
                 $_ -replace ([Regex]::Escape($OldDomain), $NewDomain)
             }
+            $NewSIPlowercase = $NewSIP.ToLower()
 
             $OldPrimarySMTPTrimmed = $($OldPrimarySMTP.Substring(5)).ToLower()
             $NewUPNandMail = $OldPrimarySMTPTrimmed | ForEach-Object {
@@ -141,7 +148,15 @@ Input of Distinguished Names are expected in CSV with DistinguishedName header i
                         $ADUser | Set-ADUser @params
                     }
 
+                    Set-ADUser -Identity $ObjectGUID -remove @{ProxyAddresses = $OldSIP}
+                    Write-Verbose "$DisplayName `t Removing Old SIP $OldSIP"
                     Set-ADUser -Identity $ObjectGUID -remove @{ProxyAddresses = $OldPrimarySMTP}
+                    Write-Verbose "$DisplayName `t Removing Old PrimarySMTP $OldPrimarySMTP"
+
+                    if ($SwitchMsRTCSIP) {
+                        Set-ADUser -Identity $ObjectGUID -Replace @{'msRTCSIP-PrimaryUserAddress' = $NewSIPlowercase}
+                        Write-Verbose "$DisplayName `t Setting msRTCSIP-PrimaryUserAddress Attribute $NewSIPlowercase"
+                    }
 
                     $Address | ForEach-Object {
                         Set-ADUser -Identity $ObjectGUID -Add @{ProxyAddresses = "$_"}
@@ -158,8 +173,9 @@ Input of Distinguished Names are expected in CSV with DistinguishedName header i
                         NewUPNandMail     = $NewUPNandMail
                         NewPrimarySMTP    = $NewPrimarySMTP
                         NewSIP            = $NewSIP
+                        msRTCSIP          = $NewSIPlowercase
                         NewAlternate      = $NewAlternateFromOldPrimary
-                        Addresses         = $Address -join ';'
+                        AddressesAdded    = $Address -join ';'
                         DistinguishedName = $DistinguishedName
                     } | Export-Csv $ErrorLog -Append -NoTypeInformation -Encoding UTF8
                 }
@@ -174,8 +190,9 @@ Input of Distinguished Names are expected in CSV with DistinguishedName header i
                         NewUPNandMail     = $NewUPNandMail
                         NewPrimarySMTP    = $NewPrimarySMTP
                         NewSIP            = $NewSIP
+                        msRTCSIP          = $NewSIPlowercase
                         NewAlternate      = $NewAlternateFromOldPrimary
-                        Addresses         = $Address -join ';'
+                        AddressesAdded    = $Address -join ';'
                         DistinguishedName = $DistinguishedName
                     } | Export-Csv $Log -Append -NoTypeInformation -Encoding UTF8
                 }
