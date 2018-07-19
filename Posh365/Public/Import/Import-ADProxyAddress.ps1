@@ -1,81 +1,59 @@
 function Import-ADProxyAddress { 
     <#
-    
     .SYNOPSIS
     Import ProxyAddresses into Active Directory
-
     .DESCRIPTION
     Import ProxyAddresses into Active Directory
-
     .PARAMETER Row
     Parameter description
-
+    
     .PARAMETER JoinType
     Parameter description
-
+    
     .PARAMETER Match
     Parameter description
-
+    
     .PARAMETER caseMatch
     Parameter description
-
+    
     .PARAMETER matchAnd
     Parameter description
-
+    
     .PARAMETER caseMatchAnd
     Parameter description
-
+    
     .PARAMETER MatchNot
     Parameter description
-
+    
     .PARAMETER caseMatchNot
     Parameter description
-
+    
     .PARAMETER MatchNotAnd
     Parameter description
-
+    
     .PARAMETER caseMatchNotAnd
     Parameter description
-
+    
     .PARAMETER FirstClearAllProxyAddresses
     Parameter description
-
+    
     .PARAMETER UpdateUPN
     Parameter description
-
-    .PARAMETER UpdateMailAttribute
+    
+    .PARAMETER UpdateEmailAddress
     Parameter description
-
-    .PARAMETER Domain
-    Parameter description
-
-    .PARAMETER NewDomain
-    Parameter description
-
-    .PARAMETER ChangeDomainOnPrimarySmtpUpnMail
-    Parameter description
-
-    .PARAMETER LogOnly
-    Parameter description
-
+    
     .EXAMPLE
     Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -caseMatchAnd @("SMTP:","contoso.com") -JoinType and
-
-    .EXAMPLE
-    Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -ChangeDomainOnPrimarySmtpUpnMail -Domain "contoso.com" -NewDomain "fabrikam.com" -UpdateUPN -UpdateMailAttribute -JoinType and
-
     .EXAMPLE
     Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -caseMatchAnd @("smtp:","onmicrosoft.com") -JoinType and
-
     .EXAMPLE
     Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -caseMatch "brann" -MatchNotAnd @("JAIME","John") -JoinType and
-
     .EXAMPLE
     Import-Csv .\CSVofADUsers.csv | Import-ADProxyAddress -caseMatch "Harry Franklin" -MatchNotAnd @("JAIME","John") -JoinType or
-
     .NOTES
     Input of ProxyAddresses are expected to be semicolon separated
-
+    
     #>
     [CmdletBinding(SupportsShouldProcess)]
     param (
@@ -118,7 +96,7 @@ function Import-ADProxyAddress {
         [Switch]$UpdateUPN,
 
         [Parameter()]
-        [Switch]$UpdateMailAttribute,
+        [Switch]$UpdateEmailAddress,
 
         [Parameter()]
         [string]$Domain,
@@ -127,23 +105,16 @@ function Import-ADProxyAddress {
         [string]$NewDomain,
 
         [Parameter()]
-        [string]$ChangeDomainOnPrimarySmtpUpnMail,
-
-        [Parameter()]
         [Switch]$LogOnly
 
     )
     Begin {
-        if ($Domain -and (-not $NewDomain)) {
+        if ($Domain -and (! $NewDomain)) {
             Write-Warning "Must use NewDomain parameter when specifying Domain parameter"
             break
         }
-        if ($NewDomain -and (-not $Domain)) {
+        if ($NewDomain -and (! $Domain)) {
             Write-Warning "Must use Domain parameter when specifying NewDomain parameter"
-            break
-        }
-        if ($ChangeDomainOnPrimarySmtpUpnMail -and (-not $Domain)) {
-            Write-Warning "Must use Domain and NewDomain parameters when specifying ChangeDomainOnPrimarySmtpUpnMail parameter"
             break
         }
         Import-Module ActiveDirectory -Verbose:$False
@@ -183,29 +154,18 @@ function Import-ADProxyAddress {
         ForEach ($CurRow in $Row) {
             # Add Error Handling for more than one SMTP:
             $Display = $CurRow.Displayname
-            [System.Collections.Generic.List[String]]$Address = $CurRow.EmailAddresses -split ";" | Where-Object $filter
-            if ($Domain -and (-not $ChangeDomainOnPrimarySmtpUpnMail)) {
+            $Address = $CurRow.EmailAddresses -split ";" | Where-Object $filter
+            if ($Domain) {
                 $Address = $Address | ForEach-Object {
                     $_ -replace ([Regex]::Escape($Domain), $NewDomain)
                 }
             }
             $PrimarySMTP = $CurRow.EmailAddresses -split ";" | Where-Object {$_ -cmatch 'SMTP:'}
-
+            
             if ($PrimarySMTP) {
                 $UPNandMail = ($PrimarySMTP.Substring(5)).ToLower()
             }
-            if ($ChangeDomainOnPrimarySmtpUpnMail) {
-                $ChangePrimaryToSecondary = "smtp:{0}" -f $UPNandMail
-                $Address = $PrimarySMTP | ForEach-Object {
-                    $_ -replace ([Regex]::Escape($Domain), $NewDomain)
-                }
-                $Address.AddRange($ChangePrimaryToSecondary)
-                $UPNandMail = $UPNandMail | ForEach-Object {
-                    $_ -replace ([Regex]::Escape($Domain), $NewDomain)
-                }
-            }
-            
-            if (-not $LogOnly) {
+            if (! $LogOnly) {
                 try {
                     $errorActionPreference = 'Stop'
                     $user = Get-ADUser -Filter { displayName -eq $Display } -Properties proxyAddresses, mail, objectGUID
@@ -221,7 +181,7 @@ function Import-ADProxyAddress {
                         $params.UserPrincipalName = $UPNandMail
                     }
     
-                    if ($UpdateMailAttribute) {
+                    if ($UpdateEmailAddress) {
                         $params.EmailAddress = $UPNandMail
                     }
 
@@ -230,13 +190,11 @@ function Import-ADProxyAddress {
                         If ($UpdateUPN) {
                             Write-Verbose "$Display `t Set UserPrincipalName $UPNandMail"
                         }
-                        if ($UpdateMailAttribute) {
-                            Write-Verbose "$Display `t Set Mail Attribute $UPNandMail"
+                        if ($UpdateEmailAddress) {
+                            Write-Verbose "$Display `t Set EmailAddress $UPNandMail"
                         }
                     }
-                    if ($ChangeDomainOnPrimarySmtpUpnMail) {
-                        Set-ADUser -Identity $ObjectGUID -remove @{ProxyAddresses = $PrimarySMTP}
-                    }
+
                     $Address | ForEach-Object {
                         Set-ADUser -Identity $ObjectGUID -Add @{ProxyAddresses = "$_"}
                         Write-Verbose "$Display `t Set ProxyAddress $($_)"
