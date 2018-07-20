@@ -39,12 +39,6 @@ function Get-ActiveDirectoryUserFiltered {
 
     )
 
-    Import-Module ActiveDirectory -Verbose:$False
-    $OutputPath = 'C:\Scripts'
-    $LogFileName = $(get-date -Format yyyy-MM-dd_HH-mm-ss)
-    $Log = Join-Path $OutputPath ($LogFileName + "-WhatIf_Import.csv")
-    $ErrorLog = Join-Path $OutputPath ($LogFileName + "-Error_Log.csv")
-
     $InputPath = 'C:\Scripts'
 
     $filterElements = ForEach ($Attribute in $Attributes) {
@@ -60,7 +54,7 @@ function Get-ActiveDirectoryUserFiltered {
 
     $filterString = '({0})' -f ($filterElements -join (') -{0} (' -f $JoinType))
     $filter = [ScriptBlock]::Create($filterString)
-    Write-Host "Filter being used: $filter"
+    Write-Verbose "Filter being used: $filter"
     $OUPath = Join-Path $InputPath OUs.txt
     $OUs = Get-Content $OUPath
     ForEach ($OU in $OUs) {
