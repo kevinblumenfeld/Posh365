@@ -1,166 +1,73 @@
 function Get-ActiveDirectoryUserFiltered { 
     <#
     .SYNOPSIS
-    Short description
+    Get ADUsers filtered by attributes
 
     .DESCRIPTION
-    Long description
-
-    .PARAMETER Row
-    Parameter description
+    Get ADUsers filtered by attributes.  Provide the name of attribute(s) and the function will look for a txt file of the same name.
+    The txt file will contain the values to be found.
 
     .PARAMETER JoinType
-    Parameter description
+    AND or OR are the options here.  This decides if the filter is 
+    (foo -eq 'bar' -or bar -eq 'foo') -AND (foo -eq 'bar' -or bar -eq 'foo')
+                                    or
+    (foo -eq 'bar' -or bar -eq 'foo') -OR (foo -eq 'bar' -or bar -eq 'foo')
 
-    .PARAMETER EqualsAnd
-    Parameter description
+    The DEFAULT is AND
 
-    .PARAMETER EqualsOr
-    Parameter description
-
-    .PARAMETER LogOnly
-    Parameter description
+    .PARAMETER Attributes
+    The attributes to be filtered
 
     .EXAMPLE
-    An example
+    Get-ActiveDirectoryUserFiltered -Attributes @('DepartmentNumber','City')
 
     .NOTES
-    General notes
-    #>
+    Name of attribute expects same named .txt file.
+    In the above example DepartmentNumber.txt and City.txt is expected in c:\scripts
+#>
 
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding()]
     param (
-
-        [Parameter(ValueFromPipeline = $true, Mandatory = $true)]
-        $Row,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet("and", "or")]
-        [String]$JoinType,
+        [String]$JoinType = 'and',
 
         [Parameter()]
-        [String[]]$EqualsAnd,
-
-        [Parameter()]
-        [String[]]$EqualsOr,
-
-        [Parameter()]
-        [Switch]$LogOnly
+        [String[]]$Attributes
 
     )
-    Begin {
-        Import-Module ActiveDirectory -Verbose:$False
-        $OutputPath = 'C:\Scripts'
-        $InputPath = 'C:\Scripts'
-        $LogFileName = $(get-date -Format yyyy-MM-dd_HH-mm-ss)
-        $Log = Join-Path $OutputPath ($LogFileName + "-WhatIf_Import.csv")
-        $ErrorLog = Join-Path $OutputPath ($LogFileName + "-Error_Log.csv")
-        $ListOUs = Join-Path $InputPath (OUs.csv)
-        $ListDepts = Join-Path $InputPath (Depts.csv)
-        $ListCities = Join-Path $InputPath (Cities.csv)
 
-        $OUs = Get-Content $ListOUs
-        $Depts = Get-Content $ListDepts
-        $Cities = Get-Content $ListCities
+    Import-Module ActiveDirectory -Verbose:$False
+    $OutputPath = 'C:\Scripts'
+    $LogFileName = $(get-date -Format yyyy-MM-dd_HH-mm-ss)
+    $Log = Join-Path $OutputPath ($LogFileName + "-WhatIf_Import.csv")
+    $ErrorLog = Join-Path $OutputPath ($LogFileName + "-Error_Log.csv")
 
-        $filterElements = $psboundparameters.Keys | Where-Object { $_ -match 'Equals' } | ForEach-Object {
+    $InputPath = 'C:\Scripts'
 
-            if ($_.EndsWith('And')) {
-                $logicOperator = ' -and '
-            }
-            else {
-                $logicOperator = ' -or '
-            }
-            
-            $comparisonOperator = switch ($_) {
-                { $_.StartsWith('Equals') } { '-eq' }
-            }
-
-            if ($_.Contains('Not')) {
-                $comparisonOperator = $comparisonOperator -replace '^-(c?)', '-$1not'
-            }
-
-            $elements = foreach ($value in $psboundparameters[$_]) {
-                '$_ {0} "{1}"' -f $comparisonOperator, $value
-            }
-            $elements -join $logicOperator
+    $filterElements = ForEach ($Attribute in $Attributes) {
+        $AttributePath = Join-Path $InputPath ($Attribute + ".txt")
+        $List = Get-Content $AttributePath
+        $elements = ForEach ($L in $List) {
+            $logicOperator = ' -or '
+            $comparisonOperator = '-eq'
+            '{0} {1} "{2}"' -f $Attribute, $comparisonOperator, $L
         }
-        $filterString = '({0})' -f ($filterElements -join (') -{0} (' -f $JoinType))
-        $filter = [ScriptBlock]::Create($filterString)
-        Write-Verbose "Filter being used: $filter"
+        $elements -join $logicOperator
     }
-    Process {
-        ForEach ($CurRow in $Row) {
-            # Add Error Handling for more than one SMTP:
-            $Display = $CurRow.Displayname
-            $Address = $CurRow.EmailAddresses -split ";" | Where-Object $filter
-            if ($Domain) {
-                $Address = $Address | ForEach-Object {
-                    $_ -replace ([Regex]::Escape($Domain), $NewDomain)
-                }
-            }
-            $PrimarySMTP = $CurRow.EmailAddresses -split ";" | Where-Object {$_ -cmatch 'SMTP:'}
-            
-            if ($PrimarySMTP) {
-                $UPNandMail = ($PrimarySMTP.Substring(5)).ToLower()
-            }
-            if (-not $LogOnly) {
-                try {
-                    $errorActionPreference = 'Stop'
-                    $user = Get-ADUser -Filter { displayName -eq $Display } -Properties proxyAddresses, mail, objectGUID
-                    $ObjectGUID = $user.objectGUID
 
-                    if ($FirstClearAllProxyAddresses) {
-                        $user | Set-ADUser -clear ProxyAddresses
-                        Write-Verbose "$Display `t Cleared ProxyAddresses"
-                    }
-
-                    $params = @{}
-                    if ($UpdateUPN) {
-                        $params.UserPrincipalName = $UPNandMail
-                    }
-    
-                    if ($UpdateEmailAddress) {
-                        $params.EmailAddress = $UPNandMail
-                    }
-
-                    if ($params.Count -gt 0) {
-                        $user | Set-ADUser @params
-                        If ($UpdateUPN) {
-                            Write-Verbose "$Display `t Set UserPrincipalName $UPNandMail"
-                        }
-                        if ($UpdateEmailAddress) {
-                            Write-Verbose "$Display `t Set EmailAddress $UPNandMail"
-                        }
-                    }
-
-                    $Address | ForEach-Object {
-                        Set-ADUser -Identity $ObjectGUID -Add @{ProxyAddresses = "$_"}
-                        Write-Verbose "$Display `t Set ProxyAddress $($_)"
-                    }
-                }
-                catch {
-                    [PSCustomObject]@{
-                        DisplayName = $Display
-                        Error       = $_
-                        UPNandMail  = $UPNandMail
-                        Addresses   = $Address -join ','
-                        
-                    } | Export-Csv $ErrorLog -Append -NoTypeInformation -Encoding UTF8
-                }
-            }
-            else {
-                if ($Address) {
-                    [PSCustomObject]@{
-                        DisplayName = $Display
-                        UPNandMail  = $UPNandMail
-                        Addresses   = $Address -join ','
-                    } | Export-Csv $Log -Append -NoTypeInformation -Encoding UTF8
-                }
-            }
+    $filterString = '({0})' -f ($filterElements -join (') -{0} (' -f $JoinType))
+    $filter = [ScriptBlock]::Create($filterString)
+    Write-Host "Filter being used: $filter"
+    $OUPath = Join-Path $InputPath OUs.txt
+    $OUs = Get-Content $OUPath
+    ForEach ($OU in $OUs) {
+        $ADSplat = @{
+            Properties = $Attributes
+            SearchBase = $OU
+            Filter     = $filter
         }
-    }
-    End {
-
+        Get-ADUser @ADSplat
     }
 }
