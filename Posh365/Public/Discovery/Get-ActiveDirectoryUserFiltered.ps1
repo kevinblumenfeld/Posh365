@@ -24,6 +24,7 @@ function Get-ActiveDirectoryUserFiltered {
     .NOTES
     Name of attribute expects same named .txt file.
     In the above example DepartmentNumber.txt and City.txt is expected in c:\scripts
+    OUs.txt is expected in same location
 #>
 
     [CmdletBinding()]
