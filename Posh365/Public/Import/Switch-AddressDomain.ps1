@@ -90,7 +90,9 @@ Input of Distinguished Names are expected in CSV with DistinguishedName header i
     Process {
         ForEach ($CurRow in $Row) {
             $DistinguishedName = $CurRow.DistinguishedName
+            Write-Verbose "Current Distinguishedname $DistinguishedName"
             $ADUser = Get-ADUser -Filter {DistinguishedName -eq $DistinguishedName} -Properties proxyAddresses, mail, ObjectGUID, DisplayName
+            Write-Verbose "Current ADUSer $($ADUser.DisplayName)"
             $DisplayName = $ADuser.DisplayName
             $Mail = $ADuser.Mail
             $ObjectGUID = $ADUser.ObjectGUID
@@ -100,11 +102,15 @@ Input of Distinguished Names are expected in CSV with DistinguishedName header i
             $NewPrimarySMTP = $OldPrimarySMTP | ForEach-Object {
                 $_ -replace ([Regex]::Escape($OldDomain), $NewDomain)
             }
+            Write-Verbose "$DisplayName `t Old PrimarySMTP address $OldPrimarySMTP"
+            Write-Verbose "$DisplayName `t New PrimarySMTP address $NewPrimarySMTP"
 
             $OldSIP = $ADUser.ProxyAddresses | Where-Object {$_ -cmatch 'SIP:'}
+            Write-Verbose "$DisplayName `t Old SIP address $OldSIP"
             $NewSIP = $OldSIP | ForEach-Object {
                 $_ -replace ([Regex]::Escape($OldDomain), $NewDomain)
             }
+            Write-Verbose "$DisplayName `t New SIP address $NewSIP"
             $NewSIPlowercase = $NewSIP.ToLower()
 
             $OldPrimarySMTPTrimmed = $($OldPrimarySMTP.Substring(5)).ToLower()
@@ -113,11 +119,13 @@ Input of Distinguished Names are expected in CSV with DistinguishedName header i
             }
 
             $NewAlternateFromOldPrimary = "smtp:{0}" -f $OldPrimarySMTPTrimmed
+            Write-Verbose "$DisplayName `t NewAlternateFromOldPrimary $NewAlternateFromOldPrimary"
 
             $Address = @(
                 $NewPrimarySMTP
                 $NewAlternateFromOldPrimary
             )
+            Write-Verbose "$DisplayName `t AddressesPriorToSIP $Address"
 
             if ($NewSIP) {
                 $Address += $NewSIP
