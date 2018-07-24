@@ -13,28 +13,30 @@ Parameter description
 Parameter description
 
 .PARAMETER Match
-Parameter description
+This matches one or more items when looking at email addresses.  This uses the logic operator OR.
+For example -Match @("smtp:","onmicrosoft.com") means it will find all attributes that match smtp: OR onmicrosoft.com
 
 .PARAMETER caseMatch
-Parameter description
+Same as Match parameter but case sensitive
 
 .PARAMETER matchAnd
-Parameter description
+The same as Match parameter but uses the AND logic operator
 
 .PARAMETER caseMatchAnd
-Parameter description
+The same as matchAnd parameter but case sensitive
 
 .PARAMETER MatchNot
-Parameter description
+The same as Match but with the comparison operator of NOT.  Uses logic operator of OR.
+For example -MatchNot @("smtp:","onmicrosoft.com") means it will find all attributes that DO NOT MATCH smtp: OR onmicrosoft.com
 
 .PARAMETER caseMatchNot
-Parameter description
+The same as MatchNot but case sensitive
 
 .PARAMETER MatchNotAnd
-Parameter description
+The same as MatchNot but with the logic operator of AND.
 
 .PARAMETER caseMatchNotAnd
-Parameter description
+The same as MatchNotAnd but case sensitive
 
 .PARAMETER Domain
 Parameter description
@@ -49,7 +51,7 @@ Import-Csv .\CSVofADUsers.csv | Export-CsvData -caseMatchAnd "brann" -MatchNotAn
 Import-Csv .\CSVofADUsers.csv | Export-CsvData -caseMatchAnd "Harry Franklin" -MatchNotAnd @("JAIME","John") -JoinType or
 
 .NOTES
-Input of ProxyAddresses are expected to be semicolon separated.
+Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attribute in Active Directory) are expected to be semicolon separated.
 
 #>
     [CmdletBinding(SupportsShouldProcess)]

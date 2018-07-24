@@ -1,7 +1,7 @@
 function Import-ADProxyAddress { 
     <#
     .SYNOPSIS
-    Import ProxyAddresses into Active Directory
+    Import ProxyAddresses into Active Directory from a CSV file.
 
     .DESCRIPTION
     Import ProxyAddresses into Active Directory.  Also, can clear existing proxyaddresses.
@@ -12,10 +12,14 @@ function Import-ADProxyAddress {
     Always use this parameter to show a "WHAT IF" scenario prior to using in production.  It creates a file in the directory from which you executed this script.
     
     .PARAMETER FindADUserBy
-    Parameter description
+    This uses the AD Attributes named either: "Mail", "UserPrincipalName", or "DisplayName".
+    When finding the AD user by "Mail" attribute the script looks in the CSV for the column headers ProxyAddresses, Mail then WindowsEmailAddress.
+    The script matches against the first mail attribute with the value it finds in the first column (in the CSV) that has data.
+    So if ProxyAddresses column has data, Mail and WindowsEmailAddress columns will not be considered.
     
     .PARAMETER FindAddressInColumn
     In the CSV passed the function will look in one of these columns to find the email addresses to be added, "ProxyAddresses", "EmailAddresses", "x500"
+    These are the addresses that get populated into AD's ProxyAddresses column.
     
     .PARAMETER Match
     This matches one or more items when looking at email addresses.  This uses the logic operator OR.
@@ -74,7 +78,15 @@ function Import-ADProxyAddress {
     Each Row imported via CSV.  Use the method to pass the rows via pipeline instead of this parameter.
     
     .PARAMETER JoinType
-    This joins any conditions together. Either AND or OR. Default is AND
+    This joins all the elements for the filter string together. Either AND or OR.
+
+        AND or OR are the options here.  This decides if the filter is 
+
+    (foo -eq 'bar' -or bar -eq 'foo') -AND (foo -eq 'bar' -or bar -eq 'foo')
+                                        or
+    (foo -eq 'bar' -or bar -eq 'foo') -OR (foo -eq 'bar' -or bar -eq 'foo')
+
+    The DEFAULT is AND
     
     .EXAMPLE
     Import-Csv .\mbxs.csv | Import-ADProxyAddress -FindADUserBy DisplayName -FindAddressInColumn EmailAddresses -Match "contoso.com"
@@ -101,7 +113,7 @@ function Import-ADProxyAddress {
     Import-Csv .\csv.csv | Import-ADProxyAddress -caseMatch "Harry Franklin" -MatchNotAnd @("JAIME","John") -JoinType or
 
     .NOTES
-    Input of addresses from CSV are expected to be semicolon separated (column headers: ProxyAddresses, EmailAddresses or x500)
+    Input of addresses from CSV are expected to be semicolon separated (addresses can originate in 1 of 3 column headers: ProxyAddresses, EmailAddresses or x500)
 
     #>
     [CmdletBinding(SupportsShouldProcess)]
@@ -178,7 +190,7 @@ function Import-ADProxyAddress {
             Write-Warning "Please remove UpdateUPN and/or UpdateEmailAddress when using x500 as the value for FindAddressInColumn"
             break
         }
-        # Import-Module ActiveDirectory -Verbose:$False
+        Import-Module ActiveDirectory -Verbose:$False
         $OutputPath = '.\'
         $LogFileName = $(get-date -Format yyyy-MM-dd_HH-mm-ss)
         $Log = Join-Path $OutputPath ($LogFileName + "-WhatIf_Import.csv")
@@ -215,7 +227,10 @@ function Import-ADProxyAddress {
         ForEach ($CurRow in $Row) {
             # Add Error Handling for more than one SMTP:
             $Display = $CurRow.Displayname
-            $Mail = $CurRow.Mail
+            $Mail = $CurRow.primarySMTPAddress
+            if (-not $Mail) {
+                $Mail = $CurRow.Mail
+                }
             if (-not $Mail) {
                 $Mail = $CurRow.WindowsEmailAddress
             }
