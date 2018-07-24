@@ -130,6 +130,10 @@ function Import-ADProxyAddress {
         [ValidateSet("ProxyAddresses", "EmailAddresses", "x500")]
         [String]$FindAddressInColumn,
 
+        [Parameter(Mandatory = $true)]
+        [ValidateSet("and", "or")]
+        [String]$JoinType,
+
         [Parameter()]
         [String[]]$Match,
 
@@ -168,10 +172,6 @@ function Import-ADProxyAddress {
 
         [Parameter()]
         [string]$NewDomain,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateSet("and", "or")]
-        [String]$JoinType = "and",
 
         [Parameter(ValueFromPipeline = $true, Mandatory = $true)]
         $Row

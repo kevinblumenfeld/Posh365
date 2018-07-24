@@ -64,6 +64,10 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
         [ValidateSet("and", "or")]
         [String]$JoinType,
 
+        [Parameter(Mandatory = $true)]
+        [ValidateSet("ProxyAddresses", "EmailAddresses", "x500")]
+        [String]$FindAddressInColumn,
+
         [Parameter()]
         [String[]]$Match,
 
@@ -143,8 +147,8 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
             $Display = $CurRow.Displayname
             $RecipientTypeDetails = $CurRow.RecipientTypeDetails
             $PrimarySmtpAddress = $CurRow.PrimarySmtpAddress
-            if ($filter) {
-                $Address = $CurRow.EmailAddresses -split ";" | Where-Object $filter
+            if ($filter) {    
+                $Address = $CurRow."$FindAddressInColumn" -split ";" | Where-Object $filter
             }
             else {
                 $Address = $CurRow.EmailAddresses -split ";"
