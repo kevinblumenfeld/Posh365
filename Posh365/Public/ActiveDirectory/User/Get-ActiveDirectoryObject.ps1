@@ -106,13 +106,13 @@ function Get-ActiveDirectoryObject {
         }
     }
     Process {
-        if ($ADUserFilter) {
-            foreach ($CurADUserFilter in $ADUserFilter) {
+        if ($ADObjectFilter) {
+            foreach ($CurADObjectFilter in $ADObjectFilter) {
                 if (! $DetailedReport) {
-                    Get-ADObject -Filter $CurADUserFilter -Properties $Props -ResultSetSize $null | Select-Object ($Selectproperties + $CalculatedProps)
+                    Get-ADObject -Filter $CurADObjectFilter -Properties $Props -ResultSetSize $null | Select-Object ($Selectproperties + $CalculatedProps)
                 }
                 else {
-                    Get-ADObject -Filter $CurADUserFilter -Properties * -ResultSetSize $null | Select-Object ($Selectproperties + $CalculatedProps)
+                    Get-ADObject -Filter $CurADObjectFilter -Properties * -ResultSetSize $null | Select-Object ($Selectproperties + $CalculatedProps)
                 }
             }
         }
