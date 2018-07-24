@@ -147,6 +147,7 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
             $Display = $CurRow.Displayname
             $RecipientTypeDetails = $CurRow.RecipientTypeDetails
             $PrimarySmtpAddress = $CurRow.PrimarySmtpAddress
+            $OU = $CurRow.OU
             if ($filter) {    
                 $Address = $CurRow."$FindAddressInColumn" -split ";" | Where-Object $filter
             }
@@ -164,6 +165,7 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
                 foreach ($CurAddress in $Address) {
                     [PSCustomObject]@{
                         DisplayName          = $Display
+                        OU                   = $OU
                         PrimarySmtpAddress   = $PrimarySmtpAddress
                         RecipientTypeDetails = $RecipientTypeDetails
                         EmailAddress         = $CurAddress
@@ -173,6 +175,7 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
             else {
                 [PSCustomObject]@{
                     DisplayName          = $Display
+                    OU                   = $OU
                     PrimarySmtpAddress   = $PrimarySmtpAddress
                     RecipientTypeDetails = $RecipientTypeDetails
                     EmailAddress         = "NONE"

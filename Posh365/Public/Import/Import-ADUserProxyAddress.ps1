@@ -1,4 +1,4 @@
-function Import-ADProxyAddress { 
+function Import-ADUserProxyAddress { 
     <#
     .SYNOPSIS
     Import ProxyAddresses into Active Directory from a CSV file.
@@ -89,28 +89,28 @@ function Import-ADProxyAddress {
     The DEFAULT is AND
     
     .EXAMPLE
-    Import-Csv .\mbxs.csv | Import-ADProxyAddress -FindADUserBy DisplayName -FindAddressInColumn EmailAddresses -Match "contoso.com"
+    Import-Csv .\mbxs.csv | Import-ADUserProxyAddress -FindADUserBy DisplayName -FindAddressInColumn EmailAddresses -Match "contoso.com"
 
     .EXAMPLE
-    Import-Csv .\mbxs.csv | Import-ADProxyAddress -FindADUserBy DisplayName -FindAddressInColumn EmailAddresses -caseMatch "SMTP:"
+    Import-Csv .\mbxs.csv | Import-ADUserProxyAddress -FindADUserBy DisplayName -FindAddressInColumn EmailAddresses -caseMatch "SMTP:"
     
     .EXAMPLE
-    Import-Csv .\mbxs.csv | Import-ADProxyAddress -FindADUserBy DisplayName -FindAddressInColumn ProxyAddresses -caseNotMatch "SMTP:"
+    Import-Csv .\mbxs.csv | Import-ADUserProxyAddress -FindADUserBy DisplayName -FindAddressInColumn ProxyAddresses -caseNotMatch "SMTP:"
     
     .EXAMPLE
-    Import-Csv .\mbxs.csv | Import-ADProxyAddress -FindADUserBy DisplayName -FindAddressInColumn x500 -Match x500
+    Import-Csv .\mbxs.csv | Import-ADUserProxyAddress -FindADUserBy DisplayName -FindAddressInColumn x500 -Match x500
         
     .EXAMPLE
-    Import-Csv .\mbxs.csv | Import-ADProxyAddress -FindADUserBy DisplayName -FindAddressInColumn ProxyAddresses -Match @("smtp:","onmicrosoft.com") -UpdateUPN -UpdateEmailAddress
+    Import-Csv .\mbxs.csv | Import-ADUserProxyAddress -FindADUserBy DisplayName -FindAddressInColumn ProxyAddresses -Match @("smtp:","onmicrosoft.com") -UpdateUPN -UpdateEmailAddress
 
     .EXAMPLE
-    Import-Csv .\users.csv | Import-ADProxyAddress -caseMatchAnd @("smtp:","onmicrosoft.com") -JoinType and
+    Import-Csv .\users.csv | Import-ADUserProxyAddress -caseMatchAnd @("smtp:","onmicrosoft.com") -JoinType and
 
     .EXAMPLE
-    Import-Csv .\addys.csv | Import-ADProxyAddress -caseMatch "brann" -MatchNotAnd @("JAIME","John") -JoinType and
+    Import-Csv .\addys.csv | Import-ADUserProxyAddress -caseMatch "brann" -MatchNotAnd @("JAIME","John") -JoinType and
     
     .EXAMPLE
-    Import-Csv .\csv.csv | Import-ADProxyAddress -caseMatch "Harry Franklin" -MatchNotAnd @("JAIME","John") -JoinType or
+    Import-Csv .\csv.csv | Import-ADUserProxyAddress -caseMatch "Harry Franklin" -MatchNotAnd @("JAIME","John") -JoinType or
 
     .NOTES
     Input of addresses from CSV are expected to be semicolon separated (addresses can originate in 1 of 3 column headers: ProxyAddresses, EmailAddresses or x500)
@@ -193,8 +193,8 @@ function Import-ADProxyAddress {
         Import-Module ActiveDirectory -Verbose:$False
         $OutputPath = '.\'
         $LogFileName = $(get-date -Format yyyy-MM-dd_HH-mm-ss)
-        $Log = Join-Path $OutputPath ($LogFileName + "-WhatIf_Import.csv")
-        $ErrorLog = Join-Path $OutputPath ($LogFileName + "-Error_Log.csv")
+        $Log = Join-Path $OutputPath ($LogFileName + "-User-WhatIf_Import.csv")
+        $ErrorLog = Join-Path $OutputPath ($LogFileName + "-User-Error_Log.csv")
 
         $filterElements = $psboundparameters.Keys | Where-Object { $_ -match 'Match' } | ForEach-Object {
 
@@ -225,7 +225,6 @@ function Import-ADProxyAddress {
     }
     Process {
         ForEach ($CurRow in $Row) {
-            # Add Error Handling for more than one SMTP:
             $Display = $CurRow.Displayname
             $Mail = $CurRow.primarySMTPAddress
             if (-not $Mail) {
