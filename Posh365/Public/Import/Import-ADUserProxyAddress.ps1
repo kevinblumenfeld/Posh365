@@ -102,6 +102,9 @@ function Import-ADUserProxyAddress {
         
     .EXAMPLE
     Import-Csv .\mbxs.csv | Import-ADUserProxyAddress -FindADUserBy DisplayName -FindAddressInColumn ProxyAddresses -Match @("smtp:","onmicrosoft.com") -UpdateUPN -UpdateEmailAddress
+        
+    .EXAMPLE
+    Import-Csv .\mbxs.csv | Import-ADUserProxyAddress -FindADUserBy DisplayName -FindAddressInColumn ProxyAddresses -Match "^(smtp|x500|sip):" -notMatchAnd "@(contoso\.com|contoso\.mail\.onmicrosoft\.com|contoso\.onmicrosoft\.com)$" -UpdateUPN -UpdateEmailAddress
 
     .EXAMPLE
     Import-Csv .\users.csv | Import-ADUserProxyAddress -caseMatchAnd @("smtp:","onmicrosoft.com") -JoinType and

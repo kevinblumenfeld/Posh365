@@ -1,31 +1,28 @@
-function Get-ActiveDirectoryUser { 
+function Get-ActiveDirectoryObject { 
     <#
     .SYNOPSIS
-    Export Active Directory Users
+    Export Active Directory Objects
     
     .DESCRIPTION
-    Export Active Directory Users
+    Export Active Directory Objects
     
-    .PARAMETER ADUserFilter
-    Provide specific AD Users to report on.  Otherwise, all AD Users will be reported.  Please review the examples provided.
+    .PARAMETER ADObjectFilter
+    Provide specific AD Objects to report on.  Otherwise, all AD Objects will be reported.  Please review the examples provided.
     
     .PARAMETER DetailedReport
     Provides a full report of all attributes.  Otherwise, only a refined report will be given.
     
     .EXAMPLE
-    Get-ActiveDirectoryUser | Export-Csv c:\scripts\ADUsers.csv -notypeinformation -encoding UTF8
+    Get-ActiveDirectoryObject | Export-Csv c:\scripts\ADObjects.csv -notypeinformation -encoding UTF8
     
     .EXAMPLE
-    Get-ActiveDirectoryUser | Export-Csv c:\scripts\ADUsers.csv -notypeinformation -encoding UTF8
+    Get-ActiveDirectoryObject | Export-Csv c:\scripts\ADObjects.csv -notypeinformation -encoding UTF8
     
     .EXAMPLE
-    '{proxyaddresses -like "*contoso.com"}' | Get-ActiveDirectoryUser | Export-Csv c:\scripts\ADUsers.csv -notypeinformation -encoding UTF8
+    '{proxyaddresses -like "*contoso.com"}' | Get-ActiveDirectoryObject | Export-Csv c:\scripts\ADObjects.csv -notypeinformation -encoding UTF8
     
     .EXAMPLE
-    '{proxyaddresses -like "*contoso.com"}' | Get-ActiveDirectoryUser -ArchivesOnly | Export-Csv c:\scripts\ADUsers.csv -notypeinformation -encoding UTF8
-    
-    .EXAMPLE
-    '{proxyaddresses -like "*contoso.com"}' | Get-ActiveDirectoryUser -DetailedReport | Export-Csv c:\scripts\ADUsers_Detailed.csv -notypeinformation -encoding UTF8
+    '{proxyaddresses -like "*contoso.com"}' | Get-ActiveDirectoryObject -DetailedReport | Export-Csv c:\scripts\ADObjects_Detailed.csv -notypeinformation -encoding UTF8
     
     #>
     [CmdletBinding()]
@@ -34,7 +31,7 @@ function Get-ActiveDirectoryUser {
         [switch] $DetailedReport,
 
         [Parameter(ValueFromPipeline = $true, Mandatory = $false)]
-        [string[]] $ADUserFilter
+        [string[]] $ADObjectFilter
     )
     Begin {
         if ($DetailedReport) {
@@ -112,19 +109,19 @@ function Get-ActiveDirectoryUser {
         if ($ADUserFilter) {
             foreach ($CurADUserFilter in $ADUserFilter) {
                 if (! $DetailedReport) {
-                    Get-ADUser -Filter $CurADUserFilter -Properties $Props -ResultSetSize $null | Select-Object ($Selectproperties + $CalculatedProps)
+                    Get-ADObject -Filter $CurADUserFilter -Properties $Props -ResultSetSize $null | Select-Object ($Selectproperties + $CalculatedProps)
                 }
                 else {
-                    Get-ADUser -Filter $CurADUserFilter -Properties * -ResultSetSize $null | Select-Object ($Selectproperties + $CalculatedProps)
+                    Get-ADObject -Filter $CurADUserFilter -Properties * -ResultSetSize $null | Select-Object ($Selectproperties + $CalculatedProps)
                 }
             }
         }
         else {
             if (! $DetailedReport) {
-                Get-ADUser -Filter * -Properties $Props -ResultSetSize $null | Select-Object ($Selectproperties + $CalculatedProps)
+                Get-ADObject -Filter * -Properties $Props -ResultSetSize $null | Select-Object ($Selectproperties + $CalculatedProps)
             }
             else {
-                Get-ADUser -Filter * -Properties * -ResultSetSize $null | Select-Object ($Selectproperties + $CalculatedProps)
+                Get-ADObject -Filter * -Properties * -ResultSetSize $null | Select-Object ($Selectproperties + $CalculatedProps)
             }
         }
     }
