@@ -97,7 +97,7 @@ Input of Distinguished Names are expected in CSV with DistinguishedName header i
             $Mail = $ADuser.Mail
             $ObjectGUID = $ADUser.ObjectGUID
             $UserPrincipalName = $ADUser.UserPrincipalName
-
+            $NewSIPlowercase = $null
             $OldPrimarySMTP = $ADUser.ProxyAddresses | Where-Object {$_ -cmatch 'SMTP:'}
             $NewPrimarySMTP = $OldPrimarySMTP | ForEach-Object {
                 $_ -replace ([Regex]::Escape($OldDomain), $NewDomain)
@@ -111,7 +111,6 @@ Input of Distinguished Names are expected in CSV with DistinguishedName header i
                 $_ -replace ([Regex]::Escape($OldDomain), $NewDomain)
             }
             Write-Verbose "$DisplayName `t New SIP address $NewSIP"
-            $NewSIPlowercase = $NewSIP.ToLower()
 
             $OldPrimarySMTPTrimmed = $($OldPrimarySMTP.Substring(5)).ToLower()
             $NewUPNandMail = $OldPrimarySMTPTrimmed | ForEach-Object {
@@ -128,6 +127,7 @@ Input of Distinguished Names are expected in CSV with DistinguishedName header i
             Write-Verbose "$DisplayName `t AddressesPriorToSIP $Address"
 
             if ($NewSIP) {
+                $NewSIPlowercase = $NewSIP.ToLower()
                 $Address += $NewSIP
                 # $Address.Add($NewSIP)
             }
@@ -155,13 +155,14 @@ Input of Distinguished Names are expected in CSV with DistinguishedName header i
                     if ($params.Count -gt 0) {
                         $ADUser | Set-ADUser @params
                     }
-
-                    Set-ADUser -Identity $ObjectGUID -remove @{ProxyAddresses = $OldSIP}
-                    Write-Verbose "$DisplayName `t Removing Old SIP $OldSIP"
+                    if ($NewSIP) {
+                        Set-ADUser -Identity $ObjectGUID -remove @{ProxyAddresses = $OldSIP}
+                        Write-Verbose "$DisplayName `t Removing Old SIP $OldSIP"    
+                    }
                     Set-ADUser -Identity $ObjectGUID -remove @{ProxyAddresses = $OldPrimarySMTP}
                     Write-Verbose "$DisplayName `t Removing Old PrimarySMTP $OldPrimarySMTP"
 
-                    if ($SwitchMsRTCSIP) {
+                    if ($SwitchMsRTCSIP -and $NewSIPlowercase) {
                         Set-ADUser -Identity $ObjectGUID -Replace @{'msRTCSIP-PrimaryUserAddress' = $NewSIPlowercase}
                         Write-Verbose "$DisplayName `t Setting msRTCSIP-PrimaryUserAddress Attribute $NewSIPlowercase"
                     }
