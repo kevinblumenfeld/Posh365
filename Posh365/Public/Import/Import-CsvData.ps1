@@ -13,8 +13,12 @@ function Import-CsvData {
         [String]$UserOrGroup,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet("Add", "Remove")]
-        [String]$AddOrRemoveAddress,
+        [ValidateSet("Add", "Remove", "Replace")]
+        [String]$AddRemoveOrReplace,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet("ProxyAddresses", "UserPrincipalName", "Mail")]
+        [String]$Attribute,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet("Mail", "UserPrincipalName", "DisplayName")]
@@ -121,16 +125,16 @@ function Import-CsvData {
                         if ($params.Count -gt 0) {
                             $adObject | & "Set-AD$UserOrGroup" @params
                         }
-                        
+
                         if ($Domain) {
                             $Address = $Address | ForEach-Object {
                                 $_ -replace ([Regex]::Escape($Domain), $NewDomain)
                             }
                         }
                         foreach ($CurAddressItem in $address) {
-                            $splat2 = @{ $AddOrRemoveAddress = @{ ProxyAddresses = $CurAddressItem } }
-                            Write-Verbose "$Display $AddOrRemoveAddress ProxyAddress: $CurAddressItem"
-                            $adObject | & "Set-AD$UserOrGroup" @splat2
+                            $splat = @{ $AddRemoveOrReplace = @{ $Attribute = $CurAddressItem } }
+                            Write-Verbose "$Display $AddRemoveOrReplace ProxyAddress: $CurAddressItem"
+                            $adObject | & "Set-AD$UserOrGroup" @splat
                         }
                     }
                     
@@ -138,6 +142,7 @@ function Import-CsvData {
                 catch {
                     [PSCustomObject]@{
                         DisplayName = $Display
+                        Attribute   = $Attribute
                         Error       = $_
                         Address     = $Address
                         Mail        = $Mail
@@ -149,6 +154,7 @@ function Import-CsvData {
                 if ($Address) {
                     [PSCustomObject]@{
                         DisplayName = $Display
+                        Attribute   = $Attribute
                         Address     = $Address
                         Mail        = $Mail
                         UPN         = $PrimarySmtpAddress
