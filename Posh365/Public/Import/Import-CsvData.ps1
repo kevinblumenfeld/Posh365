@@ -13,6 +13,10 @@ function Import-CsvData {
         [String]$UserOrGroup,
 
         [Parameter(Mandatory = $true)]
+        [ValidateSet("Add", "Remove")]
+        [String]$AddOrRemoveAddress,
+
+        [Parameter(Mandatory = $true)]
         [ValidateSet("Mail", "UserPrincipalName", "DisplayName")]
         [String]$FindADUserOrGroupBy,
 
@@ -102,9 +106,9 @@ function Import-CsvData {
                         if ($params.Count -gt 0) {
                             $adObject | & "Set-AD$UserOrGroup" @params
                         }
-    
+                        $splat = @{$AddOrRemoveAddress = @{ProxyAddresses = "$_"}}
                         $Address | ForEach-Object {
-                            $adObject | & "Set-AD$UserOrGroup" -Add @{ProxyAddresses = "$_"}
+                            $adObject | & "Set-AD$UserOrGroup" @Splat
                             Write-Verbose "$Display `t Set ProxyAddress $($_)"
                         }
                     }
