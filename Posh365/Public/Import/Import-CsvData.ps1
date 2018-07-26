@@ -106,10 +106,12 @@ function Import-CsvData {
                         if ($params.Count -gt 0) {
                             $adObject | & "Set-AD$UserOrGroup" @params
                         }
-                        $splat = @{$AddOrRemoveAddress = @{ProxyAddresses = "$_"}}
-                        $Address | ForEach-Object {
-                            $adObject | & "Set-AD$UserOrGroup" @Splat
-                            Write-Verbose "$Display `t Set ProxyAddress $($_)"
+    
+                        foreach ($CuraddressItem in $address)
+                        {
+                            $splat2 = @{ $AddOrRemoveAddress = @{ ProxyAddresses = $CuraddressItem } }
+                            Write-Verbose "$Display $AddOrRemoveAddress ProxyAddress: $CuraddressItem"
+                            $adObject | & "Set-AD$UserOrGroup" @splat2
                         }
                     }
                     
