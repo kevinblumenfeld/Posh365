@@ -28,9 +28,24 @@ function Import-CsvData {
         [Switch]$FirstClearAllProxyAddresses,
 
         [Parameter(ValueFromPipeline = $true, Mandatory = $true)]
-        $Row
+        $Row,
+        
+        [Parameter()]
+        [string]$Domain,
+
+        [Parameter()]
+        [string]$NewDomain
+
     )
     Begin {
+        if ($Domain -and (! $NewDomain)) {
+            Write-Warning "Must use NewDomain parameter when specifying Domain parameter"
+            break
+        }
+        if ($NewDomain -and (! $Domain)) {
+            Write-Warning "Must use Domain parameter when specifying NewDomain parameter"
+            break
+        }
         Import-Module ActiveDirectory -Verbose:$False
         $OutputPath = '.\'
         $LogFileName = $(get-date -Format yyyy-MM-dd_HH-mm-ss)
@@ -106,11 +121,15 @@ function Import-CsvData {
                         if ($params.Count -gt 0) {
                             $adObject | & "Set-AD$UserOrGroup" @params
                         }
-    
-                        foreach ($CuraddressItem in $address)
-                        {
-                            $splat2 = @{ $AddOrRemoveAddress = @{ ProxyAddresses = $CuraddressItem } }
-                            Write-Verbose "$Display $AddOrRemoveAddress ProxyAddress: $CuraddressItem"
+                        
+                        if ($Domain) {
+                            $Address = $Address | ForEach-Object {
+                                $_ -replace ([Regex]::Escape($Domain), $NewDomain)
+                            }
+                        }
+                        foreach ($CurAddressItem in $address) {
+                            $splat2 = @{ $AddOrRemoveAddress = @{ ProxyAddresses = $CurAddressItem } }
+                            Write-Verbose "$Display $AddOrRemoveAddress ProxyAddress: $CurAddressItem"
                             $adObject | & "Set-AD$UserOrGroup" @splat2
                         }
                     }
