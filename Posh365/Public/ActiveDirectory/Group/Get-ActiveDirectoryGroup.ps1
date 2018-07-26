@@ -40,7 +40,7 @@ function Get-ActiveDirectoryGroup {
     Begin {
         if ($DetailedReport) {
             $Selectproperties = @(
-                'Name', 'DisplayName', 'Alias', 'GroupType', 'Identity', 'PrimarySmtpAddress', 'RecipientType'
+                'Name', 'ObjectGUID', 'DisplayName', 'Alias', 'GroupType', 'Identity', 'PrimarySmtpAddress', 'RecipientType'
                 'RecipientTypeDetails', 'WindowsEmailAddress', 'ArbitrationMailbox', 'CustomAttribute1'
                 'CustomAttribute10', 'CustomAttribute11', 'CustomAttribute12', 'CustomAttribute13'
                 'CustomAttribute14', 'CustomAttribute15', 'CustomAttribute2', 'CustomAttribute3'
@@ -58,7 +58,7 @@ function Get-ActiveDirectoryGroup {
     
             $CalculatedProps = @(
                 @{n = "OU" ; e = {$_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'}},
-                @{n = "PrimarySMTP" ; e = {($_.ProxyAddresses | Where-Object {$_ -cmatch "SMTP:"}) -join ";" }},
+                @{n = "PrimarySMTPAddress" ; e = {($_.ProxyAddresses | Where-Object {$_ -cmatch "SMTP:"}) -join ";" }},
                 @{n = "AcceptMessagesOnlyFrom" ; e = {($_.AcceptMessagesOnlyFrom | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "AcceptMessagesOnlyFromDLMembers" ; e = {($_.AcceptMessagesOnlyFromDLMembers | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = {($_.AcceptMessagesOnlyFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
@@ -88,7 +88,7 @@ function Get-ActiveDirectoryGroup {
         }
         else {
             $Selectproperties = @(
-                'Name', 'DisplayName', 'Alias', 'GroupType', 'Identity', 'RecipientTypeDetails', 'WindowsEmailAddress'
+                'Name', 'DistinguishedName', 'ObjectGUID', 'DisplayName', 'GroupType', 'WindowsEmailAddress'
             )
     
             $CalculatedProps = @(
@@ -96,7 +96,7 @@ function Get-ActiveDirectoryGroup {
                 @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = {($_.AcceptMessagesOnlyFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "ManagedBy" ; e = {($_.ManagedBy | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "EmailAddresses" ; e = {($_.ProxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "PrimarySMTP" ; e = {($_.ProxyAddresses | Where-Object {$_ -cmatch "SMTP:"}) -join ";" }},
+                @{n = "PrimarySMTPAddress" ; e = {($_.ProxyAddresses | Where-Object {$_ -cmatch "SMTP:"}) -join ";" }},
                 @{n = "x500" ; e = {"x500:" + $_.LegacyExchangeDN}},
                 @{n = "membersName" ; e = {($Members.name | Where-Object {$_ -ne $null}) -join ";"}}
                 @{n = "membersSMTP" ; e = {($Members.PrimarySmtpAddress | Where-Object {$_ -ne $null}) -join ";"}}
