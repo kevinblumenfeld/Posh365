@@ -1,6 +1,34 @@
 function Import-CsvData { 
     <#
+    .SYNOPSIS
+    Short description
     
+    .DESCRIPTION
+    Long description
+    
+    .PARAMETER LogOnly
+    Parameter description
+    
+    .PARAMETER UserOrGroup
+    Parameter description
+    
+    .PARAMETER FindADUserOrGroupBy
+    Parameter description
+    
+    .PARAMETER FindAddressInColumn
+    Parameter description
+    
+    .PARAMETER FirstClearAllProxyAddresses
+    Parameter description
+    
+    .PARAMETER Row
+    Parameter description
+    
+    .EXAMPLE
+    An example
+    
+    .NOTES
+    General notes
     #>
     [CmdletBinding(SupportsShouldProcess)]
     param (
@@ -45,65 +73,66 @@ function Import-CsvData {
             $UPN = $CurRow.PrimarySmtpAddress
             if (-not $LogOnly) {
                 try {
-                    $errorActionPreference = 'Stop'
-                    if ($UserOrGroup -eq "User" -and (-not [String]::IsNullOrWhiteSpace($Address))) {
-                        switch ($FindADUserOrGroupBy) {
+                    if ([String]::IsNullOrWhiteSpace($Address)) {
+                        [PSCustomObject]@{
+                            DisplayName = $Display
+                            Error       = 'Address is not set'
+                            Address     = $Address
+                            Mail        = $Mail
+                            UPN         = $PrimarySmtpAddress
+                        } | Export-Csv $ErrorLog -Append -NoTypeInformation -Encoding UTF8
+                    }
+                    else {
+                        $errorActionPreference = 'Stop'
+    
+                        $filter = switch ($FindADUserOrGroupBy) {
                             DisplayName {
-                                $user = Get-ADUser -Filter { displayName -eq $Display } -Properties proxyAddresses, mail, objectGUID
+                                if ([String]::IsNullOrWhiteSpace($Display)) {
+                                    throw 'Invalid DisplayName'
+                                }
+                                else {
+                                    { displayName -eq $Display }
+                                }
+                                break
                             }
                             Mail {
-                                $user = Get-ADUser -Filter { mail -eq $Mail } -Properties proxyAddresses, mail, objectGUID
+                                if ([String]::IsNullOrWhiteSpace($Mail)) {
+                                    throw 'Invalid Mail'
+                                }
+                                else {
+                                    { mail -eq $Mail }
+                                }
+                                break
                             }
                             UserPrincipalName {
-                                $user = Get-ADUser -Filter { UserPrincipalName -eq $UPN } -Properties proxyAddresses, mail, objectGUID
+                                if ([String]::IsNullOrWhiteSpace($UPN)) {
+                                    throw 'Invalid UserPrincipalName'
+                                }
+                                else {
+                                    { userprincipalname -eq $UPN }
+                                }
+                                break
                             }
                         }
-                        $ObjectGUID = $user.objectGUID
-
+                        $adObject = & "Get-AD$UserOrGroup" -Filter $filter -Properties proxyAddresses, mail, objectGUID
+                        # Clear proxy addresses
                         if ($FirstClearAllProxyAddresses) {
-                            $user | Set-ADUser -clear ProxyAddresses
                             Write-Verbose "$Display `t Cleared ProxyAddresses"
+                            $adObject | & "Set-AD$UserOrGroup" -Clear ProxyAddresses
                         }
-    
+                        
                         $params = @{}
-
+        
                         if ($params.Count -gt 0) {
-
+                            $adObject | & "Set-AD$UserOrGroup" @params
                         }
     
                         $Address | ForEach-Object {
-                            Set-ADUser -Identity $ObjectGUID -Add @{ProxyAddresses = "$_"}
+                            $adObject | & "Set-AD$UserOrGroup" -Add @{ProxyAddresses = "$_"}
                             Write-Verbose "$Display `t Set ProxyAddress $($_)"
                         }
                     }
-                    elseif (-not [String]::IsNullOrWhiteSpace($Address)) {
-                        switch ($FindADUserOrGroupBy) {
-                            DisplayName {
-                                $group = Get-ADGroup -Filter { displayName -eq $Display } -Properties proxyAddresses, mail, objectGUID
-                            }
-                            Mail {
-                                $group = Get-ADGroup -Filter { mail -eq $Mail } -Properties proxyAddresses, mail, objectGUID
-                            }
-                        }
-                        $ObjectGUID = $group.objectGUID
-
-                        if ($FirstClearAllProxyAddresses) {
-                            $group | Set-ADgroup -clear ProxyAddresses
-                            Write-Verbose "$Display `t Cleared ProxyAddresses"
-                        }
-    
-                        $params = @{}
-    
-                        if ($params.Count -gt 0) {
-                            $group | Set-ADgroup @params
-                        }
-    
-                        $Address | ForEach-Object {
-                            Set-ADgroup -Identity $ObjectGUID -Add @{ProxyAddresses = "$_"}
-                            Write-Verbose "$Display `t Set ProxyAddress $($_)"
-                        }
-                    } 
-
+                    
                 }
                 catch {
                     [PSCustomObject]@{
