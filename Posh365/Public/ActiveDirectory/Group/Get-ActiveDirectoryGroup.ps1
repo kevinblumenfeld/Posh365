@@ -58,7 +58,7 @@ function Get-ActiveDirectoryGroup {
     
             $CalculatedProps = @(
                 @{n = "OU" ; e = {$_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'}},
-                @{n = "PrimarySMTPAddress" ; e = {($_.ProxyAddresses | Where-Object {$_ -cmatch "SMTP:"}) -join ";" }},
+                @{n = "PrimarySmtpAddress" ; e = {($_.ProxyAddresses | Where-Object {$_ -cmatch "SMTP:"}) -join ";" }},
                 @{n = "AcceptMessagesOnlyFrom" ; e = {($_.AcceptMessagesOnlyFrom | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "AcceptMessagesOnlyFromDLMembers" ; e = {($_.AcceptMessagesOnlyFromDLMembers | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = {($_.AcceptMessagesOnlyFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
@@ -96,7 +96,7 @@ function Get-ActiveDirectoryGroup {
                 @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = {($_.AcceptMessagesOnlyFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "ManagedBy" ; e = {($_.ManagedBy | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "EmailAddresses" ; e = {($_.ProxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "PrimarySMTPAddress" ; e = {($_.ProxyAddresses | Where-Object {$_ -cmatch "SMTP:"}) -join ";" }},
+                @{n = "PrimarySmtpAddress" ; e = {($_.ProxyAddresses | Where-Object {$_ -cmatch "SMTP:"}) -join ";" }},
                 @{n = "x500" ; e = {"x500:" + $_.LegacyExchangeDN}},
                 @{n = "membersName" ; e = {($Members.name | Where-Object {$_ -ne $null}) -join ";"}}
                 @{n = "membersSMTP" ; e = {($Members.PrimarySmtpAddress | Where-Object {$_ -ne $null}) -join ";"}}

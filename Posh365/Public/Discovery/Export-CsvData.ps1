@@ -65,7 +65,7 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
         [String]$JoinType,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet("ProxyAddresses", "EmailAddresses", "x500","MembersName")]
+        [ValidateSet("ProxyAddresses", "EmailAddresses", "x500", "MembersName")]
         [String]$FindAddressInColumn,
 
         [Parameter()]
@@ -149,7 +149,10 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
             $PrimarySmtpAddress = $CurRow.PrimarySmtpAddress
             $objectGUID = $CurRow.objectGUID
             $OU = $CurRow.OU
-            if ($filter) {    
+            $UserPrincipalName = $CurRow.UserPrincipalName
+            $msExchRecipientTypeDetails = $CurRow.msExchRecipientTypeDetails
+            $mail = $CurRow.mail
+            if ($filter) {
                 $Address = $CurRow."$FindAddressInColumn" -split ";" | Where-Object $filter
             }
             else {
@@ -160,28 +163,39 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
                     $_ -replace ([Regex]::Escape($Domain), $NewDomain)
                 }
             }
-            $PrimarySMTP = $CurRow.EmailAddresses -split ";" | Where-Object {$_ -cmatch 'SMTP:'}
+            $AllProxyAddresses = $($CurRow."$FindAddressInColumn")
+
+            if ((-not [String]::IsNullOrWhiteSpace($AllProxyAddresses)) -and ([String]::IsNullOrWhiteSpace($PrimarySmtpAddress))) {
+                $PrimarySmtpAddress = $CurRow."$FindAddressInColumn" -split ";" | Where-Object {$_ -cmatch 'SMTP:'}
+            }
+            if ($PrimarySmtpAddress) {
+                $PrimarySmtpAddress = $PrimarySmtpAddress.Substring(5)
+            }
 
             if ($Address) {
                 foreach ($CurAddress in $Address) {
                     [PSCustomObject]@{
-                        DisplayName          = $Display
-                        OU                   = $OU
-                        objectGUID           = $objectGUID
-                        PrimarySmtpAddress   = $PrimarySmtpAddress
-                        RecipientTypeDetails = $RecipientTypeDetails
-                        EmailAddress         = $CurAddress
+                        DisplayName                = $Display
+                        OU                         = $OU
+                        UserPrincipalName          = $UserPrincipalName
+                        PrimarySmtpAddress         = $PrimarySmtpAddress
+                        EmailAddress               = $CurAddress
+                        RecipientTypeDetails       = $RecipientTypeDetails
+                        msExchRecipientTypeDetails = $msExchRecipientTypeDetails
+                        objectGUID                 = $objectGUID
                     } | Export-Csv $Log -Append -NoTypeInformation -Encoding UTF8
                 } 
             }
             else {
                 [PSCustomObject]@{
-                    DisplayName          = $Display
-                    OU                   = $OU
-                    objectGUID           = $objectGUID
-                    PrimarySmtpAddress   = $PrimarySmtpAddress
-                    RecipientTypeDetails = $RecipientTypeDetails
-                    EmailAddress         = "NONE"
+                    DisplayName                = $Display
+                    OU                         = $OU
+                    UserPrincipalName          = $UserPrincipalName
+                    PrimarySmtpAddress         = $PrimarySmtpAddress
+                    EmailAddress               = "NONE"
+                    RecipientTypeDetails       = $RecipientTypeDetails
+                    msExchRecipientTypeDetails = $msExchRecipientTypeDetails
+                    objectGUID                 = $objectGUID
                 } | Export-Csv $Log -Append -NoTypeInformation -Encoding UTF8
             }
         }

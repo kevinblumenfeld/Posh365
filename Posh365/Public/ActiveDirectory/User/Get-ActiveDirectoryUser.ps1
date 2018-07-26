@@ -64,6 +64,7 @@ function Get-ActiveDirectoryUser {
 
             $CalculatedProps = @(
                 @{n = "OU" ; e = {$_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'}},
+                @{n = "PrimarySmtpAddress" ; e = {( $_.proxyAddresses | Where-Object {$_ -cmatch "SMTP:"})}}
                 @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "altRecipientBL" ; e = {($_.altRecipientBL | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "AuthenticationPolicy" ; e = {($_.AuthenticationPolicy | Where-Object {$_ -ne $null}) -join ";" }},
@@ -91,16 +92,17 @@ function Get-ActiveDirectoryUser {
                 'DisplayName', 'UserPrincipalName', 'mail', 'CN', 'mailNickname', 'Name', 'GivenName', 'Surname', 'StreetAddress',
                 'City', 'State', 'Country', 'PostalCode', 'Company', 'Title', 'Department', 'Description', 'OfficePhone'
                 'MobilePhone', 'HomePhone', 'Fax', 'SamAccountName', 'DistinguishedName', 'Office', 'Enabled'
-                'whenChanged', 'whenCreated', 'adminCount', 'Memberof', 'msExchPoliciesExcluded', 'proxyAddresses'
+                'whenChanged', 'whenCreated', 'adminCount', 'Memberof', 'msExchPoliciesExcluded', 'msExchRecipientTypeDetails', 'proxyAddresses'
             )
             $Selectproperties = @(
                 'DisplayName', 'UserPrincipalName', 'mail', 'CN', 'mailNickname', 'Name', 'GivenName', 'Surname', 'StreetAddress',
                 'City', 'State', 'Country', 'PostalCode', 'Company', 'Title', 'Department', 'Description', 'OfficePhone'
                 'MobilePhone', 'HomePhone', 'Fax', 'SamAccountName', 'DistinguishedName', 'Office', 'Enabled'
-                'whenChanged', 'whenCreated', 'adminCount'
+                'whenChanged', 'whenCreated', 'adminCount', 'msExchRecipientTypeDetails','ObjectGUID'
             )
             
             $CalculatedProps = @(
+                @{n = "PrimarySmtpAddress" ; e = {( $_.proxyAddresses | Where-Object {$_ -cmatch "SMTP:"})}}
                 @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "OU" ; e = {$_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'}},
                 @{n = "MemberOf" ; e = {($_.MemberOf | Where-Object {$_ -ne $null}) -join ";" }},
