@@ -65,7 +65,7 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
         [String]$JoinType,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet("ProxyAddresses", "EmailAddresses", "x500")]
+        [ValidateSet("ProxyAddresses", "EmailAddresses", "x500","MembersName")]
         [String]$FindAddressInColumn,
 
         [Parameter()]

@@ -57,6 +57,8 @@ function Get-ActiveDirectoryGroup {
             )
     
             $CalculatedProps = @(
+                @{n = "OU" ; e = {$_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'}},
+                @{n = "PrimarySMTP" ; e = {($_.ProxyAddresses | Where-Object {$_ -cmatch "SMTP:"}) -join ";" }},
                 @{n = "AcceptMessagesOnlyFrom" ; e = {($_.AcceptMessagesOnlyFrom | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "AcceptMessagesOnlyFromDLMembers" ; e = {($_.AcceptMessagesOnlyFromDLMembers | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = {($_.AcceptMessagesOnlyFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
@@ -78,7 +80,7 @@ function Get-ActiveDirectoryGroup {
                 @{n = "ObjectClass" ; e = {($_.ObjectClass | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "PoliciesExcluded" ; e = {($_.PoliciesExcluded | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "PoliciesIncluded" ; e = {($_.PoliciesIncluded | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "EmailAddresses" ; e = {($_.ProxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "x500" ; e = {"x500:" + $_.LegacyExchangeDN}},
                 @{n = "membersName" ; e = {($Members.name | Where-Object {$_ -ne $null}) -join ";"}}
                 @{n = "membersSMTP" ; e = {($Members.PrimarySmtpAddress | Where-Object {$_ -ne $null}) -join ";"}}
@@ -86,13 +88,15 @@ function Get-ActiveDirectoryGroup {
         }
         else {
             $Selectproperties = @(
-                'Name', 'DisplayName', 'Alias', 'GroupType', 'Identity', 'PrimarySmtpAddress', 'RecipientTypeDetails', 'WindowsEmailAddress'
+                'Name', 'DisplayName', 'Alias', 'GroupType', 'Identity', 'RecipientTypeDetails', 'WindowsEmailAddress'
             )
     
             $CalculatedProps = @(
+                @{n = "OU" ; e = {$_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'}},
                 @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = {($_.AcceptMessagesOnlyFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "ManagedBy" ; e = {($_.ManagedBy | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "EmailAddresses" ; e = {($_.ProxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "PrimarySMTP" ; e = {($_.ProxyAddresses | Where-Object {$_ -cmatch "SMTP:"}) -join ";" }},
                 @{n = "x500" ; e = {"x500:" + $_.LegacyExchangeDN}},
                 @{n = "membersName" ; e = {($Members.name | Where-Object {$_ -ne $null}) -join ";"}}
                 @{n = "membersSMTP" ; e = {($Members.PrimarySmtpAddress | Where-Object {$_ -ne $null}) -join ";"}}
@@ -103,14 +107,14 @@ function Get-ActiveDirectoryGroup {
         if ($ListofGroups) {
             foreach ($CurGroup in $ListofGroups) {
                 $Members = Get-ADGroupMember -Identity $CurGroup | Select-Object name, primarysmtpaddress
-                Get-ADGroup -identity $CurGroup | Select-Object ($Selectproperties + $CalculatedProps)
+                Get-ADGroup -identity $CurGroup -Properties * | Select-Object ($Selectproperties + $CalculatedProps)
             }
         }
         else {
-            $Groups = Get-ADGroup -ResultSetSize:$null -filter *
+            $Groups = Get-ADGroup -ResultSetSize:$null -filter * -Properties *
             foreach ($CurGroup in $Groups) {
                 $Members = Get-ADGroupMember -Identity $CurGroup.ObjectGUID | Select-Object name, primarysmtpaddress
-                Get-ADGroup -identity $CurGroup.ObjectGUID | Select-Object ($Selectproperties + $CalculatedProps)
+                Get-ADGroup -identity $CurGroup.ObjectGUID -Properties * | Select-Object ($Selectproperties + $CalculatedProps)
             }
         }
     }
