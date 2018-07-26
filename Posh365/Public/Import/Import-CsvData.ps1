@@ -1,34 +1,6 @@
 function Import-CsvData { 
     <#
-    .SYNOPSIS
-    Short description
     
-    .DESCRIPTION
-    Long description
-    
-    .PARAMETER LogOnly
-    Parameter description
-    
-    .PARAMETER UserOrGroup
-    Parameter description
-    
-    .PARAMETER FindADUserOrGroupBy
-    Parameter description
-    
-    .PARAMETER FindAddressInColumn
-    Parameter description
-    
-    .PARAMETER FirstClearAllProxyAddresses
-    Parameter description
-    
-    .PARAMETER Row
-    Parameter description
-    
-    .EXAMPLE
-    An example
-    
-    .NOTES
-    General notes
     #>
     [CmdletBinding(SupportsShouldProcess)]
     param (
@@ -88,7 +60,7 @@ function Import-CsvData {
                         $filter = switch ($FindADUserOrGroupBy) {
                             DisplayName {
                                 if ([String]::IsNullOrWhiteSpace($Display)) {
-                                    throw 'Invalid DisplayName'
+                                    throw 'Invalid display name'
                                 }
                                 else {
                                     { displayName -eq $Display }
@@ -97,7 +69,7 @@ function Import-CsvData {
                             }
                             Mail {
                                 if ([String]::IsNullOrWhiteSpace($Mail)) {
-                                    throw 'Invalid Mail'
+                                    throw 'Invalid mail'
                                 }
                                 else {
                                     { mail -eq $Mail }
@@ -106,7 +78,7 @@ function Import-CsvData {
                             }
                             UserPrincipalName {
                                 if ([String]::IsNullOrWhiteSpace($UPN)) {
-                                    throw 'Invalid UserPrincipalName'
+                                    throw 'Invalid user principal name'
                                 }
                                 else {
                                     { userprincipalname -eq $UPN }
@@ -115,6 +87,10 @@ function Import-CsvData {
                             }
                         }
                         $adObject = & "Get-AD$UserOrGroup" -Filter $filter -Properties proxyAddresses, mail, objectGUID
+                        if (-not $adObject) {
+                            throw "Failed to find the $UserOrGroup"
+                            
+                        }
                         # Clear proxy addresses
                         if ($FirstClearAllProxyAddresses) {
                             Write-Verbose "$Display `t Cleared ProxyAddresses"
