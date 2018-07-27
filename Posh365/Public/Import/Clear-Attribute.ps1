@@ -33,7 +33,7 @@ function Clear-Attribute {
             @{n = "msRTCSIP-UserEnabled" ; e = {($_."msRTCSIP-UserEnabled" | Where-Object {$_ -ne $null}) -join ";" }},
             @{n = "msExchShadowProxyAddresses" ; e = {($_."msExchShadowProxyAddresses" | Where-Object {$_ -ne $null}) -join ";" }}
         )
-        $Attribute = 'msRTCSIP-DeploymentLocator','msRTCSIP-FederationEnabled','msRTCSIP-InternetAccessEnabled','msRTCSIP-OptionFlags','msRTCSIP-PrimaryHomeServer','msRTCSIP-PrimaryUserAddress','msRTCSIP-UserEnabled','msExchShadowProxyAddresses'
+        $Attribute = 'msRTCSIP-DeploymentLocator', 'msRTCSIP-FederationEnabled', 'msRTCSIP-InternetAccessEnabled', 'msRTCSIP-OptionFlags', 'msRTCSIP-PrimaryHomeServer', 'msRTCSIP-PrimaryUserAddress', 'msRTCSIP-UserEnabled', 'msExchShadowProxyAddresses'
  
     }
     Process {

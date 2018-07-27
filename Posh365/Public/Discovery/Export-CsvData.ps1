@@ -65,7 +65,7 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
         [String]$JoinType,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet("ProxyAddresses", "EmailAddresses", "x500", "MembersName")]
+        [ValidateSet("ProxyAddresses", "EmailAddresses", "x500", "UserPrincipalName", "PrimarySmtpAddress", "MembersName")]
         [String]$FindAddressInColumn,
 
         [Parameter()]
@@ -168,7 +168,7 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
             if ((-not [String]::IsNullOrWhiteSpace($AllProxyAddresses)) -and ([String]::IsNullOrWhiteSpace($PrimarySmtpAddress))) {
                 $PrimarySmtpAddress = $CurRow."$FindAddressInColumn" -split ";" | Where-Object {$_ -cmatch 'SMTP:'}
             }
-            if ($PrimarySmtpAddress) {
+            if ($PrimarySmtpAddress -cmatch 'SMTP:') {
                 $PrimarySmtpAddress = $PrimarySmtpAddress.Substring(5)
             }
 
