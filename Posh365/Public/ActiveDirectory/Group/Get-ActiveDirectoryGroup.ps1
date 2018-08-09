@@ -40,7 +40,7 @@ function Get-ActiveDirectoryGroup {
     Begin {
         if ($DetailedReport) {
             $Selectproperties = @(
-                'Name', 'ObjectGUID', 'DisplayName', 'Alias', 'GroupType', 'Identity', 'PrimarySmtpAddress', 'RecipientType'
+                'Name', 'ObjectGUID', 'DisplayName', 'Alias', 'GroupType', 'Identity', 'RecipientType'
                 'RecipientTypeDetails', 'WindowsEmailAddress', 'ArbitrationMailbox', 'CustomAttribute1'
                 'CustomAttribute10', 'CustomAttribute11', 'CustomAttribute12', 'CustomAttribute13'
                 'CustomAttribute14', 'CustomAttribute15', 'CustomAttribute2', 'CustomAttribute3'

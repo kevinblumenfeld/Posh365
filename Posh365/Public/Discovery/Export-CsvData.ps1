@@ -52,6 +52,13 @@ Import-Csv .\CSVofADUsers.csv | Export-CsvData -caseMatchAnd "Harry Franklin" -M
 
 .NOTES
 Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attribute in Active Directory) are expected to be semicolon separated.
+Example:
+import-csv .\Proxies.csv | Export-CsvData -JoinType and -FindAddressInColumn ProxyAddresses -caseMatch "SMTP:" -StripPrefix -AddPrefix smtp:
+import-csv .\Proxies.csv | Export-CsvData -JoinType and -FindAddressInColumn ProxyAddresses -caseMatch "SMTP:" -Domain "fabrikam.com" -NewDomain "contoso.com"
+import-csv .\Proxies.csv | Export-CsvData -JoinType and -FindAddressInColumn ProxyAddresses -Match "SIP:"
+import-csv .\Proxies.csv | Export-CsvData -JoinType and -FindAddressInColumn ProxyAddresses -Match "SIP:" -Domain "fabrikam.com" -NewDomain "contoso.com"
+import-csv .\Proxies.csv | Export-CsvData -JoinType and -FindAddressInColumn ProxyAddresses -caseMatch "SMTP:"
+import-csv .\Proxies.csv | Export-CsvData -JoinType and -FindAddressInColumn ProxyAddresses -caseMatch "SMTP:" -Domain "fabrikam.com" -NewDomain "contoso.com" -StripPrefix
 
 #>
     [CmdletBinding(SupportsShouldProcess)]
@@ -65,7 +72,7 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
         [String]$JoinType,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet("ProxyAddresses", "EmailAddresses", "x500", "UserPrincipalName", "PrimarySmtpAddress", "MembersName")]
+        [ValidateSet("ProxyAddresses", "EmailAddresses", "EmailAddress", "x500", "UserPrincipalName", "PrimarySmtpAddress", "MembersName")]
         [String]$FindAddressInColumn,
 
         [Parameter()]
@@ -96,7 +103,15 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
         [string]$Domain,
 
         [Parameter()]
-        [string]$NewDomain
+        [string]$NewDomain,
+
+        [Parameter()]
+        [switch]$StripPrefix,
+
+        [Parameter()]
+        [ValidateSet("SMTP:", "smtp:", "SIP:", "sip:", "x500:")]
+        [string]$AddPrefix
+        
 
     )
     Begin {
@@ -154,6 +169,7 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
             $mail = $CurRow.mail
             if ($filter) {
                 $Address = $CurRow."$FindAddressInColumn" -split ";" | Where-Object $filter
+                Write-Verbose "Filtered Address: $Address"
             }
             else {
                 $Address = $CurRow.EmailAddresses -split ";"
@@ -163,13 +179,23 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
                     $_ -replace ([Regex]::Escape($Domain), $NewDomain)
                 }
             }
+            if ($StripPrefix) {
+                $Address = $Address | ForEach-Object {
+                    (($_).split(':'))[1]
+                }
+            }
+            if ($AddPrefix) {
+                $Address = $Address | ForEach-Object {
+                    '{0}{1}' -f $AddPrefix, $_
+                }
+            }
             $AllProxyAddresses = $($CurRow."$FindAddressInColumn")
 
             if ((-not [String]::IsNullOrWhiteSpace($AllProxyAddresses)) -and ([String]::IsNullOrWhiteSpace($PrimarySmtpAddress))) {
                 $PrimarySmtpAddress = $CurRow."$FindAddressInColumn" -split ";" | Where-Object {$_ -cmatch 'SMTP:'}
             }
             if ($PrimarySmtpAddress -cmatch 'SMTP:') {
-                $PrimarySmtpAddress = $PrimarySmtpAddress.Substring(5)
+                $PrimaryTrimmed = $PrimarySmtpAddress.Substring(5)
             }
 
             if ($Address) {
@@ -179,6 +205,7 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
                         OU                         = $OU
                         UserPrincipalName          = $UserPrincipalName
                         PrimarySmtpAddress         = $PrimarySmtpAddress
+                        PrimarySmtpTrimmed         = $PrimaryTrimmed
                         EmailAddress               = $CurAddress
                         RecipientTypeDetails       = $RecipientTypeDetails
                         msExchRecipientTypeDetails = $msExchRecipientTypeDetails
@@ -192,6 +219,7 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
                     OU                         = $OU
                     UserPrincipalName          = $UserPrincipalName
                     PrimarySmtpAddress         = $PrimarySmtpAddress
+                    PrimarySmtpTrimmed         = $PrimaryTrimmed
                     EmailAddress               = "NONE"
                     RecipientTypeDetails       = $RecipientTypeDetails
                     msExchRecipientTypeDetails = $msExchRecipientTypeDetails
