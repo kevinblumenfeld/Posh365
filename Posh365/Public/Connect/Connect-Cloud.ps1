@@ -142,8 +142,18 @@ function Connect-Cloud {
     }
     Process {
         if ($DeleteCreds) {
-            Remove-Item ($KeyPath + "$($Tenant).cred") 
-            Remove-Item ($KeyPath + "$($Tenant).ucred")
+            Try {
+                Remove-Item ($KeyPath + "$($Tenant).cred") -ErrorAction Stop
+            }
+            Catch {
+                Write-Warning "While the attempt to delete credentials failed, this may be normal. Please try to connect again."
+            }
+            Try {
+                Remove-Item ($KeyPath + "$($Tenant).ucred") -ErrorAction Stop
+            }
+            Catch {
+                break
+            }
         }
         if (!(Test-Path ($RootPath + $Tenant + "\logs\"))) {
             New-Item -ItemType Directory -Force -Path ($RootPath + $Tenant + "\logs\")
@@ -164,7 +174,7 @@ function Connect-Cloud {
                 throw $_.Exception.Message
             }           
         }
-        if ($ExchangeOnline -or $MSOnline -or $All365 -or $Skype -or $SharePoint -or $Compliance -or $AzureADver2) {
+        if (($ExchangeOnline -or $MSOnline -or $All365 -or $Skype -or $SharePoint -or $Compliance -or $AzureADver2) -and (-not $MFA)) {
             if (Test-Path ($KeyPath + "$($Tenant).cred")) {
                 $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).cred") | ConvertTo-SecureString
                 $UsernameString = Get-Content ($KeyPath + "$($Tenant).ucred")
@@ -267,12 +277,18 @@ function Connect-Cloud {
                 
             }
             else {
+                write-host "IN ELSE"
+                $modules = @(Get-ChildItem -Path "$($env:LOCALAPPDATA)\Apps\2.0" -Filter "Microsoft.Exchange.Management.ExoPowershellModule.manifest" -Recurse )
+                            $moduleName =  Join-Path $modules[0].Directory.FullName "Microsoft.Exchange.Management.ExoPowershellModule.dll"
+                            Import-Module -FullyQualifiedName $moduleName -Force
+                            $scriptName =  Join-Path $modules[0].Directory.FullName "CreateExoPSSession.ps1"
+                            . $scriptName
                 Try {
-                    Connect-EXOPSSession -UserPrincipalName $Credential.UserName -ErrorAction Stop
+                    Connect-EXOPSSession -ErrorAction Stop
                     Write-Host "You have successfully connected to Exchange Online (MFA)" -foregroundcolor "magenta" -backgroundcolor "white"
                 } 
                 Catch [System.Management.Automation.CommandNotFoundException] {
-                    Write-Warning "Exchange Online MFA module is required"
+                    Write-Warning "Exchange Online MFA module is required or there was an issue connecting"
                     Write-Warning "To download the Exchange Online Remote PowerShell Module for multi-factor authentication,"
                     Write-Warning "in the EAC (https://outlook.office365.com/ecp/), go to Hybrid > Setup and click the appropriate Configure button."
                 }
