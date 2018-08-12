@@ -50,17 +50,17 @@ function Get-EXOFullAccessRecursePerms {
             elseif (!($GroupMemberHash.ContainsKey($_.User))) {
                 $User = $_.User
                 if ($RecipientMailHash.ContainsKey($_.User)) {
-                    $User = $RecipientMailHash[$_.User].Name
-                    $Type = $RecipientMailHash[$_.User].RecipientTypeDetails
+                    $User = $RecipientMailHash["$_.User"].Name
+                    $Type = $RecipientMailHash["$_.User"].RecipientTypeDetails
                 }
                 $Email = $_.User
                 if ($RecipientHash.ContainsKey($_.User)) {
-                    $Email = $RecipientHash[$_.User].PrimarySMTPAddress
-                    $Type = $RecipientHash[$_.User].RecipientTypeDetails
+                    $Email = $RecipientHash["$_.User"].PrimarySMTPAddress
+                    $Type = $RecipientHash["$_.User"].RecipientTypeDetails
                 }
                 [pscustomobject]@{
                     Mailbox              = $_.Identity
-                    MailboxPrimarySMTP   = $RecipientHash[$_.Identity].PrimarySMTPAddress
+                    MailboxPrimarySMTP   = $RecipientHash["$_.Identity"].PrimarySMTPAddress
                     Granted              = $User
                     GrantedPrimarySMTP   = $Email
                     RecipientTypeDetails = $Type          
@@ -72,9 +72,9 @@ function Get-EXOFullAccessRecursePerms {
             foreach ($CurlistGroupMember in $listGroupMembers) {
                 [pscustomobject]@{
                     Mailbox              = $Identity
-                    MailboxPrimarySMTP   = $RecipientHash[$Identity].PrimarySMTPAddress
-                    Granted              = $RecipientDNHash[$CurlistGroupMember].Name
-                    GrantedPrimarySMTP   = $RecipientDNHash[$CurlistGroupMember].PrimarySMTPAddress
+                    MailboxPrimarySMTP   = $RecipientHash["$Identity"].PrimarySMTPAddress
+                    Granted              = $RecipientDNHash["$CurlistGroupMember"].Name
+                    GrantedPrimarySMTP   = $RecipientDNHash["$CurlistGroupMember"].PrimarySMTPAddress
                     RecipientTypeDetails = $Type          
                     Permission           = "FullAccess"
                 }  

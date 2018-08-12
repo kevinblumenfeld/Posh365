@@ -48,17 +48,17 @@ function Get-EXOSendAsRecursePerms {
             }
             elseif (!($GroupMemberHash.ContainsKey($Trustee))) {
                 if ($RecipientMailHash.ContainsKey($Trustee)) {
-                    $Trustee = $RecipientMailHash[$Trustee].Name
-                    $Type = $RecipientMailHash[$Trustee].RecipientTypeDetails
+                    $Trustee = $RecipientMailHash["$Trustee"].Name
+                    $Type = $RecipientMailHash["$Trustee"].RecipientTypeDetails
                 }
                 $Email = $Trustee
                 if ($RecipientHash.ContainsKey($Trustee)) {
-                    $Email = $RecipientHash[$Trustee].PrimarySMTPAddress
-                    $Type = $RecipientHash[$Trustee].RecipientTypeDetails
+                    $Email = $RecipientHash["$Trustee"].PrimarySMTPAddress
+                    $Type = $RecipientHash["$Trustee"].RecipientTypeDetails
                 }
                 [pscustomobject]@{
                     Mailbox              = $_.Identity
-                    MailboxPrimarySMTP   = $RecipientHash[$_.Identity].PrimarySMTPAddress
+                    MailboxPrimarySMTP   = $RecipientHash["$_.Identity"].PrimarySMTPAddress
                     Granted              = $Trustee
                     GrantedPrimarySMTP   = $Email
                     RecipientTypeDetails = $Type          
@@ -70,9 +70,9 @@ function Get-EXOSendAsRecursePerms {
             foreach ($CurlistGroupMember in $listGroupMembers) {
                 [pscustomobject]@{
                     Mailbox              = $Identity
-                    MailboxPrimarySMTP   = $RecipientHash[$Identity].PrimarySMTPAddress
-                    Granted              = $RecipientDNHash[$CurlistGroupMember].Name
-                    GrantedPrimarySMTP   = $RecipientDNHash[$CurlistGroupMember].PrimarySMTPAddress
+                    MailboxPrimarySMTP   = $RecipientHash["$Identity"].PrimarySMTPAddress
+                    Granted              = $RecipientDNHash["$CurlistGroupMember"].Name
+                    GrantedPrimarySMTP   = $RecipientDNHash["$CurlistGroupMember"].PrimarySMTPAddress
                     RecipientTypeDetails = $Type          
                     Permission           = "SendAs"
                 }  

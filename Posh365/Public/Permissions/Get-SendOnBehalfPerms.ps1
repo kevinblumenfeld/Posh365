@@ -43,20 +43,20 @@ function Get-SendOnBehalfPerms {
                     Get-ADGroupMember $_ -Recursive -ErrorAction stop | 
                         ForEach-Object {
                         New-Object -TypeName psobject -property @{
-                            Object     = $ADHashDN.$mailbox.DisplayName
-                            UPN        = $ADHashDN.$mailbox.UPN
-                            Granted    = $ADHashDN[$_.distinguishedname].DisplayName
-                            GrantedUPN = $ADHashDN[$_.distinguishedname].UPN
+                            Object     = $ADHashDN["$mailbox"].DisplayName
+                            UPN        = $ADHashDN["$mailbox"].UPN
+                            Granted    = $ADHashDN["$_.distinguishedname"].DisplayName
+                            GrantedUPN = $ADHashDN["$_.distinguishedname"].UPN
                             Permission = "SendOnBehalf"
                         }
                     }
                 } 
                 Catch {
                     New-Object -TypeName psobject -property @{
-                        Object     = $ADHashDN.$mailbox.DisplayName
-                        UPN        = $ADHashDN.$mailbox.UPN
-                        Granted    = $ADHashCN."$CN".DisplayName
-                        GrantedUPN = $ADHashCN."$CN".UPN
+                        Object     = $ADHashDN["$mailbox"].DisplayName
+                        UPN        = $ADHashDN["$mailbox"].UPN
+                        Granted    = $ADHashCN["$CN"].DisplayName
+                        GrantedUPN = $ADHashCN["$CN"].UPN
                         Permission = "SendOnBehalf"
                     }  
                 }

@@ -47,11 +47,11 @@
                 $User = $_.User
                 Write-Verbose "Has Send As: `t $User"
                 New-Object -TypeName PSObject -property @{
-                    Object      = $ADHashDGDN.$DG.DisplayName
-                    PrimarySMTP = $ADHashDGDN.$DG.PrimarySMTPAddress
-                    Granted     = $ADHashDG."$User".DisplayName
-                    GrantedUPN  = $ADHashDG."$User".UserPrincipalName
-                    GrantedSMTP = $ADHashDG."$User".PrimarySMTPAddress
+                    Object      = $ADHashDGDN["$DG"].DisplayName
+                    PrimarySMTP = $ADHashDGDN["$DG"].PrimarySMTPAddress
+                    Granted     = $ADHashDG["$User"].DisplayName
+                    GrantedUPN  = $ADHashDG["$User"].UserPrincipalName
+                    GrantedSMTP = $ADHashDG["$User"].PrimarySMTPAddress
                     Permission  = "SendAs"  
                 }
             } 

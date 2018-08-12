@@ -43,17 +43,17 @@ function Get-EXOSendOnBehalfRecursePerms {
             }
             elseif (!($GroupMemberHash.ContainsKey($CurGranted))) {
                 if ($RecipientMailHash.ContainsKey($CurGranted)) {
-                    $CurGranted = $RecipientMailHash[$CurGranted].Name
-                    $Type = $RecipientMailHash[$CurGranted].RecipientTypeDetails
+                    $CurGranted = $RecipientMailHash["$CurGranted"].Name
+                    $Type = $RecipientMailHash["$CurGranted"].RecipientTypeDetails
                 }
                 $Email = $CurGranted
                 if ($RecipientHash.ContainsKey($CurGranted)) {
-                    $Email = $RecipientHash[$CurGranted].PrimarySMTPAddress
-                    $Type = $RecipientHash[$CurGranted].RecipientTypeDetails
+                    $Email = $RecipientHash["$CurGranted"].PrimarySMTPAddress
+                    $Type = $RecipientHash["$CurGranted"].RecipientTypeDetails
                 }
                 [pscustomobject]@{
-                    Mailbox              = $RecipientDNHash[$Mailbox].Name
-                    MailboxPrimarySMTP   = $RecipientDNHash[$Mailbox].PrimarySMTPAddress
+                    Mailbox              = $RecipientDNHash["$Mailbox"].Name
+                    MailboxPrimarySMTP   = $RecipientDNHash["$Mailbox"].PrimarySMTPAddress
                     Granted              = $CurGranted
                     GrantedPrimarySMTP   = $Email
                     RecipientTypeDetails = $Type          
@@ -64,10 +64,10 @@ function Get-EXOSendOnBehalfRecursePerms {
         if ($listGroupMembers.Count -gt 0) {
             foreach ($CurlistGroupMember in $listGroupMembers) {
                 [pscustomobject]@{
-                    Mailbox              = $RecipientDNHash[$Mailbox].Name
-                    MailboxPrimarySMTP   = $RecipientDNHash[$Mailbox].PrimarySMTPAddress
-                    Granted              = $RecipientDNHash[$CurlistGroupMember].Name
-                    GrantedPrimarySMTP   = $RecipientDNHash[$CurlistGroupMember].PrimarySMTPAddress
+                    Mailbox              = $RecipientDNHash["$Mailbox"].Name
+                    MailboxPrimarySMTP   = $RecipientDNHash["$Mailbox"].PrimarySMTPAddress
+                    Granted              = $RecipientDNHash["$CurlistGroupMember"].Name
+                    GrantedPrimarySMTP   = $RecipientDNHash["$CurlistGroupMember"].PrimarySMTPAddress
                     RecipientTypeDetails = $Type          
                     Permission           = "SendOnBehalf"
                 }  

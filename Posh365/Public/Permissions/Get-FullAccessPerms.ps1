@@ -50,20 +50,20 @@ function Get-FullAccessPerms {
                     Get-ADGroupMember ($_.user -split "\\")[1] -Recursive -ErrorAction stop | 
                         ForEach-Object {
                         New-Object -TypeName psobject -property @{
-                            Object     = $ADHashDN.$mailbox.DisplayName
-                            UPN        = $ADHashDN.$mailbox.UPN
-                            Granted    = $ADHashDN[$_.distinguishedname].DisplayName
-                            GrantedUPN = $ADHashDN[$_.distinguishedname].UPN
+                            Object     = $ADHashDN["$mailbox"].DisplayName
+                            UPN        = $ADHashDN["$mailbox"].UPN
+                            Granted    = $ADHashDN["$_.distinguishedname"].DisplayName
+                            GrantedUPN = $ADHashDN["$_.distinguishedname"].UPN
                             Permission = "FullAccess"
                         }  
                     }
                 } 
                 Catch {
                     New-Object -TypeName psobject -property @{
-                        Object     = $ADHashDN.$mailbox.DisplayName
-                        UPN        = $ADHashDN.$mailbox.UPN
-                        Granted    = $ADHash[$User].DisplayName
-                        GrantedUPN = $ADHash.$User.UPN
+                        Object     = $ADHashDN["$mailbox"].DisplayName
+                        UPN        = $ADHashDN["$mailbox"].UPN
+                        Granted    = $ADHash["$User"].DisplayName
+                        GrantedUPN = $ADHash["$User"].UPN
                         Permission = "FullAccess"
                     }  
                 }

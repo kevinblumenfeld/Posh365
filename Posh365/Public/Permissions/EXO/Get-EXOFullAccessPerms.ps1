@@ -45,22 +45,22 @@ function Get-EXOFullAccessPerms {
             $User = $_.User
             Write-Verbose "Has Full Access: `t $User"
             if ($RecipientMailHash.ContainsKey($_.User)) {
-                $User = $RecipientMailHash[$_.User].Name
-                $Type = $RecipientMailHash[$_.User].RecipientTypeDetails
+                $User = $RecipientMailHash["$_.User"].Name
+                $Type = $RecipientMailHash["$_.User"].RecipientTypeDetails
             }
             $Email = $_.User
             if ($RecipientHash.ContainsKey($_.User)) {
-                $Email = $RecipientHash[$_.User].PrimarySMTPAddress
-                $Type = $RecipientHash[$_.User].RecipientTypeDetails
+                $Email = $RecipientHash["$_.User"].PrimarySMTPAddress
+                $Type = $RecipientHash["$_.User"].RecipientTypeDetails
             }            
             if ($RecipientLiveIDHash.ContainsKey($_.User)) {
-                $User = $RecipientLiveIDHash[$_.User].Name 
-                $Email = $RecipientLiveIDHash[$_.User].PrimarySMTPAddress
-                $Type = $RecipientLiveIDHash[$_.User].RecipientTypeDetails
+                $User = $RecipientLiveIDHash["$_.User"].Name 
+                $Email = $RecipientLiveIDHash["$_.User"].PrimarySMTPAddress
+                $Type = $RecipientLiveIDHash["$_.User"].RecipientTypeDetails
             }
             [pscustomobject]@{
                 Object              = $_.Identity
-                ObjectPrimarySMTP   = $RecipientHash[$_.Identity].PrimarySMTPAddress
+                ObjectPrimarySMTP   = $RecipientHash["$_.Identity"].PrimarySMTPAddress
                 Granted              = $User
                 GrantedPrimarySMTP   = $Email
                 RecipientTypeDetails = $Type          
