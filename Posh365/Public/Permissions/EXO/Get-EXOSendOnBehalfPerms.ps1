@@ -44,8 +44,8 @@ function Get-EXOSendOnBehalfPerms {
                 $Type = $RecipientHash[$_].RecipientTypeDetails
             }
             [pscustomobject]@{
-                Object               = $RecipientDNHash[$SendOB].Name
-                ObjectPrimarySMTP    = $RecipientDNHash[$SendOB].PrimarySMTPAddress
+                Object               = $RecipientDNHash["$SendOB"].Name
+                ObjectPrimarySMTP    = $RecipientDNHash["$SendOB"].PrimarySMTPAddress
                 Granted              = $CurGranted
                 GrantedPrimarySMTP   = $Email
                 RecipientTypeDetails = $Type          

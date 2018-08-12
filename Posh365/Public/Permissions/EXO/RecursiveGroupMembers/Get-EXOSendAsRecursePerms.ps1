@@ -58,7 +58,7 @@ function Get-EXOSendAsRecursePerms {
                 }
                 [pscustomobject]@{
                     Mailbox              = $_.Identity
-                    MailboxPrimarySMTP   = $RecipientHash["$_.Identity"].PrimarySMTPAddress
+                    MailboxPrimarySMTP   = $RecipientHash["$($_.Identity)"].PrimarySMTPAddress
                     Granted              = $Trustee
                     GrantedPrimarySMTP   = $Email
                     RecipientTypeDetails = $Type          
@@ -70,7 +70,7 @@ function Get-EXOSendAsRecursePerms {
             foreach ($CurlistGroupMember in $listGroupMembers) {
                 [pscustomobject]@{
                     Mailbox              = $Identity
-                    MailboxPrimarySMTP   = $RecipientHash["$Identity"].PrimarySMTPAddress
+                    MailboxPrimarySMTP   = $RecipientHash["$($Identity)"].PrimarySMTPAddress
                     Granted              = $RecipientDNHash["$CurlistGroupMember"].Name
                     GrantedPrimarySMTP   = $RecipientDNHash["$CurlistGroupMember"].PrimarySMTPAddress
                     RecipientTypeDetails = $Type          

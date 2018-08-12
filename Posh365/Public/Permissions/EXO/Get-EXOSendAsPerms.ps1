@@ -41,23 +41,23 @@ function Get-EXOSendAsPerms {
             $Type = $null
             Write-Verbose "Has Send As: `t $Trustee"
             if ($RecipientMailHash.ContainsKey($_.Trustee)) {
-                $Trustee = $RecipientMailHash["$_.Trustee"].Name
-                $Email = $RecipientMailHash["$_.Trustee"].PrimarySMTPAddress
-                $Type = $RecipientMailHash["$_.Trustee"].RecipientTypeDetails
+                $Trustee = $RecipientMailHash["$($_.Trustee)"].Name
+                $Email = $RecipientMailHash["$($_.Trustee)"].PrimarySMTPAddress
+                $Type = $RecipientMailHash["$($_.Trustee)"].RecipientTypeDetails
             }
             $Email = $_.Trustee
             if ($RecipientHash.ContainsKey($_.Trustee)) {
-                $Email = $RecipientHash["$_.Trustee"].PrimarySMTPAddress
-                $Type = $RecipientHash["$_.Trustee"].RecipientTypeDetails
+                $Email = $RecipientHash["$($_.Trustee)"].PrimarySMTPAddress
+                $Type = $RecipientHash["$($_.Trustee)"].RecipientTypeDetails
             }
             if ($RecipientLiveIDHash.ContainsKey($_.Trustee)) {
-                $Trustee = $RecipientLiveIDHash["$_.Trustee"].Name 
-                $Email = $RecipientLiveIDHash["$_.Trustee"].PrimarySMTPAddress
-                $Type = $RecipientLiveIDHash["$_.Trustee"].RecipientTypeDetails
+                $Trustee = $RecipientLiveIDHash["$($_.Trustee)"].Name 
+                $Email = $RecipientLiveIDHash["$($_.Trustee)"].PrimarySMTPAddress
+                $Type = $RecipientLiveIDHash["$($_.Trustee)"].RecipientTypeDetails
             }
             [pscustomobject]@{
                 Object               = $_.Identity
-                ObjectPrimarySMTP    = $RecipientHash["$_.Identity"].PrimarySMTPAddress
+                ObjectPrimarySMTP    = $RecipientHash["$($_.Identity)"].PrimarySMTPAddress
                 Granted              = $Trustee
                 GrantedPrimarySMTP   = $Email
                 RecipientTypeDetails = $Type          

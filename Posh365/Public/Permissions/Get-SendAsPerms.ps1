@@ -52,8 +52,8 @@
                         New-Object -TypeName psobject -property @{
                             Object     = $ADHashDN["$mailbox"].DisplayName
                             UPN        = $ADHashDN["$mailbox"].UPN
-                            Granted    = $ADHashDN["$_.distinguishedname"].DisplayName
-                            GrantedUPN = $ADHashDN["$_.distinguishedname"].UPN
+                            Granted    = $ADHashDN["$($_.distinguishedname)"].DisplayName
+                            GrantedUPN = $ADHashDN["$($_.distinguishedname)"].UPN
                             Permission = "SendAs"
                         }    
                     }
