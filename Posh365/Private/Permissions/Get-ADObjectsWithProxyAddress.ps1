@@ -1,4 +1,4 @@
-﻿Function Get-ADUsersAndGroupsWithProxyAddress {
+﻿Function Get-ADObjectsWithProxyAddress {
     <#
     .SYNOPSIS
 
@@ -24,15 +24,15 @@
     $context = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext('Forest')
     $dc = ([System.DirectoryServices.ActiveDirectory.GlobalCatalog]::FindOne($context, [System.DirectoryServices.ActiveDirectory.LocatorOptions]'ForceRediscovery, WriteableRequired')).name
     
+    $Properties = @('displayname', 'canonicalname', 'proxyaddresses', 'mail', 'msExchRecipientDisplayType', 'msExchRecipientTypeDetails') 
+    
     $Selectproperties = @(
-        'UserPrincipalName', 'distinguishedname', 'canonicalname', 'displayname', 'mail', 'Objectguid'
+        'UserPrincipalName', 'distinguishedname', 'canonicalname', 'displayname', 'mail', 'Objectguid', 'msExchRecipientDisplayType', 'msExchRecipientTypeDetails'
     )
     $CalculatedProps = @(
         @{n = "logon"; e = {($DomainNameHash.($_.distinguishedname -replace '^.+?DC=' -replace ',DC=', '.')) + "\" + $_.samaccountname}},
-        @{n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses | Where-Object {$_ -cmatch "SMTP:*"}).Substring(5)}}
+        @{n = "PrimarySMTPAddress" ; e = {( $_.proxyAddresses | Where-Object {$_ -cmatch "SMTP:"}).Substring(5)}}
     )
-    Get-ADUser -filter 'proxyaddresses -ne "$null"' -server ($dc + ":3268") -SearchBase (Get-ADRootDSE).rootdomainnamingcontext -SearchScope Subtree -Properties displayname, canonicalname, proxyaddresses, mail |
-        Select-Object ($Selectproperties + $CalculatedProps)
-    Get-ADGroup -filter 'proxyaddresses -ne "$null"' -server ($dc + ":3268") -SearchBase (Get-ADRootDSE).rootdomainnamingcontext -SearchScope Subtree -Properties displayname, canonicalname, proxyaddresses, mail |
+    Get-ADObject -filter 'proxyaddresses -ne "$null"' -server ($dc + ":3268") -SearchBase (Get-ADRootDSE).rootdomainnamingcontext -SearchScope Subtree -Properties $Properties |
         Select-Object ($Selectproperties + $CalculatedProps)
 } 

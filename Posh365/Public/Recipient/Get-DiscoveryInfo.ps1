@@ -101,6 +101,9 @@
     Write-Verbose "Importing Active Directory Users that have at least one proxy address"
     $AllADUsers = Get-ADUsersWithProxyAddress -DomainNameHash $DomainNameHash
 
+    Write-Verbose "Importing Active Directory Users that have at least one proxy address"
+    $AllADObjects = Get-ADObjectsWithProxyAddress -DomainNameHash $DomainNameHash
+
     Write-Verbose "Caching hash table. LogonName as Key and Values of DisplayName & UPN"
     $ADHash = $AllADUsers | Get-ADHash
 
@@ -108,26 +111,32 @@
     $ADHashDN = $AllADUsers | Get-ADHashDN
 
     Write-Verbose "Caching hash table. CN as Key and Values of DisplayName, UPN & LogonName"
-    $ADHashCN = $AllADUsers | Get-ADHashCN
+    $ADHashCN = $AllADObjects | Get-ADHashCN
+
+    Write-Verbose "Retrieve all Exchange Mailboxes"
+    $allMailbox = Get-ExchangeMailbox -DetailedReport
+
+    Write-Verbose "Export all Exchange Mailboxes to CSV"
+    $allMailbox | Export-csv (Join-Path $ReportPath "ExchangeMailboxes.csv") -NoTypeInformation
 
     Write-Verbose "Retrieving distinguishedname's of all Exchange Mailboxes"
-    $allMailboxes = (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname)
+    $allMailboxDN = $allMailbox | Select -expandproperty distinguishedname
 
     if (-not $SkipSendAs) {
         Write-Verbose "Getting SendAs permissions for each mailbox and writing to file"
-        $allMailboxes | Get-SendAsPerms -ADHashDN $ADHashDN -ADHash $ADHash  | Select Object, UPN, Granted, GrantedUPN, Permission |
+        $allMailboxDN | Get-SendAsPerms -ADHashDN $ADHashDN -ADHash $ADHash  | Select Object, UPN, Granted, GrantedUPN, Permission |
             Export-csv (Join-Path $ReportPath "SendAsPerms.csv") -NoTypeInformation
     }
     
     if (-not $SkipSendOnBehalf) {
         Write-Verbose "Getting SendOnBehalf permissions for each mailbox and writing to file"
-        $allMailboxes | Get-SendOnBehalfPerms -ADHashCN $ADHashCN | Select Object, UPN, Granted, GrantedUPN, Permission |
+        $allMailboxDN | Get-SendOnBehalfPerms -ADHashCN $ADHashCN | Select Object, UPN, Granted, GrantedUPN, Permission |
             Export-csv (Join-Path $ReportPath "SendOnBehalfPerms.csv") -NoTypeInformation
     }
     
     if (-not $SkipFullAccess) {
         Write-Verbose "Getting FullAccess permissions for each mailbox and writing to file"
-        $allMailboxes | Get-FullAccessPerms -ADHashDN $ADHashDN -ADHash $ADHash | Select Object, UPN, Granted, GrantedUPN, Permission |
+        $allMailboxDN | Get-FullAccessPerms -ADHashDN $ADHashDN -ADHash $ADHash | Select Object, UPN, Granted, GrantedUPN, Permission |
             Export-csv (Join-Path $ReportPath "FullAccessPerms.csv") -NoTypeInformation
     }
 
