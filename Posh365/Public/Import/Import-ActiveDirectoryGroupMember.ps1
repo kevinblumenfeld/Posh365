@@ -29,7 +29,7 @@ Import-Csv .\GroupsAndMembers.csv | Import-ActiveDirectoryGroupMember
         $DomainNameHash = Get-DomainNameHash
 
         Write-Verbose "Importing Active Directory Objects that have at least one proxy address"
-        $AllADObjects = Get-ADObjectWithProxyAddress -DomainNameHash $DomainNameHash
+        $AllADObjects = Get-ADUsersAndGroupsWithProxyAddress -DomainNameHash $DomainNameHash
 
         Write-Verbose "Caching hash table. Mail attribute as key and value of ObjectGuid"
         $ADHashMailToGuid = $AllADObjects | Get-ADHashMailToGuid -erroraction silentlycontinue

@@ -1,4 +1,4 @@
-﻿Function Get-ADObjectWithProxyAddress {
+﻿Function Get-ADUsersAndGroupsWithProxyAddress {
     <#
     .SYNOPSIS
 
