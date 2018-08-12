@@ -130,7 +130,7 @@
         @{n = 'msExchRecipientTypeDetails'; e = {$ADHashCN["$($_.ForwardingAddress)"].msExchRecipientTypeDetails}},
         @{n = 'msExchRecipientDisplayType'; e = {$ADHashCN["$($_.ForwardingAddress)"].msExchRecipientDisplayType}}
     )
-    $allMailbox | Where-Object {$_.ForwardingAddress -ne ""} | Select @($FwdSelect + $FwdSelectCalc) |
+    $allMailbox | Where-Object {$_.ForwardingAddress} | Select @($FwdSelect + $FwdSelectCalc) |
         Export-csv (Join-Path $ReportPath "FowardingAddress.csv") -NoTypeInformation -Encoding UTF8
 
     ##### PERMS #####
