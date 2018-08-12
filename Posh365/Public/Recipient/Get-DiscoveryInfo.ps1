@@ -49,7 +49,7 @@
     )
 
     Try {
-        import-module activedirectory -ErrorAction Stop
+        import-module activedirectory -ErrorAction Stop -Verbose:$false
     }
     Catch {
         Write-Host "This module depends on the ActiveDirectory module."
@@ -122,22 +122,34 @@
     Write-Verbose "Retrieving distinguishedname's of all Exchange Mailboxes"
     $allMailboxDN = $allMailbox | Select -expandproperty distinguishedname
 
+    ##############
+    $FwdSelect = @('DisplayName', 'UserPrincipalName', 'ForwardingAddress')
+    $FwdSelectCalc = @(
+        @{n = 'FwdDisplayName'; e = {$ADHashCN["$($_.ForwardingAddress)"].DisplayName}},
+        @{n = 'FwdPrimarySmtpAddress'; e = {$ADHashCN["$($_.ForwardingAddress)"].PrimarySmtpAddress}},
+        @{n = 'msExchRecipientTypeDetails'; e = {$ADHashCN["$($_.ForwardingAddress)"].msExchRecipientTypeDetails}},
+        @{n = 'msExchRecipientDisplayType'; e = {$ADHashCN["$($_.ForwardingAddress)"].msExchRecipientDisplayType}}
+    )
+    $allMailbox | Where-Object {$_.ForwardingAddress -ne ""} | Select @($FwdSelect + $FwdSelectCalc) |
+        Export-csv (Join-Path $ReportPath "FowardingAddress.csv") -NoTypeInformation -Encoding UTF8
+
+    ##### PERMS #####
     if (-not $SkipSendAs) {
         Write-Verbose "Getting SendAs permissions for each mailbox and writing to file"
         $allMailboxDN | Get-SendAsPerms -ADHashDN $ADHashDN -ADHash $ADHash  | Select Object, UPN, Granted, GrantedUPN, Permission |
-            Export-csv (Join-Path $ReportPath "SendAsPerms.csv") -NoTypeInformation
+            Export-csv (Join-Path $ReportPath "SendAsPerms.csv") -NoTypeInformation -Encoding UTF8
     }
     
     if (-not $SkipSendOnBehalf) {
         Write-Verbose "Getting SendOnBehalf permissions for each mailbox and writing to file"
         $allMailboxDN | Get-SendOnBehalfPerms -ADHashCN $ADHashCN | Select Object, UPN, Granted, GrantedUPN, Permission |
-            Export-csv (Join-Path $ReportPath "SendOnBehalfPerms.csv") -NoTypeInformation
+            Export-csv (Join-Path $ReportPath "SendOnBehalfPerms.csv") -NoTypeInformation -Encoding UTF8
     }
     
     if (-not $SkipFullAccess) {
         Write-Verbose "Getting FullAccess permissions for each mailbox and writing to file"
         $allMailboxDN | Get-FullAccessPerms -ADHashDN $ADHashDN -ADHash $ADHash | Select Object, UPN, Granted, GrantedUPN, Permission |
-            Export-csv (Join-Path $ReportPath "FullAccessPerms.csv") -NoTypeInformation
+            Export-csv (Join-Path $ReportPath "FullAccessPerms.csv") -NoTypeInformation -Encoding UTF8
     }
 
     $AllPermissions = $null
@@ -147,6 +159,8 @@
         Import-Csv $_
     }
     
-    $AllPermissions | Export-Csv (Join-Path $ReportPath "AllPermissions.csv") -NoTypeInformation
+    $AllPermissions | Export-Csv (Join-Path $ReportPath "AllPermissions.csv") -NoTypeInformation -Encoding UTF8
     Write-Verbose "Combined all CSV's into a single file named, AllPermissions.csv"
+    ##### PERMS #####
+
 }
