@@ -14,7 +14,7 @@ function Clear-Attribute {
     )
     Begin {
        
-        Import-Module ActiveDirectory -Verbose:$False
+        import-module activedirectory -ErrorAction Stop -Verbose:$false
         $OutputPath = '.\'
         $LogFileName = $(get-date -Format yyyy-MM-dd_HH-mm-ss)
         $Log = Join-Path $OutputPath ($LogFileName + "-ImportCsvData-WhatIf_Import.csv")

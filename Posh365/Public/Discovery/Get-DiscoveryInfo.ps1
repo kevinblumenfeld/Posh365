@@ -101,7 +101,7 @@
     Write-Verbose "Importing Active Directory Users that have at least one proxy address"
     $allADUsers = Get-ADUsersWithProxyAddress -DomainNameHash $DomainNameHash
 
-    Write-Verbose "Importing Active Directory Users that have at least one proxy address"
+    Write-Verbose "Importing Active Directory Objects that have at least one proxy address"
     $allADObjects = Get-ADObjectsWithProxyAddress -DomainNameHash $DomainNameHash
 
     Write-Verbose "Caching hash table. LogonName as Key and Values of DisplayName & UPN"
@@ -119,17 +119,20 @@
     Write-Verbose "Retrieve all Exchange Mailboxes"
     $allMailbox = Get-ExchangeMailbox -DetailedReport
 
-    Write-Verbose "Retrieve all Exchange Mailboxes"
+    Write-Verbose "Retrieve all Exchange Distribution Groups"
     $allGroups = Get-ExchangeDistributionGroup -DetailedReport
 
     Write-Verbose "Export all Exchange Mailboxes to CSV"
     $allMailbox | Export-csv (Join-Path $ReportPath "ExchangeMailboxes.csv") -NoTypeInformation -Encoding UTF8
 
+    Write-Verbose "Retrieving distinguishedname's of all Exchange Mailboxes"
+    $allMailboxDN = $allMailbox | Select -expandproperty distinguishedname
+
     Write-Verbose "Export all Exchange Distribution Groups to CSV"
     $allGroups | Export-csv (Join-Path $ReportPath "ExchangeDistributionGroups.csv") -NoTypeInformation -Encoding UTF8
 
-    Write-Verbose "Retrieving distinguishedname's of all Exchange Mailboxes"
-    $allMailboxDN = $allMailbox | Select -expandproperty distinguishedname
+    Write-Verbose "Retrieving distinguishedname's of all Exchange Distribution Groups"
+    $allGroupsDN = $allGroups | Select -expandproperty distinguishedname
 
     ##############
     $FwdSelect = @('DisplayName', 'UserPrincipalName', 'ForwardingAddress')
@@ -179,7 +182,7 @@
     $AllPermissions | Export-Csv (Join-Path $ReportPath "AllPermissions.csv") -NoTypeInformation -Encoding UTF8
     Write-Verbose "Combined all CSV's into a single file named, AllPermissions.csv"
 
-    $allGroups | Get-DGSendAsPerms -ADHashDGDN $ADHashDGDN -ADHashDG $ADHashDG  | Select Object, PrimarySMTP, Granted, GrantedUPN, GrantedSMTP, Permission |
+    $allGroupsDN | Get-DGSendAsPerms -ADHashDGDN $ADHashDGDN -ADHashDG $ADHashDG  | Select Object, PrimarySMTP, Granted, GrantedUPN, GrantedSMTP, Permission |
         Export-csv (Join-Path $ReportPath "DGSendAsPerms.csv") -NoTypeInformation
     ##### PERMS #####
 

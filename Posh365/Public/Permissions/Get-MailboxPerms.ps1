@@ -55,7 +55,7 @@
     )
 
     Try {
-        import-module activedirectory -ErrorAction Stop
+        import-module activedirectory -ErrorAction Stop -Verbose:$false
     }
     Catch {
         Write-Host "This module depends on the ActiveDirectory module."
