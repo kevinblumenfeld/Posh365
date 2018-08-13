@@ -37,7 +37,7 @@
     Process {
         ForEach ($curDN in $DistinguishedName) {
             $DG = $curDN
-            Write-Verbose "Inspecting: `t $DG"
+            Write-Verbose "Inspecting Group: `t $DG"
             Get-ADPermission $curDN | Where-Object {
                 $_.ExtendedRights -like "*Send-As*" -and 
                 ($_.IsInherited -eq $false) -and 
@@ -49,9 +49,9 @@
                 New-Object -TypeName PSObject -property @{
                     Object      = $ADHashDGDN["$DG"].DisplayName
                     PrimarySMTP = $ADHashDGDN["$DG"].PrimarySMTPAddress
-                    Granted     = $ADHashDG["$User"].DisplayName
-                    GrantedUPN  = $ADHashDG["$User"].UserPrincipalName
-                    GrantedSMTP = $ADHashDG["$User"].PrimarySMTPAddress
+                    Granted     = $ADHash["$User"].DisplayName
+                    GrantedUPN  = $ADHash["$User"].UserPrincipalName
+                    GrantedSMTP = $ADHash["$User"].PrimarySMTPAddress
                     Permission  = "SendAs"  
                 }
             } 

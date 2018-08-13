@@ -2,27 +2,7 @@
     ##
     <#
     .SYNOPSIS
-    By default, creates permissions reports for all mailboxes with SendAs, SendOnBehalf and FullAccess delegates.
-    Switches can be added to isolate one or more reports
-    Creates individual reports for each permission type (unless skipped), and a report that combines all CSVs in chosen directory.
-    The combined report will be called, AllPermissions.csv
-
-    If same Report Path is chosen, existing files will be overwritten.
-
-    CSVs headers:
-    "Object","UPN","Granted","GrantedUPN","Permission"
-
-    .EXAMPLE
-    Get-DiscoveryInfo -ReportPath C:\PermsReports -Verbose
-    
-    .EXAMPLE
-    Get-DiscoveryInfo -ReportPath C:\PermsReports -SkipFullAccess -Verbose
-    
-    .EXAMPLE
-    Get-DiscoveryInfo -ReportPath C:\PermsReports -SkipSendOnBehalf -Verbose
-
-    .EXAMPLE
-    Get-DiscoveryInfo -ReportPath C:\PermsReports -SkipSendAs -SkipFullAccess -Verbose
+    On-Premises Active Directory and Exchange Discovery script
     
     .EXAMPLE
     Get-DiscoveryInfo -ReportPath C:\PermsReports -PowerShell2 -ExchangeServer "ExServer01" -Verbose
@@ -98,20 +78,17 @@
 
     $DomainNameHash = Get-DomainNameHash
 
-    Write-Verbose "Importing Active Directory Users that have at least one proxy address"
-    $allADUsers = Get-ADUsersWithProxyAddress -DomainNameHash $DomainNameHash
-
     Write-Verbose "Importing Active Directory Objects that have at least one proxy address"
     $allADObjects = Get-ADObjectsWithProxyAddress -DomainNameHash $DomainNameHash
 
     Write-Verbose "Caching hash table. LogonName as Key and Values of DisplayName & UPN"
-    $ADHash = $allADUsers | Get-ADHash
+    $ADHash = $allADObjects | Get-ADHash
 
     Write-Verbose "Caching hash table. LogonName as Key and Values of DisplayName & UPN"
-    $ADHashDG = $AllADObjects | Get-ADHashDG
+    $ADHashDG = $allADObjects | Get-ADHashDG
 
     Write-Verbose "Caching hash table. DN as Key and Values of DisplayName, UPN & LogonName"
-    $ADHashDN = $allADUsers | Get-ADHashDN
+    $ADHashDN = $allADObjects | Get-ADHashDN
 
     Write-Verbose "Caching hash table. CN as Key and Values of DisplayName, UPN & LogonName"
     $ADHashCN = $allADObjects | Get-ADHashCN
@@ -134,7 +111,6 @@
     Write-Verbose "Retrieving distinguishedname's of all Exchange Distribution Groups"
     $allGroupsDN = $allGroups | Select -expandproperty distinguishedname
 
-    ##############
     $FwdSelect = @('DisplayName', 'UserPrincipalName', 'ForwardingAddress')
     $FwdSelectCalc = @(
         @{n = 'FwdDisplayName'; e = {$ADHashCN["$($_.ForwardingAddress)"].DisplayName}},
@@ -151,7 +127,6 @@
     $allMailbox | Where-Object {$_.HiddenFromAddressListsEnabled -eq $TRUE} | Select $HiddenSelect |
         Export-csv (Join-Path $ReportPath "HiddenFromGAL.csv") -NoTypeInformation -Encoding UTF8
 
-    ##### PERMS #####
     if (-not $SkipSendAs) {
         Write-Verbose "Getting SendAs permissions for each mailbox and writing to file"
         $allMailboxDN | Get-SendAsPerms -ADHashDN $ADHashDN -ADHash $ADHash  | Select Object, UPN, Granted, GrantedUPN, Permission |
@@ -170,8 +145,6 @@
             Export-csv (Join-Path $ReportPath "FullAccessPerms.csv") -NoTypeInformation -Encoding UTF8
     }
 
-
-
     $AllPermissions = $null
     $Report = $ReportPath.ToString()
     $Report = $Report.TrimEnd('\') + "\*"
@@ -184,6 +157,5 @@
 
     $allGroupsDN | Get-DGSendAsPerms -ADHashDGDN $ADHashDGDN -ADHashDG $ADHashDG  | Select Object, PrimarySMTP, Granted, GrantedUPN, GrantedSMTP, Permission |
         Export-csv (Join-Path $ReportPath "DGSendAsPerms.csv") -NoTypeInformation
-    ##### PERMS #####
 
 }
