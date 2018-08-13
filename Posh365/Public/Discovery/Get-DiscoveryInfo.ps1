@@ -99,25 +99,34 @@
     $DomainNameHash = Get-DomainNameHash
 
     Write-Verbose "Importing Active Directory Users that have at least one proxy address"
-    $AllADUsers = Get-ADUsersWithProxyAddress -DomainNameHash $DomainNameHash
+    $allADUsers = Get-ADUsersWithProxyAddress -DomainNameHash $DomainNameHash
 
     Write-Verbose "Importing Active Directory Users that have at least one proxy address"
-    $AllADObjects = Get-ADObjectsWithProxyAddress -DomainNameHash $DomainNameHash
+    $allADObjects = Get-ADObjectsWithProxyAddress -DomainNameHash $DomainNameHash
 
     Write-Verbose "Caching hash table. LogonName as Key and Values of DisplayName & UPN"
-    $ADHash = $AllADUsers | Get-ADHash
+    $ADHash = $allADUsers | Get-ADHash
+
+    Write-Verbose "Caching hash table. LogonName as Key and Values of DisplayName & UPN"
+    $ADHashDG = $AllADObjects | Get-ADHashDG
 
     Write-Verbose "Caching hash table. DN as Key and Values of DisplayName, UPN & LogonName"
-    $ADHashDN = $AllADUsers | Get-ADHashDN
+    $ADHashDN = $allADUsers | Get-ADHashDN
 
     Write-Verbose "Caching hash table. CN as Key and Values of DisplayName, UPN & LogonName"
-    $ADHashCN = $AllADObjects | Get-ADHashCN
+    $ADHashCN = $allADObjects | Get-ADHashCN
 
     Write-Verbose "Retrieve all Exchange Mailboxes"
     $allMailbox = Get-ExchangeMailbox -DetailedReport
 
+    Write-Verbose "Retrieve all Exchange Mailboxes"
+    $allGroups = Get-ExchangeDistributionGroup -DetailedReport
+
     Write-Verbose "Export all Exchange Mailboxes to CSV"
-    $allMailbox | Export-csv (Join-Path $ReportPath "ExchangeMailboxes.csv") -NoTypeInformation
+    $allMailbox | Export-csv (Join-Path $ReportPath "ExchangeMailboxes.csv") -NoTypeInformation -Encoding UTF8
+
+    Write-Verbose "Export all Exchange Distribution Groups to CSV"
+    $allGroups | Export-csv (Join-Path $ReportPath "ExchangeDistributionGroups.csv") -NoTypeInformation -Encoding UTF8
 
     Write-Verbose "Retrieving distinguishedname's of all Exchange Mailboxes"
     $allMailboxDN = $allMailbox | Select -expandproperty distinguishedname
@@ -130,8 +139,14 @@
         @{n = 'msExchRecipientTypeDetails'; e = {$ADHashCN["$($_.ForwardingAddress)"].msExchRecipientTypeDetails}},
         @{n = 'msExchRecipientDisplayType'; e = {$ADHashCN["$($_.ForwardingAddress)"].msExchRecipientDisplayType}}
     )
+
     $allMailbox | Where-Object {$_.ForwardingAddress} | Select @($FwdSelect + $FwdSelectCalc) |
         Export-csv (Join-Path $ReportPath "FowardingAddress.csv") -NoTypeInformation -Encoding UTF8
+
+    $HiddenSelect = @('DisplayName', 'UserPrincipalName', 'alias', 'HiddenFromAddressListsEnabled')
+
+    $allMailbox | Where-Object {$_.HiddenFromAddressListsEnabled -eq $TRUE} | Select $HiddenSelect |
+        Export-csv (Join-Path $ReportPath "HiddenFromGAL.csv") -NoTypeInformation -Encoding UTF8
 
     ##### PERMS #####
     if (-not $SkipSendAs) {
@@ -152,6 +167,8 @@
             Export-csv (Join-Path $ReportPath "FullAccessPerms.csv") -NoTypeInformation -Encoding UTF8
     }
 
+
+
     $AllPermissions = $null
     $Report = $ReportPath.ToString()
     $Report = $Report.TrimEnd('\') + "\*"
@@ -161,6 +178,9 @@
     
     $AllPermissions | Export-Csv (Join-Path $ReportPath "AllPermissions.csv") -NoTypeInformation -Encoding UTF8
     Write-Verbose "Combined all CSV's into a single file named, AllPermissions.csv"
+
+    $allGroups | Get-DGSendAsPerms -ADHashDGDN $ADHashDGDN -ADHashDG $ADHashDG  | Select Object, PrimarySMTP, Granted, GrantedUPN, GrantedSMTP, Permission |
+        Export-csv (Join-Path $ReportPath "DGSendAsPerms.csv") -NoTypeInformation
     ##### PERMS #####
 
 }
