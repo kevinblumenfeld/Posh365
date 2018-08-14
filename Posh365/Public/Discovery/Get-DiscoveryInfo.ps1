@@ -94,7 +94,7 @@
     $DomainNameHash = Get-DomainNameHash
 
     Write-Verbose "Importing Active Directory Objects that have at least one proxy address"
-    $allADObjects = Get-ADUsersAndGroupsWithProxyAddress -DomainNameHash $DomainNameHash
+    $allADObjects = Get-ADObjectsWithProxyAddress -DomainNameHash $DomainNameHash
 
     Write-Verbose "Caching hash table. LogonName as Key and Values of DisplayName & UPN"
     $ADHash = $allADObjects | Get-ADHash

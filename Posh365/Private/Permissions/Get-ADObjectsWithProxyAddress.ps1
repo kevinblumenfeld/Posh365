@@ -24,7 +24,7 @@
     $context = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext('Forest')
     $dc = ([System.DirectoryServices.ActiveDirectory.GlobalCatalog]::FindOne($context, [System.DirectoryServices.ActiveDirectory.LocatorOptions]'ForceRediscovery, WriteableRequired')).name
     
-    $Properties = @('displayname', 'canonicalname', 'proxyaddresses', 'mail', 'msExchRecipientDisplayType', 'msExchRecipientTypeDetails') 
+    $Properties = @('UserPrincipalName','samaccountname','displayname', 'canonicalname', 'proxyaddresses', 'mail', 'msExchRecipientDisplayType', 'msExchRecipientTypeDetails') 
     
     $Selectproperties = @(
         'UserPrincipalName', 'distinguishedname', 'canonicalname', 'displayname', 'mail', 'Objectguid', 'msExchRecipientDisplayType', 'msExchRecipientTypeDetails'
