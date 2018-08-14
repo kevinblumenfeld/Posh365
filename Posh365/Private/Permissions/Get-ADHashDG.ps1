@@ -11,18 +11,16 @@
     Begin {
         $ADHashDG = @{}
     }
-
     Process {
         foreach ($CurDN in $DistinguishedName) {
             $ADHashDG[$CurDN.logon] = @{
                 DisplayName        = $CurDN.DisplayName
-                PrimarySmtpAddress = $CurDN.PrimarySmtpAddress
+                UserPrincipalName  = $CurDN.UserPrincipalName
+                PrimarySMTPAddress = $CurDN.PrimarySMTPAddress
             }
         }
-
     }
     End {
         $ADHashDG
     }
-
 }

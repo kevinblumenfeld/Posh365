@@ -43,6 +43,7 @@ function Get-ActiveDirectoryUser {
                 'City', 'State', 'Country', 'PostalCode', 'Company', 'Title', 'Department', 'Description', 'OfficePhone'
                 'MobilePhone', 'HomePhone', 'Fax', 'SamAccountName', 'DistinguishedName', 'Office', 'Enabled'
                 'whenChanged', 'whenCreated', 'adminCount', 'AccountNotDelegated', 'AllowReversiblePasswordEncryption'
+                'altRecipient', 'targetAddress', 'forwardingAddress', 'deliverAndRedirect'
                 'CannotChangePassword', 'Deleted', 'DoesNotRequirePreAuth', 'HomedirRequired', 'isDeleted', 'LockedOut'
                 'mAPIRecipient', 'mDBUseDefaults', 'MNSLogonAccount', 'msExchHideFromAddressLists'
                 'msNPAllowDialin', 'PasswordExpired', 'PasswordNeverExpires', 'PasswordNotRequired', 'ProtectedFromAccidentalDeletion'
@@ -64,8 +65,9 @@ function Get-ActiveDirectoryUser {
 
             $CalculatedProps = @(
                 @{n = "OU" ; e = {$_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'}},
-                @{n = "PrimarySmtpAddress" ; e = {( $_.proxyAddresses | Where-Object {$_ -cmatch "SMTP:"})}}
+                @{n = "PrimarySmtpAddress" ; e = {( $_.proxyAddresses | Where-Object {$_ -cmatch "SMTP:"})}},
                 @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = 'InheritanceBroken'; e = {$_.nTSecurityDescriptor.AreAccessRulesProtected}},
                 @{n = "altRecipientBL" ; e = {($_.altRecipientBL | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "AuthenticationPolicy" ; e = {($_.AuthenticationPolicy | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "AuthenticationPolicySilo" ; e = {($_.AuthenticationPolicySilo | Where-Object {$_ -ne $null}) -join ";" }},
@@ -98,7 +100,7 @@ function Get-ActiveDirectoryUser {
                 'DisplayName', 'UserPrincipalName', 'mail', 'CN', 'mailNickname', 'Name', 'GivenName', 'Surname', 'StreetAddress',
                 'City', 'State', 'Country', 'PostalCode', 'Company', 'Title', 'Department', 'Description', 'OfficePhone'
                 'MobilePhone', 'HomePhone', 'Fax', 'SamAccountName', 'DistinguishedName', 'Office', 'Enabled'
-                'whenChanged', 'whenCreated', 'adminCount', 'msExchRecipientTypeDetails','ObjectGUID'
+                'whenChanged', 'whenCreated', 'adminCount', 'msExchRecipientTypeDetails', 'ObjectGUID'
             )
             
             $CalculatedProps = @(

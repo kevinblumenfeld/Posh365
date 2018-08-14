@@ -38,8 +38,9 @@ function Get-ActiveDirectoryContact {
     Begin {
         $Props = @(
             'CanonicalName', 'Description', 'DisplayName', 'DistinguishedName'
-            'givenName', 'legacyExchangeDN', 'mail', 'Name', 'initials', 'sn', 'targetAddress'
+            'givenName', 'legacyExchangeDN', 'mail', 'Name', 'initials', 'sn'
             'Title', 'Department', 'Division', 'Company', 'EmployeeID', 'EmployeeNumber'
+            'altRecipient', 'targetAddress', 'forwardingAddress', 'deliverAndRedirect'
             'StreetAddress', 'PostalCode', 'telephoneNumber', 'HomePhone', 'mobile', 'pager', 'ipphone'
             'facsimileTelephoneNumber', 'l', 'st', 'cn', 'physicalDeliveryOfficeName', 'co'
             'mailnickname', 'proxyAddresses', 'msExchRecipientDisplayType'
@@ -51,8 +52,9 @@ function Get-ActiveDirectoryContact {
             'Company', 'EmployeeID', 'EmployeeNumber', 'Description', 'GivenName', 'StreetAddress'
             'PostalCode', 'telephoneNumber', 'HomePhone', 'mobile', 'pager', 'ipphone', 'l', 'st', 'cn'
             'physicalDeliveryOfficeName', 'mailnickname', 'Distinguishedname'
+            'altRecipient', 'targetAddress', 'forwardingAddress', 'deliverAndRedirect'
             'legacyExchangeDN', 'mail', 'msExchRecipientDisplayType', 'msExchRecipientTypeDetails'
-            'msExchRemoteRecipientType', 'targetaddress', 'info', 'CanonicalName'
+            'msExchRemoteRecipientType', 'info', 'CanonicalName'
         )
     
         $CalculatedProps = @(

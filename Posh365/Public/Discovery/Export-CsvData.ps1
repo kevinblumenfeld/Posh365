@@ -53,12 +53,12 @@ Import-Csv .\CSVofADUsers.csv | Export-CsvData -caseMatchAnd "Harry Franklin" -M
 .NOTES
 Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attribute in Active Directory) are expected to be semicolon separated.
 Example:
-import-csv .\Proxies.csv | Export-CsvData -JoinType and -FindAddressInColumn ProxyAddresses -caseMatch "SMTP:" -StripPrefix -AddPrefix smtp:
-import-csv .\Proxies.csv | Export-CsvData -JoinType and -FindAddressInColumn ProxyAddresses -caseMatch "SMTP:" -Domain "fabrikam.com" -NewDomain "contoso.com"
-import-csv .\Proxies.csv | Export-CsvData -JoinType and -FindAddressInColumn ProxyAddresses -Match "SIP:"
-import-csv .\Proxies.csv | Export-CsvData -JoinType and -FindAddressInColumn ProxyAddresses -Match "SIP:" -Domain "fabrikam.com" -NewDomain "contoso.com"
-import-csv .\Proxies.csv | Export-CsvData -JoinType and -FindAddressInColumn ProxyAddresses -caseMatch "SMTP:"
-import-csv .\Proxies.csv | Export-CsvData -JoinType and -FindAddressInColumn ProxyAddresses -caseMatch "SMTP:" -Domain "fabrikam.com" -NewDomain "contoso.com" -StripPrefix
+import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -caseMatch "SMTP:" -StripPrefix -AddPrefix smtp:
+import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -caseMatch "SMTP:" -Domain "fabrikam.com" -NewDomain "contoso.com"
+import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -Match "SIP:"
+import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -Match "SIP:" -Domain "fabrikam.com" -NewDomain "contoso.com"
+import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -caseMatch "SMTP:"
+import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -caseMatch "SMTP:" -Domain "fabrikam.com" -NewDomain "contoso.com" -StripPrefix
 
 #>
     [CmdletBinding(SupportsShouldProcess)]
@@ -72,8 +72,8 @@ import-csv .\Proxies.csv | Export-CsvData -JoinType and -FindAddressInColumn Pro
         [String]$JoinType,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet("ProxyAddresses", "EmailAddresses", "EmailAddress", "x500", "UserPrincipalName", "PrimarySmtpAddress", "MembersName")]
-        [String]$FindAddressInColumn,
+        [ValidateSet("ProxyAddresses", "EmailAddresses", "EmailAddress", "AddressOrMember", "x500", "UserPrincipalName", "PrimarySmtpAddress", "MembersName")]
+        [String]$FindInColumn,
 
         [Parameter()]
         [String[]]$Match,
@@ -109,6 +109,15 @@ import-csv .\Proxies.csv | Export-CsvData -JoinType and -FindAddressInColumn Pro
         [switch]$StripPrefix,
 
         [Parameter()]
+        [string]$ReportPath,
+        
+        [Parameter()]
+        [string]$subDirectory,
+        
+        [Parameter(Mandatory = $true)]
+        [string]$fileName,
+
+        [Parameter()]
         [ValidateSet("SMTP:", "smtp:", "SIP:", "sip:", "x500:")]
         [string]$AddPrefix
         
@@ -123,9 +132,19 @@ import-csv .\Proxies.csv | Export-CsvData -JoinType and -FindAddressInColumn Pro
             Write-Warning "Must use Domain parameter when specifying NewDomain parameter"
             break
         }
-        $OutputPath = '.\'
-        $LogFileName = $(get-date -Format yyyy-MM-dd_HH-mm-ss)
-        $Log = Join-Path $OutputPath ($LogFileName + "-EmailAddresses.csv")
+
+        if (-not $ReportPath) {
+            $ReportPath = '.\'
+            $theReport = $ReportPath | Join-Path -ChildPath $fileName
+        }
+        elseif (-not $subDirectory) {
+            New-Item -ItemType Directory -Path (Join-Path $ReportPath) -ErrorAction SilentlyContinue
+            $theReport = $ReportPath | Join-Path -ChildPath $fileName
+        }
+        else {
+            New-Item -ItemType Directory -Path (Join-Path -path $ReportPath -ChildPath $subDirectory) -ErrorAction SilentlyContinue   
+            $theReport = $ReportPath | Join-Path -ChildPath $subDirectory | Join-Path -ChildPath $fileName
+        }
 
         $filterElements = $psboundparameters.Keys | Where-Object { $_ -match 'Match' } | ForEach-Object {
 
@@ -168,7 +187,7 @@ import-csv .\Proxies.csv | Export-CsvData -JoinType and -FindAddressInColumn Pro
             $msExchRecipientTypeDetails = $CurRow.msExchRecipientTypeDetails
             $mail = $CurRow.mail
             if ($filter) {
-                $Address = $CurRow."$FindAddressInColumn" -split ";" | Where-Object $filter
+                $Address = $CurRow."$FindInColumn" -split ";" | Where-Object $filter
                 Write-Verbose "Filtered Address: $Address"
             }
             else {
@@ -189,10 +208,10 @@ import-csv .\Proxies.csv | Export-CsvData -JoinType and -FindAddressInColumn Pro
                     '{0}{1}' -f $AddPrefix, $_
                 }
             }
-            $AllProxyAddresses = $($CurRow."$FindAddressInColumn")
+            $AllProxyAddresses = $($CurRow."$FindInColumn")
 
             if ((-not [String]::IsNullOrWhiteSpace($AllProxyAddresses)) -and ([String]::IsNullOrWhiteSpace($PrimarySmtpAddress))) {
-                $PrimarySmtpAddress = $CurRow."$FindAddressInColumn" -split ";" | Where-Object {$_ -cmatch 'SMTP:'}
+                $PrimarySmtpAddress = $CurRow."$FindInColumn" -split ";" | Where-Object {$_ -cmatch 'SMTP:'}
             }
             if ($PrimarySmtpAddress -cmatch 'SMTP:') {
                 $PrimaryTrimmed = $PrimarySmtpAddress.Substring(5)
@@ -206,11 +225,11 @@ import-csv .\Proxies.csv | Export-CsvData -JoinType and -FindAddressInColumn Pro
                         UserPrincipalName          = $UserPrincipalName
                         PrimarySmtpAddress         = $PrimarySmtpAddress
                         PrimarySmtpTrimmed         = $PrimaryTrimmed
-                        EmailAddress               = $CurAddress
+                        AddressOrMember            = $CurAddress
                         RecipientTypeDetails       = $RecipientTypeDetails
                         msExchRecipientTypeDetails = $msExchRecipientTypeDetails
                         objectGUID                 = $objectGUID
-                    } | Export-Csv $Log -Append -NoTypeInformation -Encoding UTF8
+                    } | Export-Csv $theReport -Append -NoTypeInformation -Encoding UTF8
                 } 
             }
             else {
@@ -220,11 +239,11 @@ import-csv .\Proxies.csv | Export-CsvData -JoinType and -FindAddressInColumn Pro
                     UserPrincipalName          = $UserPrincipalName
                     PrimarySmtpAddress         = $PrimarySmtpAddress
                     PrimarySmtpTrimmed         = $PrimaryTrimmed
-                    EmailAddress               = "NONE"
+                    AddressOrMember            = "NONE"
                     RecipientTypeDetails       = $RecipientTypeDetails
                     msExchRecipientTypeDetails = $msExchRecipientTypeDetails
                     objectGUID                 = $objectGUID
-                } | Export-Csv $Log -Append -NoTypeInformation -Encoding UTF8
+                } | Export-Csv $theReport -Append -NoTypeInformation -Encoding UTF8
             }
         }
     }

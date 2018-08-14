@@ -41,6 +41,7 @@ function Get-ActiveDirectoryGroup {
         if ($DetailedReport) {
             $Selectproperties = @(
                 'Name', 'ObjectGUID', 'DisplayName', 'Alias', 'GroupType', 'Identity', 'RecipientType'
+                'altRecipient', 'targetAddress', 'forwardingAddress', 'deliverAndRedirect'
                 'RecipientTypeDetails', 'WindowsEmailAddress', 'ArbitrationMailbox', 'CustomAttribute1'
                 'CustomAttribute10', 'CustomAttribute11', 'CustomAttribute12', 'CustomAttribute13'
                 'CustomAttribute14', 'CustomAttribute15', 'CustomAttribute2', 'CustomAttribute3'
@@ -82,7 +83,7 @@ function Get-ActiveDirectoryGroup {
                 @{n = "PoliciesIncluded" ; e = {($_.PoliciesIncluded | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "EmailAddresses" ; e = {($_.ProxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "x500" ; e = {"x500:" + $_.LegacyExchangeDN}},
-                @{n = "membersName" ; e = {($Members.name | Where-Object {$_ -ne $null}) -join ";"}}
+                @{n = "membersName" ; e = {($Members.name | Where-Object {$_ -ne $null}) -join ";"}},
                 @{n = "membersSMTP" ; e = {($Members.PrimarySmtpAddress | Where-Object {$_ -ne $null}) -join ";"}}
             )
         }
@@ -98,7 +99,7 @@ function Get-ActiveDirectoryGroup {
                 @{n = "EmailAddresses" ; e = {($_.ProxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "PrimarySmtpAddress" ; e = {($_.ProxyAddresses | Where-Object {$_ -cmatch "SMTP:"}) -join ";" }},
                 @{n = "x500" ; e = {"x500:" + $_.LegacyExchangeDN}},
-                @{n = "membersName" ; e = {($Members.name | Where-Object {$_ -ne $null}) -join ";"}}
+                @{n = "membersName" ; e = {($Members.name | Where-Object {$_ -ne $null}) -join ";"}},
                 @{n = "membersSMTP" ; e = {($Members.PrimarySmtpAddress | Where-Object {$_ -ne $null}) -join ";"}}
             )
         }

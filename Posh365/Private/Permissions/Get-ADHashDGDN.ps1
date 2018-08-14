@@ -16,6 +16,7 @@
         foreach ($CurDN in $DistinguishedName) {
             $ADHashDGDN[$CurDN.DistinguishedName] = @{
                 DisplayName        = $CurDN.DisplayName
+                UPN                = $CurDN.UserPrincipalName
                 PrimarySmtpAddress = $CurDN.PrimarySmtpAddress
                 Logon              = $CurDN.logon
             }
