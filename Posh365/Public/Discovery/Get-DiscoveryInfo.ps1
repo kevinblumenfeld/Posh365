@@ -153,7 +153,7 @@
     )
 
     Write-Verbose "Exporting all ADUser with Inheritance Broken to InheritanceBroken.csv"
-    $allADUsers | where {$_.InheritanceBroken -eq "True"} Select DisplayName, InheritanceBroken, OU, PrimarySmtpAddress, UserPrincipalName |
+    $allADUsers | where {$_.InheritanceBroken -eq "True"} | Select DisplayName, InheritanceBroken, OU, PrimarySmtpAddress, UserPrincipalName |
         Export-csv (Join-Path -Path $ADPath -ChildPath "InheritanceBroken.csv") -NoTypeInformation -Encoding UTF8
 
     Write-Verbose "Exporting all Exchange Mailboxes to ExchangeMailboxes.csv"
