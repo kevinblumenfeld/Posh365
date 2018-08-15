@@ -46,7 +46,7 @@ function Get-ExchangeDistributionGroup {
                 'CustomAttribute14', 'CustomAttribute15', 'CustomAttribute2', 'CustomAttribute3'
                 'CustomAttribute4', 'CustomAttribute5', 'CustomAttribute6', 'CustomAttribute7'
                 'CustomAttribute8', 'CustomAttribute9', 'DistinguishedName', 'ExchangeVersion'
-                'ExpansionServer','ExternalDirectoryObjectId', 'Id', 'LegacyExchangeDN'
+                'ExpansionServer', 'ExternalDirectoryObjectId', 'Id', 'LegacyExchangeDN'
                 'MaxReceiveSize', 'MaxSendSize', 'MemberDepartRestriction', 'MemberJoinRestriction'
                 'ObjectCategory', 'ObjectState', 'OrganizationalUnit', 'OrganizationId', 'OriginatingServer'
                 'SamAccountName', 'SendModerationNotifications', 'SimpleDisplayName'
@@ -57,7 +57,7 @@ function Get-ExchangeDistributionGroup {
             )
     
             $CalculatedProps = @(
-                
+                @{n = "OU" ; e = {$_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'}},
                 @{n = "AcceptMessagesOnlyFrom" ; e = {($_.AcceptMessagesOnlyFrom | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "AcceptMessagesOnlyFromDLMembers" ; e = {($_.AcceptMessagesOnlyFromDLMembers | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = {($_.AcceptMessagesOnlyFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
