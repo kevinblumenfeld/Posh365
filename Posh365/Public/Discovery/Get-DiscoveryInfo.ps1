@@ -93,7 +93,7 @@
 
     $DomainNameHash = Get-DomainNameHash
 
-    Write-Verbose "Importing Active Directory Objects that have at least one proxy address"
+    Write-Verbose "Retrieving Active Directory Objects that have at least one proxy address"
     $allADObjects = Get-ADObjectsWithProxyAddress -DomainNameHash $DomainNameHash
 
     Write-Verbose "Caching hash table. LogonName as Key and Values of DisplayName & UPN"
@@ -110,6 +110,12 @@
 
     Write-Verbose "Caching hash table. CN as Key and Values of DisplayName, UPN & LogonName"
     $ADHashCN = $allADObjects | Get-ADHashCN
+    
+    Write-Verbose "Retrieving all Active Directory Users"
+    $allADUsers = Get-ActiveDirectoryUser -DetailedReport
+
+    Write-Verbose "Exporting all Active Directory Users to RawADUsers.csv"
+    $allADUsers | Export-csv (Join-Path -Path $RawDataPath -ChildPath "RawADUsers.csv") -NoTypeInformation -Encoding UTF8
 
     Write-Verbose "Retrieving all Exchange Mailboxes"
     $allMailbox = Get-ExchangeMailbox -DetailedReport
@@ -136,20 +142,34 @@
         'DisplayName', 'OU', 'RecipientTypeDetails', 'UserPrincipalName', 'PrimarySmtpAddress', 'Identity', 'Alias'
         'ForwardingAddress', 'ForwardingSmtpAddress', 'LitigationHoldDate', 'AccountDisabled', 'DeliverToMailboxAndForward'
         'HiddenFromAddressListsEnabled', 'LitigationHoldEnabled', 'LitigationHoldDuration'
-        'LitigationHoldOwner', 'Office', 'RetentionPolicy', 'WindowsEmailAddress','ArchiveName','AcceptMessagesOnlyFrom'
-        'AcceptMessagesOnlyFromDLMembers','AcceptMessagesOnlyFromSendersOrMembers','RejectMessagesFrom','RejectMessagesFromDLMembers'
-        'RejectMessagesFromSendersOrMembers','InPlaceHolds','x500','EmailAddresses'
+        'LitigationHoldOwner', 'Office', 'RetentionPolicy', 'WindowsEmailAddress', 'ArchiveName', 'AcceptMessagesOnlyFrom'
+        'AcceptMessagesOnlyFromDLMembers', 'AcceptMessagesOnlyFromSendersOrMembers', 'RejectMessagesFrom', 'RejectMessagesFromDLMembers'
+        'RejectMessagesFromSendersOrMembers', 'InPlaceHolds', 'x500', 'EmailAddresses'
+    )
+    
+    $GroupProperties = @(
+        'DisplayName', 'OU', 'RecipientTypeDetails', 'Alias', 'ManagedBy', 'GroupType', 'Identity', 'PrimarySmtpAddress', 'WindowsEmailAddress'
+        'AcceptMessagesOnlyFromSendersOrMembers', 'x500', 'EmailAddresses'
     )
 
+    Write-Verbose "Exporting all ADUser with Inheritance Broken to InheritanceBroken.csv"
+    $allADUsers | Select DisplayName, InheritanceBroken, OU, PrimarySmtpAddress, UserPrincipalName |
+        Export-csv (Join-Path -Path $ADPath -ChildPath "InheritanceBroken.csv") -NoTypeInformation -Encoding UTF8
+
     Write-Verbose "Exporting all Exchange Mailboxes to ExchangeMailboxes.csv"
-    $allMailbox | Select $MailboxProperties | Export-csv (Join-Path -Path $ExchangePath -ChildPath "ExchangeMailboxes.csv") -NoTypeInformation -Encoding UTF8
+    $allMailbox | Select $MailboxProperties | 
+        Export-csv (Join-Path -Path $ExchangePath -ChildPath "ExchangeMailboxes.csv") -NoTypeInformation -Encoding UTF8
+
+    Write-Verbose "Exporting all Exchange Distribution Groups to ExchangeDistributionGroups.csv"
+    $allGroups | Select $GroupProperties | 
+        Export-csv (Join-Path -Path $ExchangePath -ChildPath "ExchangeDistributionGroups.csv") -NoTypeInformation -Encoding UTF8
 
     $FwdSelect = @('DisplayName', 'UserPrincipalName', 'ForwardingAddress')
     $FwdSelectCalc = @(
         @{n = 'FwdDisplayName'; e = {$ADHashCN["$($_.ForwardingAddress)"].DisplayName}},
         @{n = 'FwdPrimarySmtpAddress'; e = {$ADHashCN["$($_.ForwardingAddress)"].PrimarySmtpAddress}},
-        @{n = 'msExchRecipientTypeDetails'; e = {$ADHashCN["$($_.ForwardingAddress)"].msExchRecipientTypeDetails}},
-        @{n = 'msExchRecipientDisplayType'; e = {$ADHashCN["$($_.ForwardingAddress)"].msExchRecipientDisplayType}}
+        @{n = 'FwdmsExchRecipientTypeDetails'; e = {$ADHashCN["$($_.ForwardingAddress)"].msExchRecipientTypeDetails}},
+        @{n = 'FwdmsExchRecipientDisplayType'; e = {$ADHashCN["$($_.ForwardingAddress)"].msExchRecipientDisplayType}}
     )
 
     Write-Verbose "Exporting Mailboxes with Forwarding Addresses to file FowardingAddress.csv"
