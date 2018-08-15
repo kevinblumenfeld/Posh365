@@ -161,17 +161,17 @@
         Export-csv (Join-Path -Path $ExchangePath -ChildPath "ExchangeMailboxes.csv") -NoTypeInformation -Encoding UTF8
 
     Write-Verbose "Exporting all smtp addresses for Exchange Mailboxes"
-    $allMailbox | Export-CsvData -JoinType and -Match "smtp:" -FindInColumn "MembersName" -ReportPath "$ReportPath" -subDirectory "Exchange" -fileName "MailboxSmtpAddresses.csv"
+    $allMailbox | Export-CsvData -JoinType and -Match "smtp:" -FindInColumn "EmailAddresses" -ReportPath "$ReportPath" -subDirectory "Exchange" -fileName "MailboxSmtpAddresses.csv"
     
     Write-Verbose "Exporting all sip addresses for Exchange Mailboxes"
-    $allMailbox | Export-CsvData -JoinType and -Match "sip:" -FindInColumn "MembersName" -ReportPath "$ReportPath" -subDirectory "Exchange" -fileName "MailboxSipAddresses.csv"
+    $allMailbox | Export-CsvData -JoinType and -Match "sip:" -FindInColumn "EmailAddresses" -ReportPath "$ReportPath" -subDirectory "Exchange" -fileName "MailboxSipAddresses.csv"
     
     Write-Verbose "Exporting all Exchange Distribution Groups to ExchangeDistributionGroups.csv"
     $allGroups | Select $GroupProperties | 
         Export-csv (Join-Path -Path $ExchangePath -ChildPath "ExchangeDistributionGroups.csv") -NoTypeInformation -Encoding UTF8
 
     Write-Verbose "Exporting all smtp addresses for Exchange Distribution Groups"
-    $allGroups | Export-CsvData -JoinType and -Match "smtp:" -FindInColumn "MembersName" -ReportPath "$ReportPath" -subDirectory "Exchange" -fileName "MailboxSmtpAddresses.csv"
+    $allGroups | Export-CsvData -JoinType and -Match "smtp:" -FindInColumn "EmailAddresses" -ReportPath "$ReportPath" -subDirectory "Exchange" -fileName "MailboxSmtpAddresses.csv"
         
     $FwdSelect = @('DisplayName', 'UserPrincipalName', 'ForwardingAddress')
     $FwdSelectCalc = @(
