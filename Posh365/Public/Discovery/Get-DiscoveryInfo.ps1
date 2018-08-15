@@ -114,8 +114,8 @@
     Write-Verbose "Retrieving all Exchange Mailboxes"
     $allMailbox = Get-ExchangeMailbox -DetailedReport
 
-    Write-Verbose "Exporting all Exchange Mailboxes to CSV"
-    $allMailbox | Export-csv (Join-Path -Path $RawDataPath -ChildPath "ExchangeMailboxes.csv") -NoTypeInformation -Encoding UTF8
+    Write-Verbose "Exporting all Exchange Mailboxes to RawExchangeMailboxes.csv"
+    $allMailbox | Export-csv (Join-Path -Path $RawDataPath -ChildPath "RawExchangeMailboxes.csv") -NoTypeInformation -Encoding UTF8
 
     Write-Verbose "Retrieving distinguishedname's of all Exchange Mailboxes"
     $allMailboxDN = $allMailbox | Select -expandproperty distinguishedname
@@ -123,14 +123,26 @@
     Write-Verbose "Retrieving all Exchange Distribution Groups"
     $allGroups = Get-ExchangeDistributionGroup -DetailedReport
 
-    Write-Verbose "Export all Exchange Distribution Groups to CSV"
-    $allGroups | Export-csv (Join-Path -Path $RawDataPath -ChildPath "ExchangeDistributionGroups.csv") -NoTypeInformation -Encoding UTF8
+    Write-Verbose "Exporting all Exchange Distribution Groups to file ExchangeDistributionGroups.csv"
+    $allGroups | Export-csv (Join-Path -Path $RawDataPath -ChildPath "RawExchangeDistributionGroups.csv") -NoTypeInformation -Encoding UTF8
 
-    Write-Verbose "Export all Exchange Distribution Groups Members CSV"
+    Write-Verbose "Exporting all Exchange Distribution Groups Members to file DistributionGroupMembers.csv"
     $allGroups | Export-CsvData -JoinType and -Match "." -FindInColumn "MembersName" -ReportPath "$ReportPath" -subDirectory "Exchange" -fileName "DistributionGroupMembers.csv"
 
     Write-Verbose "Retrieving distinguishedname's of all Exchange Distribution Groups"
     $allGroupsDN = $allGroups | Select -expandproperty distinguishedname
+
+    $MailboxProperties = @(
+        'DisplayName', 'OU', 'RecipientTypeDetails', 'UserPrincipalName', 'PrimarySmtpAddress', 'Identity', 'Alias'
+        'ForwardingAddress', 'ForwardingSmtpAddress', 'LitigationHoldDate', 'AccountDisabled', 'DeliverToMailboxAndForward'
+        'HiddenFromAddressListsEnabled', 'LitigationHoldEnabled', 'LitigationHoldDuration'
+        'LitigationHoldOwner', 'Office', 'RetentionPolicy', 'WindowsEmailAddress','ArchiveName','AcceptMessagesOnlyFrom'
+        'AcceptMessagesOnlyFromDLMembers','AcceptMessagesOnlyFromSendersOrMembers','RejectMessagesFrom','RejectMessagesFromDLMembers'
+        'RejectMessagesFromSendersOrMembers','InPlaceHolds','x500','EmailAddresses'
+    )
+
+    Write-Verbose "Exporting all Exchange Mailboxes to ExchangeMailboxes.csv"
+    $allMailbox | Select $MailboxProperties | Export-csv (Join-Path -Path $ExchangePath -ChildPath "ExchangeMailboxes.csv") -NoTypeInformation -Encoding UTF8
 
     $FwdSelect = @('DisplayName', 'UserPrincipalName', 'ForwardingAddress')
     $FwdSelectCalc = @(
@@ -140,28 +152,30 @@
         @{n = 'msExchRecipientDisplayType'; e = {$ADHashCN["$($_.ForwardingAddress)"].msExchRecipientDisplayType}}
     )
 
+    Write-Verbose "Exporting Mailboxes with Forwarding Addresses to file FowardingAddress.csv"
     $allMailbox | Where-Object {$_.ForwardingAddress} | Select @($FwdSelect + $FwdSelectCalc) |
         Export-csv (Join-Path $ExchangePath -ChildPath "FowardingAddress.csv") -NoTypeInformation -Encoding UTF8
 
     $HiddenSelect = @('DisplayName', 'UserPrincipalName', 'alias', 'HiddenFromAddressListsEnabled')
 
+    Write-Verbose "Exporting Mailboxes that are Hidden from the GAL to file HiddenFromGAL.csv"
     $allMailbox | Where-Object {$_.HiddenFromAddressListsEnabled -eq $TRUE} | Select $HiddenSelect |
         Export-csv (Join-Path $ExchangePath -ChildPath "HiddenFromGAL.csv") -NoTypeInformation -Encoding UTF8
 
     if (-not $SkipSendAs) {
-        Write-Verbose "Getting SendAs permissions for each mailbox and writing to file"
+        Write-Verbose "Getting SendAs permissions for each mailbox and writing to file SendAsPerms.csv"
         $allMailboxDN | Get-SendAsPerms -ADHashDN $ADHashDN -ADHash $ADHash  | Select Object, UPN, Granted, GrantedUPN, Permission |
             Export-csv (Join-Path $ExchangePath -ChildPath "SendAsPerms.csv") -NoTypeInformation -Encoding UTF8
     }
     
     if (-not $SkipSendOnBehalf) {
-        Write-Verbose "Getting SendOnBehalf permissions for each mailbox and writing to file"
+        Write-Verbose "Getting SendOnBehalf permissions for each mailbox and writing to file SendOnBehalfPerms.csv"
         $allMailboxDN | Get-SendOnBehalfPerms -ADHashCN $ADHashCN | Select Object, UPN, Granted, GrantedUPN, Permission |
             Export-csv (Join-Path $ExchangePath -ChildPath "SendOnBehalfPerms.csv") -NoTypeInformation -Encoding UTF8
     }
     
     if (-not $SkipFullAccess) {
-        Write-Verbose "Getting FullAccess permissions for each mailbox and writing to file"
+        Write-Verbose "Getting FullAccess permissions for each mailbox and writing to file FullAccessPerms.csv"
         $allMailboxDN | Get-FullAccessPerms -ADHashDN $ADHashDN -ADHash $ADHash | Select Object, UPN, Granted, GrantedUPN, Permission |
             Export-csv (Join-Path $ExchangePath -ChildPath "FullAccessPerms.csv") -NoTypeInformation -Encoding UTF8
     }
@@ -174,8 +188,9 @@
     }
     
     $AllPermissions | Export-Csv (Join-Path $ExchangePath -ChildPath "AllPermissions.csv") -NoTypeInformation -Encoding UTF8
-    Write-Verbose "Combined all CSV's into a single file named, AllPermissions.csv"
+    Write-Verbose "Combined all Mailbox Delegate Permission CSV's into a single file named, AllPermissions.csv"
 
+    Write-Verbose "Exporting Distribution Group Send-as Delegate Permission to file DGSendAsPerms.csv"
     $allGroupsDN | Get-DGSendAsPerms -ADHashDGDN $ADHashDGDN -ADHashDG $ADHashDG  | Select Object, PrimarySMTP, Granted, GrantedUPN, GrantedSMTP, Permission |
         Export-csv (Join-Path $ExchangePath -ChildPath "DGSendAsPerms.csv") -NoTypeInformation
 
