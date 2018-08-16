@@ -111,9 +111,6 @@ import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresse
         [Parameter()]
         [string]$ReportPath,
         
-        [Parameter()]
-        [string]$subDirectory,
-        
         [Parameter(Mandatory = $true)]
         [string]$fileName,
 
@@ -137,14 +134,8 @@ import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresse
             $ReportPath = '.\'
             $theReport = $ReportPath | Join-Path -ChildPath $fileName
         }
-        elseif (-not $subDirectory) {
-            New-Item -ItemType Directory -Path (Join-Path $ReportPath) -ErrorAction SilentlyContinue
-            $theReport = $ReportPath | Join-Path -ChildPath $fileName
-        }
-        else {
-            New-Item -ItemType Directory -Path (Join-Path -path $ReportPath -ChildPath $subDirectory) -ErrorAction SilentlyContinue   
-            $theReport = $ReportPath | Join-Path -ChildPath $subDirectory | Join-Path -ChildPath $fileName
-        }
+        New-Item -ItemType Directory -Path $ReportPath -ErrorAction SilentlyContinue
+        $theReport = $ReportPath | Join-Path -ChildPath $fileName
 
         $filterElements = $psboundparameters.Keys | Where-Object { $_ -match 'Match' } | ForEach-Object {
 

@@ -25,8 +25,8 @@ function Import-CsvData {
         [String]$FindADUserOrGroupBy,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet("EmailAddress", "PrimarySmtpAddress", "ProxyAddresses", "EmailAddresses", "x500")]
-        [String]$FindAddressInColumn,
+        [ValidateSet("EmailAddress", "AddressOrMember", "PrimarySmtpAddress", "ProxyAddresses", "EmailAddresses", "x500")]
+        [String]$FindInColumn,
 
         [Parameter()]
         [Switch]$FirstClearAllProxyAddresses,
@@ -62,7 +62,7 @@ function Import-CsvData {
     }
     Process {
         ForEach ($CurRow in $Row) {
-            $Address = $CurRow."$FindAddressInColumn"
+            $Address = $CurRow."$FindInColumn"
             $Display = $CurRow.DisplayName
             $Mail = $CurRow.PrimarySmtpAddress
             $UPN = $CurRow.PrimarySmtpAddress
@@ -133,7 +133,7 @@ function Import-CsvData {
                         }
                         foreach ($CurAddressItem in $address) {
                             $splat = @{ $AddRemoveOrReplace = @{ $Attribute = $CurAddressItem } }
-                            Write-Verbose "$Display $AddRemoveOrReplace ProxyAddress: $CurAddressItem"
+                            Write-Verbose "$Display $AddRemoveOrReplace $Attribute $CurAddressItem"
                             $adObject | & "Set-AD$UserOrGroup" @splat
                         }
                     }
