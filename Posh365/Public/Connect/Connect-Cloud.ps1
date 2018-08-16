@@ -78,7 +78,7 @@ function Connect-Cloud {
     Deletes your saved credentials for tenant specified
 
     .PARAMETER EXOPrefix
-    Adds EXO prefix to all Exchange Online commands. For example Get-EXOMailbox.
+    Adds CLOUD prefix to all Exchange Online commands. For example Get-CLOUDMailbox.
 
     .EXAMPLE
     Connect-Cloud -Tenant Contoso -ExchangeOnline -MSOnline
@@ -246,6 +246,7 @@ function Connect-Cloud {
                     # Exchange Online
                     if (!(Get-Command Get-AcceptedDomain -ErrorAction SilentlyContinue)) {
                         Try {
+                            write-host "IN 1st TRY"
                             $EXOSession = New-PSSession -Name "EXO" -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell -Credential $Credential -Authentication Basic -AllowRedirection -ErrorAction Stop
                         }
                         Catch {
@@ -261,6 +262,7 @@ function Connect-Cloud {
                 else {
                     if (!(Get-Command Get-CloudAcceptedDomain -ErrorAction SilentlyContinue)) {
                         Try {
+                            write-host "IN 2nd TRY"
                             $EXOSession = New-PSSession -Name "EXO" -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell -Credential $Credential -Authentication Basic -AllowRedirection -ErrorAction Stop
                         }
                         Catch {
@@ -277,14 +279,13 @@ function Connect-Cloud {
                 
             }
             else {
-                write-host "IN ELSE"
                 $modules = @(Get-ChildItem -Path "$($env:LOCALAPPDATA)\Apps\2.0" -Filter "Microsoft.Exchange.Management.ExoPowershellModule.manifest" -Recurse )
-                            $moduleName =  Join-Path $modules[0].Directory.FullName "Microsoft.Exchange.Management.ExoPowershellModule.dll"
-                            Import-Module -FullyQualifiedName $moduleName -Force
-                            $scriptName =  Join-Path $modules[0].Directory.FullName "CreateExoPSSession.ps1"
-                            . $scriptName
+                $moduleName = Join-Path $modules[0].Directory.FullName "Microsoft.Exchange.Management.ExoPowershellModule.dll"
+                Import-Module -FullyQualifiedName $moduleName -Force
+                $scriptName = Join-Path $modules[0].Directory.FullName "CreateExoPSSession.ps1"
+                . $scriptName
                 Try {
-                    Connect-EXOPSSession -ErrorAction Stop
+                    Import-Module (Connect-EXOPSSession) -Global
                     Write-Host "You have successfully connected to Exchange Online (MFA)" -foregroundcolor "magenta" -backgroundcolor "white"
                 } 
                 Catch [System.Management.Automation.CommandNotFoundException] {
