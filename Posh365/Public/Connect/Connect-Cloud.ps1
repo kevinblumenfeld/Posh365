@@ -13,9 +13,8 @@ function Connect-Cloud {
 
     There is a switch to use Multi-Factor Authentication.  
     For Exchange Online MFA, you are required to download and use the Exchange Online Remote PowerShell Module.  
-    To download the Exchange Online Remote PowerShell Module for multi-factor authentication, in the EAC (https://outlook.office365.com/ecp/), go to Hybrid \> Setup and click the appropriate Configure button.  
+    To download the Exchange Online Remote PowerShell Module for multi-factor authentication ONCE, in the EAC (https://outlook.office365.com/ecp/), go to Hybrid \> Setup and click the appropriate Configure button.  
     When using Multi-Factor Authentication the saving of credentials is not available currently - thus each service will prompt independently for credentials.   
-    Also the Security and Compliance Center does not currently support multi-factor authentication.  
 
     Locally saves and encrypts to a file the username and password.  
     The encrypted file...can only be used on the computer and within the user's profile from which it was created, is the same .txt file for all the Office 365 services and is a separate .json file for Azure.  
@@ -155,7 +154,7 @@ function Connect-Cloud {
                 break
             }
         }
-        if (!(Test-Path ($RootPath + $Tenant + "\logs\"))) {
+        if (-not (Test-Path ($RootPath + $Tenant + "\logs\"))) {
             New-Item -ItemType Directory -Force -Path ($RootPath + $Tenant + "\logs\")
         }
         Try {
@@ -166,7 +165,7 @@ function Connect-Cloud {
             Start-Transcript -path ($RootPath + $Tenant + "\logs\" + "transcript-" + ($(get-date -Format _yyyy-MM-dd_HH-mm-ss)) + ".txt")
         }
         # Create KeyPath Directory
-        if (!(Test-Path $KeyPath)) {
+        if (-not (Test-Path $KeyPath)) {
             Try {
                 $null = New-Item -ItemType Directory -Path $KeyPath -ErrorAction STOP
             }
@@ -210,7 +209,7 @@ function Connect-Cloud {
             }
         }
         if ($MSOnline -or $All365) {
-            if (!($null = Get-Module -Name MSOnline -ListAvailable -ErrorAction Stop)) {
+            if (-not ($null = Get-Module -Name MSOnline -ListAvailable -ErrorAction Stop)) {
                 Install-Module -Name MSOnline -Scope CurrentUser -Force   
             }
             Try {
@@ -241,12 +240,11 @@ function Connect-Cloud {
             }
         }
         if ($ExchangeOnline -or $All365) {
-            if (!$MFA) {
-                if (!$EXOPrefix) {
+            if (-not $MFA) {
+                if (-not $EXOPrefix) {
                     # Exchange Online
-                    if (!(Get-Command Get-AcceptedDomain -ErrorAction SilentlyContinue)) {
+                    if (-not (Get-Command Get-AcceptedDomain -ErrorAction SilentlyContinue)) {
                         Try {
-                            write-host "IN 1st TRY"
                             $EXOSession = New-PSSession -Name "EXO" -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell -Credential $Credential -Authentication Basic -AllowRedirection -ErrorAction Stop
                         }
                         Catch {
@@ -260,9 +258,8 @@ function Connect-Cloud {
                     }
                 }
                 else {
-                    if (!(Get-Command Get-CloudAcceptedDomain -ErrorAction SilentlyContinue)) {
+                    if (-not (Get-Command Get-CloudAcceptedDomain -ErrorAction SilentlyContinue)) {
                         Try {
-                            write-host "IN 2nd TRY"
                             $EXOSession = New-PSSession -Name "EXO" -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell -Credential $Credential -Authentication Basic -AllowRedirection -ErrorAction Stop
                         }
                         Catch {
@@ -282,8 +279,6 @@ function Connect-Cloud {
                 $modules = @(Get-ChildItem -Path "$($env:LOCALAPPDATA)\Apps\2.0" -Filter "Microsoft.Exchange.Management.ExoPowershellModule.manifest" -Recurse )
                 $moduleName = Join-Path $modules[0].Directory.FullName "Microsoft.Exchange.Management.ExoPowershellModule.dll"
                 Import-Module -FullyQualifiedName $moduleName -Force
-                $scriptName = Join-Path $modules[0].Directory.FullName "CreateExoPSSession.ps1"
-                . $scriptName
                 Try {
                     Import-Module (Connect-EXOPSSession) -Global
                     Write-Host "You have successfully connected to Exchange Online (MFA)" -foregroundcolor "magenta" -backgroundcolor "white"
@@ -296,14 +291,32 @@ function Connect-Cloud {
             }
         }
         # Security and Compliance Center
-        if ($Compliance -or $All365 -and (! $MFA)) {
-            $ccSession = New-PSSession -Name "Compliance" -ConfigurationName Microsoft.Exchange -ConnectionUri https://ps.compliance.protection.outlook.com/powershell-liveid/ -Credential $credential -Authentication Basic -AllowRedirection
-            Import-Module (Import-PSSession $ccSession -AllowClobber) -Global | Out-Null
-            Write-Host "You have successfully connected to Compliance" -foregroundcolor "magenta" -backgroundcolor "white"
+        if ($Compliance -or $All365) {
+            if (-not $MFA) {
+                $ccSession = New-PSSession -Name "Compliance" -ConfigurationName Microsoft.Exchange -ConnectionUri https://ps.compliance.protection.outlook.com/powershell-liveid/ -Credential $credential -Authentication Basic -AllowRedirection
+                Import-Module (Import-PSSession $ccSession -AllowClobber) -Global | Out-Null
+                Write-Host "You have successfully connected to Compliance" -foregroundcolor "magenta" -backgroundcolor "white"
+            }
+            else {
+                if (-not $ExchangeOnline) {
+                    $modules = @(Get-ChildItem -Path "$($env:LOCALAPPDATA)\Apps\2.0" -Filter "Microsoft.Exchange.Management.ExoPowershellModule.manifest" -Recurse )
+                    $moduleName = Join-Path $modules[0].Directory.FullName "Microsoft.Exchange.Management.ExoPowershellModule.dll"
+                    Import-Module -FullyQualifiedName $moduleName -Force
+                }
+                Try {
+                    Import-Module (Connect-IPPSSession) -Global
+                    Write-Host "You have successfully connected to the Security & Compliance Center (MFA)" -foregroundcolor "magenta" -backgroundcolor "white"
+                } 
+                Catch [System.Management.Automation.CommandNotFoundException] {
+                    Write-Warning "Exchange Online MFA module is required or there was an issue connecting"
+                    Write-Warning "To download the Exchange Online Remote PowerShell Module for multi-factor authentication,"
+                    Write-Warning "in the EAC (https://outlook.office365.com/ecp/), go to Hybrid > Setup and click the appropriate Configure button."
+                }
+            }
         }
         # Skype Online
         if ($Skype -or $All365) {
-            if (! $MFA) {
+            if (-not $MFA) {
                 Try {
                     $sfboSession = New-CsOnlineSession -ErrorAction Stop -Credential $Credential -OverrideAdminDomain "$Tenant.onmicrosoft.com"
                     Write-Host "You have successfully connected to Skype" -foregroundcolor "magenta" -backgroundcolor "white"
@@ -341,7 +354,7 @@ function Connect-Cloud {
                 Write-Warning "Unable to import SharePoint Module"
                 Write-Warning "Ensure it is installed, Download it from here: https://www.microsoft.com/en-us/download/details.aspx?id=35588"
             }
-            if (! $MFA) {
+            if (-not $MFA) {
                 Try {
                     Connect-SPOService -Url $SharePointAdminSite -credential $Credential -ErrorAction stop
                     Write-Host "You have successfully connected to SharePoint" -foregroundcolor "magenta" -backgroundcolor "white"
@@ -369,8 +382,8 @@ function Connect-Cloud {
         }
         # Azure AD
         If ($AzureADver2 -or $All365) {
-            if (! $MFA) {  
-                If (!($null = Get-Module -Name AzureAD -ListAvailable)) {
+            if (-not $MFA) {  
+                If (-not ($null = Get-Module -Name AzureAD -ListAvailable)) {
                     Install-Module -Name AzureAD -Scope CurrentUser -Force
                 }
                 Try {
@@ -399,7 +412,7 @@ function Connect-Cloud {
                 }
             }
             else {  
-                If (!($null = Get-Module -Name AzureAD -ListAvailable)) {
+                If (-not ($null = Get-Module -Name AzureAD -ListAvailable)) {
                     Install-Module -Name AzureAD -Scope CurrentUser -Force
                 }
                 Try {
@@ -433,21 +446,21 @@ function Connect-Cloud {
     } 
 }
 function Get-LAAzureConnected {
-    if (!($null = Get-Module -Name AzureRM -ListAvailable)) {
+    if (-not ($null = Get-Module -Name AzureRM -ListAvailable)) {
         Install-Module -Name AzureRM -Scope CurrentUser -force
     }
     Try {
         $null = Get-AzureRmTenant -ErrorAction Stop
     }
     Catch {
-        if (! $MFA) {
+        if (-not $MFA) {
             $json = Get-ChildItem -Recurse -Include '*@*.json' -Path $KeyPath
             if ($json) {
                 Write-Host "   Select the Azure username and Click `"OK`" in lower right-hand corner" -foregroundcolor "magenta" -backgroundcolor "white"
                 Write-Host "   Otherwise, if this is the first time using this Azure username click `"Cancel`"" -foregroundcolor "magenta" -backgroundcolor "white"
                 $json = $json | select name | Out-GridView -PassThru -Title "Select Azure username or click Cancel to use another"
             }
-            if (!($json)) {
+            if (-not ($json)) {
                 Try {
                     $azLogin = Login-AzureRmAccount -ErrorAction Stop
                 }
