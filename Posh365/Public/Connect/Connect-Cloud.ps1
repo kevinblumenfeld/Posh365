@@ -173,6 +173,30 @@ function Connect-Cloud {
                 throw $_.Exception.Message
             }           
         }
+        if ($MFA -and ($ExchangeOnline -or $Compliance)) {
+            $modules = @(Get-ChildItem -Path "$($env:LOCALAPPDATA)\Apps\2.0" -Filter "Microsoft.Exchange.Management.ExoPowershellModule.manifest" -Recurse )
+            try {
+                $moduleName = Join-Path $modules[0].Directory.FullName "Microsoft.Exchange.Management.ExoPowershellModule.dll"
+            }
+            catch {
+                Write-Host "The PowerShell module which supports MFA must be installed"  -foregroundcolor "Black" -backgroundcolor "white"
+                Write-Host "We can download the module and install it now."  -foregroundcolor "Black" -backgroundcolor "white"
+                Write-Host "Once installed, close the PowerShell window that will pop-up & rerun your command here"  -foregroundcolor "Black" -backgroundcolor "white"
+                Write-Host "This should only be required once."  -foregroundcolor "Blue" -backgroundcolor "white"
+                Write-Host "Simply choose `"Y`" below then click `"Install`" button when prompted"  -foregroundcolor "Black" -backgroundcolor "white"
+                $YesNo = Read-Host "Download Module Now (Y/N)?"
+                if ($YesNo -eq "Y") {
+                    & "C:\Program Files\Internet Explorer\iexplore.exe" https://cmdletpswmodule.blob.core.windows.net/exopsmodule/Microsoft.Online.CSE.PSModule.Client.application
+                    Return
+                }
+                else {
+                    Write-Warning "You must install the PowerShell module to continue"
+                    Write-Warning "Either ReRun your command and press `"Y`" or, if you would prefer to install it manually..."
+                    Write-Warning "in the EAC (https://outlook.office365.com/ecp/), go to Hybrid > Setup and click the appropriate Configure button (MFA)."
+                    Return
+                }
+            }
+        }
         if (($ExchangeOnline -or $MSOnline -or $All365 -or $Skype -or $SharePoint -or $Compliance -or $AzureADver2) -and (-not $MFA)) {
             if (Test-Path ($KeyPath + "$($Tenant).cred")) {
                 $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).cred") | ConvertTo-SecureString
@@ -276,8 +300,6 @@ function Connect-Cloud {
                 
             }
             else {
-                $modules = @(Get-ChildItem -Path "$($env:LOCALAPPDATA)\Apps\2.0" -Filter "Microsoft.Exchange.Management.ExoPowershellModule.manifest" -Recurse )
-                $moduleName = Join-Path $modules[0].Directory.FullName "Microsoft.Exchange.Management.ExoPowershellModule.dll"
                 Import-Module -FullyQualifiedName $moduleName -Force
                 Try {
                     Import-Module (Connect-EXOPSSession) -Global
@@ -299,8 +321,6 @@ function Connect-Cloud {
             }
             else {
                 if (-not $ExchangeOnline) {
-                    $modules = @(Get-ChildItem -Path "$($env:LOCALAPPDATA)\Apps\2.0" -Filter "Microsoft.Exchange.Management.ExoPowershellModule.manifest" -Recurse )
-                    $moduleName = Join-Path $modules[0].Directory.FullName "Microsoft.Exchange.Management.ExoPowershellModule.dll"
                     Import-Module -FullyQualifiedName $moduleName -Force
                 }
                 Try {
