@@ -119,7 +119,8 @@ Function New-EXOMessageTrace {
                 $messageTrace = Get-MessageTrace @params -Page $counter
             }
             else {
-                $messageTrace = Get-MessageTrace @params -Page $counter | Where-Object {$_.Subject -match "$Subject"}
+                $messageTracewithSubject = Get-MessageTrace @params -Page $counter
+                $messageTrace = $messageTracewithSubject | Where-Object {$_.Subject -like "*$Subject*"}
             }
 
             if ($messageTrace) {
@@ -142,7 +143,10 @@ Function New-EXOMessageTrace {
             }
             else {
                 Write-Verbose "`tNo results found on page $counter."
-                $continue = $true
+                $messageTracewithSubject
+                if (-not $messageTracewithSubject) {
+                    $continue = $true
+                }
             }
         }
         catch {
@@ -162,7 +166,8 @@ Function New-EXOMessageTrace {
                     RecipientAddress = $Wants.RecipientAddress
                     MessageId        = $Wants.MessageId
                 }
-                Get-MessageTraceDetail @Splat |
+                $TraceDetail = Get-MessageTraceDetail @Splat
+                $TraceDetail |
                     Select-Object Date, Event, Action, Detail, Data, MessageTraceID, MessageID | 
                     Out-GridView -Title "DATE: $($Wants.Received) STATUS: $($Wants.Status) FROM: $($Wants.SenderAddress) TO: $($Wants.RecipientAddress) TRACEID: $($Wants.MessageTraceId)" 
             }
@@ -173,3 +178,4 @@ Function New-EXOMessageTrace {
     }
     $ErrorActionPreference = $currentErrorActionPrefs
 }
+New-EXOMessageTrace -StartSearchMinutesAgo 7200 -EndSearchMinutesAgo 5760 -SenderAddress "pphavorachith@gacapitalpartners.com" -Verbose
