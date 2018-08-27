@@ -56,10 +56,10 @@ Function New-EXOMessageTrace {
         [string] $RecipientAddress,
 
         [Parameter()]
-        [int] $StartSearchHoursAgo = ".5",
+        [int] $StartSearchHoursAgo = "1",
 
         [Parameter()]
-        [int] $EndSearchHoursAgo,
+        [int] $EndSearchHoursAgo = "0",
 
         [Parameter()]
         [string] $Subject,
@@ -111,35 +111,58 @@ Function New-EXOMessageTrace {
         try {
             if (-not $Subject) {
                 $messageTrace = Get-MessageTrace @params -Page $counter
-            }
-            else {
-                $messageTracewithSubject = Get-MessageTrace @params -Page $counter
-                $messageTrace = $messageTracewithSubject | Where-Object {$_.Subject -like "*$Subject*"}
-            }
-
-            if ($messageTrace) {
-                $messageTrace | ForEach-Object {
-                    $messageTraceResults = [PSCustomObject]@{
-                        Received         = $_.Received
-                        Status           = $_.Status
-                        SenderAddress    = $_.SenderAddress
-                        RecipientAddress = $_.RecipientAddress
-                        Subject          = $_.Subject
-                        FromIP           = $_.FromIP
-                        ToIP             = $_.ToIP                                                
-                        MessageTraceId   = $_.MessageTraceId
-                        MessageId        = $_.MessageId
+                if ($messageTrace) {
+                    $messageTrace | ForEach-Object {
+                        $messageTraceResults = [PSCustomObject]@{
+                            Received         = $_.Received
+                            Status           = $_.Status
+                            SenderAddress    = $_.SenderAddress
+                            RecipientAddress = $_.RecipientAddress
+                            Subject          = $_.Subject
+                            FromIP           = $_.FromIP
+                            ToIP             = $_.ToIP                                                
+                            MessageTraceId   = $_.MessageTraceId
+                            MessageId        = $_.MessageId
+                        }
+                        $allMessageTraceResults.Add($messageTraceResults)
                     }
-                    $allMessageTraceResults.Add($messageTraceResults)
+                    $counter++
+                    Start-Sleep -Seconds 2
                 }
-                $counter++
-                Start-Sleep -Seconds 2
+                else {
+                    Write-Verbose "`tNo results found on page $counter."
+                    $continue = $true
+                }
             }
             else {
-                Write-Verbose "`tNo results found on page $counter."
-                $messageTracewithSubject
-                if (-not $messageTracewithSubject) {
+                $messageTrace = Get-MessageTrace @params -Page $counter
+                $messageTracewithSubject = ""
+                $messageTracewithSubject = $messageTrace | Where-Object {$_.Subject -like "*$Subject*"}
+
+                if ($messageTracewithSubject) {
+                    $messageTracewithSubject | ForEach-Object {
+                        $messageTraceResults = [PSCustomObject]@{
+                            Received         = $_.Received
+                            Status           = $_.Status
+                            SenderAddress    = $_.SenderAddress
+                            RecipientAddress = $_.RecipientAddress
+                            Subject          = $_.Subject
+                            FromIP           = $_.FromIP
+                            ToIP             = $_.ToIP                                                
+                            MessageTraceId   = $_.MessageTraceId
+                            MessageId        = $_.MessageId
+                        }
+                        $allMessageTraceResults.Add($messageTraceResults)
+                    }
+
+                }
+                if (-not $messageTrace) {
+                    Write-Verbose "`tNo results found on page $counter."
                     $continue = $true
+                }
+                else {
+                    $counter++
+                    Start-Sleep -Seconds 2
                 }
             }
         }
