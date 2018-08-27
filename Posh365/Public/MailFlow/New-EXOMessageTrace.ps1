@@ -23,13 +23,7 @@ Function New-EXOMessageTrace {
     
     .PARAMETER Subject
     Partial or full subject of message(s) of which are being searched
-    
-    .PARAMETER SelectMessageForDetails
-    Switch that allows for selection of one or more messages via Out-GridView.
-    Resultingly, the MessageTraceDetails will be shown for each.
-    The output is one Out-GridView per message selected.
-    The title of the Out-Grid shows the original message details.
-    
+
     .PARAMETER FromIP
     The IP address from which the email originated.
     
