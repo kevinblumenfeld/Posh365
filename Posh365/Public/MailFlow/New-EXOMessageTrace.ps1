@@ -16,7 +16,7 @@ Function New-EXOMessageTrace {
     Recipients Email Address
 
     .PARAMETER StartSearchHoursAgo
-    Number of hours from today to start the search. Default is .5 Hours
+    Number of hours from today to start the search. Default is 1 Hour Ago
     
     .PARAMETER EndSearchHoursAgo
     Number of hours from today to end the search. "Now" is the default, the number "0"
@@ -39,6 +39,9 @@ Function New-EXOMessageTrace {
     Delivered: The message was delivered to its destination.
     Expanded: There was no message delivery because the message was addressed to a distribution group, and the membership of the distribution was expanded.
     
+    .EXAMPLE
+    New-EXOMessageTrace
+
     .EXAMPLE
     New-EXOMessageTrace -StartSearchHoursAgo 10 -EndSearchHoursAgo 5 -Subject "Letter from the CEO" -SelectMessageForDetails
 
