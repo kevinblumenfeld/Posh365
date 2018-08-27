@@ -15,11 +15,11 @@ Function New-EXOMessageTrace {
     .PARAMETER RecipientAddress
     Recipients Email Address
 
-    .PARAMETER StartSearchMinutesAgo
-    Number of minutes from today to start the search. Default is 10 Minutes
+    .PARAMETER StartSearchHoursAgo
+    Number of hours from today to start the search. Default is .5 Hours
     
-    .PARAMETER EndSearchMinutesAgo
-    Number of minutes from today to end the search. "Now" is the default, the number "0"
+    .PARAMETER EndSearchHoursAgo
+    Number of hours from today to end the search. "Now" is the default, the number "0"
     
     .PARAMETER Subject
     Partial or full subject of message(s) of which are being searched
@@ -46,10 +46,10 @@ Function New-EXOMessageTrace {
     Expanded: There was no message delivery because the message was addressed to a distribution group, and the membership of the distribution was expanded.
     
     .EXAMPLE
-    New-EXOMessageTrace -StartSearchMinutesAgo 10 -EndSearchMinutesAgo 5 -Subject "Letter from the CEO" -SelectMessageForDetails
+    New-EXOMessageTrace -StartSearchHoursAgo 10 -EndSearchHoursAgo 5 -Subject "Letter from the CEO" -SelectMessageForDetails
 
     .EXAMPLE
-    New-EXOMessageTrace -SenderAddress "User@domain.com" -RecipientAddress "recipient@domain.com" -StartSearchMinutesAgo 15 -FromIP "xx.xx.xx.xx"
+    New-EXOMessageTrace -SenderAddress "User@domain.com" -RecipientAddress "recipient@domain.com" -StartSearchHoursAgo 15 -FromIP "xx.xx.xx.xx"
 
     #>  
     [CmdletBinding()]
@@ -62,10 +62,10 @@ Function New-EXOMessageTrace {
         [string] $RecipientAddress,
 
         [Parameter()]
-        [int] $StartSearchMinutesAgo = "10",
+        [int] $StartSearchHoursAgo = ".5",
 
         [Parameter()]
-        [int] $EndSearchMinutesAgo,
+        [int] $EndSearchHoursAgo,
 
         [Parameter()]
         [string] $Subject,
@@ -83,20 +83,20 @@ Function New-EXOMessageTrace {
     $currentErrorActionPrefs = $ErrorActionPreference
     $ErrorActionPreference = 'Stop'
 
-    if ($StartSearchMinutesAgo) {
-        [DateTime]$StartSearchMinutesAgo = ((Get-Date).AddMinutes( - $StartSearchMinutesAgo))
-        $StartSearchMinutesAgo = $StartSearchMinutesAgo.ToUniversalTime()
+    if ($StartSearchHoursAgo) {
+        [DateTime]$StartSearchHoursAgo = ((Get-Date).AddHours( - $StartSearchHoursAgo))
+        $StartSearchHoursAgo = $StartSearchHoursAgo.ToUniversalTime()
     }
 
-    if ($StartSearchMinutesAgo) {
-        [DateTime]$EndSearchMinutesAgo = ((Get-Date).AddMinutes( - $EndSearchMinutesAgo))
-        $EndSearchMinutesAgo = $EndSearchMinutesAgo.ToUniversalTime()
+    if ($StartSearchHoursAgo) {
+        [DateTime]$EndSearchHoursAgo = ((Get-Date).AddHours( - $EndSearchHoursAgo))
+        $EndSearchHoursAgo = $EndSearchHoursAgo.ToUniversalTime()
     }
 
     $cmdletParams = (Get-Command $PSCmdlet.MyInvocation.InvocationName).Parameters.Keys
 
     $params = @{}
-    $NotArray = 'StartSearchMinutesAgo', 'EndSearchMinutesAgo', 'Subject', 'Debug', 'Verbose', 'ErrorAction', 'WarningAction', 'InformationAction', 'ErrorVariable', 'WarningVariable', 'InformationVariable', 'OutVariable', 'OutBuffer', 'PipelineVariable'
+    $NotArray = 'StartSearchHoursAgo', 'EndSearchHoursAgo', 'Subject', 'Debug', 'Verbose', 'ErrorAction', 'WarningAction', 'InformationAction', 'ErrorVariable', 'WarningVariable', 'InformationVariable', 'OutVariable', 'OutBuffer', 'PipelineVariable'
     foreach ($cmdletParam in $cmdletParams) {
         if ($cmdletParam -notin $NotArray) {
             if ([string]::IsNullOrWhiteSpace((Get-Variable -Name $cmdletParam).Value) -ne $true) {
@@ -104,8 +104,8 @@ Function New-EXOMessageTrace {
             }
         }
     }
-    $params.Add('StartDate', $StartSearchMinutesAgo)
-    $params.Add('EndDate', $EndSearchMinutesAgo)
+    $params.Add('StartDate', $StartSearchHoursAgo)
+    $params.Add('EndDate', $EndSearchHoursAgo)
 
 
     $counter = 1
@@ -178,4 +178,3 @@ Function New-EXOMessageTrace {
     }
     $ErrorActionPreference = $currentErrorActionPrefs
 }
-New-EXOMessageTrace -StartSearchMinutesAgo 7200 -EndSearchMinutesAgo 5760 -SenderAddress "pphavorachith@gacapitalpartners.com" -Verbose
