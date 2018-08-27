@@ -2,12 +2,14 @@ Function New-EXOMessageTrace {
     <#
     .SYNOPSIS
     Search message trace logs in Exchange Online by hour or partial hour start and end times
+    If desired, one or more messages can be selected from the results for more detail
 
     .DESCRIPTION
-    Search message trace logs in Exchange Online by hour or partial hour minute start and end times
+    Search message trace logs in Exchange Online by hour or partial hour start and end times
+    If desired, one or more messages can be selected from the results for more detail
+    Just click OK once you have selected the message(s)
 
-    Many thanks to Matt Marchese for this function.
-    The original function was written by Matt Marchese, https://github.com/General-Gouda
+    Many thanks to Matt Marchese for the initial framework of this function
     
     .PARAMETER SenderAddress
     Senders Email Address
@@ -16,7 +18,7 @@ Function New-EXOMessageTrace {
     Recipients Email Address
 
     .PARAMETER StartSearchHoursAgo
-    Number of hours from today to start the search. Default is 1 Hour Ago
+    Number of hours from today to start the search. Default is (.25) 15 minutes ago
     
     .PARAMETER EndSearchHoursAgo
     Number of hours from today to end the search. "Now" is the default, the number "0"
@@ -25,10 +27,10 @@ Function New-EXOMessageTrace {
     Partial or full subject of message(s) of which are being searched
 
     .PARAMETER FromIP
-    The IP address from which the email originated.
+    The IP address from which the email originated
     
     .PARAMETER ToIP
-    The IP address to which the email was destined.
+    The IP address to which the email was destined
 
     .PARAMETER Status
     The Status parameter filters the results by the delivery status of the message. Valid values for this parameter are:
@@ -41,9 +43,14 @@ Function New-EXOMessageTrace {
     
     .EXAMPLE
     New-EXOMessageTrace
+        
+    .EXAMPLE
+    New-EXOMessageTrace -StartSearchHoursAgo 10 -EndSearchHoursAgo 5 -Subject "arizona"
+
+    This will find all messages with the word "arizona" somewhere in the subject, that were sent or received anywhere from 10 hours ago till 5 hours ago
 
     .EXAMPLE
-    New-EXOMessageTrace -StartSearchHoursAgo 10 -EndSearchHoursAgo 5 -Subject "Letter from the CEO" -SelectMessageForDetails
+    New-EXOMessageTrace -StartSearchHoursAgo 10 -EndSearchHoursAgo 5 -Subject "Letter from the CEO"
 
     .EXAMPLE
     New-EXOMessageTrace -SenderAddress "User@domain.com" -RecipientAddress "recipient@domain.com" -StartSearchHoursAgo 15 -FromIP "xx.xx.xx.xx"
@@ -59,10 +66,10 @@ Function New-EXOMessageTrace {
         [string] $RecipientAddress,
 
         [Parameter()]
-        [int] $StartSearchHoursAgo = "1",
+        [Double] $StartSearchHoursAgo = ".25",
 
         [Parameter()]
-        [int] $EndSearchHoursAgo = "0",
+        [Double] $EndSearchHoursAgo = "0",
 
         [Parameter()]
         [string] $Subject,
