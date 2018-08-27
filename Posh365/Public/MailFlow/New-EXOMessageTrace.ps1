@@ -1,10 +1,10 @@
 Function New-EXOMessageTrace {
     <#
     .SYNOPSIS
-    Search message trace logs in Exchange Online by minute start and end times
+    Search message trace logs in Exchange Online by hour or partial hour start and end times
 
     .DESCRIPTION
-    Search message trace logs in Exchange Online by minute start and end times
+    Search message trace logs in Exchange Online by hour or partial hour minute start and end times
 
     Many thanks to Matt Marchese for this function.
     The original function was written by Matt Marchese, https://github.com/General-Gouda
