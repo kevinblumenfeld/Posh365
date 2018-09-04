@@ -2,7 +2,7 @@
     param (
         [Parameter(Mandatory = $true)]
         [System.IO.FileInfo] $Csv1,
-
+    
         [Parameter(Mandatory = $true)]
         [System.IO.FileInfo] $Csv2  
     )
@@ -10,19 +10,19 @@
     Import-Csv $Csv1 | ForEach-Object { 
         $dataSet1.Add($_.PrimarySmtpAddress, $_) 
     }
-
+    
     Import-Csv $Csv2 | ForEach-Object { 
         if ($dataSet1.Contains($_.PrimarySmtpAddress)) {
-            $results = [PSCustomObject]@{}
+            $results = @{}
             foreach ($property in $_.PSObject.Properties) {
                 if ($dataSet1[$_.PrimarySmtpAddress].$($property.Name) -eq $property.Value) {
-                    $results | Add-Member -Name $property.Name -Type NoteProperty -Value $property.Value
+                    $results[$property.Name] = $property.Value
                 }
                 else {
-                    $results | Add-Member -Name $property.Name -Type NoteProperty -Value 'NoMatch'
+                    $results[$property.Name] = 'NoMatch'
                 }
             }
-            $results
+            [PSCustomObject]$results
         }
     }
 }
