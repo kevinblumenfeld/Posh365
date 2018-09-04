@@ -19,6 +19,9 @@ function Get-ActiveDirectoryObject {
     Get-ActiveDirectoryObject | Export-Csv c:\scripts\ADObjects.csv -notypeinformation -encoding UTF8
     
     .EXAMPLE
+    {objectclass -eq "publicFolder"} | Get-ActiveDirectoryObject -DetailedReport | Export-Csv .\PFs.csv -NoTypeInformation -Encoding UTF8
+    
+    .EXAMPLE
     '{proxyaddresses -like "*contoso.com"}' | Get-ActiveDirectoryObject | Export-Csv c:\scripts\ADObjects.csv -notypeinformation -encoding UTF8
     
     .EXAMPLE

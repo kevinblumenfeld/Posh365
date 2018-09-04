@@ -57,7 +57,7 @@ function Get-ActiveDirectoryGroup {
             'ProtectedFromAccidentalDeletion', 'SamAccountName', 'sAMAccountType', 'sDRightsEffective', 'isCriticalSystemObject'
         )
         $CalculatedProps2 = @(
-            @{n = "EmailAddresses" ; e = {($_.ProxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
+            @{n = "ProxyAddresses" ; e = {($_.ProxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
             @{n = "x500" ; e = {"x500:" + $_.LegacyExchangeDN}},
             @{n = "Member" ; e = {($_.Members | Where-Object {$_ -ne $null}) -join ";"}},
             @{n = "MemberOf" ; e = {($_.MemberOf | Where-Object {$_ -ne $null}) -join ";"}},
@@ -76,14 +76,14 @@ function Get-ActiveDirectoryGroup {
     Process {
         if ($ListofGroups) {
             foreach ($CurGroup in $ListofGroups) {
-                $Members = Get-ADGroupMember -Identity $CurGroup | Select-Object name, primarysmtpaddress
+                $Members = $CurGroup.Members
                 Get-ADGroup -identity $CurGroup -Properties * | Select-Object ($Selectproperties1 + $CalculatedProps1 + $Selectproperties2 + $CalculatedProps2)
             }
         }
         else {
             $Groups = Get-ADGroup -ResultSetSize:$null -filter * -Properties *
             foreach ($CurGroup in $Groups) {
-                $Members = Get-ADGroupMember -Identity $CurGroup.ObjectGUID | Select-Object name, primarysmtpaddress
+                $Members = $CurGroup.Members
                 Get-ADGroup -identity $CurGroup.ObjectGUID -Properties * | Select-Object ($Selectproperties1 + $CalculatedProps1 + $Selectproperties2 + $CalculatedProps2)
             }
         }

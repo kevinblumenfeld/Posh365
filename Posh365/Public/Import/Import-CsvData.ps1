@@ -9,8 +9,8 @@ function Import-CsvData {
         [Switch]$LogOnly,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet("User", "Group")]
-        [String]$UserOrGroup,
+        [ValidateSet("User", "Group", "Object")]
+        [String]$UserGroupOrObject,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet("Add", "Remove", "Replace")]
@@ -21,8 +21,8 @@ function Import-CsvData {
         [String]$Attribute,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet("Mail", "UserPrincipalName", "DisplayName")]
-        [String]$FindADUserOrGroupBy,
+        [ValidateSet("objectGUID", "Mail", "UserPrincipalName", "DisplayName")]
+        [String]$FindADUserGroupOrObjectBy,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet("EmailAddress", "AddressOrMember", "PrimarySmtpAddress", "ProxyAddresses", "EmailAddresses", "x500")]
@@ -55,9 +55,9 @@ function Import-CsvData {
         $LogFileName = $(get-date -Format yyyy-MM-dd_HH-mm-ss)
         $Log = Join-Path $OutputPath ($LogFileName + "-ImportCsvData-WhatIf_Import.csv")
         $ErrorLog = Join-Path $OutputPath ($LogFileName + "-ImportCsvData-Error_Log.csv")
-        if ($UserOrGroup -eq "Group" -and $FindADUserOrGroupBy -eq "UserPrincipalName") {
+        if ($UserGroupOrObject -eq "Group" -and $FindADUserGroupOrObjectBy -eq "UserPrincipalName") {
             Write-Warning "AD Groups do not have UserPrincipalNames"
-            Write-Warning "Please choose another option like Mail or DisplayName for parameter, FindADUserOrGroupBy"
+            Write-Warning "Please choose another option like ObjectGuid, Mail or DisplayName for parameter, FindADUserGroupOrObjectBy"
         }
     }
     Process {
@@ -66,6 +66,7 @@ function Import-CsvData {
             $Display = $CurRow.DisplayName
             $Mail = $CurRow.PrimarySmtpAddress
             $UPN = $CurRow.PrimarySmtpAddress
+            $ObjectGUID = $CurRow.ObjectGUID
             if (-not $LogOnly) {
                 try {
                     if ([String]::IsNullOrWhiteSpace($Address)) {
@@ -75,12 +76,22 @@ function Import-CsvData {
                             Address     = $Address
                             Mail        = $Mail
                             UPN         = $PrimarySmtpAddress
+                            ObjectGUID  = $ObjectGUID
                         } | Export-Csv $ErrorLog -Append -NoTypeInformation -Encoding UTF8
                     }
                     else {
                         $errorActionPreference = 'Stop'
     
-                        $filter = switch ($FindADUserOrGroupBy) {
+                        $filter = switch ($FindADUserGroupOrObjectBy) {
+                            objectGUID {
+                                if ([String]::IsNullOrWhiteSpace($ObjectGUID)) {
+                                    throw 'Invalid ObjectGUID'
+                                }
+                                else {
+                                    { ObjectGUID -eq $ObjectGUID }
+                                }
+                                break
+                            }
                             DisplayName {
                                 if ([String]::IsNullOrWhiteSpace($Display)) {
                                     throw 'Invalid display name'
@@ -109,21 +120,15 @@ function Import-CsvData {
                                 break
                             }
                         }
-                        $adObject = & "Get-AD$UserOrGroup" -Filter $filter -Properties proxyAddresses, mail, objectGUID
+                        $adObject = & "Get-AD$UserGroupOrObject" -Filter $filter -Properties proxyAddresses, mail, objectGUID
                         if (-not $adObject) {
-                            throw "Failed to find the $UserOrGroup"
+                            throw "Failed to find the $UserGroupOrObject"
                             
                         }
                         # Clear proxy addresses
                         if ($FirstClearAllProxyAddresses) {
                             Write-Verbose "$Display `t Cleared ProxyAddresses"
-                            $adObject | & "Set-AD$UserOrGroup" -Clear ProxyAddresses
-                        }
-                        
-                        $params = @{}
-        
-                        if ($params.Count -gt 0) {
-                            $adObject | & "Set-AD$UserOrGroup" @params
+                            $adObject | & "Set-AD$UserGroupOrObject" -Clear ProxyAddresses
                         }
 
                         if ($Domain) {
@@ -134,10 +139,9 @@ function Import-CsvData {
                         foreach ($CurAddressItem in $address) {
                             $splat = @{ $AddRemoveOrReplace = @{ $Attribute = $CurAddressItem } }
                             Write-Verbose "$Display $AddRemoveOrReplace $Attribute $CurAddressItem"
-                            $adObject | & "Set-AD$UserOrGroup" @splat
+                            $adObject | & "Set-AD$UserGroupOrObject" @splat
                         }
                     }
-                    
                 }
                 catch {
                     [PSCustomObject]@{
@@ -147,6 +151,7 @@ function Import-CsvData {
                         Address     = $Address
                         Mail        = $Mail
                         UPN         = $PrimarySmtpAddress
+                        ObjectGUID  = $ObjectGUID
                     } | Export-Csv $ErrorLog -Append -NoTypeInformation -Encoding UTF8
                 }
             }
@@ -158,6 +163,7 @@ function Import-CsvData {
                         Address     = $Address
                         Mail        = $Mail
                         UPN         = $PrimarySmtpAddress
+                        ObjectGUID  = $ObjectGUID
                     } | Export-Csv $Log -Append -NoTypeInformation -Encoding UTF8
                 }
             }

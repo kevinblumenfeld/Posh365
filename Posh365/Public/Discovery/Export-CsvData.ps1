@@ -64,8 +64,11 @@ import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresse
     [CmdletBinding(SupportsShouldProcess)]
     param (
 
-        [Parameter(ValueFromPipeline = $true, Mandatory = $true)]
-        $Row,
+        [Parameter()]
+        [string]$ReportPath,
+        
+        [Parameter(Mandatory = $true)]
+        [string]$fileName,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet("and", "or")]
@@ -109,15 +112,11 @@ import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresse
         [switch]$StripPrefix,
 
         [Parameter()]
-        [string]$ReportPath,
-        
-        [Parameter(Mandatory = $true)]
-        [string]$fileName,
-
-        [Parameter()]
         [ValidateSet("SMTP:", "smtp:", "SIP:", "sip:", "x500:")]
-        [string]$AddPrefix
-        
+        [string]$AddPrefix,
+
+        [Parameter(ValueFromPipeline = $true, Mandatory = $true)]
+        $Row        
 
     )
     Begin {
