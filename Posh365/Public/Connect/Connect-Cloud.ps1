@@ -372,8 +372,7 @@ function Connect-Cloud {
                 Import-Module Microsoft.Online.SharePoint.PowerShell -DisableNameChecking -ErrorAction Stop
             }
             Catch {
-                Write-Warning "Unable to import SharePoint Module"
-                Write-Warning "Ensure it is installed, Download it from here: https://www.microsoft.com/en-us/download/details.aspx?id=35588"
+                Install-Module -Name Microsoft.Online.SharePoint.PowerShell -force
             }
             if (-not $MFA) {
                 Try {

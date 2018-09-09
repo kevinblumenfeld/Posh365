@@ -19,4 +19,4 @@
     }
     $noSmtpFound
 }
-# Compare-Csv -Csv1 C:\Scripts\test1.csv -Csv2 C:\Scripts\test2.csv
+# This needs to use to hashsets instead

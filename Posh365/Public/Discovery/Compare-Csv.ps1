@@ -1,28 +1,40 @@
 ﻿function Compare-Csv {
-    param (
-        [Parameter(Mandatory = $true)]
-        [System.IO.FileInfo] $Csv1,
+    param(
+        [Parameter(Mandatory)]
+        [ValidateNotNull()]
+        [System.IO.FileInfo]
+        $ReferenceCsv,
     
-        [Parameter(Mandatory = $true)]
-        [System.IO.FileInfo] $Csv2  
+        [Parameter(Mandatory)]
+        [ValidateNotNull()]
+        [System.IO.FileInfo]
+        $DifferenceCsv
     )
-    $dataSet1 = @{}
-    Import-Csv $Csv1 | ForEach-Object { 
-        $dataSet1.Add($_.PrimarySmtpAddress, $_) 
+    begin {
+        $ReferenceSet = @{}
+        
+        Import-Csv -Path $ReferenceCsv | ForEach-Object { 
+            $ReferenceSet.Add($_.PrimarySmtpAddress, $_) 
+        }
     }
-    
-    Import-Csv $Csv2 | ForEach-Object { 
-        if ($dataSet1.Contains($_.PrimarySmtpAddress)) {
-            $results = @{}
-            foreach ($property in $_.PSObject.Properties) {
-                if ($dataSet1[$_.PrimarySmtpAddress].$($property.Name) -eq $property.Value) {
-                    $results[$property.Name] = $property.Value
+    process {
+        Import-Csv -Path $DifferenceCsv | ForEach-Object { 
+            $Identifier = $_.PrimarySmtpAddress
+            
+            if ($ReferenceSet.Contains($Identifier)) {
+                $ResultSet = @{}
+                
+                foreach ($Property in $_.PSObject.Properties) {
+                    if ($ReferenceSet[$Identifier].$($Property.Name) -eq $Property.Value) {
+                        $ResultSet.Add($Property.Name, $Property.Value)
+                    }
+                    else {
+                        $ResultSet.Add($Property.Name, 'NoMatch')
+                    }
                 }
-                else {
-                    $results[$property.Name] = 'NoMatch'
-                }
+                
+                [PSCustomObject]$ResultSet
             }
-            [PSCustomObject]$results
         }
     }
 }
