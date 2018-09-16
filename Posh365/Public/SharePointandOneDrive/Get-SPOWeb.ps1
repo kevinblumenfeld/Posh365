@@ -20,12 +20,12 @@ function Get-SPOWeb {
     # Connecting to particular personal site
     $clientContext = New-Object Microsoft.SharePoint.Client.ClientContext($Url)
     $clientContext.Credentials = New-Object Microsoft.SharePoint.Client.SharePointOnlineCredentials($UsernameString, $PwdSecureString)
-    $clientContext.Load($clientContext.Web)
-    $clientContext.Load($clientContext.Site)
+    $null = $clientContext.Load($clientContext.Web)
+    $null = $clientContext.Load($clientContext.Site)
     $errorMessage = $null
 
     try {
-        $clientContext.ExecuteQuery()
+      $null =  $clientContext.ExecuteQuery()
     }
     catch {
         if ($_.exception.Message -like "*(404)*") {
@@ -38,7 +38,7 @@ function Get-SPOWeb {
     
     Invoke-LoadMethod -Object $clientContext.Site -PropertyName "Usage"
     Try {
-        $clientContext.ExecuteQuery()
+      $null =  $clientContext.ExecuteQuery()
     }
     Catch {
         if ($_.exception.Message -like "*(404)*" -or $_.exception.Message -like "*Not Found*"  ) {
@@ -83,5 +83,5 @@ function Get-SPOWeb {
             
     } 
 
-    $clientContext.Dispose()
+    $null = $clientContext.Dispose()
 }
