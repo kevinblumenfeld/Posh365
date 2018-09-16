@@ -21,21 +21,18 @@ function Get-OneDriveReport {
     $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).cred") | ConvertTo-SecureString
     $UsernameString = Get-Content ($KeyPath + "$($Tenant).ucred")
 
-    $ReportPath = '.\'
-    $FileTime = ("OneDriveUsage" + $(get-date -Format _yyyy-MM-dd_HH-mm-ss) + ".csv")
-    $CSVPath = Join-Path $ReportPath $FileTime
-
-    $user = (Get-SPOUser -Limit all -Site $mysiteHost).LoginName
+    $user = Get-SPOUser -Limit 25 -Site $mysiteHost
 
     foreach ($curUser in $user) {
+        $Display = $curUser.DisplayName
+        $curUser = $curUser.LoginName
         $curUserConverted = $curUser.Replace(".", "_").Replace("@", "_")
-        write-host "CurUser: "$CurUser
-        get-msoluser -UserPrincipalName $CurUser
+        write-Verbose "CurUser: $CurUser"
         $site = $mysiteHost + "personal/" + $curUserConverted
         if ($site.Contains("ylo00")) {
             continue
         }
         Write-Verbose "Processing $site"
-        Get-SPOWeb -UsernameString $UsernameString -Url $site -PwdSecureString $PwdSecureString -CSVPath $CSVPath
+        Get-SPOWeb -UsernameString $UsernameString -Url $site -PwdSecureString $PwdSecureString -curUser $curUser -Display $Display
     }
 }
