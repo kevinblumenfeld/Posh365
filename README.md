@@ -1,7 +1,7 @@
 # Posh365
 
 Connect.  Provision.  Maintain.  
-Posh365 is a Toolbox for Office 365 Environments
+Posh365 is a Toolbox for Office 365 and On-Premises Environments
  
 
 ## Change Log   
