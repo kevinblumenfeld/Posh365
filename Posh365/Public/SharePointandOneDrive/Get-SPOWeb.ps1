@@ -25,34 +25,31 @@ function Get-SPOWeb {
     $errorMessage = $null
 
     try {
-      $null =  $clientContext.ExecuteQuery()
-    }
-    catch {
-        if ($_.exception.Message -like "*(404)*") {
-            $errorMessage = "(404)NotFound"
-        }
-        else {
-            $_
-        }
-    }
-    
-    Invoke-LoadMethod -Object $clientContext.Site -PropertyName "Usage"
-    Try {
-      $null =  $clientContext.ExecuteQuery()
+        $null = $clientContext.ExecuteQuery()
     }
     Catch {
         if ($_.exception.Message -like "*(404)*" -or $_.exception.Message -like "*Not Found*"  ) {
             $errorMessage = "(404)NotFound"
         }
-        if (-not $_.Exception.Message) {
-            $errorMessage = 'NoError'
+        else {
+            $errorMessage = $_.exception.Message
+        }
+    }
+    
+    $null = Invoke-LoadMethod -Object $clientContext.Site -PropertyName "Usage"
+    Try {
+        $null = $clientContext.ExecuteQuery()
+    }
+    Catch {
+        if ($_.exception.Message -like "*(404)*" -or $_.exception.Message -like "*Not Found*"  ) {
+            $errorMessage = "(404)NotFound"
         }
         else {
             $errorMessage = $_.exception.Message
         }
-        
     }
-
+    Write-Verbose "----------------------"
+    Write-Verbose "Current User: $curUser"
     if (-Not $clientContext.Site.Usage.StoragePercentageUsed -eq 0) {
         $storageAvailable = $clientContext.Site.Usage.Storage / $clientContext.Site.Usage.StoragePercentageUsed / 1GB 
         $storageUsed_GB = ([Math]::Round($clientContext.Site.Usage.Storage / 1GB, 2))
@@ -60,7 +57,6 @@ function Get-SPOWeb {
         $BytesUsed = ($clientContext.Site.Usage.Storage)
     }
 
-    # User output, feel free to modify the message content
     if ($storageAvailable -ne $null) {
         Write-Verbose "Storage available: $storageAvailable GB"
         Write-Verbose "Storage: $(($clientContext.Site.Usage.Storage / 1GB))"
@@ -70,6 +66,7 @@ function Get-SPOWeb {
     else {
         Write-Verbose "Null"
     }
+    Write-Verbose "----------------------"
 
     [PSCustomObject]@{
         SPOUser             = $curUser

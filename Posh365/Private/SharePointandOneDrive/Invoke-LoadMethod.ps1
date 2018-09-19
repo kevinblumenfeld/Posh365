@@ -1,6 +1,8 @@
 Function Invoke-LoadMethod {
     param(
-        [Microsoft.SharePoint.Client.ClientObject]$Object = $(throw "Please provide a Client Object"),
+        [Parameter(Mandatory)]
+        [Microsoft.SharePoint.Client.ClientObject]$Object,
+        [Parameter(Mandatory)]
         [string]$PropertyName
     ) 
     $ctx = $Object.Context

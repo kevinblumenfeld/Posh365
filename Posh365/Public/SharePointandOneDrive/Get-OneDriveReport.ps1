@@ -21,7 +21,7 @@ function Get-OneDriveReport {
     $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).cred") | ConvertTo-SecureString
     $UsernameString = Get-Content ($KeyPath + "$($Tenant).ucred")
 
-    $user = Get-SPOUser -Limit 25 -Site $mysiteHost
+    $user = Get-SPOUser -Limit All -Site $mysiteHost
 
     foreach ($curUser in $user) {
         $Display = $curUser.DisplayName
