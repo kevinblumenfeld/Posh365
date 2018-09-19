@@ -2,98 +2,95 @@
 
 Connect.  Provision.  Maintain.  
 Posh365 is a Toolbox for Office 365 Environments
-
-
- Designed to manage users in Hybrid Office 365 environment.
-   On-Premises Exchange server is required.   
-
-## New-HybridMailbox   
-   The UserPrincipalName is created by copying the Primary SMTP Address (as created by the On-Premises Exchange Email Address Policies or manually entering PrimarySMTP)
-   Can be run from any machine on the domain that has the module for ActiveDirectory installed.
-   The script will prompt once for the names of a Domain Controller, Exchange Server and the Azure AD Connect server.
-   The script will also prompt once for DisplayName & SamAccountName Format.
-   All of these prompts will only occur once per machine (per user)..
-   Should you wish to change any/all options just run: Select-Options
-   The script stores & encrypts both your Exchange/AD & Office 365 password.  
-   You should be prompted only once unless your password changes or a time-out occurs.
-
-   By default, the script creates an new Active Directory User & corresponding mailbox in Exchange Online.
-
-   You will be prompted for the OU where to place the user(s).  
-   By default, you will be presented to choose from all OUs with the word "user" or "resource" in it.
-   To add additional search criteria, use:  -OUSearch "SomeOtherSearchCriteria"
-   You will also be prompted for which license options the user should receive.
-
-   If using the "UserToCopy" parameter, the new user will receive all the attributes (Enabled, StreetAddress, City, State, PostalCode & Group Memberships).
-   The script enables the option: User must change password at next logon.  Unless this switch is used: -DontForceUserToChangePasswordAtLogon
-
-   Whichever Retention Policy is set to "Default", will be the retention policy that
-   the Exchange Online Mailbox will receive - unless this switch is used:  -SpecifyRetentionPolicy
-   If -SpecifyRetentionPolicy is used, the script will prompt for which Retention Policy to assign the user(s).
-
-   ** The script will also take CSV input. The minimum parameters are FirstName & LastName **
-   **                           See example below                                          **
-      
-    .EXAMPLE
-    Import-Csv C:\data\theTEST.csv | New-HybridMailbox
-
-    Example of CSV (illustrated without commas):
-
-    FirstName LastName
-    John      Smith
-    Sally     James
-    Jeff      Williams
-    Jamie     Yothers
-
-    .EXAMPLE
-    New-HybridMailbox -FirstName John -LastName Smith
-
-    .EXAMPLE
-    New-HybridMailbox -UserToCopy "FredJones@contoso.com" -FirstName Jonathan -LastName Smithson
-   
-    .EXAMPLE
-    New-HybridMailbox -FirstName Jon -LastName Smith -OfficePhone "(404)555-1212" -MobilePhone "(404)333-5252" -DescriptiADdedon "Hired Feb 12, 2018"
-    
-    .EXAMPLE
-    New-HybridMailbox -FirstName Jon -LastName Smith -StreetAddress "123 Main St" -City "New York" -State "NY" -Zip "10080" -Country "US"
-       
-    .EXAMPLE
-    New-HybridMailbox -FirstName Jon -LastName Smith -Office "Manhattan" -Title "Vice President of Finance" -Department "Finance" -Company "Contoso, Inc."
-   
-     
-## Connect-Cloud
-
-Connects to Office 365 services and/or Azure.  
-
-Connects to some or all of the Office 365/Azure services based on switches provided at runtime.  
-
-Office 365 tenant name, for example, either contoso or contoso.onmicrosoft.com must be provided with -Tenant parameter.  
-The -Tenant parameter is mandatory.
-
-There is a switch to use Multi-Factor Authentication.  
-For Exchange Online MFA, you are required to download and use the Exchange Online Remote PowerShell Module.  
-To download the Exchange Online Remote PowerShell Module for multi-factor authentication, in the EAC (https://outlook.office365.com/ecp/), go to Hybrid \> Setup and click the appropriate Configure button. 
-
-When using Multi-Factor Authentication the saving of credentials is not available currently - thus each service will prompt independently for credentials.  Also, the Security and Compliance Center does not currently support multi-factor authentication.  
-
-Locally saves and encrypts to a file the username and password.  
-The encrypted file...can only be used on the computer and within the user's profile from which it was created, is the same .txt file for all the Office 365 services and is a separate .json file for Azure.  
-If a username or password becomes corrupt or is entered incorrectly, it can be deleted using -DeleteCreds.  
-For example, Connect-Cloud Contoso -DeleteCreds  
-
-## Set-CloudLicense
-
-The person running the script uses the switch(es) provided at runtime to select an action(s). The script will then present a GUI (Out-GridView) from which the person running the script will select. Depending on the switch(es), the GUI will contain Skus and/or Options - all specific to their Office 365 tenant.
-
-For example, if the person running the script selects the switch "Add Options", they will be presented with each Sku and its corresponding options. The person running the script can then control + click to select multiple options.
-
-If the person running the script wanted to apply a Sku that the end-user did not already have BUT not apply all options in that Sku, use the "Add Options" switch. "Add Sku" will add all options in that Sku.
-
-Template Mode wipes out any other options - other than the options the person running the script chooses. This is specific only to the Skus that contain the options chosen in Template Mode. For example, if the end-user(s) has 3 Skus: E1, E3 and E5... and the person running the script selects only the option "Skype" in the E3 Sku, E1 and E5 will remain unchanged. However, the end-user(s) that this script runs against will have only one option under the E3 Sku - Skype.
-
-Multiple switches can be used simultaneously.
-For example, the person running the script could choose to remove a Sku, add a different Sku, then add or remove options. However, again, if only selected options are desired in a Sku that is to be newly assigned, use the "Add Options" switch (instead of "Add Sku" and "Remove Option"). When using "Add Sku", the speed of Office 365's provisioning of the Sku is not fast enough to allow the removal of options during the same command.
-It is more simple to use "Add Options" anyway.
-
-No matter which switch is used, the person running the script will be presented with a GUI(s) for any selections that need to be made.  
  
+
+## Change Log   
+   
+0.8.6.9 Various improvements and a couple new functions like Compare-Csv and Compare-List   
+0.8.6.8 Now allows for decimal input for StartSearchHoursAgo and EndSearchHoursAgo for New-EXOMessageTrace     
+0.8.6.7 Fixed bug in New-EXOMessageTrace where using -subject parameter would cause script to fail.  Also now uses -StartSearchHoursAgo and EndSearchHoursAgo instead of minutes.   
+0.8.6.6 in Connect-Cloud, added verbiage to give user alternate method to download MFA PS module if auto-install fails   
+0.8.6.5 Added support to automatically download MFA module needed for EXO and Security & Compliance in Connect-Cloud   
+0.8.6.4 Added support to connect to Exchange Online and Security and Compliance with MFA in the same console   
+0.8.6.3 Added support to connect to Exchange Online with MFA without having to download MFA console each time   
+0.8.6.2 Added functionality and killed bugs in Get-DiscoveryInfo, Export-CsvData & Import-CsvData  
+0.8.6.1 Corrected issue with Get-DiscoveryInfo   
+0.8.6.0 Get-DiscoveryInfo for on-premises discovery. First version  
+0.8.5.9 Formatted hashtables properly in Permissions functions  
+0.8.5.8 Added support for loading MFA module if already installed.  Corrected Get-ActiveDirectoryGroup  
+0.8.5.7 Correct bug in Export-CsvData  
+0.8.5.6 Added function Clear-Attribute to clear pesky AD Attribute values  
+0.8.5.5 Added replace and attribute selection for Import-CsvData  
+0.8.5.4 Added ability to change domains when importing addresses with Import-CsvData  
+0.8.5.3 Squashed bug when Add or Remove ProxyAddresses from AD with Import-CsvData  
+0.8.5.2 Ability to Add or Remove ProxyAddresses from AD with Import-CsvData  
+0.8.5.1 More output with Export-CsvData  
+0.8.5.0 Better logging for Import-CsvData  
+0.8.4.9 Import-CsvData cleaned  
+0.8.4.8 Removed Add-SecondarySIP function  
+0.8.4.7 Export-CsvDataForGroups added and corrections to Get-ActiveDirecoryGroup  
+0.8.4.6 Corrected a bug in Get-ActiveDirectoryGroup  
+0.8.4.5 Added Get-ActiveDirectoryGroup  
+0.8.4.4 Corrected Get-ActiveDirectoryObject output incorrectly was using Get-ADUser instead of Get-ADObject  
+0.8.4.3 Added new function Get-ActiveDirectoryObject and added column to Export-CsvData  
+0.8.4.2 Now Import-ADProxyAddress is split between Import-ADUserProxyAddress and Import-ADGroupProxyAddress  
+0.8.4.1 Added option to pick from 3 different columns from CSV when using Export-CSVData  
+0.8.4.0 Added additional CBH for Import-ADProxyAddress and Export-CSVData  
+0.8.3.9 Get-ActiveDirectoryUserFiltered is working properly now  
+0.8.3.8 Removed old sip in Switch-AddressDomain  
+0.8.3.7 Updated comment based help for Switch-AddressDomain  
+0.8.3.6 Corrected bug in Switch-AddressDomain that would cause new address become the new secondary, instead current primary smtp should become new additional smtp: address  
+0.8.3.5 Corrected bug in Switch-AddressDomain that would cause odd logging of errors  
+0.8.3.4 Created Switch-AddressDomain and removed same functionality from Import-ADProxyAddress   
+0.8.3.3 Updated Import-ADProxyAddress with new functionality  
+0.8.3.1 New Comment Based Help  
+0.8.3.0 Removed the switch -SelectMessageForDetails & made the action default in New-EXOMessageTrace  
+0.8.2.9 Changed Sort to descending for migration and move request stats detailed report  
+0.8.2.8 Added Get-EXOMigrationStatistics & Get-EXOMoveRequestStatistics  
+0.8.2.7 Added New-EXOMailTransportRuleReport  
+0.8.2.6 Completely revised New-EXOMessageTrace to allow for searches by minute for both start and end times. All output is to Out-GridView. Message(s) can then be selected.  Click OK and MessageTraceDetails will appear an in Out-Grid, one for each message selected  
+0.8.2.5 Working version of Import-ActiveDirectoryGroupMember   
+0.8.2.4 Corrected issue where rename of DisplayName (to account for CNs longer than 15 characters) would fail in New-ActiveDirectoryGroup   
+0.8.2.3 New-ActiveDirectoryGroup can now replace domain (domain/newDomain params) when importing email addresses   
+0.8.2.2 New-ActiveDirectoryUser now renames CN attribute to DisplayName   
+0.8.2.1 Changed method to iterate samaccountname in New-ActiveDirectoryUser   
+0.8.2.0 Corrected iteration when duplicate sAMAccountname is found in New-ActiveDirectoryUser   
+0.8.1.9 sAMAccountname truncate to 15 characters in New-ActiveDirectoryUser   
+0.8.1.8 Removed unneeded parameters from New-ActiveDirectoryUser   
+0.8.1.7 Added New-ActiveDirectoryUser for adding SharedMailbox and Resource Mailboxes in a tenant to tenant migration etc.  
+0.8.1.6 Added domain replacement functionality to Import-ADProxyAddresses -Domain -NewDomain  
+0.8.1.5 Added functions Import-ActiveDirectoryGroup & Import-ActiveDirectoryGroupMember  
+0.8.1.4 Added functions Test-PreFlight and Test-PreFlightOnPrem  
+0.8.1.3 Corrected bug in Import-ADProxyAddress and added Verbose output  
+0.8.1.2 Added error handling for Import-ADProxyAddress  
+0.8.1.1 Added Import-ADProxyAddress.  Prior to adding any action will output file with what will be added to each ADUser  
+0.8.1 Property order change in Get-ActiveDirectoryUser  
+0.8.0 Corrected duplicate properties in Get-ActiveDirectoryUser  
+0.7.9 Rearranged order of properties for Get-ActiveDirectoryUser  
+0.7.8 Corrected module PSD1 file to export function names correctly  
+0.7.7 Added several new function.  As always use Get-Command -Module Posh365 for a list of commands and use Get-Help on each command.  
+0.7.6 Removed unneeded attributes from Import-EXOGroup's parameter splat  
+0.7.5 Removed Duplicate -ResultSize Unlimited from Get-EXOMailboxPerms  
+0.7.4 Corrected cmdlet name in Import-EXOMailboxPermissions.  Performance enhancements in Get-365Info  
+0.7.3 Added 3 -ResultSize Unlimited to correct issue where over 1000 recipients in 2 functions  
+0.7.2 Fix multi-domain forest issue with mailbox and dg permissions if Global Catalog was not already being used to authenticate session.  Added more -Verbose output for permissions functions.  SendOnBehalf permissions on Distribution Groups is reported on from Distribution Groups script instead of permissions scripts  
+0.7.1 Corrected DG SendAs report.  SendOnBehalf to follow. In the meantime, GrantSendOnBehalfTo is reported at the Group level  
+0.7.0 Added on-prem Dist Group Permissions Reporting function  
+0.6.9 Added EXO "apply" permissions to mailboxes and groups function  
+0.6.8 Added Get-DGPerms and added to Get-365Info comprehensive report  
+0.6.6 Fixed typo  
+0.6.5 Updated example  
+0.6.4 Add Get-EXOMailContact function  
+0.6.3 Added controller script (Get-365Info) to discover EXO/365 Tenant with the means to restrict by domain name.  Added report for archive mailboxes, licensing, Retention Policies.  Improved help with detailed examples.  
+0.6.2 Fixed a bug that prevented Get-EXOGroup from correct output when requesting all groups  
+0.6.1 Added several Get-EXO... functions to gather msolusers, msolgroups, mailboxes, resource mailboxes(calendar processing) with simple and/or detailed reports.  Reporting can can be limited by email domains etc.  
+0.6.0 Corrected issue where Get-EXOGroups would not report members when reporting on all groups  
+0.5.9 Added Get-EXOGroups, reports on all Exchange Online mail-enabled dist & sec groups, all email addresses and other multivalued attributes (semicolon separated).  Also all members.  Planning to add a -Recurse switch soon.  Also, Get-EXOMailboxPerms collects all Exchange Online permissions and can accept txt input instead of entire tenant.  Moving txt to pipeline input in next release  
+0.5.8 Resolved issue where AzureAD and MSOnline modules would not auto install  
+0.5.7 Added VanHybrid's amazing Get-VirtualDirectoryInfo (ver 1.8) function  
+0.5.6 Added Get-EdiscoveryCase function to obtain Security and Compliance case reports  
+0.5.5 Add 2 New-EXOMessageTrace functions  
+0.5.4 New-HybridMailbox will give user SIP proxy address if -primarySMTPAddress parameter is used (No EAP applied) 
+0.5.3 made correction to New-HybridMailbox. Used Try/Catch to import AD Module and throw if not available on all needed functions  
+0.5.2 Check for ActiveDirectory module for New-HybridMailbox uses Try/Catch instead of #Requires  
+0.5.1 Get-MailboxPerms, Get-EXOMailboxPerms and Get-EXOMailboxRecursePerms released  
