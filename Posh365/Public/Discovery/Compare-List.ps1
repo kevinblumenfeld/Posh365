@@ -1,22 +1,30 @@
 ﻿function Compare-List {
     param (
-        [Parameter(Mandatory = $true)]
-        [System.IO.FileInfo] $Csv1,
-
-        [Parameter(Mandatory = $true)]
-        [System.IO.FileInfo] $Csv2  
+        [Parameter(Mandatory)]
+        [ValidateNotNull()]
+        [System.IO.FileInfo]
+        $ReferenceCsv,
+    
+        [Parameter(Mandatory)]
+        [ValidateNotNull()]
+        [System.IO.FileInfo]
+        $DifferenceCsv,
+        
+        [Parameter()]
+        [string] $FindInColumn = "UserPrincipalName",
     )
+
     $dataSet1 = @{}
-    Import-Csv $Csv1 | ForEach-Object { 
-        $dataSet1.Add($_.PrimarySmtpAddress, $_) 
+    Import-Csv $ReferenceCsv | ForEach-Object { 
+        $dataSet1.Add($_.$FindInColumn, $_) 
     }
 
-    $noSmtpFound = [System.Collections.Generic.HashSet[string]]::new()
-    Import-Csv $Csv2 | ForEach-Object { 
-        if (-not $dataSet1.Contains($_.PrimarySmtpAddress)) {
-            [void]$noSmtpFound.Add($_.PrimarySmtpAddress)
+    $notFound = [System.Collections.Generic.HashSet[string]]::new()
+    Import-Csv $DifferenceCsv | ForEach-Object { 
+        if (-not $dataSet1.Contains($_.$FindInColumn)) {
+            [void]$notFound.Add($_.$FindInColumn)
         }
     }
-    $noSmtpFound
+    $notFound
 }
-# This needs to use to hashsets instead
+# This needs to use to hashsets instead and you are doing nothing with the values of hashtable
