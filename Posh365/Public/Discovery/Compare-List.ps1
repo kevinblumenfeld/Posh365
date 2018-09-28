@@ -11,7 +11,7 @@
         $DifferenceCsv,
         
         [Parameter()]
-        [string] $FindInColumn = "UserPrincipalName",
+        [string] $FindInColumn = "UserPrincipalName"
     )
 
     $dataSet1 = @{}
