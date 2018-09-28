@@ -1,69 +1,50 @@
+
 Function New-MessageTrack {
     <#
     .SYNOPSIS
-    Search message trace logs in Exchange Online by hour or partial hour start and end times
-    If desired, one or more messages can be selected from the results for more detail
+    On-Premises Exchange Message Tracking Log made easy!
 
     .DESCRIPTION
-    Search message trace logs in Exchange Online by hour or partial hour start and end times
-    If desired, one or more messages can be selected from the results for more detail
-    Just click OK once you have selected the message(s)
+    Searches all Hub Transport and Mailbox Servers for messages. Once found, you can select one or more messages via Out-GridView to search by those MessageID's.  
 
-    Many thanks to Matt Marchese for the initial framework of this function
-    
-    .PARAMETER SenderAddress
-    Senders Email Address
-    
-    .PARAMETER RecipientAddress
-    Recipients Email Address
+    .PARAMETER Sender
+    Parameter description
+
+    .PARAMETER Recipients
+    Parameter description
 
     .PARAMETER StartSearchHoursAgo
-    Number of hours from today to start the search. Default is (.25) 15 minutes ago
-    
-    .PARAMETER EndSearchHoursAgo
-    Number of hours from today to end the search. "Now" is the default, the number "0"
-    
-    .PARAMETER Subject
-    Partial or full subject of message(s) of which are being searched
+    Parameter description
 
-    .PARAMETER FromIP
-    The IP address from which the email originated
-    
-    .PARAMETER ToIP
-    The IP address to which the email was destined
+    .PARAMETER EndSearchHoursAgo
+    Parameter description
+
+    .PARAMETER Subject
+    Parameter description
+
+    .PARAMETER MessageID
+    Parameter description
+
+    .PARAMETER ResultSize
+    Parameter description
 
     .PARAMETER Status
-    The Status parameter filters the results by the delivery status of the message. Valid values for this parameter are:
-
-    None: The message has no delivery status because it was rejected or redirected to a different recipient.
-    Failed: Message delivery was attempted and it failed or the message was filtered as spam or malware, or by transport rules.
-    Pending: Message delivery is underway or was deferred and is being retried.
-    Delivered: The message was delivered to its destination.
-    Expanded: There was no message delivery because the message was addressed to a distribution group, and the membership of the distribution was expanded.
-    
-    .EXAMPLE
-    New-MessageTrack
-        
-    .EXAMPLE
-    New-MessageTrack -StartSearchHoursAgo 10 -EndSearchHoursAgo 5 -Subject "arizona"
-
-    This will find all messages with the word "arizona" somewhere in the subject, that were sent or received anywhere from 10 hours ago till 5 hours ago
+    Parameter description
 
     .EXAMPLE
-    New-MessageTrack -StartSearchHoursAgo 10 -EndSearchHoursAgo 5 -Subject "Letter from the CEO"
+    New-MessageTrack -StartSearchHoursAgo 48 -EndSearchHoursAgo 24 -Recipients "joe@contoso.com" -Subject "Forklift incident"
 
-    .EXAMPLE
-    New-MessageTrack -SenderAddress "User@domain.com" -RecipientAddress "recipient@domain.com" -StartSearchHoursAgo 15 -FromIP "xx.xx.xx.xx"
-
-    #>  
+    .NOTES
+    General notes
+    #>
     [CmdletBinding()]
     param
     (
         [Parameter()]
-        [string] $SenderAddress,
+        [string] $Sender,
 
         [Parameter()]
-        [string] $RecipientAddress,
+        [string] $Recipients,
 
         [Parameter()]
         [Double] $StartSearchHoursAgo = ".25",
@@ -78,15 +59,12 @@ Function New-MessageTrack {
         [string] $MessageID,
 
         [Parameter()]
-        [string] $FromIP,
-
-        [Parameter()]
-        [string] $ToIP,
+        [string] $ResultSize = "Unlimited",
 
         [Parameter()]
         [string] $Status
     )
-
+    $Servers = Get-ExchangeServer | where {$_.isHubTransportServer -eq $true -or $_.isMailboxServer -eq $true} 
     $currentErrorActionPrefs = $ErrorActionPreference
     $ErrorActionPreference = 'Stop'
 
@@ -103,7 +81,7 @@ Function New-MessageTrack {
     $cmdletParams = (Get-Command $PSCmdlet.MyInvocation.InvocationName).Parameters.Keys
 
     $params = @{}
-    $NotArray = 'StartSearchHoursAgo', 'EndSearchHoursAgo', 'Subject', 'Debug', 'Verbose', 'ErrorAction', 'WarningAction', 'InformationAction', 'ErrorVariable', 'WarningVariable', 'InformationVariable', 'OutVariable', 'OutBuffer', 'PipelineVariable'
+    $NotArray = 'StartSearchHoursAgo', 'EndSearchHoursAgo', 'Subject', 'ResultSize', 'Debug', 'Verbose', 'ErrorAction', 'WarningAction', 'InformationAction', 'ErrorVariable', 'WarningVariable', 'InformationVariable', 'OutVariable', 'OutBuffer', 'PipelineVariable'
     foreach ($cmdletParam in $cmdletParams) {
         if ($cmdletParam -notin $NotArray) {
             if ([string]::IsNullOrWhiteSpace((Get-Variable -Name $cmdletParam).Value) -ne $true) {
@@ -118,25 +96,32 @@ Function New-MessageTrack {
     $allMessageTrackResults = [System.Collections.Generic.List[PSObject]]::New()
 
     try {
-        $messageTrack = Get-MessageTrackingLog @params
+        $messageTrack = $Servers | Get-MessageTrackingLog @params -ResultSize $ResultSize
         if ($messageTrack) {
             $messageTrack | ForEach-Object {
                 $messageTrackResults = [PSCustomObject]@{
-                    Received         = $_.Received
-                    Status           = $_.Status
-                    SenderAddress    = $_.SenderAddress
-                    RecipientAddress = $_.RecipientAddress
-                    Subject          = $_.Subject
-                    FromIP           = $_.FromIP
-                    ToIP             = $_.ToIP                                                
-                    MessageTraceId   = $_.MessageTraceId
+                    Time             = $_.TimeStamp
+                    Directionality   = $_.Directionality
+                    EventID          = $_.EventID
+                    Sender           = $_.Sender
+                    Recipients       = $_.Recipients
+                    Subject          = $_.MessageSubject
+                    Connector        = $_.ConnectorID
+                    SourceContext    = $_.SourceContext
+                    EventData        = $_.EventData
+                    ServerHostName   = $_.ServerHostName
+                    ServerIP         = $_.ServerIP
+                    ClientIP         = $_.ClientIP
+                    OriginalClientIP = $_.OriginalClientIP
+                    ClientHostName   = $_.ClientHostName
+                    TotalBytes       = $_.TotalBytes                                      
                     MessageId        = $_.MessageId
                 }
                 $allMessageTrackResults.Add($messageTrackResults)
+            }        
+            else {
+                Write-Verbose "`tNo results found"
             }
-        }
-        else {
-            Write-Verbose "`tNo results found"
         }
     }
     catch {
@@ -146,18 +131,43 @@ Function New-MessageTrack {
     if ($allMessageTrackResults.count -gt 0) {
         Write-Verbose "`n$($allMessageTrackResults.count) results returned."
 
-        $WantsDetailOnTheseMessages = $allMessageTrackResults | Out-GridView -PassThru -Title "Message Trace Results. Select one or more then click OK for detailed report."
-        if ($WantsDetailOnTheseMessages) {
-            Foreach ($Wants in $WantsDetailOnTheseMessages) {
-                $Splat = @{
-                    MessageTraceID   = $Wants.MessageTraceID
-                    RecipientAddress = $Wants.RecipientAddress
-                    MessageId        = $Wants.MessageId
+        $WantsToTrackMoreSpecifically = $allMessageTrackResults | Out-GridView -PassThru -Title "Message Tracking Log. Select one or more then click OK to track by only those Message IDs."
+        if ($WantsToTrackMoreSpecifically) {
+            Foreach ($Wants in $WantsToTrackMoreSpecifically) {
+                $allMessageTrackResults = [System.Collections.Generic.List[PSObject]]::New()
+                try {
+                    $messageTrack = $Servers | Get-MessageTrackingLog -MessageID $wants.MessageId -ResultSize $ResultSize
+                    if ($messageTrack) {
+                        $messageTrack | ForEach-Object {
+                            $messageTrackResults = [PSCustomObject]@{
+                                Time             = $_.TimeStamp
+                                Directionality   = $_.Directionality
+                                EventID          = $_.EventID
+                                Sender           = $_.Sender
+                                Recipients       = $_.Recipients
+                                Subject          = $_.MessageSubject
+                                Connector        = $_.ConnectorID
+                                SourceContext    = $_.SourceContext
+                                EventData        = $_.EventData
+                                ServerHostName   = $_.ServerHostName
+                                ServerIP         = $_.ServerIP
+                                ClientIP         = $_.ClientIP
+                                OriginalClientIP = $_.OriginalClientIP
+                                ClientHostName   = $_.ClientHostName
+                                TotalBytes       = $_.TotalBytes                                      
+                                MessageId        = $_.MessageId
+                            }
+                            $allMessageTrackResults.Add($messageTrackResults)
+                        }        
+                        else {
+                            Write-Verbose "`tNo results found"
+                        }
+                    }
                 }
-                $TraceDetail = Get-MessageTrackingReport @Splat
-                $TraceDetail |
-                    Select-Object Date, Event, Action, Detail, Data, MessageTraceID, MessageID | 
-                    Out-GridView -Title "DATE: $($Wants.Received) STATUS: $($Wants.Status) FROM: $($Wants.SenderAddress) TO: $($Wants.RecipientAddress) TRACEID: $($Wants.MessageTraceId)" 
+                catch {
+                    Write-Verbose "`tException gathering message trace data."
+                }
+                $allMessageTrackResults | Out-GridView -Title "MessageID: $($Wants.MessageID)"
             }
         }
     }
