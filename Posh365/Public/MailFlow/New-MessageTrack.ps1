@@ -64,7 +64,7 @@ Function New-MessageTrack {
         [Parameter()]
         [string] $Status
     )
-    $Servers = Get-ExchangeServer | where {$_.isHubTransportServer -eq $true -or $_.isMailboxServer -eq $true} 
+    $Servers = Get-TransportServer -WarningAction SilentlyContinue 
     $currentErrorActionPrefs = $ErrorActionPreference
     $ErrorActionPreference = 'Stop'
 
