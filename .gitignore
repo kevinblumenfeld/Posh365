@@ -1,5 +1,3 @@
-Posh365/Public/Permissions/Get-PermissionChain.ps1
-Posh365/Private/Permissions/Get-MigrationChain.ps1
 Posh365/Public/Discovery/Get-Discovery.ps1
 Posh365/Public/Migration/New-365MoveRequests.ps1
 Posh365/Public/Recipient/Get-365InfoTEST.ps1
