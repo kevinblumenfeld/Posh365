@@ -50,21 +50,25 @@
                     Get-ADGroupMember ($_.user -split "\\")[1] -Recursive -ErrorAction stop | 
                         ForEach-Object {
                         New-Object -TypeName psobject -property @{
-                            Object     = $ADHashDN["$mailbox"].DisplayName
-                            UPN        = $ADHashDN["$mailbox"].UPN
-                            Granted    = $ADHashDN["$($_.distinguishedname)"].DisplayName
-                            GrantedUPN = $ADHashDN["$($_.distinguishedname)"].UPN
-                            Permission = "SendAs"
+                            Object             = $ADHashDN["$mailbox"].DisplayName
+                            UPN                = $ADHashDN["$mailbox"].UPN
+                            PrimarySMTPAddress = $ADHashDN["$mailbox"].PrimarySMTPAddress
+                            Granted            = $ADHashDN["$($_.distinguishedname)"].DisplayName
+                            GrantedUPN         = $ADHashDN["$($_.distinguishedname)"].UPN
+                            GrantedSMTP        = $ADHashDN["$($_.distinguishedname)"].PrimarySMTPAddress
+                            Permission         = "SendAs"
                         }    
                     }
                 } 
                 Catch {
                     New-Object -TypeName psobject -property @{
-                        Object     = $ADHashDN["$mailbox"].DisplayName
-                        UPN        = $ADHashDN["$mailbox"].UPN
-                        Granted    = $ADHash["$User"].DisplayName
-                        GrantedUPN = $ADHash["$User"].UPN
-                        Permission = "SendAs"
+                        Object             = $ADHashDN["$mailbox"].DisplayName
+                        UPN                = $ADHashDN["$mailbox"].UPN
+                        PrimarySMTPAddress = $ADHashDN["$mailbox"].PrimarySMTPAddress
+                        Granted            = $ADHash["$User"].DisplayName
+                        GrantedUPN         = $ADHash["$User"].UPN
+                        GrantedSMTP        = $ADHash["$User"].PrimarySMTPAddress
+                        Permission         = "SendAs"
                     }
                 }
             }
