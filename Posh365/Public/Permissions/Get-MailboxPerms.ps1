@@ -121,7 +121,7 @@
 
     if (! $SkipSendAs) {
         Write-Verbose "Getting SendAs permissions for each mailbox and writing to file"
-        $allMailboxes | Get-SendAsPerms -ADHashDN $ADHashDN -ADHash $ADHash  | Select Object, UPN, Granted, GrantedUPN, Permission |
+        $allMailboxes | Get-SendAsPerms -ADHashDN $ADHashDN -ADHash $ADHash  | Select Object, UPN, Granted, GrantedUPN, GrantedSMTP, Permission |
             Export-csv (Join-Path $ReportPath "SendAsPerms.csv") -NoTypeInformation
     }
     
