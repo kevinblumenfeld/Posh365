@@ -88,6 +88,11 @@ function Get-ActiveDirectoryUser {
                 @{n = "SIDHistory" ; e = {($_.SIDHistory | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "userCertificate" ; e = {($_.userCertificate | Where-Object {$_ -ne $null}) -join ";" }}
             )
+            $ExtensionAttribute = @(
+                'extensionAttribute1', 'extensionAttribute2', 'extensionAttribute3', 'extensionAttribute4', 'extensionAttribute5'
+                'extensionAttribute6', 'extensionAttribute7', 'extensionAttribute8', 'extensionAttribute9', 'extensionAttribute10'
+                'extensionAttribute11', 'extensionAttribute12', 'extensionAttribute13', 'extensionAttribute14', 'extensionAttribute15'
+            )
         }
         else {
             $Props = @(
@@ -119,7 +124,7 @@ function Get-ActiveDirectoryUser {
                     Get-ADUser -Filter $CurADUserFilter -Properties $Props -ResultSetSize $null | Select-Object ($Selectproperties + $CalculatedProps)
                 }
                 else {
-                    Get-ADUser -Filter $CurADUserFilter -Properties * -ResultSetSize $null | Select-Object ($Selectproperties + $CalculatedProps)
+                    Get-ADUser -Filter $CurADUserFilter -Properties * -ResultSetSize $null | Select-Object ($Selectproperties + $CalculatedProps + $ExtensionAttribute)
                 }
             }
         }
@@ -128,7 +133,7 @@ function Get-ActiveDirectoryUser {
                 Get-ADUser -Filter * -Properties $Props -ResultSetSize $null | Select-Object ($Selectproperties + $CalculatedProps)
             }
             else {
-                Get-ADUser -Filter * -Properties * -ResultSetSize $null | Select-Object ($Selectproperties + $CalculatedProps)
+                Get-ADUser -Filter * -Properties * -ResultSetSize $null | Select-Object ($Selectproperties + $CalculatedProps + $ExtensionAttribute)
             }
         }
     }
