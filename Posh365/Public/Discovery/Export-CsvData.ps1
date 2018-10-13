@@ -45,20 +45,20 @@ Parameter description
 Parameter description
 
 .EXAMPLE
-Import-Csv .\CSVofADUsers.csv | Export-CsvData -caseMatchAnd "brann" -MatchNotAnd @("JAIME","John") -JoinType and
+Import-Csv .\CSVofADUsers.csv | Export-CsvData -caseMatchAnd "brann" -MatchNotAnd @("JAIME","John") -JoinType and -fileName "NewCsv.csv"
 
 .EXAMPLE
-Import-Csv .\CSVofADUsers.csv | Export-CsvData -caseMatchAnd "Harry Franklin" -MatchNotAnd @("JAIME","John") -JoinType or
+Import-Csv .\CSVofADUsers.csv | Export-CsvData -caseMatchAnd "Harry Franklin" -MatchNotAnd @("JAIME","John") -JoinType or -fileName "NewCsv.csv"
 
 .NOTES
 Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attribute in Active Directory) are expected to be semicolon separated.
 Example:
-import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -caseMatch "SMTP:" -StripPrefix -AddPrefix smtp:
-import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -caseMatch "SMTP:" -Domain "fabrikam.com" -NewDomain "contoso.com"
-import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -Match "SIP:"
-import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -Match "SIP:" -Domain "fabrikam.com" -NewDomain "contoso.com"
-import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -caseMatch "SMTP:"
-import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -caseMatch "SMTP:" -Domain "fabrikam.com" -NewDomain "contoso.com" -StripPrefix
+import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -caseMatch "SMTP:" -StripPrefix -AddPrefix "smtp:" -fileName "NewCsv.csv"
+import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -caseMatch "SMTP:" -Domain "fabrikam.com" -NewDomain "contoso.com" -fileName "NewCsv.csv"
+import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -Match "SIP:" -fileName "NewCsv.csv"
+import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -Match "SIP:" -Domain "fabrikam.com" -NewDomain "contoso.com" -fileName "NewCsv.csv"
+import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -caseMatch "SMTP:" -fileName "NewCsv.csv"
+import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -caseMatch "SMTP:" -Domain "fabrikam.com" -NewDomain "contoso.com" -StripPrefix -fileName "NewCsv.csv"
 
 #>
     [CmdletBinding(SupportsShouldProcess)]
@@ -229,7 +229,7 @@ import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresse
                     UserPrincipalName          = $UserPrincipalName
                     PrimarySmtpAddress         = $PrimarySmtpAddress
                     PrimarySmtpTrimmed         = $PrimaryTrimmed
-                    AddressOrMember            = "NONE"
+                    AddressOrMember            = ""
                     RecipientTypeDetails       = $RecipientTypeDetails
                     msExchRecipientTypeDetails = $msExchRecipientTypeDetails
                     objectGUID                 = $objectGUID

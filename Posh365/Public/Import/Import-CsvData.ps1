@@ -25,7 +25,7 @@ function Import-CsvData {
         [String]$FindADUserGroupOrObjectBy,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet("EmailAddress", "AddressOrMember", "PrimarySmtpAddress", "ProxyAddresses", "EmailAddresses", "x500")]
+        [ValidateSet("EmailAddress", "AddressOrMember", "PrimarySmtpAddress", "ProxyAddresses", "EmailAddresses", "x500", "Joined")]
         [String]$FindInColumn,
 
         [Parameter()]
@@ -50,7 +50,9 @@ function Import-CsvData {
             Write-Warning "Must use Domain parameter when specifying NewDomain parameter"
             break
         }
-        Import-Module ActiveDirectory -Verbose:$False
+        if (-not $LogOnly) {
+            Import-Module ActiveDirectory -Verbose:$False
+        }
         $OutputPath = '.\'
         $LogFileName = $(get-date -Format yyyy-MM-dd_HH-mm-ss)
         $Log = Join-Path $OutputPath ($LogFileName + "-ImportCsvData-WhatIf_Import.csv")
