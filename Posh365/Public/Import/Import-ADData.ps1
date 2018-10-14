@@ -1,8 +1,8 @@
-function Import-CsvData { 
+function Import-ADData { 
     <#
     
     #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param (
 
         [Parameter()]
@@ -41,7 +41,7 @@ function Import-CsvData {
         [string]$NewDomain
 
     )
-    Begin {
+    begin {
         if ($Domain -and (! $NewDomain)) {
             Write-Warning "Must use NewDomain parameter when specifying Domain parameter"
             break
@@ -60,15 +60,17 @@ function Import-CsvData {
         if ($UserGroupOrObject -eq "Group" -and $FindADUserGroupOrObjectBy -eq "UserPrincipalName") {
             Write-Warning "AD Groups do not have UserPrincipalNames"
             Write-Warning "Please choose another option like ObjectGuid, Mail or DisplayName for parameter, FindADUserGroupOrObjectBy"
+            break
         }
     }
-    Process {
+    process {
         ForEach ($CurRow in $Row) {
             $Address = $CurRow."$FindInColumn"
             $Display = $CurRow.DisplayName
             $Mail = $CurRow.PrimarySmtpAddress
             $UPN = $CurRow.PrimarySmtpAddress
             $ObjectGUID = $CurRow.ObjectGUID
+            $ObjectLookup = $CurRow."$FindADUserGroupOrObjectBy"
             if (-not $LogOnly) {
                 try {
                     if ([String]::IsNullOrWhiteSpace($Address)) {
@@ -160,18 +162,16 @@ function Import-CsvData {
             else {
                 if ($Address) {
                     [PSCustomObject]@{
-                        DisplayName = $Display
-                        Attribute   = $Attribute
-                        Address     = $Address
-                        Mail        = $Mail
-                        UPN         = $PrimarySmtpAddress
-                        ObjectGUID  = $ObjectGUID
+                        FindThisObject = $ObjectLookup
+                        Action         = $AddRemoveOrReplace
+                        Attribute      = $Attribute
+                        Value          = $Address
                     } | Export-Csv $Log -Append -NoTypeInformation -Encoding UTF8
                 }
             }
         }
     }
-    End {
+    end {
 
     }
 }

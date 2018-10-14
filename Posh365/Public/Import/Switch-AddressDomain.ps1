@@ -43,7 +43,7 @@ Import-Csv .\CsvOfDNs.csv | Switch-AddressDomain -OldDomain "contoso.com" -NewDo
 Input of Distinguished Names are expected in CSV with DistinguishedName header in your CSV
 
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param (
 
         [Parameter(ValueFromPipeline = $true, Mandatory = $true)]

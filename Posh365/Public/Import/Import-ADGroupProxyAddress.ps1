@@ -109,7 +109,7 @@ function Import-ADGroupProxyAddress {
     Input of addresses from CSV are expected to be semicolon separated (addresses can originate in 1 of 3 column headers: ProxyAddresses, EmailAddresses or x500)
 
     #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param (
 
         [Parameter()]

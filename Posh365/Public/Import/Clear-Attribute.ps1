@@ -2,7 +2,7 @@ function Clear-Attribute {
     <#
     
     #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param (
 
         [Parameter()]

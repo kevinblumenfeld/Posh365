@@ -22,7 +22,7 @@ function New-ActiveDirectoryUser {
     Input of ProxyAddresses are expected to be semicolon seperated.  Password is set to Random Password
     
     #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param (
 
         [Parameter(ValueFromPipeline = $true, Mandatory = $true)]

@@ -54,7 +54,7 @@ Import-Csv .\CSVofADUsers.csv | Export-CsvData -caseMatchAnd "Harry Franklin" -M
 Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attribute in Active Directory) are expected to be semicolon separated.
 
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param (
 
         [Parameter(ValueFromPipeline = $true, Mandatory = $true)]
@@ -193,3 +193,4 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
 
     }
 }
+Import-Csv C:\scripts\AllExchangeMailboxes.csv | Export-CsvJoinedData -ReportPath C:\scripts -FileName "test26.csv" -FindInColumn Alias -AddSuffix '@lapcm.mail.onmicrosoft.com' -AddPrefix "smtp:" -Filter "EmailAddressPolicyEnabled" -Exclude "FALSE" -ExcludeSystemMailboxes

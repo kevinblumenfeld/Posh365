@@ -61,7 +61,7 @@ import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresse
 import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -caseMatch "SMTP:" -Domain "fabrikam.com" -NewDomain "contoso.com" -StripPrefix -fileName "NewCsv.csv"
 
 #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param (
 
         [Parameter()]
