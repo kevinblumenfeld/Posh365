@@ -93,7 +93,7 @@ Function New-MessageTrack {
     $params.Add('End', $EndSearchHoursAgo)
     $params.Add('MessageSubject', $Subject)
 
-    $allMessageTrackResults = [System.Collections.Generic.List[PSObject]]::New()
+    $allMessageTrackResults = New-Object "System.Collections.Generic.List[PSObject]"
 
     try {
         $messageTrack = $Servers | Get-MessageTrackingLog @params -ResultSize $ResultSize
@@ -134,7 +134,7 @@ Function New-MessageTrack {
         $WantsToTrackMoreSpecifically = $allMessageTrackResults | Out-GridView -PassThru -Title "Message Tracking Log. Select one or more then click OK to track by only those Message IDs."
         if ($WantsToTrackMoreSpecifically) {
             Foreach ($Wants in $WantsToTrackMoreSpecifically) {
-                $allMessageTrackResults = [System.Collections.Generic.List[PSObject]]::New()
+                $allMessageTrackResults = New-Object "System.Collections.Generic.List[PSObject]"
                 try {
                     $messageTrack = $Servers | Get-MessageTrackingLog -MessageID $wants.MessageId -ResultSize $ResultSize
                     if ($messageTrack) {
