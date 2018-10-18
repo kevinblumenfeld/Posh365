@@ -1,14 +1,14 @@
 function Add-365RecipientEmailAddresses { 
     <#
-.SYNOPSIS
-Add Recipients Email Addresses
+    .SYNOPSIS
+    Add Recipients Email Addresses
 
-.DESCRIPTION
-Add Recipients Email Addresses and other functions
+    .DESCRIPTION
+    Add Recipients Email Addresses and other functions
 
-.EXAMPLE
+    .EXAMPLE
 
-#>
+    #>
     [CmdletBinding()]
     param (
 
