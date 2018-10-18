@@ -31,7 +31,7 @@ function Add-Task {
 
     .EXAMPLE
         Add-Task -TaskName "Audit Log Collection" -User "ComputerName\Logs" -RepeatInMinutes 60 -Executable "PowerShell.exe" -Argument '-ExecutionPolicy RemoteSigned -Command "Get-AuditLog -Tenant LAPCM -Path C:\Logs\ -FileName 365Log -TimeFrameInMinutes 60"'
-#>
+    #>
     [CmdletBinding()]
     Param
     (
