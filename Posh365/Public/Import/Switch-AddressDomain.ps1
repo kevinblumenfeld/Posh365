@@ -1,48 +1,48 @@
 function Switch-AddressDomain { 
     <#
 
-.SYNOPSIS
-Modifies PrimarySMTPAddress via Active Directory by changing domain from old to new.  Makes the primary address a secondary (additional) smtp address.
-Optionally, changes the UPN, changes the mail attributes or clears all proxy addresses first.
+    .SYNOPSIS
+    Modifies PrimarySMTPAddress via Active Directory by changing domain from old to new.  Makes the primary address a secondary (additional) smtp address.
+    Optionally, changes the UPN, changes the mail attributes or clears all proxy addresses first.
 
-.DESCRIPTION
-Modifies PrimarySMTPAddress via Active Directory by changing domain from old to new.  Makes the primary address a secondary (additional) smtp address.
-Optionally, changes the UPN, changes the mail attributes or clears all proxy addresses first.
+    .DESCRIPTION
+    Modifies PrimarySMTPAddress via Active Directory by changing domain from old to new.  Makes the primary address a secondary (additional) smtp address.
+    Optionally, changes the UPN, changes the mail attributes or clears all proxy addresses first.
 
-.PARAMETER Row
-Input of a CSV that includes a minimum of Distinguished Names
+    .PARAMETER Row
+    Input of a CSV that includes a minimum of Distinguished Names
 
-.PARAMETER OldDomain
-The domain from which are going to change the primary SMTP suffix
+    .PARAMETER OldDomain
+    The domain from which are going to change the primary SMTP suffix
 
-.PARAMETER NewDomain
-The domain to which are going to change the primary SMTP suffix
+    .PARAMETER NewDomain
+    The domain to which are going to change the primary SMTP suffix
 
-.PARAMETER SwitchUPNDomain
-UserPrincipalName becomes the Primary SMTP address
+    .PARAMETER SwitchUPNDomain
+    UserPrincipalName becomes the Primary SMTP address
 
-.PARAMETER SwitchMailDomain
-Mail attribute becomes the Primary SMTP address
+    .PARAMETER SwitchMailDomain
+    Mail attribute becomes the Primary SMTP address
 
-.PARAMETER SwitchMsRTCSIP
-msRTCSIP-PrimaryUserAddress attribute becomes the Primary SMTP address
+    .PARAMETER SwitchMsRTCSIP
+    msRTCSIP-PrimaryUserAddress attribute becomes the Primary SMTP address
 
-.PARAMETER FirstClearAllProxyAddresses
-This should be used with extreme caution and is self explanatory.
+    .PARAMETER FirstClearAllProxyAddresses
+    This should be used with extreme caution and is self explanatory.
 
-.PARAMETER LogOnly
-Run this first.  Outputs log file of "what-if"
+    .PARAMETER LogOnly
+    Run this first.  Outputs log file of "what-if"
 
-.EXAMPLE
-Import-Csv .\CsvOfDNs.csv | Switch-AddressDomain -OldDomain "contoso.com" -NewDomain "fabrikam.com" -SwitchUPNDomain -SwitchMailDomain -LogOnly -Verbose
+    .EXAMPLE
+    Import-Csv .\CsvOfDNs.csv | Switch-AddressDomain -OldDomain "contoso.com" -NewDomain "fabrikam.com" -SwitchUPNDomain -SwitchMailDomain -LogOnly -Verbose
 
-.EXAMPLE
-Import-Csv .\CsvOfDNs.csv | Switch-AddressDomain -OldDomain "contoso.com" -NewDomain "fabrikam.com" -SwitchUPNDomain -SwitchMailDomain -Verbose
+    .EXAMPLE
+    Import-Csv .\CsvOfDNs.csv | Switch-AddressDomain -OldDomain "contoso.com" -NewDomain "fabrikam.com" -SwitchUPNDomain -SwitchMailDomain -Verbose
 
-.NOTES
-Input of Distinguished Names are expected in CSV with DistinguishedName header in your CSV
+    .NOTES
+    Input of Distinguished Names are expected in CSV with DistinguishedName header in your CSV
 
-#>
+    #>
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (
 
