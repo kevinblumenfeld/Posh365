@@ -1,17 +1,16 @@
 function Remove-OfficeLicense { 
     <#
+    .SYNOPSIS
+    Remove Product Key and License from an existing Office Install
 
-.SYNOPSIS
-Remove Product Key and License from an existing Office Install
+    .DESCRIPTION
+    Remove Product Key and License from an existing Office Install
+    Often used when moving from one Office 365 tenant to another.
 
-.DESCRIPTION
-Remove Product Key and License from an existing Office Install
-Often used when moving from one Office 365 tenant to another.
+    .EXAMPLE
+    Remove-OfficeLicense
 
-.EXAMPLE
-Remove-OfficeLicense
-
-#>
+    #>
     Start-Transcript
 
     $licrem = join-path $env:temp OfficeProPlusLicenseRemoved.txt
