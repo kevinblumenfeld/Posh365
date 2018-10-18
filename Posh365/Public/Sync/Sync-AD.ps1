@@ -1,7 +1,7 @@
 function Sync-AD {
 
 Param ()
-<#
+    <#
     .SYNOPSIS
     Force Replication on each Domain Controller in the Forest 
     
