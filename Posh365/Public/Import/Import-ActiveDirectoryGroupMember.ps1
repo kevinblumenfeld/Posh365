@@ -1,24 +1,24 @@
 function Import-ActiveDirectoryGroupMember { 
     <#
-.SYNOPSIS
-Import Active Directory Group Members
+    .SYNOPSIS
+    Import Active Directory Group Members
 
-.DESCRIPTION
-Import Active Directory Group Members
+    .DESCRIPTION
+    Import Active Directory Group Members
 
-.PARAMETER Groups
-CSV of new AD Groups and Members
+    .PARAMETER Groups
+    CSV of new AD Groups and Members
 
-.EXAMPLE
-Import-Csv .\GroupsAndMembers.csv | Import-ActiveDirectoryGroupMember
+    .EXAMPLE
+    Import-Csv .\GroupsAndMembers.csv | Import-ActiveDirectoryGroupMember
 
-#>
+    #>
 
     [CmdletBinding()]
     param (
 
         [Parameter(ValueFromPipeline = $true, Mandatory = $true)]
-        $Group
+        [PSObject]$Group
     )
     Begin {
         Import-Module ActiveDirectory -Verbose:$False
