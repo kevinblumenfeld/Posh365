@@ -15,7 +15,7 @@ function Get-DistributionGroupMembersHash {
     .EXAMPLE
         Get-DistributionGroup -resultsize unlimited | Get-DistributionGroupMembersHash -Recurse -Verbose
 
-#>
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]

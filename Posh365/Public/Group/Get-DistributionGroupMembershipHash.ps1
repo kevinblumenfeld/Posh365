@@ -15,7 +15,7 @@ function Get-DistributionGroupMembershipHash {
     .EXAMPLE
         Get-Content ./primaries.txt | Get-DistributionGroupMembershipHash -Recurse -Verbose
 
-#>
+    #>
     [CmdletBinding(SupportsShouldProcess = $true)]
     param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]

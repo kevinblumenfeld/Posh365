@@ -1,82 +1,82 @@
 ﻿function Export-AndImportUnifiedGroups {
     <#
-.SYNOPSIS 
-Export, Import, and update Unfied Groups
+    .SYNOPSIS 
+    Export, Import, and update Unfied Groups
 
-.DESCRIPTION
-Use this script to backup, restore, export, import, and update Unified Groups,
-primarily when migrating group settings between tenants.
+    .DESCRIPTION
+    Use this script to backup, restore, export, import, and update Unified Groups,
+    primarily when migrating group settings between tenants.
 
-In a 1-stage migration, you will export unified groups from a source tenant,
-add the domains to the target tenant, and then import the groups with users into 
-the target tenant. To do this, you'll use the -Mode Import -IncludeUsers 
-parameters when importing into the target tenant.
+    In a 1-stage migration, you will export unified groups from a source tenant,
+    add the domains to the target tenant, and then import the groups with users into 
+    the target tenant. To do this, you'll use the -Mode Import -IncludeUsers 
+    parameters when importing into the target tenant.
 
-In a 2-stage migration, you will export unified groups from a source tenant,
-import the groups to the target tenant, synchronize the data, and then add the
-domains at a later date.  Once the domains are added, you can re-run the script
-with the -Mode Set parameter to import the users.
+    In a 2-stage migration, you will export unified groups from a source tenant,
+    import the groups to the target tenant, synchronize the data, and then add the
+    domains at a later date.  Once the domains are added, you can re-run the script
+    with the -Mode Set parameter to import the users.
 
-.PARAMETER IncludeUsers
-When running an Import, if the domains have been migrated, use this switch to
-import the users as well.
+    .PARAMETER IncludeUsers
+    When running an Import, if the domains have been migrated, use this switch to
+    import the users as well.
 
-.PARAMETER Mode
-Valid options are Export, Import, and Set.
-- Export
-  Use when exporting Unified Groups. Converts objects/aliases to fully-qualified
-  SMTP Addresses.
+    .PARAMETER Mode
+    Valid options are Export, Import, and Set.
+    - Export
+    Use when exporting Unified Groups. Converts objects/aliases to fully-qualified
+    SMTP Addresses.
 
-- Import
-  Use when importing Unified Groups. If domains haven't been moved between
-  source and target during a migration, do nothing.  If domains have been moved,
-  use the "IncludeUsers" switch.
+    - Import
+    Use when importing Unified Groups. If domains haven't been moved between
+    source and target during a migration, do nothing.  If domains have been moved,
+    use the "IncludeUsers" switch.
 
-- Set
-  If performing a 2-stage migration (pre-create groups so content can be staged
-  and then moving domains), run this param after the domains have been migrated
-  to add the users back to the groups.
+    - Set
+    If performing a 2-stage migration (pre-create groups so content can be staged
+    and then moving domains), run this param after the domains have been migrated
+    to add the users back to the groups.
 
-.PARAMETER RewriteTargetDomain
-Use this switch to update the target domain address for users.  You can use this
-with any mode (Export, Import, Set) to update the SMTP suffix of the users that 
-will be added back to groups.  Useful if you are performing a tenant to tenant
-migration but not keeping the same address space (such as a divestiture).
+    .PARAMETER RewriteTargetDomain
+    Use this switch to update the target domain address for users.  You can use this
+    with any mode (Export, Import, Set) to update the SMTP suffix of the users that 
+    will be added back to groups.  Useful if you are performing a tenant to tenant
+    migration but not keeping the same address space (such as a divestiture).
 
-.EXAMPLE
-Export-AndImportUnifiedGroups -Mode Export -File MyUnifiedGroups.csv
-Export unified groups.
+    .EXAMPLE
+    Export-AndImportUnifiedGroups -Mode Export -File MyUnifiedGroups.csv
+    Export unified groups.
 
-.EXAMPLE
-Export-AndImportUnifiedGroups -Mode Import -File MyUnifiedGroups.Csv -IncludeUsers
-Import unified groups in a 1-stage migration (imports groups and users together)
+    .EXAMPLE
+    Export-AndImportUnifiedGroups -Mode Import -File MyUnifiedGroups.Csv -IncludeUsers
+    Import unified groups in a 1-stage migration (imports groups and users together)
 
-.EXAMPLE
-Export-AndImportUnifiedGroups -Mode Import -File MyUnifiedGroups.csv
-Import unified groups in a 2-stage migration (import groups first, import users
-later in a second pass).
+    .EXAMPLE
+    Export-AndImportUnifiedGroups -Mode Import -File MyUnifiedGroups.csv
+    Import unified groups in a 2-stage migration (import groups first, import users
+    later in a second pass).
 
-.EXAMPLE
-Export-AndImportUnifiedGroups -Mode Set -File MyUnifiedGroups.csv
-Import users and set additional properties of previously imported Unified Groups.
+    .EXAMPLE
+    Export-AndImportUnifiedGroups -Mode Set -File MyUnifiedGroups.csv
+    Import users and set additional properties of previously imported Unified Groups.
 
-.EXAMPLE
-Export-AndImportUnifiedGroups -IncludeUsers -Mode Import -File MyUnifiedGroups.csv -RewriteTargetDomain -SourceDomain contoso.com -TargetDomain fabrikam.com
-Import users while rewriting source domain from contoso.com to fabrikam.com in a
-single-pass (1 stage) migration.  Use this when migrating Office 365 groups but not
-preserving the domain name (such as in a divestiture scenario).
+    .EXAMPLE
+    Export-AndImportUnifiedGroups -IncludeUsers -Mode Import -File MyUnifiedGroups.csv -RewriteTargetDomain -SourceDomain contoso.com -TargetDomain fabrikam.com
+    Import users while rewriting source domain from contoso.com to fabrikam.com in a
+    single-pass (1 stage) migration.  Use this when migrating Office 365 groups but not
+    preserving the domain name (such as in a divestiture scenario).
 
-.LINK
-Credit 
-Aaron Guilmette
-https://gallery.technet.microsoft.com/Export-and-Import-Unified-e73d82ba
+    .LINK
+    Credit 
+    Aaron Guilmette
+    https://gallery.technet.microsoft.com/Export-and-Import-Unified-e73d82ba
 
-.NOTES
-2017-10-27	- Fixed typo for Owners.
-2017-10-25 	- Fixed parameter typos.
-			- Updated import/set processing to check recipients prior to processing
-			  and remove users that aren't valid recipients in the tenant.
-#>
+    .NOTES
+    2017-10-27	- Fixed typo for Owners.
+    2017-10-25 	- Fixed parameter typos.
+                - Updated import/set processing to check recipients prior to processing
+                and remove users that aren't valid recipients in the tenant.
+    #>
     param (
         [string]$File,
         [switch]$IncludeUsers,	

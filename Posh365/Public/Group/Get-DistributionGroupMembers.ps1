@@ -17,7 +17,7 @@ function Get-DistributionGroupMembers {
     .EXAMPLE
         "Group01@contoso.com" | Get-DistributionGroupMembers -Recurse -Verbose
 
-#>
+    #>
     [CmdletBinding(SupportsShouldProcess = $true)]
     param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
