@@ -1,8 +1,6 @@
 Function New-HybridMailbox {
     <#
     .SYNOPSIS
-        <#
-    .SYNOPSIS
     Designed to create and manage users in Hybrid Office 365 environment.
     On-Premises Exchange server is required.  
     
