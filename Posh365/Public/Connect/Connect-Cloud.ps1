@@ -363,6 +363,7 @@ function Connect-Cloud {
                 Catch {
                     $_
                 }
+                Import-Module (Import-PSSession $sfboSession -AllowClobber) -Global | Out-Null
             }
         }
         # SharePoint Online
