@@ -19,8 +19,7 @@ Parameter description
 Import-Csv .\CSVofADUsers.csv | Export-CsvJoinedData
 
 .EXAMPLE
-Import-Csv .\test11.csv | 
-where {$_.UserPrincipalName -notlike "HealthMailbox*" -or $_.UserPrincipalName -notlike "SystemMailbox{*" -or $_.UserPrincipalName -notlike "SystemMailbox{*" -or } |  Import-ADData -LogOnly -UserGroupOrObject User -AddRemoveOrReplace Add -Attribute ProxyAddresses -FindADUserGroupOrObjectBy UserPrincipalName -FindInColumn Joined -Verbose
+Import-Csv .\AllMbxs.csv | Export-CsvJoinedData -ReportPath C:\scripts -FileName "test.csv" -FindInColumn Alias -AddSuffix '@contoso.mail.onmicrosoft.com' -AddPrefix "smtp:" -Filter "EmailAddressPolicyEnabled" -Exclude "FALSE" -ExcludeSystemMailboxes
 
 
 
