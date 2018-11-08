@@ -102,15 +102,15 @@ function Get-EXOGroup {
     Process {
         if ($ListofGroups) {
             foreach ($CurGroup in $ListofGroups) {
-                $Members = Get-DistributionGroupMember -Identity $CurGroup | Select-Object name, primarysmtpaddress
-                Get-DistributionGroup -identity $CurGroup | Select-Object ($Selectproperties + $CalculatedProps)
+                $Members = Get-DistributionGroupMember -Identity $CurGroup -ResultSize Unlimited | Select-Object name, primarysmtpaddress
+                Get-DistributionGroup -identity $CurGroup -ResultSize Unlimited | Select-Object ($Selectproperties + $CalculatedProps)
             }
         }
         else {
             $Groups = Get-DistributionGroup -ResultSize unlimited
             foreach ($CurGroup in $Groups) {
-                $Members = Get-DistributionGroupMember -Identity $CurGroup.identity | Select-Object name, primarysmtpaddress
-                Get-DistributionGroup -identity $CurGroup.identity | Select-Object ($Selectproperties + $CalculatedProps)
+                $Members = Get-DistributionGroupMember -Identity $CurGroup.identity -ResultSize Unlimited | Select-Object name, primarysmtpaddress
+                Get-DistributionGroup -identity $CurGroup.identity -ResultSize Unlimited | Select-Object ($Selectproperties + $CalculatedProps)
             }
         }
     }

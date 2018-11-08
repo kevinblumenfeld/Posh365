@@ -43,21 +43,31 @@ function Get-SendOnBehalfPerms {
                     Get-ADGroupMember $_ -Recursive -ErrorAction stop | 
                         ForEach-Object {
                         New-Object -TypeName psobject -property @{
-                            Object     = $ADHashDN["$mailbox"].DisplayName
-                            UPN        = $ADHashDN["$mailbox"].UPN
-                            Granted    = $ADHashDN["$($_.distinguishedname)"].DisplayName
-                            GrantedUPN = $ADHashDN["$($_.distinguishedname)"].UPN
-                            Permission = "SendOnBehalf"
+                            Object             = $ADHashDN["$mailbox"].DisplayName
+                            UPN                = $ADHashDN["$mailbox"].UPN
+                            PrimarySMTPAddress = $ADHashDN["$mailbox"].PrimarySMTPAddress
+                            Granted            = $ADHashDN["$($_.distinguishedname)"].DisplayName
+                            GrantedUPN         = $ADHashDN["$($_.distinguishedname)"].UPN
+                            GrantedSMTP        = $ADHashDN["$($_.distinguishedname)"].PrimarySMTPAddress
+                            Checking           = $CN
+                            GroupMember        = $($_.distinguishedname)
+                            Type               = "GroupMember"
+                            Permission         = "SendOnBehalf"
                         }
                     }
                 } 
                 Catch {
                     New-Object -TypeName psobject -property @{
-                        Object     = $ADHashDN["$mailbox"].DisplayName
-                        UPN        = $ADHashDN["$mailbox"].UPN
-                        Granted    = $ADHashCN["$CN"].DisplayName
-                        GrantedUPN = $ADHashCN["$CN"].UPN
-                        Permission = "SendOnBehalf"
+                        Object             = $ADHashDN["$mailbox"].DisplayName
+                        UPN                = $ADHashDN["$mailbox"].UPN
+                        PrimarySMTPAddress = $ADHashDN["$mailbox"].PrimarySMTPAddress
+                        Granted            = $ADHashCN["$CN"].DisplayName
+                        GrantedUPN         = $ADHashCN["$CN"].UPN
+                        GrantedSMTP        = $ADHash["$CN"].PrimarySMTPAddress
+                        Checking           = $CN
+                        GroupMember        = ""
+                        Type               = "User"
+                        Permission         = "SendOnBehalf"
                     }  
                 }
             }

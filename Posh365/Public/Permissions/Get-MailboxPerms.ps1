@@ -121,19 +121,22 @@
 
     if (! $SkipSendAs) {
         Write-Verbose "Getting SendAs permissions for each mailbox and writing to file"
-        $allMailboxes | Get-SendAsPerms -ADHashDN $ADHashDN -ADHash $ADHash  | Select Object, PrimarySMTPAddress, UPN, Granted, GrantedUPN, GrantedSMTP, Permission |
+        $allMailboxes | Get-SendAsPerms -ADHashDN $ADHashDN -ADHash $ADHash  |
+            Select Object, UPN, PrimarySMTPAddress, Granted, GrantedUPN, GrantedSMTP, Checking, GroupMember, Type, Permission |
             Export-csv (Join-Path $ReportPath "SendAsPerms.csv") -NoTypeInformation
     }
     
     if (! $SkipSendOnBehalf) {
         Write-Verbose "Getting SendOnBehalf permissions for each mailbox and writing to file"
-        $allMailboxes | Get-SendOnBehalfPerms -ADHashCN $ADHashCN | Select Object, UPN, Granted, GrantedUPN, Permission |
+        $allMailboxes | Get-SendOnBehalfPerms -ADHashCN $ADHashCN | 
+            Select Object, UPN, PrimarySMTPAddress, Granted, GrantedUPN, GrantedSMTP, Checking, GroupMember, Type, Permission |
             Export-csv (Join-Path $ReportPath "SendOnBehalfPerms.csv") -NoTypeInformation
     }
     
     if (! $SkipFullAccess) {
         Write-Verbose "Getting FullAccess permissions for each mailbox and writing to file"
-        $allMailboxes | Get-FullAccessPerms -ADHashDN $ADHashDN -ADHash $ADHash | Select Object, UPN, Granted, GrantedUPN, Permission |
+        $allMailboxes | Get-FullAccessPerms -ADHashDN $ADHashDN -ADHash $ADHash |
+        Select Object, UPN, PrimarySMTPAddress, Granted, GrantedUPN, GrantedSMTP, Checking, GroupMember, Type, Permission |
             Export-csv (Join-Path $ReportPath "FullAccessPerms.csv") -NoTypeInformation
     }
 

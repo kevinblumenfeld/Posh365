@@ -56,6 +56,9 @@
                             Granted            = $ADHashDN["$($_.distinguishedname)"].DisplayName
                             GrantedUPN         = $ADHashDN["$($_.distinguishedname)"].UPN
                             GrantedSMTP        = $ADHashDN["$($_.distinguishedname)"].PrimarySMTPAddress
+                            Checking           = $User
+                            GroupMember        = $($_.distinguishedname)
+                            Type               = "GroupMember"
                             Permission         = "SendAs"
                         }    
                     }
@@ -68,6 +71,9 @@
                         Granted            = $ADHash["$User"].DisplayName
                         GrantedUPN         = $ADHash["$User"].UPN
                         GrantedSMTP        = $ADHash["$User"].PrimarySMTPAddress
+                        Checking           = $User
+                        GroupMember        = ""
+                        Type               = "User"
                         Permission         = "SendAs"
                     }
                 }

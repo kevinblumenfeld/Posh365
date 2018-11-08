@@ -50,21 +50,31 @@ function Get-FullAccessPerms {
                     Get-ADGroupMember ($_.user -split "\\")[1] -Recursive -ErrorAction stop | 
                         ForEach-Object {
                         New-Object -TypeName psobject -property @{
-                            Object     = $ADHashDN["$mailbox"].DisplayName
-                            UPN        = $ADHashDN["$mailbox"].UPN
-                            Granted    = $ADHashDN["$($_.distinguishedname)"].DisplayName
-                            GrantedUPN = $ADHashDN["$($_.distinguishedname)"].UPN
-                            Permission = "FullAccess"
+                            Object             = $ADHashDN["$mailbox"].DisplayName
+                            UPN                = $ADHashDN["$mailbox"].UPN
+                            PrimarySMTPAddress = $ADHashDN["$mailbox"].PrimarySMTPAddress
+                            Granted            = $ADHashDN["$($_.distinguishedname)"].DisplayName
+                            GrantedUPN         = $ADHashDN["$($_.distinguishedname)"].UPN
+                            GrantedSMTP        = $ADHashDN["$($_.distinguishedname)"].PrimarySMTPAddress
+                            Checking           = $User
+                            GroupMember        = $($_.distinguishedname)
+                            Type               = "GroupMember"
+                            Permission         = "FullAccess"
                         }  
                     }
                 } 
                 Catch {
                     New-Object -TypeName psobject -property @{
-                        Object     = $ADHashDN["$mailbox"].DisplayName
-                        UPN        = $ADHashDN["$mailbox"].UPN
-                        Granted    = $ADHash["$User"].DisplayName
-                        GrantedUPN = $ADHash["$User"].UPN
-                        Permission = "FullAccess"
+                        Object             = $ADHashDN["$mailbox"].DisplayName
+                        UPN                = $ADHashDN["$mailbox"].UPN
+                        PrimarySMTPAddress = $ADHashDN["$mailbox"].PrimarySMTPAddress
+                        Granted            = $ADHash["$User"].DisplayName
+                        GrantedUPN         = $ADHash["$User"].UPN
+                        GrantedSMTP        = $ADHash["$User"].PrimarySMTPAddress
+                        Checking           = $User
+                        GroupMember        = ""
+                        Type               = "User"
+                        Permission         = "FullAccess"
                     }  
                 }
             }
