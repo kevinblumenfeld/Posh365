@@ -63,7 +63,7 @@ function Get-SendOnBehalfPerms {
                         PrimarySMTPAddress = $ADHashDN["$mailbox"].PrimarySMTPAddress
                         Granted            = $ADHashCN["$CN"].DisplayName
                         GrantedUPN         = $ADHashCN["$CN"].UPN
-                        GrantedSMTP        = $ADHash["$CN"].PrimarySMTPAddress
+                        GrantedSMTP        = $ADHashCN["$CN"].PrimarySMTPAddress
                         Checking           = $CN
                         GroupMember        = ""
                         Type               = "User"
