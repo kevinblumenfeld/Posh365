@@ -19,6 +19,9 @@ function Get-SendOnBehalfPerms {
         $DistinguishedName,
         
         [parameter()]
+        [hashtable] $ADHashDN,
+
+        [parameter()]
         [hashtable] $ADHashCN
     )
     Begin {
@@ -38,9 +41,11 @@ function Get-SendOnBehalfPerms {
             (Get-Mailbox $curDN -erroraction silentlycontinue).GrantSendOnBehalfTo |
                 where-object {$_ -ne $null}  | ForEach-Object {
                 $CN = $_
-                Write-Verbose "Has Send On Behalf: `t $CN"
+                $DisplayName = $ADHashCN["$CN"].DisplayName
+                Write-Verbose "Has Send On Behalf DN: `t $DisplayName"
+                Write-Verbose "                   CN: `t $CN"
                 try {
-                    Get-ADGroupMember $_ -Recursive -ErrorAction stop | 
+                    Get-ADGroupMember "$DisplayName" -Recursive -ErrorAction stop | 
                         ForEach-Object {
                         New-Object -TypeName psobject -property @{
                             Object             = $ADHashDN["$mailbox"].DisplayName

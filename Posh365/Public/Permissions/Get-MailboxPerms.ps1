@@ -104,8 +104,8 @@
 
     $DomainNameHash = Get-DomainNameHash
 
-    Write-Verbose "Importing Active Directory Users that have at least one proxy address"
-    $AllADUsers = Get-ADUsersWithProxyAddress -DomainNameHash $DomainNameHash
+    Write-Verbose "Importing Active Directory Users and Groups that have at least one proxy address"
+    $AllADUsers = Get-ADUsersandGroupsWithProxyAddress -DomainNameHash $DomainNameHash
 
     Write-Verbose "Caching hash table. LogonName as Key and Values of DisplayName & UPN"
     $ADHash = $AllADUsers | Get-ADHash
@@ -128,7 +128,7 @@
     
     if (! $SkipSendOnBehalf) {
         Write-Verbose "Getting SendOnBehalf permissions for each mailbox and writing to file"
-        $allMailboxes | Get-SendOnBehalfPerms -ADHashCN $ADHashCN | 
+        $allMailboxes | Get-SendOnBehalfPerms -ADHashCN $ADHashCN -ADHashDN $ADHashDN| 
             Select Object, UPN, PrimarySMTPAddress, Granted, GrantedUPN, GrantedSMTP, Checking, GroupMember, Type, Permission |
             Export-csv (Join-Path $ReportPath "SendOnBehalfPerms.csv") -NoTypeInformation
     }
