@@ -55,7 +55,35 @@ function Get-365Info {
         if ($servicesSplat.count -gt 0) {
             Connect-Cloud -Tenant $Tenant @servicesSplat -Verbose:$false
         }
+        $RecipientProperties = @(
+            'RecipientTypeDetails', 'Name', 'DisplayName', 'Office', 'Alias', 'Identity', 'PrimarySmtpAddress'
+            'WindowsLiveID', 'LitigationHoldEnabled', 'EmailAddresses'
+        )
+    
+        $MsolUserProperties = @(
+            'UserPrincipalName', 'DisplayName', 'Title', 'FirstName', 'LastName', 'StreetAddress'
+            'City', 'State', 'PostalCode', 'Country', 'PhoneNumber', 'MobilePhone', 'Fax', 'Department', 'Office'
+            'LastDirSyncTime', 'IsLicensed', 'ProxyAddresses'
+        )
+        $EXOGroupProperties = @(
+            'Name', 'DisplayName', 'Alias', 'GroupType', 'Identity', 'PrimarySmtpAddress', 'RecipientTypeDetails'
+            'WindowsEmailAddress', 'AcceptMessagesOnlyFromSendersOrMembers', 'ManagedBy', 'EmailAddresses', 'x500'
+            'membersName', 'membersSMTP'
+        )
+        $EXOMailboxProperties = @(
+            'Name', 'RecipientTypeDetails', 'DisplayName', 'UserPrincipalName', 'Identity', 'PrimarySmtpAddress', 'Alias'
+            'ForwardingAddress', 'ForwardingSmtpAddress', 'LitigationHoldDate', 'AccountDisabled', 'DeliverToMailboxAndForward'
+            'HiddenFromAddressListsEnabled', 'IsDirSynced', 'LitigationHoldEnabled', 'LitigationHoldDuration'
+            'LitigationHoldOwner', 'Office', 'RetentionPolicy', 'WindowsEmailAddress', 'ArchiveName', 'AcceptMessagesOnlyFrom'
+            'AcceptMessagesOnlyFromDLMembers', 'AcceptMessagesOnlyFromSendersOrMembers', 'RejectMessagesFrom'
+            'RejectMessagesFromDLMembers', 'RejectMessagesFromSendersOrMembers', 'InPlaceHolds', 'x500', 'EmailAddresses'
+        )
+
+
     }
+
+
+
     Process {
         
         $RecipientFileName = ($Tenant + "-Recipients.csv")
@@ -76,27 +104,27 @@ function Get-365Info {
         if (! $Filtered) {
 
             Write-Verbose "Gathering 365 Recipients"
-            Get-365Recipient | Export-Csv .\$RecipientFileName -notypeinformation -encoding UTF8
             Get-365Recipient -DetailedReport | Export-Csv .\$RecipientFileNameDetailed -notypeinformation -encoding UTF8
+            Import-Csv .\$RecipientFileNameDetailed | Select $RecipientProperties | Export-Csv .\$RecipientFileName -notypeinformation -encoding UTF8
         
             Write-Verbose "Gathering MsolUsers"
-            Get-365MsolUser | Export-Csv .\$MsolUserFileName -notypeinformation -encoding UTF8
             Get-365MsolUser -DetailedReport | Export-Csv .\$MsolUserFileNameDetailed -notypeinformation -encoding UTF8
+            Import-Csv .\$MsolUserFileNameDetailed | Select $MsolUserProperties | Export-Csv .\$MsolUserFileName -notypeinformation -encoding UTF8
         
             Write-Verbose "Gathering MsolGroups"
             Get-365MsolGroup | Export-Csv .\$MsolGroupFileName -notypeinformation -encoding UTF8
         
             Write-Verbose "Gathering Distribution & Mail-Enabled Security Groups"
-            Get-EXOGroup | Export-Csv .\$EXOGroupFileName -notypeinformation -encoding UTF8
             Get-EXOGroup -DetailedReport | Export-Csv .\$EXOGroupFileNameDetailed -notypeinformation -encoding UTF8
+            Import-Csv .\$EXOGroupFileNameDetailed | Select $EXOGroupProperties | Export-Csv .\$EXOGroupFileName -notypeinformation -encoding UTF8
         
             Write-Verbose "Gathering Exchange Online Mailboxes"
-            Get-EXOMailbox | Export-Csv .\$EXOMailboxFileName -notypeinformation -encoding UTF8
             Get-EXOMailbox -DetailedReport | Export-Csv .\$EXOMailboxFileNameDetailed -notypeinformation -encoding UTF8
+            Import-Csv .\$EXOMailboxFileNameDetailed | Select $EXOMailboxProperties | Export-Csv .\$EXOMailboxFileName -notypeinformation -encoding UTF8
             
             Write-Verbose "Gathering Exchange Online Archive Mailboxes"
-            Get-EXOMailbox -ArchivesOnly | Export-Csv .\$EXOArchiveMailboxFileName -notypeinformation -encoding UTF8
             Get-EXOMailbox -ArchivesOnly -DetailedReport | Export-Csv .\$EXOArchiveMailboxFileNameDetailed -notypeinformation -encoding UTF8
+            Import-Csv .\$EXOArchiveMailboxFileNameDetailed | Select $EXOMailboxProperties | Export-Csv .\$EXOArchiveMailboxFileName -notypeinformation -encoding UTF8
             
             Write-Verbose "Gathering Exchange Online Resource Mailboxes and Calendar Processing"
             Get-EXOResourceMailbox | Export-Csv .\$EXOResourceMailboxFileName -notypeinformation -encoding UTF8
@@ -115,34 +143,32 @@ function Get-365Info {
         else {
 
             Write-Verbose "Gathering 365 Recipients - filtered"
-            '{UserPrincipalName -like "*contoso.com" -or 
-            emailaddresses -like "*contoso.com" -or 
-            ExternalEmailAddress -like "*contoso.com" -or 
-            PrimarySmtpAddress -like "*contoso.com"}' | Get-365Recipient | Export-Csv .\$RecipientFileName -notypeinformation -encoding UTF8
             
             '{UserPrincipalName -like "*contoso.com" -or 
             emailaddresses -like "*contoso.com" -or 
             ExternalEmailAddress -like "*contoso.com" -or 
             PrimarySmtpAddress -like "*contoso.com"}' | Get-365Recipient -DetailedReport | Export-Csv .\$RecipientFileNameDetailed -notypeinformation -encoding UTF8
+            Import-Csv .\$RecipientFileNameDetailed | Select $RecipientProperties | Export-Csv .\$RecipientFileName -notypeinformation -encoding UTF8
             
             Write-Verbose "Gathering MsolUsers - filtered"
-            'contoso.com' | Get-365MsolUser | Export-Csv .\$MsolUserFileName -notypeinformation -encoding UTF8
+            
             'contoso.com' | Get-365MsolUser -DetailedReport | Export-Csv .\$MsolUserFileNameDetailed -notypeinformation -encoding UTF8
-    
+            Import-Csv .\$MsolUserFileNameDetailed | Select $MsolUserProperties | Export-Csv .\$MsolUserFileName -notypeinformation -encoding UTF8
+
             Write-Verbose "Gathering MsolGroups - filtered"
             Get-MsolGroup -All | Where-Object {$_.proxyaddresses -like "*contoso.com"} | Select -ExpandProperty ObjectId | Get-365MsolGroup | Export-Csv .\$MsolGroupFileName -notypeinformation -encoding UTF8
     
             Write-Verbose "Gathering Distribution & Mail-Enabled Security Groups - filtered"
-            Get-DistributionGroup -Filter "emailaddresses -like '*contoso.com*'" -ResultSize Unlimited | Select -ExpandProperty Name | Get-EXOGroup | Export-Csv .\$EXOGroupFileName -notypeinformation -encoding UTF8
             Get-DistributionGroup -Filter "emailaddresses -like '*contoso.com*'" -ResultSize Unlimited | Select -ExpandProperty Name | Get-EXOGroup -DetailedReport | Export-Csv .\$EXOGroupFileNameDetailed -notypeinformation -encoding UTF8
+            Import-Csv .\$EXOGroupFileNameDetailed | Select $EXOGroupProperties | Export-Csv .\$EXOGroupFileName -notypeinformation -encoding UTF8
     
             Write-Verbose "Gathering Exchange Online Mailboxes - filtered"
-            '{emailaddresses -like "*contoso.com"}' | Get-EXOMailbox | Export-Csv .\$EXOMailboxFileName -notypeinformation -encoding UTF8
             '{emailaddresses -like "*contoso.com"}' | Get-EXOMailbox -DetailedReport | Export-Csv .\$EXOMailboxFileNameDetailed -notypeinformation -encoding UTF8
+            Import-Csv .\$EXOMailboxFileNameDetailed | Select $EXOMailboxProperties | Export-Csv .\$EXOMailboxFileName -notypeinformation -encoding UTF8
             
             Write-Verbose "Gathering Exchange Online Archive Mailboxes - filtered"
-            '{emailaddresses -like "*contoso.com"}' | Get-EXOMailbox -ArchivesOnly | Export-Csv .\$EXOArchiveMailboxFileName -notypeinformation -encoding UTF8
             '{emailaddresses -like "*contoso.com"}' | Get-EXOMailbox -ArchivesOnly -DetailedReport | Export-Csv .\$EXOArchiveMailboxFileNameDetailed -notypeinformation -encoding UTF8
+            Import-Csv .\$EXOArchiveMailboxFileNameDetailed | Select $EXOMailboxProperties | Export-Csv .\$EXOArchiveMailboxFileName -notypeinformation -encoding UTF8
 
             Write-Verbose "Gathering Exchange Online Resource Mailboxes and Calendar Processing"
             '{emailaddresses -like "*contoso.com"}' | Get-EXOResourceMailbox | Export-Csv .\$EXOResourceMailboxFileName -notypeinformation -encoding UTF8

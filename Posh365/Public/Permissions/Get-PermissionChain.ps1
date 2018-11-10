@@ -1,5 +1,5 @@
 ﻿function Get-PermissionChain {
-    [CmdletBinding()]
+
     <#
     .SYNOPSIS
     With the exception of Full Access permissions, mailbox permissions do not currently allow access cross-premises (between Office 365, Exchange OnPrem & vice-versa).
@@ -25,6 +25,7 @@
     "mailbox01@contoso.com","mailbox02@contoso.com" | Get-PermissionChain | Export-Csv .\MigrationBatch.csv -notypeinformation
     
     #>
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [string] $Names,
