@@ -2,24 +2,30 @@ function Get-OktaAppReport {
     Param (
 
     )
-    $AppHash = Get-OktaAppHash
-    $AppHash.keys | ForEach-Object {
+    $App = Get-OktaApp
 
-        $key = $_
-        [pscustomobject]@{
-            Id                   = $key
-            Name                 = $AppHash[$key].Name
-            Label                = $AppHash[$key].Label
-            Status               = $AppHash[$key].Status
-            Created              = $AppHash[$key].Created
-            LastUpdated          = $AppHash[$key].LastUpdated
-            Activated            = $AppHash[$key].Activated
-            UserNameTemplate     = $AppHash[$key].UserNameTemplate
-            UserNameTemplateType = $AppHash[$key].UserNameTemplateType
-            CredentialScheme     = $AppHash[$key].CredentialScheme
-            Features             = $AppHash[$key].Features
+    foreach ($CurApp in $App) {
+
+        $Id = $CurApp.Id
+        $Accessibility = ($CurApp).Accessibility
+        $Visibility = ($CurApp).Visibility
+        $Credentials = ($CurApp).Credentials
+        $Features = ($CurApp).Features
+
+        [PSCustomObject]@{
+            Name                 = $CurApp.Name
+            Label                = $CurApp.Label
+            Status               = $CurApp.Status
+            Created              = $CurApp.Created
+            LastUpdated          = $CurApp.LastUpdated
+            Activated            = $CurApp.Activated
+            UserNameTemplate     = $Credentials.UserNameTemplate.Template
+            UserNameTemplateType = $Credentials.UserNameTemplate.Type
+            CredentialScheme     = $Credentials.Scheme
+            Features             = ($Features -join (';'))            
         }
 
     }
+
     
 }

@@ -3,6 +3,7 @@ function Get-OktaAppUserReportByUserId {
         [Parameter(ValueFromPipeline, ValueFromPipelineByPropertyName)]
         $id
     )
+    # Not Ready (or started)
 
     $App2UserHash = Get-OktaAppUserHash
     $AppHash = Get-OktaAppHash
