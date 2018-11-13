@@ -22,6 +22,7 @@ function Get-OktaAppReport {
             UserNameTemplate     = $Credentials.UserNameTemplate.Template
             UserNameTemplateType = $Credentials.UserNameTemplate.Type
             CredentialScheme     = $Credentials.Scheme
+            AppId                = $Id
             Features             = ($Features -join (';'))            
         }
 

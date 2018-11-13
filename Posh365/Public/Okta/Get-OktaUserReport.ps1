@@ -16,6 +16,7 @@ function Get-OktaUserReport {
             LastName         = $ProfileDetails.LastName
             Login            = $ProfileDetails.Login
             Email            = $ProfileDetails.Email
+            Id               = $Id
             Status           = $CurUser.Status
             Created          = $CurUser.Created
             Activated        = $CurUser.Activated
