@@ -78,7 +78,6 @@
 
     }
     End {
-        # Add Original List to Results, which should be pointless and never done
         if (-not $CombineResultsWithOriginalList) {
             Foreach ($name in $AllNames) {
                 $Output.Remove($name) > $null
