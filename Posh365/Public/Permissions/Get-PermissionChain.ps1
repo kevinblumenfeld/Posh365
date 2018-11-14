@@ -61,28 +61,29 @@
 
         New-Item -ItemType Directory c:\pScripts -ErrorAction SilentlyContinue
         
-        if (![System.IO.File]::Exists("$ReportPath" + "\allPermissions.csv")) {
+        if (![System.IO.File]::Exists((Join-Path $ReportPath "allPermissions.csv"))) {
             Get-MailboxPerms -ReportPath "C:\PermsReports"
         }
         If ($GeneratePermissionCacheOnly) {
             Break
         }
                 
-        $Data = Import-Csv ("$ReportPath" + "allPermissions.csv")
-        [PSObject[]]$Output = $null
+        $Data = Import-Csv (Join-Path $ReportPath "allPermissions.csv")
+        $Output = [System.Collections.Generic.HashSet[string]]::new()
+        $AllNames = [System.Collections.Generic.HashSet[string]]::new()
     }
     Process {
-        
-        $Output += ($Names | Get-MigrationChain -DataSet $Data -swvar $swvar)
+        $AllNames.add($_) > $null
+        $Names | Get-MigrationChain -DataSet $Data -swvar $swvar | % { $Output.add($_) > $null } 
 
     }
     End {
         # Add Original List to Results, which should be pointless and never done
-        if ($CombineResultsWithOriginalList) {
-            Foreach ($name in $names) {
-                $Output += $name
+        if (-not $CombineResultsWithOriginalList) {
+            Foreach ($name in $AllNames) {
+                $Output.Remove($name) > $null
             }
         }
-        $Output | Sort -Unique
+        $Output | Sort
     }
 }
