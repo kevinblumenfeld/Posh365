@@ -1,5 +1,5 @@
 ﻿function Get-PermissionChain {
-
+    
     <#
     .SYNOPSIS
     With the exception of Full Access permissions, mailbox permissions do not currently allow access cross-premises (between Office 365, Exchange OnPrem & vice-versa).
@@ -17,15 +17,13 @@
     
     .EXAMPLE
     Get-Content .\UPNs.txt  | Get-PermissionChain -IgnoreFullAccess | Export-Csv .\MigrationBatch.csv -notypeinformation 
-
     .EXAMPLE
     Get-Content .\UPNs.txt  | Get-PermissionChain -IgnoreFullAccess -IgnoreSendOnBehalf | Export-Csv .\MigrationBatch.csv -notypeinformation 
-
     .EXAMPLE
     "mailbox01@contoso.com","mailbox02@contoso.com" | Get-PermissionChain | Export-Csv .\MigrationBatch.csv -notypeinformation
     
     #>
-    [CmdletBinding()]
+    
     param (
         [Parameter(Mandatory = $false, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [string] $Names,
@@ -43,7 +41,7 @@
         [switch] $IgnoreSendOnBehalf,
 
         [Parameter(Mandatory = $false)]
-        [switch] $DontCombineOutputwithOriginalList,
+        [switch] $CombineResultsWithOriginalList,
 
         [Parameter(Mandatory = $false, ParameterSetName = "Cache")]
         [switch] $GeneratePermissionCacheOnly
@@ -71,6 +69,7 @@
         }
                 
         $Data = Import-Csv ("$ReportPath" + "allPermissions.csv")
+        [PSObject[]]$Output = $null
     }
     Process {
         
@@ -78,9 +77,11 @@
 
     }
     End {
-        # Add Original List to Results
-        Foreach ($name in $names) {
-            $Output += $name
+        # Add Original List to Results, which should be pointless and never done
+        if ($CombineResultsWithOriginalList) {
+            Foreach ($name in $names) {
+                $Output += $name
+            }
         }
         $Output | Sort -Unique
     }
