@@ -90,6 +90,7 @@ function Get-365Info {
         $RecipientFileNameDetailed = ($Tenant + "-Recipients_Detailed.csv")
         $MsolUserFileName = ($Tenant + "-MsolUser.csv")
         $MsolUserFileNameDetailed = ($Tenant + "-MsolUser_Detailed.csv")
+        $MailContactFileName = ($Tenant + "-EXOMailContact.csv")
         $MsolGroupFileName = ($Tenant + "-MsolGroup.csv")
         $EXOGroupFileName = ($Tenant + "-EXOGroup.csv")
         $EXOGroupFileNameDetailed = ($Tenant + "-EXOGroup_Detailed.csv")
@@ -110,7 +111,10 @@ function Get-365Info {
             Write-Verbose "Gathering MsolUsers"
             Get-365MsolUser -DetailedReport | Export-Csv .\$MsolUserFileNameDetailed -notypeinformation -encoding UTF8
             Import-Csv .\$MsolUserFileNameDetailed | Select $MsolUserProperties | Export-Csv .\$MsolUserFileName -notypeinformation -encoding UTF8
-        
+
+            Write-Verbose "Gathering Mail Contacts"
+            Get-EXOMailContact | Export-Csv .\$MailContactFileName -notypeinformation -encoding UTF8
+                    
             Write-Verbose "Gathering MsolGroups"
             Get-365MsolGroup | Export-Csv .\$MsolGroupFileName -notypeinformation -encoding UTF8
         

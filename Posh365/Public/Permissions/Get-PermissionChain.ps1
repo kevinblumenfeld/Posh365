@@ -16,11 +16,20 @@
     "mailbox01@contoso.com" | Get-PermissionChain | Export-Csv .\MigrationBatch.csv -notypeinformation
     
     .EXAMPLE
+    
     Get-Content .\UPNs.txt  | Get-PermissionChain -IgnoreFullAccess | Export-Csv .\MigrationBatch.csv -notypeinformation 
     .EXAMPLE
+    
     Get-Content .\UPNs.txt  | Get-PermissionChain -IgnoreFullAccess -IgnoreSendOnBehalf | Export-Csv .\MigrationBatch.csv -notypeinformation 
+    
     .EXAMPLE
     "mailbox01@contoso.com","mailbox02@contoso.com" | Get-PermissionChain | Export-Csv .\MigrationBatch.csv -notypeinformation
+    
+    .EXAMPLE
+    Get-Content .\UPNs.txt | Get-PermissionChain -ReportPath C:\Scripts\perms  | % {$upn = $_ ; try {Get-Mailbox -Identity $upn -ErrorAction stop > $null} catch {$upn}}
+
+    Make sure you are connect to Exchange Online for this example.
+    This will verify that the mailbox has not been migrated to Exchange Online and only output the UPNs of mailboxes yet to be migrated
     
     #>
     
