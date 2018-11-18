@@ -37,7 +37,7 @@
                 continue
             }
             if ($Mailbox.ForwardingAddress -ne $null) {
-                $Forward = Get-Recipient $Mailbox.ForwardingAddress -ErrorAction 
+                $Forward = Get-Recipient $Mailbox.ForwardingAddress
 
                 $CurImport.ForwardingAddress = $Forward.PrimarySmtpAddress
             }
