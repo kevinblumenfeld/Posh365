@@ -23,23 +23,23 @@
     }
 
     $OnPremisesCredential = Get-Cred -Tenant $Tenant -Type OnPremMigration
-}
 
-foreach ($CurReady in $ReadyToMigrate) {
-    $MoveSplat = @{
-        Remote                     = $True
-        Identity                   = $CurReady.UserPrincipalName
-        BatchName                  = $CurReady.BatchName
-        RemoteHostName             = $CurReady.RemoteHostName
-        RemoteCredential           = $OnPremisesCredential
-        TargetDeliveryDomain       = $TargetDeliveryDomain
-        BadItemLimit               = 50
-        LargeItemLimit             = 50
-        AcceptLargeDataLoss        = $True
-        SuspendWhenReadyToComplete = $True
+    foreach ($CurReady in $ReadyToMigrate) {
+        $MoveSplat = @{
+            Remote                     = $True
+            Identity                   = $CurReady.UserPrincipalName
+            BatchName                  = $CurReady.BatchName
+            RemoteHostName             = $CurReady.RemoteHostName
+            RemoteCredential           = $OnPremisesCredential
+            TargetDeliveryDomain       = $TargetDeliveryDomain
+            BadItemLimit               = 50
+            LargeItemLimit             = 50
+            AcceptLargeDataLoss        = $True
+            SuspendWhenReadyToComplete = $True
+        }
+
+        New-MoveRequest @MoveSplat
+        Start-Sleep -Seconds 2
+
     }
-
-    New-MoveRequest @MoveSplat
-    Start-Sleep -Seconds 2
-
 }

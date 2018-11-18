@@ -4,9 +4,6 @@
         [String] $CsvFileName,
 
         [Parameter(Mandatory = $true)]
-        [string] $LogPath,
-
-        [Parameter(Mandatory = $true)]
         [string] $Tenant
     )
 
@@ -15,9 +12,6 @@
     }
 
     $Import = Import-Csv $CsvFileName
-    $LogFile = (Join-Path $LogPath ($(get-date -Format yyyy-MM-dd_HH-mm-ss) + "`_$($Tenant)_PreFlight_On_Premises.csv"))
-    
-    Add-Content -Path $LogFile -Value ("Object", "ErrorObject", "ErrorMessage" -join ',')
 
     foreach ($CurImport in $Import) {
         $UPN = ""
@@ -34,12 +28,12 @@
                 $CurImport.SamAccountName = $Mailbox.SamAccountName
             }
             catch {
-                $WhyFailed = (((($_.Exception.Message).replace(',', ';')) -split '\.')[0, 1]) -join ';'
-
-                Add-Content -Path $LogFile -Value ($UPN, $UPN, $WhyFailed -join ',')
+                $WhyFailed = (($_.Exception.Message) -replace ",",";") -replace "\n","|**|"
 
                 Write-Verbose "Error executing: Get-Mailbox $UPN"
                 Write-Verbose $WhyFailed
+
+                continue
             }
             if ($Mailbox.ForwardingAddress -ne $null) {
                 $Forward = Get-Recipient $Mailbox.ForwardingAddress -ErrorAction 
@@ -59,12 +53,13 @@
                 }
             }
             catch {
-                $WhyFailed = (((($_.Exception.Message).replace(',', ';')) -split '\.')[0, 1]) -join ';'
-
-                Add-Content -Path $LogFile -Value ($UPN, $UPN, $WhyFailed -join ',')
-
+                $WhyFailedCAS = (($_.Exception.Message) -replace ",",";") -replace "\n","|**|"
+                $WhyFailed += $WhyFailedCAS
                 Write-Verbose "Error executing: Get-CASMailbox $UPN"
-                Write-Verbose $WhyFailed
+                Write-Verbose $WhyFailedCAS
+            }
+            if ($WhyFailed) {
+                $CurImport.ErrorOnPrem
             }
         }
         $Import | Export-Csv $CsvFileName -NoTypeInformation -Encoding UTF8

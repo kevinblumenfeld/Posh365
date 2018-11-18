@@ -4,9 +4,6 @@
         [string] $CsvFileName,
 
         [Parameter(Mandatory = $true)]
-        [string] $LogPath,
-
-        [Parameter(Mandatory = $true)]
         [string] $Tenant
     )
     
@@ -15,10 +12,7 @@
     }
 
     $Import = Import-Csv $CsvFileName
-    $LogFile = (Join-Path $LogPath ($(get-date -Format yyyy-MM-dd_HH-mm-ss) + "`_$($Tenant)_PreFlight_Cloud.csv"))
     $AcceptedDomains = Get-AcceptedDomain
-
-    Add-Content -Path $LogFile -Value ("Object", "ErrorObject", "ErrorMessage" -join ',')
 
     foreach ($CurImport in $Import) {
         $UPN = ""
@@ -32,10 +26,7 @@
                 $MailUser = Get-MailUser $UPN -ErrorAction Stop
             }
             catch {
-                $WhyFailed = (((($_.Exception.Message).replace(',', ';')) -split '\.')[0, 1]) -join ';'
-
-                Add-Content -Path $LogFile -Value ($UPN, $UPN, $WhyFailed -join ',')
-
+                $WhyFailed = (($_.Exception.Message) -replace ",",";") -replace "\n","|**|"
                 Write-Verbose "Error executing: Get-MailUser $UPN"
                 Write-Verbose $WhyFailed
                 continue
@@ -74,8 +65,7 @@
                 if ($BadAddresses) {
                     $CurImport.GoodAddresses = "FALSE"
                     $ErrorAddress = $BadAddresses -join (';')
-
-                    Add-Content -Path $LogFile -Value ($UPN, $ErrorAddress, 'BadAddress' -join ',')
+                    $WhyFailed += $ErrorAddress
                 }
                 else {
                     $CurImport.GoodAddresses = "TRUE"
@@ -112,7 +102,9 @@
                     $CurImport.IsSynchronized = "Not a 365 Mailbox"
                 }
             }
-
+            if ($WhyFailed) {
+                $CurImport.ErrorCloud = $WhyFailed
+            }
             if (
                 $CurImport.DisplayName -ne "" -and
                 $CurImport.PrimarySMTP -ne "" -and
