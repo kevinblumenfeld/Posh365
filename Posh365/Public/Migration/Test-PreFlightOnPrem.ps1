@@ -14,21 +14,22 @@
     $Import = Import-Csv $CsvFileName
 
     foreach ($CurImport in $Import) {
-        $UPN = ""
+        $WhyFailed = ""
         $UPN = $CurImport.Check
         $CurImport.Check = $UPN
 
         if ($CurImport.PreFlightComplete -ne "TRUE") {
 
             try {
-                $Mailbox = ""
                 $Mailbox = Get-Mailbox -Identity $UPN -ErrorAction Stop
 
                 $CurImport.RecipientType = $Mailbox.RecipientTypeDetails
                 $CurImport.SamAccountName = $Mailbox.SamAccountName
+                $CurImport.ForwardingSmtpAddress = $Mailbox.ForwardingSmtpAddress
+                $CurImport.DeliverToMailboxAndForward = $Mailbox.DeliverToMailboxAndForward
             }
             catch {
-                $WhyFailed = (($_.Exception.Message) -replace ",",";") -replace "\n","|**|"
+                $WhyFailed = (($_.Exception.Message) -replace ",", ";") -replace "\n", "|**|"
 
                 Write-Verbose "Error executing: Get-Mailbox $UPN"
                 Write-Verbose $WhyFailed
@@ -53,13 +54,16 @@
                 }
             }
             catch {
-                $WhyFailedCAS = (($_.Exception.Message) -replace ",",";") -replace "\n","|**|"
+                $WhyFailedCAS = (($_.Exception.Message) -replace ",", ";") -replace "\n", "|**|"
                 $WhyFailed += $WhyFailedCAS
                 Write-Verbose "Error executing: Get-CASMailbox $UPN"
                 Write-Verbose $WhyFailedCAS
             }
             if ($WhyFailed) {
-                $CurImport.ErrorOnPrem
+                $CurImport.ErrorOnPrem = $WhyFailed
+            }
+            else {
+                $CurImport.ErrorOnPrem = ""
             }
         }
         $Import | Export-Csv $CsvFileName -NoTypeInformation -Encoding UTF8

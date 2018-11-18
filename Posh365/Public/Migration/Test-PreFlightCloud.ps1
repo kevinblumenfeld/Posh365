@@ -15,18 +15,18 @@
     $AcceptedDomains = Get-AcceptedDomain
 
     foreach ($CurImport in $Import) {
-        $UPN = ""
+        $WhyFailed = ""
         $UPN = $CurImport.Check
         $CurImport.Check = $UPN
 
         if ($CurImport.PreFlightComplete -ne "TRUE") {
 
             try {
-                $MailUser = ""
                 $MailUser = Get-MailUser $UPN -ErrorAction Stop
+                write-host $MailUser
             }
             catch {
-                $WhyFailed = (($_.Exception.Message) -replace ",",";") -replace "\n","|**|"
+                $WhyFailed = (($_.Exception.Message) -replace ",", ";") -replace "\n", "|**|"
                 Write-Verbose "Error executing: Get-MailUser $UPN"
                 Write-Verbose $WhyFailed
                 continue
@@ -44,9 +44,15 @@
                     $CurImport.UpnSmtpMatch = "FALSE"
                 }
 
-                $IsExchangeLicensed = (Get-MsolUser -UserPrincipalName $UPN).Licenses.ServiceStatus | 
-                    Where-Object {$_.Serviceplan.Servicename -like "Exchange*"} | ForEach-Object {
-                    $_ | Where-Object $_.ProvisioningStatus -ne "Disabled"
+                try {
+                    $IsExchangeLicensed = (Get-MsolUser -UserPrincipalName $UPN -ErrorAction stop).Licenses.ServiceStatus | 
+                        Where-Object {$_.Serviceplan.Servicename -like "Exchange*"} | ForEach-Object {
+                        $_ | Where-Object $_.ProvisioningStatus -ne "Disabled"
+                    }
+                }
+                catch {
+                    $WhyFailedMSOL = (($_.Exception.Message) -replace ",", ";") -replace "\n", "|**|"
+                    $WhyFailed += $WhyFailedMSOL
                 }
 
                 if ($IsExchangeLicensed) {
@@ -104,6 +110,9 @@
             }
             if ($WhyFailed) {
                 $CurImport.ErrorCloud = $WhyFailed
+            }
+            else {
+                $CurImport.ErrorCloud = ""
             }
             if (
                 $CurImport.DisplayName -ne "" -and
