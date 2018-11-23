@@ -91,7 +91,7 @@
             }
         }
         else {
-            $AllRecipients = Get-Recipient -ResultSize Unlimited -RecipientTypeDetails UserMailbox, RoomMailbox, EquipmentMailbox, SharedMailbox, MailUniversalDistributionGroup, MailUniversalSecurityGroup
+            $AllRecipients = Get-Recipient -ResultSize Unlimited -RecipientTypeDetails MailUser, UserMailbox, RoomMailbox, EquipmentMailbox, SharedMailbox, MailUniversalDistributionGroup, MailUniversalSecurityGroup
         }
     }
     End {

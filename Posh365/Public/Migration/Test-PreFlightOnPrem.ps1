@@ -33,6 +33,7 @@
 
                 Write-Verbose "Error executing: Get-Mailbox $UPN"
                 Write-Verbose $WhyFailed
+                $CurImport.ErrorOnPrem = $WhyFailed
 
                 continue
             }
@@ -59,7 +60,7 @@
                 Write-Verbose "Error executing: Get-CASMailbox $UPN"
                 Write-Verbose $WhyFailedCAS
             }
-            if ($WhyFailed) {
+            if ($WhyFailed -and $WhyFailedCAS) {
                 $CurImport.ErrorOnPrem = $WhyFailed
             }
             else {

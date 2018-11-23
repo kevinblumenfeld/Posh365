@@ -29,6 +29,7 @@
                 $WhyFailed = (($_.Exception.Message) -replace ",", ";") -replace "\n", "|**|"
                 Write-Verbose "Error executing: Get-MailUser $UPN"
                 Write-Verbose $WhyFailed
+                $CurImport.ErrorCloud = $WhyFailed
                 continue
             }
 
@@ -47,7 +48,7 @@
                 try {
                     $IsExchangeLicensed = (Get-MsolUser -UserPrincipalName $UPN -ErrorAction stop).Licenses.ServiceStatus | 
                         Where-Object {$_.Serviceplan.Servicename -like "Exchange*"} | ForEach-Object {
-                        $_ | Where-Object $_.ProvisioningStatus -ne "Disabled"
+                        Where-Object $_.ProvisioningStatus -ne "Disabled"
                     }
                 }
                 catch {

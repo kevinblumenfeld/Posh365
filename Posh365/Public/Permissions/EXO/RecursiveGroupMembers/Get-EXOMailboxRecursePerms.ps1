@@ -50,7 +50,7 @@
     New-Item -ItemType Directory -Path $ReportPath -ErrorAction SilentlyContinue
 
     Write-Verbose "Getting all recipients"
-    $AllRecipients = Get-Recipient -ResultSize Unlimited -RecipientTypeDetails UserMailbox, RoomMailbox, EquipmentMailbox, SharedMailbox, MailUniversalDistributionGroup, MailUniversalSecurityGroup, MailNonUniversalGroup, DynamicDistributionGroup
+    $AllRecipients = Get-Recipient -ResultSize Unlimited -RecipientTypeDetails MailUser, UserMailbox, RoomMailbox, EquipmentMailbox, SharedMailbox, MailUniversalDistributionGroup, MailUniversalSecurityGroup, MailNonUniversalGroup, DynamicDistributionGroup
     $AllMailboxDNs = ($allRecipients | Where-Object {$_.RecipientTypeDetails -in 'UserMailbox', 'RoomMailbox', 'EquipmentMailbox', 'SharedMailbox'}).distinguishedname
     $AllGroupDNs = ($allRecipients | Where-Object {$_.RecipientTypeDetails -in 'NonUniversalGroup', 'MailNonUniversalGroup', 'MailUniversalSecurityGroup', 'MailUniversalDistributionGroup', 'DynamicDistributionGroup', 'UniversalDistributionGroup', 'UniversalSecurityGroup', 'NonUniversalGroup'}).distinguishedname
     $AllGroupNames = ($allRecipients | Where-Object {$_.RecipientTypeDetails -in 'NonUniversalGroup', 'MailNonUniversalGroup', 'MailUniversalSecurityGroup', 'MailUniversalDistributionGroup', 'DynamicDistributionGroup', 'UniversalDistributionGroup', 'UniversalSecurityGroup', 'NonUniversalGroup'}).Name
