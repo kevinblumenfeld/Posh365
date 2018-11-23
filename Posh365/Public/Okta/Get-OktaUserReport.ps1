@@ -40,6 +40,9 @@ function Get-OktaUserReport {
     
         .EXAMPLE
             Get-OktaUserRest -SearchString kevin
+        
+        .EXAMPLE
+            Get-OktaUserRest -id 00u4m2pk9NMihnsWJ356
     
         #>
     Param (
@@ -61,9 +64,18 @@ function Get-OktaUserReport {
         "Content-Type"  = "application/json"
     }
     
-    if (-not $Filter -and (-not $SearchString)) {
+    
+    if (-not $Filter -and (-not $SearchString) -and (-not $Id)) {
         $RestSplat = @{
             Uri     = "https://$URL.okta.com/api/v1/users/"
+            Headers = $headers
+            method  = 'Get'
+        }
+    }
+
+    if ($id) {
+        $RestSplat = @{
+            Uri     = 'https://{0}.okta.com/api/v1/users/?filter=id eq "{1}"' -f $URL, $id
             Headers = $headers
             method  = 'Get'
         }
