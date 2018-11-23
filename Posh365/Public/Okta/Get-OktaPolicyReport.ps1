@@ -1,4 +1,4 @@
-function Get-OktaPolicyRest {
+function Get-OktaPolicyReport {
     
     Param (
 
@@ -33,8 +33,8 @@ function Get-OktaPolicyRest {
                 })
 
             [PSCustomObject]@{
-                Type        = $CurPolicy.Type
                 Name        = $CurPolicy.Name
+                Type        = $CurPolicy.Type
                 Priority    = $CurPolicy.Priority
                 Id          = $CurPolicy.Id
                 Status      = $CurPolicy.Status
