@@ -17,6 +17,7 @@ function Connect-OktaSecure {
 
     if ($DeleteCreds) {
         Remove-Item ($KeyPath + "$($Tenant).OktaXml")
+        break
     }
     # Create KeyPath Directory
     if (-not (Test-Path $KeyPath)) {
@@ -28,16 +29,16 @@ function Connect-OktaSecure {
         }           
     }
     if (Test-Path ($KeyPath + "$($Tenant).OktaXml")) {
-        [System.Management.Automation.PSCredential]$Global:Credential = Import-Clixml ($KeyPath + "$($Tenant).OktaXml")
-        $url = $Credential.GetNetworkCredential().username
-        $token = $Credential.GetNetworkCredential().Password
+        [System.Management.Automation.PSCredential]$Global:OKTACredential = Import-Clixml ($KeyPath + "$($Tenant).OktaXml")
+        $url = $OKTACredential.GetNetworkCredential().username
+        $token = $OKTACredential.GetNetworkCredential().Password
 
     }
     else {
-        [System.Management.Automation.PSCredential]$Global:Credential = Get-Credential -Message "Enter OKTA Tenant/Domain as Username and API Token as Password"
-        $Credential | Export-Clixml ($KeyPath + "$($Tenant).OktaXml")
-        $url = $Credential.GetNetworkCredential().username
-        $token = $Credential.GetNetworkCredential().Password
+        [System.Management.Automation.PSCredential]$Global:OKTACredential = Get-Credential -Message "Enter OKTA Tenant/Domain as Username and API Token as Password"
+        $OKTACredential | Export-Clixml ($KeyPath + "$($Tenant).OktaXml")
+        $url = $OKTACredential.GetNetworkCredential().username
+        $token = $OKTACredential.GetNetworkCredential().Password
     }
     $domain = "https://$url.okta.com"
 

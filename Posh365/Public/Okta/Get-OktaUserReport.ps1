@@ -36,13 +36,16 @@ function Get-OktaUserReport {
             profile.lastName eq "Smith"	Users with a specified lastName*
     
         .EXAMPLE
-            Get-OktaUserRest -Filter 'profile.firstName eq "Jennifer"'
+            Get-OktaUserReport
+
+        .EXAMPLE
+            Get-OktaUserReport -Filter 'profile.firstName eq "Jennifer"'
     
         .EXAMPLE
-            Get-OktaUserRest -SearchString kevin
+            Get-OktaUserReport -SearchString kevin
         
         .EXAMPLE
-            Get-OktaUserRest -id 00u4m2pk9NMihnsWJ356
+            Get-OktaUserReport -id 00u4m2pk9NMihnsWJ356
     
         #>
     Param (
@@ -55,8 +58,8 @@ function Get-OktaUserReport {
         [Parameter()]
         [string] $Id
     )
-    $url = $Credential.GetNetworkCredential().username
-    $token = $Credential.GetNetworkCredential().Password
+    $url = $OKTACredential.GetNetworkCredential().username
+    $token = $OKTACredential.GetNetworkCredential().Password
     
     $headers = @{
         "Authorization" = "SSWS $Token"
@@ -112,6 +115,8 @@ function Get-OktaUserReport {
             Login            = $ProfileDetails.Login
             Email            = $ProfileDetails.Email
             Id               = $Id
+            ProviderType     = $CredDetails.Provider.Type
+            ProviderName     = $CredDetails.Provider.Name
             Status           = $CurUser.Status
             Created          = $CurUser.Created
             Activated        = $CurUser.Activated
@@ -119,8 +124,6 @@ function Get-OktaUserReport {
             LastLogin        = $CurUser.LastLogin
             LastUpdated      = $CurUser.LastUpdated
             PasswordChanged  = $CurUser.PasswordChanged
-            ProviderType     = $CredDetails.Provider.Type
-            ProviderName     = $CredDetails.Provider.Name
             RecoveryQuestion = $CredDetails.RecoveryQuestion.Question
         }
     

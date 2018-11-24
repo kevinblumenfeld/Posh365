@@ -1,18 +1,28 @@
-function Get-OktaGroupRest {
+function Get-OktaGroupReport {
     Param (
         [Parameter()]
-        [String[]]$GroupID
+        [String[]]$GroupID,
+
+        [Parameter()]
+        [string] $SearchString
+            
     )
-    $url = $Credential.GetNetworkCredential().username
-    $token = $Credential.GetNetworkCredential().Password
+    $url = $OKTACredential.GetNetworkCredential().username
+    $token = $OKTACredential.GetNetworkCredential().Password
 
     $headers = @{
         "Authorization" = "SSWS $Token"
         "Accept"        = "application/json"
         "Content-Type"  = "application/json"
     }
-    
-    if (-not $GroupID) {
+    if ($SearchString) {
+        $RestSplat = @{
+            Uri     = 'https://{0}.okta.com/api/v1/groups/?q={1}' -f $url, $SearchString
+            Headers = $headers
+            method  = 'Get'
+        }
+    }
+    elseif (-not $GroupID) {
         $RestSplat = @{
             Uri     = "https://$URL.okta.com/api/v1/groups/"
             Headers = $headers

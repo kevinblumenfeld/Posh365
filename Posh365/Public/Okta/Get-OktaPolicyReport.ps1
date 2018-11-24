@@ -3,8 +3,8 @@ function Get-OktaPolicyReport {
     Param (
 
     )
-    $url = $Credential.GetNetworkCredential().username
-    $token = $Credential.GetNetworkCredential().Password
+    $url = $OKTACredential.GetNetworkCredential().username
+    $token = $OKTACredential.GetNetworkCredential().Password
 
     $headers = @{
         "Authorization" = "SSWS $Token"
