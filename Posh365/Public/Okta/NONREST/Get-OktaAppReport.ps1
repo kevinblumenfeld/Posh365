@@ -1,24 +1,8 @@
 function Get-OktaAppReport {
-
     Param (
 
     )
-    $Url = $OKTACredential.GetNetworkCredential().username
-    $Token = $OKTACredential.GetNetworkCredential().Password
-
-    $Headers = @{
-        "Authorization" = "SSWS $Token"
-        "Accept"        = "application/json"
-        "Content-Type"  = "application/json"
-    }
-    
-    $RestSplat = @{
-        Uri     = "https://$Url.okta.com/api/v1/apps/"
-        Headers = $Headers
-        Method  = 'Get'
-    }
-
-    $App = Invoke-RestMethod @RestSplat
+    $App = Get-OktaApp
 
     foreach ($CurApp in $App) {
 
@@ -27,18 +11,11 @@ function Get-OktaAppReport {
         $Visibility = ($CurApp).Visibility
         $Credentials = ($CurApp).Credentials
         $Features = ($CurApp).Features
-        $Settings = ($CurApp).Settings
 
         [PSCustomObject]@{
             Name                 = $CurApp.Name
             Label                = $CurApp.Label
             Status               = $CurApp.Status
-            SignOnMode           = $CurApp.SignOnMode
-            TenantType           = $Settings.app.tenantType
-            Domain               = $Settings.app.domain
-            MsftTenant           = $Settings.app.msftTenant
-            CustomDomain         = $Settings.app.customDomain
-            FilterGroupsByOU     = $Settings.app.filterGroupsByOU
             Created              = $CurApp.Created
             LastUpdated          = $CurApp.LastUpdated
             Activated            = $CurApp.Activated
@@ -50,5 +27,6 @@ function Get-OktaAppReport {
         }
 
     }
+
     
 }

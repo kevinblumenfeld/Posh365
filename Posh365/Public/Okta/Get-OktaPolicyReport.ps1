@@ -3,10 +3,10 @@ function Get-OktaPolicyReport {
     Param (
 
     )
-    $url = $OKTACredential.GetNetworkCredential().username
-    $token = $OKTACredential.GetNetworkCredential().Password
+    $Url = $OKTACredential.GetNetworkCredential().username
+    $Token = $OKTACredential.GetNetworkCredential().Password
 
-    $headers = @{
+    $Headers = @{
         "Authorization" = "SSWS $Token"
         "Accept"        = "application/json"
         "Content-Type"  = "application/json"
@@ -15,9 +15,9 @@ function Get-OktaPolicyReport {
     
     foreach ($CurPolicyType in $PolicyType) {
         $RestSplat = @{
-            Uri     = "https://$URL.okta.com/api/v1/policies?type=$CurPolicyType"
-            Headers = $headers
-            method  = 'Get'
+            Uri     = "https://$Url.okta.com/api/v1/policies?type=$CurPolicyType"
+            Headers = $Headers
+            Method  = 'Get'
         }
 
         try {
@@ -29,7 +29,7 @@ function Get-OktaPolicyReport {
 
         foreach ($CurPolicy in $Policy) {
             $Groups = (($CurPolicy).conditions.people.groups.include | ForEach-Object {
-                    ((Get-OktaGroupRest $_).name) -join ";"
+                    ((Get-OktaGroupReport $_).name) -join ";"
                 })
 
             [PSCustomObject]@{

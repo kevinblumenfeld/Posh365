@@ -5,20 +5,30 @@ function Get-OktaUserGroupMembership {
         [string] $SearchString
             
     )
-    $url = $OKTACredential.GetNetworkCredential().username
-    $token = $OKTACredential.GetNetworkCredential().Password
+    $Url = $OKTACredential.GetNetworkCredential().username
+    $Token = $OKTACredential.GetNetworkCredential().Password
     
-    $headers = @{
+    $Headers = @{
         "Authorization" = "SSWS $Token"
         "Accept"        = "application/json"
         "Content-Type"  = "application/json"
     }
+    if ($SearchString) {
+        $RestSplat = @{
+            Uri     = 'https://{0}.okta.com/api/v1/users/?q={1}' -f $Url, $SearchString
+            Headers = $Headers
+            Method  = 'Get'
+        }
 
-    $RestSplat = @{
-        Uri     = 'https://{0}.okta.com/api/v1/users/?q={1}' -f $url, $SearchString
-        Headers = $headers
-        method  = 'Get'
     }
+    else {
+        $RestSplat = @{
+            Uri     = 'https://{0}.okta.com/api/v1/users' -f $Url
+            Headers = $Headers
+            Method  = 'Get'
+        }
+    }
+
 
     $M2GHash = Get-OktaGroupMemberHash
 

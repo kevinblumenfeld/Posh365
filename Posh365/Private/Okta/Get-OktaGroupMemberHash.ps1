@@ -2,18 +2,18 @@ function Get-OktaGroupMemberHash {
     Param (
             
     )
-    $url = $OKTACredential.GetNetworkCredential().username
-    $token = $OKTACredential.GetNetworkCredential().Password
+    $Url = $OKTACredential.GetNetworkCredential().username
+    $Token = $OKTACredential.GetNetworkCredential().Password
     
-    $headers = @{
+    $Headers = @{
         "Authorization" = "SSWS $Token"
         "Accept"        = "application/json"
         "Content-Type"  = "application/json"
     }
     
     $RestSplat = @{
-        Uri     = "https://$URL.okta.com/api/v1/groups/"
-        Headers = $headers
+        Uri     = "https://$Url.okta.com/api/v1/groups/"
+        Headers = $Headers
         method  = 'Get'
     }
             
@@ -24,8 +24,8 @@ function Get-OktaGroupMemberHash {
         $GId = $CurGroup.id
             
         $RestSplat = @{
-            Uri     = "https://$URL.okta.com/api/v1/groups/$GId/users"
-            Headers = $headers
+            Uri     = "https://$Url.okta.com/api/v1/groups/$GId/users"
+            Headers = $Headers
             method  = 'Get'
         }
 

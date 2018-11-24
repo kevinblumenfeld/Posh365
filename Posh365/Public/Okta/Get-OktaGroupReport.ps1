@@ -7,33 +7,33 @@ function Get-OktaGroupReport {
         [string] $SearchString
             
     )
-    $url = $OKTACredential.GetNetworkCredential().username
-    $token = $OKTACredential.GetNetworkCredential().Password
+    $Url = $OKTACredential.GetNetworkCredential().username
+    $Token = $OKTACredential.GetNetworkCredential().Password
 
-    $headers = @{
+    $Headers = @{
         "Authorization" = "SSWS $Token"
         "Accept"        = "application/json"
         "Content-Type"  = "application/json"
     }
     if ($SearchString) {
         $RestSplat = @{
-            Uri     = 'https://{0}.okta.com/api/v1/groups/?q={1}' -f $url, $SearchString
-            Headers = $headers
-            method  = 'Get'
+            Uri     = 'https://{0}.okta.com/api/v1/groups/?q={1}' -f $Url, $SearchString
+            Headers = $Headers
+            Method  = 'Get'
         }
     }
     elseif (-not $GroupID) {
         $RestSplat = @{
-            Uri     = "https://$URL.okta.com/api/v1/groups/"
-            Headers = $headers
-            method  = 'Get'
+            Uri     = "https://$Url.okta.com/api/v1/groups/"
+            Headers = $Headers
+            Method  = 'Get'
         }
     }
     else {
         $RestSplat = @{
-            Uri     = "https://$URL.okta.com/api/v1/groups/$GroupID"
-            Headers = $headers
-            method  = 'Get'
+            Uri     = "https://$Url.okta.com/api/v1/groups/$GroupID"
+            Headers = $Headers
+            Method  = 'Get'
         }
     }
     

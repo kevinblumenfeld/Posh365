@@ -1,4 +1,4 @@
-function Get-OktaAppUserReport {
+function Get-OktaAppGroupReport {
 
     Param (
         [Parameter()]
@@ -21,7 +21,7 @@ function Get-OktaAppUserReport {
 
     if (-not $Filter -and (-not $SearchString) -and (-not $Id)) {
         $RestSplat = @{
-            Uri     = "https://$Url.okta.com/api/v1/users/"
+            Uri     = "https://$Url.okta.com/api/v1/groups/"
             Headers = $Headers
             Method  = 'Get'
         }
@@ -29,7 +29,7 @@ function Get-OktaAppUserReport {
 
     if ($id) {
         $RestSplat = @{
-            Uri     = 'https://{0}.okta.com/api/v1/users/?filter=id eq "{1}"' -f $Url, $id
+            Uri     = 'https://{0}.okta.com/api/v1/groups/?filter=id eq "{1}"' -f $Url, $id
             Headers = $Headers
             Method  = 'Get'
         }
@@ -37,35 +37,32 @@ function Get-OktaAppUserReport {
 
     if ($SearchString) {
         $RestSplat = @{
-            Uri     = "https://$Url.okta.com/api/v1/users/?q=$SearchString"
+            Uri     = "https://$Url.okta.com/api/v1/groups/?q=$SearchString"
             Headers = $Headers
             Method  = 'Get'
         }
     }
 
-    $User = Invoke-RestMethod @RestSplat
+    $Group = Invoke-RestMethod @RestSplat
 
-    foreach ($CurUser in $User) {
-        $Id = $CurUser.Id
-        $FirstName = $CurUser.Profile.FirstName
-        $LastName = $CurUser.Profile.LastName
-        $Login = $CurUser.Profile.Login
-        $Email = $CurUser.Profile.Email
+    foreach ($CurGroup in $Group) {
+        $Id = $CurGroup.Id
+        $GName = $CurGroup.Profile.Name
+        $GDescription = $CurGroup.Profile.Description
         
         $RestSplat = @{
-            Uri     = 'https://{0}.okta.com/api/v1/apps?filter=user.id+eq+"{1}"' -f $Url, $Id
+            Uri     = 'https://{0}.okta.com/api/v1/apps?filter=group.id+eq+"{1}"' -f $Url, $Id
             Headers = $Headers
             Method  = 'Get'
         }
 
-        $AppsInUser = Invoke-RestMethod @RestSplat
+        $AppsInGroup = Invoke-RestMethod @RestSplat
 
-        foreach ($App in $AppsInUser) {
+        foreach ($App in $AppsInGroup) {
             [pscustomobject]@{
-                FirstName     = $FirstName
-                LastName      = $LastName
-                Login         = $Login
-                Email         = $Email
+                GroupName     = $GName
+                GroupDesc     = $GDescription
+                GroupId       = $CurGroup.Id
                 AppName       = $App.Name
                 AppStatus     = $App.Status
                 AppSignOnMode = $App.SignOnMode

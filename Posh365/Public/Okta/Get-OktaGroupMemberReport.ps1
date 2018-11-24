@@ -7,10 +7,10 @@ function Get-OktaGroupMemberReport {
         [string] $SearchString
             
     )
-    $url = $OKTACredential.GetNetworkCredential().username
-    $token = $OKTACredential.GetNetworkCredential().Password
+    $Url = $OKTACredential.GetNetworkCredential().username
+    $Token = $OKTACredential.GetNetworkCredential().Password
 
-    $headers = @{
+    $Headers = @{
         "Authorization" = "SSWS $Token"
         "Accept"        = "application/json"
         "Content-Type"  = "application/json"
@@ -18,16 +18,16 @@ function Get-OktaGroupMemberReport {
     
     if (-not $GroupID) {
         $RestSplat = @{
-            Uri     = "https://$URL.okta.com/api/v1/groups/"
-            Headers = $headers
-            method  = 'Get'
+            Uri     = "https://$Url.okta.com/api/v1/groups/"
+            Headers = $Headers
+            Method  = 'Get'
         }
     }
     else {
         $RestSplat = @{
-            Uri     = "https://$URL.okta.com/api/v1/groups/$GroupID"
-            Headers = $headers
-            method  = 'Get'
+            Uri     = "https://$Url.okta.com/api/v1/groups/$GroupID"
+            Headers = $Headers
+            Method  = 'Get'
         }
     }
         
@@ -38,9 +38,9 @@ function Get-OktaGroupMemberReport {
         $GId = $CurGroup.id
             
         $RestSplat = @{
-            Uri     = "https://$URL.okta.com/api/v1/groups/$GId/users"
-            Headers = $headers
-            method  = 'Get'
+            Uri     = "https://$Url.okta.com/api/v1/groups/$GId/users"
+            Headers = $Headers
+            Method  = 'Get'
         }
 
         $GrpMember = Invoke-RestMethod @RestSplat

@@ -58,10 +58,10 @@ function Get-OktaUserReport {
         [Parameter()]
         [string] $Id
     )
-    $url = $OKTACredential.GetNetworkCredential().username
-    $token = $OKTACredential.GetNetworkCredential().Password
+    $Url = $OKTACredential.GetNetworkCredential().username
+    $Token = $OKTACredential.GetNetworkCredential().Password
     
-    $headers = @{
+    $Headers = @{
         "Authorization" = "SSWS $Token"
         "Accept"        = "application/json"
         "Content-Type"  = "application/json"
@@ -70,33 +70,33 @@ function Get-OktaUserReport {
     
     if (-not $Filter -and (-not $SearchString) -and (-not $Id)) {
         $RestSplat = @{
-            Uri     = "https://$URL.okta.com/api/v1/users/"
-            Headers = $headers
-            method  = 'Get'
+            Uri     = "https://$Url.okta.com/api/v1/users/"
+            Headers = $Headers
+            Method  = 'Get'
         }
     }
 
     if ($id) {
         $RestSplat = @{
-            Uri     = 'https://{0}.okta.com/api/v1/users/?filter=id eq "{1}"' -f $URL, $id
-            Headers = $headers
-            method  = 'Get'
+            Uri     = 'https://{0}.okta.com/api/v1/users/?filter=id eq "{1}"' -f $Url, $id
+            Headers = $Headers
+            Method  = 'Get'
         }
     }
         
     if ($SearchString) {
         $RestSplat = @{
-            Uri     = "https://$URL.okta.com/api/v1/users/?q=$SearchString"
-            Headers = $headers
-            method  = 'Get'
+            Uri     = "https://$Url.okta.com/api/v1/users/?q=$SearchString"
+            Headers = $Headers
+            Method  = 'Get'
         }
     }
         
     if ($Filter) {
         $RestSplat = @{
-            Uri     = "https://$URL.okta.com/api/v1/users/?filter=$Filter"
-            Headers = $headers
-            method  = 'Get'
+            Uri     = "https://$Url.okta.com/api/v1/users/?filter=$Filter"
+            Headers = $Headers
+            Method  = 'Get'
         }
     }
 
