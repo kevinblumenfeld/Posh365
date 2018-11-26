@@ -14,7 +14,7 @@ function Get-OktaGroupReport {
         Searches for specific or all Okta Groups
     
     .DESCRIPTION
-        Searches for specific or all Okta Groups.  Use no search criteria to return all users.
+        Searches for specific or all Okta Groups.  Use no parameters to return all Groups. e.g Get-OktaGroupReport
     
     .PARAMETER SearchString
         Searches for groups by name in your organization.
@@ -51,7 +51,7 @@ function Get-OktaGroupReport {
     .EXAMPLE
         Get-OktaGroupReport -Id 00u4m2pk9NMihnsWJ356
     #>
-    
+
     if ($SearchString -and $filter -or ($SearchString -and $Id) -or ($Filter -and $Id)) {
         Write-Warning "Choose between zero and one parameters only"
         Write-Warning "Please try again"

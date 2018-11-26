@@ -4,7 +4,7 @@ function Get-OktaUserReport {
             Searches for specific or all Okta Users
     
         .DESCRIPTION
-            Searches for specific or all Okta Users.  Use no search criteria to return all users.
+            Searches for specific or all Okta Users.  Use no parameters to return all users. e.g Get-OktaUserReport
     
         .PARAMETER SearchString
             Queries firstName, lastName, and email for a match to the -SearchString value specified.
