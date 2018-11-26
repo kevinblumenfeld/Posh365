@@ -8,8 +8,11 @@ function Get-OktaUserReport {
     
         .PARAMETER SearchString
             Queries firstName, lastName, and email for a match to the -SearchString value specified.
-            Partial matches can be searched for.  For example, the search for "J" will Return users with the firstName Joe, John and lastName Hajib 
-    
+            Partial matches can be searched for.  For example, the search for "J" will Return users with the firstName Joe, John and lastName Hajib
+        
+        .PARAMETER ID
+            Search by ID
+        
         .PARAMETER Filter
             List Users with a Filter
             Filters against the most up-to-date data. For example, if you create a user or change an attribute and then issue a filter request, the changes are reflected in your results.
@@ -45,7 +48,7 @@ function Get-OktaUserReport {
             Get-OktaUserReport -SearchString kevin
         
         .EXAMPLE
-            Get-OktaUserReport -id 00u4m2pk9NMihnsWJ356
+            Get-OktaUserReport -Id 00u4m2pk9NMihnsWJ356
     
         #>
     Param (
@@ -58,6 +61,13 @@ function Get-OktaUserReport {
         [Parameter()]
         [string] $Id
     )
+    
+    if ($SearchString -and $filter -or ($SearchString -and $Id) -or ($Filter -and $Id)) {
+        Write-Warning "Choose between zero and one parameters only"
+        Write-Warning "Please try again"
+        break
+    }
+    
     $Url = $OKTACredential.GetNetworkCredential().username
     $Token = $OKTACredential.GetNetworkCredential().Password
     
@@ -66,68 +76,85 @@ function Get-OktaUserReport {
         "Accept"        = "application/json"
         "Content-Type"  = "application/json"
     }
-    
-    
-    if (-not $Filter -and (-not $SearchString) -and (-not $Id)) {
+
+    if (-not $SearchString -and -not $id -and -not $Filter) {
         $RestSplat = @{
-            Uri     = "https://$Url.okta.com/api/v1/users/"
+            Uri     = "https://$Url.okta.com/api/v1/users/?limit=200"
             Headers = $Headers
             Method  = 'Get'
+        }
+    
+    }
+    else {
+        if ($SearchString) {
+            $RestSplat = @{
+                Uri     = "https://$Url.okta.com/api/v1/users/?limit=200&q=$SearchString"
+                Headers = $Headers
+                Method  = 'Get'
+            }
+        }    
+        if ($Filter) {
+            $RestSplat = @{
+                Uri     = "https://$Url.okta.com/api/v1/users/?limit=200&filter=$Filter"
+                Headers = $Headers
+                Method  = 'Get'
+            }
+        }
+        if ($Id) {
+            $RestSplat = @{
+                Uri     = 'https://{0}.okta.com/api/v1/users/?limit=200&filter=id eq "{1}"' -f $Url, $id
+                Headers = $Headers
+                Method  = 'Get'
+            }
         }
     }
 
-    if ($id) {
+    do {
+        $Response = Invoke-WebRequest @RestSplat
+        $Headers = $Response.Headers
+        $User = $Response.Content | ConvertFrom-Json    
+        if ($Response.Headers['link'] -match '<([^>]+?)>;\s*rel="next"') {
+            $Next = $matches[1]
+        }
+        else {
+            $Next = $null
+        }
+        $Headers = @{
+            "Authorization" = "SSWS $Token"
+            "Accept"        = "application/json"
+            "Content-Type"  = "application/json"
+        }
         $RestSplat = @{
-            Uri     = 'https://{0}.okta.com/api/v1/users/?filter=id eq "{1}"' -f $Url, $id
+            Uri     = $Next
             Headers = $Headers
             Method  = 'Get'
         }
-    }
         
-    if ($SearchString) {
-        $RestSplat = @{
-            Uri     = "https://$Url.okta.com/api/v1/users/?q=$SearchString"
-            Headers = $Headers
-            Method  = 'Get'
+        foreach ($CurUser in $User) {
+    
+            $Id = $CurUser.Id
+            $ProfileDetail = ($CurUser).Profile
+            $CredDetail = ($CurUser).Credentials
+    
+            [PSCustomObject]@{
+                FirstName        = $ProfileDetail.FirstName
+                LastName         = $ProfileDetail.LastName
+                Login            = $ProfileDetail.Login
+                Email            = $ProfileDetail.Email
+                Id               = $Id
+                ProviderType     = $CredDetail.Provider.Type
+                ProviderName     = $CredDetail.Provider.Name
+                Status           = $CurUser.Status
+                Created          = $CurUser.Created
+                Activated        = $CurUser.Activated
+                StatusChanged    = $CurUser.StatusChanged
+                LastLogin        = $CurUser.LastLogin
+                LastUpdated      = $CurUser.LastUpdated
+                PasswordChanged  = $CurUser.PasswordChanged
+                RecoveryQuestion = $CredDetail.RecoveryQuestion.Question
+            }
+    
         }
-    }
-        
-    if ($Filter) {
-        $RestSplat = @{
-            Uri     = "https://$Url.okta.com/api/v1/users/?filter=$Filter"
-            Headers = $Headers
-            Method  = 'Get'
-        }
-    }
-
-        
-    $User = Invoke-RestMethod @RestSplat
-    
-    foreach ($CurUser in $User) {
-    
-        $Id = $CurUser.Id
-        $ProfileDetails = ($CurUser).Profile
-        $CredDetails = ($CurUser).Credentials
-    
-        [PSCustomObject]@{
-            FirstName        = $ProfileDetails.FirstName
-            LastName         = $ProfileDetails.LastName
-            Login            = $ProfileDetails.Login
-            Email            = $ProfileDetails.Email
-            Id               = $Id
-            ProviderType     = $CredDetails.Provider.Type
-            ProviderName     = $CredDetails.Provider.Name
-            Status           = $CurUser.Status
-            Created          = $CurUser.Created
-            Activated        = $CurUser.Activated
-            StatusChanged    = $CurUser.StatusChanged
-            LastLogin        = $CurUser.LastLogin
-            LastUpdated      = $CurUser.LastUpdated
-            PasswordChanged  = $CurUser.PasswordChanged
-            RecoveryQuestion = $CredDetails.RecoveryQuestion.Question
-        }
-    
-    }
-        
+    } until (-not $next)
 }
     
