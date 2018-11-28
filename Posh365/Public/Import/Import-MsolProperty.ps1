@@ -10,7 +10,7 @@ function Import-MsolProperty {
     Used to take input via pipeline or as a runtime parameter
 
     .EXAMPLE
-    Import-Csv .\Users.csv | Import-MsolProperty -Verbose
+    Import-Csv ".\Users.csv" | Import-MsolProperty -LogPath "C:\Scripts\" -Verbose
 
     .NOTES
 
@@ -19,14 +19,16 @@ function Import-MsolProperty {
     param (
         
         [Parameter(ValueFromPipeline, Mandatory)]
-        [psobject] $User
+        [psobject] $User,
+
+        [Parameter(Mandatory)]
+        [string] $LogPath
 
     )
     begin {
-
-        $OutputPath = '.\'
+        Import-Csv ".\Users.csv" | Import-MsolProperty -LogPath "C:\Scripts\"  -Verbose
         $Stamp = $(get-date -Format yyyy-MM-dd_HH-mm-ss)
-        $Log = Join-Path $OutputPath ('Error_Log' + $Stamp + ".csv")
+        $Log = Join-Path $LogPath ('Error_Log' + $Stamp + ".csv")
 
     }
     process {
