@@ -26,8 +26,8 @@ function Import-365MsolUser {
             }
             New-MsolUser @Splat
         }
-        End {
+    }
+    End {
 
-        }
     }
 }
