@@ -1,16 +1,16 @@
-function Import-MsolProperty { 
+function Import-AzureADProperty { 
     <#
     .SYNOPSIS
-    Import MsolUser properties to Office 365 cloud-only accounts
+    Import AzureADUser properties to Office 365 cloud-only accounts
 
     .DESCRIPTION
-    Import MsolUser properties to Office 365 cloud-only accounts
+    Import AzureADUser properties to Office 365 cloud-only accounts
 
     .PARAMETER User
     Used to take input via pipeline or as a runtime parameter
 
     .EXAMPLE
-    Import-Csv ".\Users.csv" | Import-MsolProperty -LogPath "C:\Scripts\" -Verbose
+    Import-Csv ".\Users.csv" | Import-AzureADProperty -LogPath "C:\Scripts\" -Verbose
 
     .NOTES
 
@@ -26,7 +26,7 @@ function Import-MsolProperty {
 
     )
     begin {
-        
+
         $Stamp = $(get-date -Format yyyy-MM-dd_HH-mm-ss)
         $Log = Join-Path $LogPath ('Error_Log' + $Stamp + ".csv")
 
@@ -37,19 +37,19 @@ function Import-MsolProperty {
             $Upn = $CurUser.UserPrincipalName
 
             $Splat = @{
-                UserPrincipalName = $CurUser.UserPrincipalName
-                Title             = $CurUser.Title
-                MobilePhone       = $CurUser.MobilePhone
-                PhoneNumber       = $CurUser.PhoneNumber
-                StreetAddress     = $CurUser.StreetAddress
-                City              = $CurUser.City
-                State             = $CurUser.State
-                PostalCode        = $CurUser.PostalCode
+                ObjectID        = $CurUser.UserPrincipalName
+                JobTitle        = $CurUser.Title
+                Mobile          = $CurUser.MobilePhone
+                TelephoneNumber = $CurUser.PhoneNumber
+                StreetAddress   = $CurUser.StreetAddress
+                City            = $CurUser.City
+                State           = $CurUser.State
+                PostalCode      = $CurUser.PostalCode
 
             }
             Try {
 
-                Set-MsolUser @Splat -ErrorAction Stop
+                Set-AzureAdUser @Splat -ErrorAction Stop
                 Write-Verbose "Successfully Set:`t$Upn"
 
             }
