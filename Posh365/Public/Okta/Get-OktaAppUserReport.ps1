@@ -10,66 +10,80 @@ function Get-OktaAppUserReport {
         [Parameter()]
         [string] $Id
     )
+
+    if ($SearchString -and $filter -or ($SearchString -and $Id) -or ($Filter -and $Id)) {
+        Write-Warning "Choose between zero and one parameters only"
+        Write-Warning "Please try again"
+        break
+    }
+
+    if (-not $SearchString -and -not $id -and -not $Filter) {
+        $User = Get-OktaUserReport
+    }
+    else {
+        if ($SearchString) {
+            $User = Get-OktaUserReport -SearchString $SearchString
+        }    
+        if ($Filter) {
+            $User = Get-OktaUserReport -Filter $Filter
+        }
+        if ($Id) {
+            $User = Get-OktaUserReport -Id $Id
+        }
+    }
+
     $Url = $OKTACredential.GetNetworkCredential().username
     $Token = $OKTACredential.GetNetworkCredential().Password
-
-    $Headers = @{
-        "Authorization" = "SSWS $Token"
-        "Accept"        = "application/json"
-        "Content-Type"  = "application/json"
-    }
-
-    if (-not $Filter -and (-not $SearchString) -and (-not $Id)) {
-        $RestSplat = @{
-            Uri     = "https://$Url.okta.com/api/v1/users/"
-            Headers = $Headers
-            Method  = 'Get'
-        }
-    }
-
-    if ($id) {
-        $RestSplat = @{
-            Uri     = 'https://{0}.okta.com/api/v1/users/?filter=id eq "{1}"' -f $Url, $id
-            Headers = $Headers
-            Method  = 'Get'
-        }
-    }
-
-    if ($SearchString) {
-        $RestSplat = @{
-            Uri     = "https://$Url.okta.com/api/v1/users/?q=$SearchString"
-            Headers = $Headers
-            Method  = 'Get'
-        }
-    }
-
-    $User = Invoke-RestMethod @RestSplat
-
+    
     foreach ($CurUser in $User) {
         $Id = $CurUser.Id
-        $FirstName = $CurUser.Profile.FirstName
-        $LastName = $CurUser.Profile.LastName
-        $Login = $CurUser.Profile.Login
-        $Email = $CurUser.Profile.Email
-        
+        $FirstName = $CurUser.FirstName
+        $LastName = $CurUser.LastName
+        $Login = $CurUser.Login
+        $Email = $CurUser.Email
+        $Headers = @{
+            "Authorization" = "SSWS $Token"
+            "Accept"        = "application/json"
+            "Content-Type"  = "application/json"
+        }
         $RestSplat = @{
-            Uri     = 'https://{0}.okta.com/api/v1/apps?filter=user.id+eq+"{1}"' -f $Url, $Id
+            Uri     = 'https://{0}.okta.com/api/v1/apps/?limit=200&filter=user.id+eq+"{1}"' -f $Url, $Id
             Headers = $Headers
             Method  = 'Get'
         }
 
-        $AppsInUser = Invoke-RestMethod @RestSplat
-
-        foreach ($App in $AppsInUser) {
-            [pscustomobject]@{
-                FirstName     = $FirstName
-                LastName      = $LastName
-                Login         = $Login
-                Email         = $Email
-                AppName       = $App.Name
-                AppStatus     = $App.Status
-                AppSignOnMode = $App.SignOnMode
+        do {
+            $Response = Invoke-WebRequest @RestSplat
+            $Headers = $Response.Headers
+            $AppsinUser = $Response.Content | ConvertFrom-Json    
+            if ($Response.Headers['link'] -match '<([^>]+?)>;\s*rel="next"') {
+                $Next = $matches[1]
             }
-        }
+            else {
+                $Next = $null
+            }
+            
+            $Headers = @{
+                "Authorization" = "SSWS $Token"
+                "Accept"        = "application/json"
+                "Content-Type"  = "application/json"
+            }
+            $RestSplat = @{
+                Uri     = $Next
+                Headers = $Headers
+                Method  = 'Get'
+            }
+            foreach ($App in $AppsInUser) {
+                [pscustomobject]@{
+                    FirstName     = $FirstName
+                    LastName      = $LastName
+                    Login         = $Login
+                    Email         = $Email
+                    AppName       = $App.Name
+                    AppStatus     = $App.Status
+                    AppSignOnMode = $App.SignOnMode
+                }
+            }
+        } until (-not $next)
     }
 }

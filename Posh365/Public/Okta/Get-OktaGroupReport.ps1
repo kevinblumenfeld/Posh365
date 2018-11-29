@@ -22,10 +22,10 @@ function Get-OktaGroupReport {
         and may change without notice in the future. Exact matches will always be returned before partial matches
     
     .PARAMETER ID
-        Search by ID
+        Search by Group ID
 
     .PARAMETER Filter
-        List Users with a Filter
+        List Groups with a Filter
         Filters against the most up-to-date data. For example, if you create a user or change an attribute and then issue a filter request, the changes are reflected in your results.
         Requires URL encoding. For example, filter=lastUpdated gt "2013-06-01T00:00:00.000Z" is encoded as filter=lastUpdated%20gt%20%222013-06-01T00:00:00.000Z%22. 
         Examples use cURL-style escaping instead of URL encoding to make them easier to read.
