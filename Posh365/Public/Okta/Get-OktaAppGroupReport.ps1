@@ -13,41 +13,59 @@ function Get-OktaAppGroupReport {
     $Url = $OKTACredential.GetNetworkCredential().username
     $Token = $OKTACredential.GetNetworkCredential().Password
 
-    if ($SearchString -and $filter -or ($SearchString -and $Id) -or ($Filter -and $Id)) {
-        Write-Warning "Choose between zero and one parameters only"
-        Write-Warning "Please try again"
-        break
-    }
-
-    if (-not $SearchString -and -not $id -and -not $Filter) {
-        $Group = Get-OktaUserReport
-    }
-    else {
-        if ($SearchString) {
-            $Group = Get-OktaGroupReport -SearchString $SearchString
-        }    
-        if ($Filter) {
-            $Group = Get-OktaGroupReport -Filter $Filter
-        }
-        if ($Id) {
-            $Group = Get-OktaGroupReport -Id $Id
-        }
-    }
+    $Group = Get-OktaGroupReport
 
     foreach ($CurGroup in $Group) {
         $Id = $CurGroup.Id
         $GName = $CurGroup.Name
         $GDescription = $CurGroup.Description
-        $AppsInGroup = Get-OktaAppReport -GroupId $Id
-        foreach ($App in $AppsInGroup) {
-            [pscustomobject]@{
-                GroupName     = $GName
-                GroupDesc     = $GDescription
-                GroupId       = $CurGroup.Id
-                AppName       = $App.Name
-                AppStatus     = $App.Status
-                AppSignOnMode = $App.SignOnMode
-            }
+
+        $Headers = @{
+            "Authorization" = "SSWS $Token"
+            "Accept"        = "application/json"
+            "Content-Type"  = "application/json"
         }
+        $RestSplat = @{
+            Uri     = 'https://{0}.okta.com/api/v1/apps?limit=200&filter=group.id eq "{1}"' -f $Url, $Id
+            Headers = $Headers
+            Method  = 'Get'
+        }
+
+        do {
+            if (($Response.Headers.'x-rate-limit-remaining' -lt 50) -and ($Response.Headers.'x-rate-limit-remaining')) {
+                Start-Sleep -Seconds 4
+            }
+            $Response = Invoke-WebRequest @RestSplat
+            $Headers = $Response.Headers
+            $AppsInGroup = $Response.Content | ConvertFrom-Json    
+            if ($Response.Headers['link'] -match '<([^>]+?)>;\s*rel="next"') {
+                $Next = $matches[1]
+            }
+            else {
+                $Next = $null
+            }
+                
+            $Headers = @{
+                "Authorization" = "SSWS $Token"
+                "Accept"        = "application/json"
+                "Content-Type"  = "application/json"
+            }
+            $RestSplat = @{
+                Uri     = $Next
+                Headers = $Headers
+                Method  = 'Get'
+            }
+
+            foreach ($App in $AppsInGroup) {
+                [pscustomobject]@{
+                    GroupName     = $GName
+                    GroupDesc     = $GDescription
+                    GroupId       = $Id
+                    AppName       = $App.Name
+                    AppStatus     = $App.Status
+                    AppSignOnMode = $App.SignOnMode
+                }
+            }
+        } until (-not $Next)
     } 
 }
