@@ -28,6 +28,7 @@
                 $CurImport.SamAccountName = $Mailbox.SamAccountName
                 $CurImport.ForwardingSmtpAddress = $Mailbox.ForwardingSmtpAddress
                 $CurImport.DeliverToMailboxAndForward = $Mailbox.DeliverToMailboxAndForward
+                $CurImport.UserPrincipalName = $Mailbox.UserPrincipalName
             }
             catch {
                 $WhyFailed = (($_.Exception.Message) -replace ",", ";") -replace "\n", "|**|"
