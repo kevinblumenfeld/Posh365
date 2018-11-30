@@ -6,7 +6,7 @@
         [Parameter(Mandatory = $true)]
         [string] $Tenant,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter()]
         [string] $RemoteHostName
     )
 
@@ -16,20 +16,27 @@
     
     $TargetDeliveryDomain = "$tenant.mail.onmicrosoft.com"
 
-    $Imported = Import-CSV $CSVFilePath
-
-    $ReadyToMigrate = $Imported | Where-Object {
-        $_.PreFlightComplete -eq $TRUE -and $_.MoveRequest -eq $FALSE
-    }
+    $Imported = Import-CSV $CSVFilePath | Select *
 
     $OnPremisesCredential = Get-Cred -Tenant $Tenant -Type OnPremMigration
 
-    foreach ($CurReady in $ReadyToMigrate) {
+    foreach ($CurImported in $Imported) {
+        
+        if ($_.PreFlightComplete -eq $FALSE -and $_.MoveRequest -eq $TRUE) {
+            continue
+        }
+
+        if ($RemoteHostName) {
+            $RemoteHost = $RemoteHostName
+        }
+        else {
+            $RemoteHost = $CurImported.RemoteHostName
+        }
         $MoveSplat = @{
             Remote                     = $True
-            Identity                   = $CurReady.UserPrincipalName
-            BatchName                  = $CurReady.BatchName
-            RemoteHostName             = $CurReady.RemoteHostName
+            Identity                   = $CurImported.UserPrincipalName
+            BatchName                  = $CurImported.BatchName
+            RemoteHostName             = $RemoteHost
             RemoteCredential           = $OnPremisesCredential
             TargetDeliveryDomain       = $TargetDeliveryDomain
             BadItemLimit               = 50
@@ -37,9 +44,14 @@
             AcceptLargeDataLoss        = $True
             SuspendWhenReadyToComplete = $True
         }
-
-        New-MoveRequest @MoveSplat
+        try {
+            New-MoveRequest @MoveSplat -ErrorAction Stop
+            Write-Verbose "Created Move Request:`t $($CurImported.UserPrincipalName)"
+        }
+        catch {
+            Write-Verbose "Error Creating Move Request:`t $($CurImported.UserPrincipalName)"
+            # Add to csv column named ErrorCreating_Move
+        }
         Start-Sleep -Seconds 2
-
     }
 }

@@ -13,51 +13,32 @@ function Get-OktaAppGroupReport {
     $Url = $OKTACredential.GetNetworkCredential().username
     $Token = $OKTACredential.GetNetworkCredential().Password
 
-    $Headers = @{
-        "Authorization" = "SSWS $Token"
-        "Accept"        = "application/json"
-        "Content-Type"  = "application/json"
+    if ($SearchString -and $filter -or ($SearchString -and $Id) -or ($Filter -and $Id)) {
+        Write-Warning "Choose between zero and one parameters only"
+        Write-Warning "Please try again"
+        break
     }
 
-    if (-not $Filter -and (-not $SearchString) -and (-not $Id)) {
-        $RestSplat = @{
-            Uri     = "https://$Url.okta.com/api/v1/groups/"
-            Headers = $Headers
-            Method  = 'Get'
+    if (-not $SearchString -and -not $id -and -not $Filter) {
+        $Group = Get-OktaUserReport
+    }
+    else {
+        if ($SearchString) {
+            $Group = Get-OktaGroupReport -SearchString $SearchString
+        }    
+        if ($Filter) {
+            $Group = Get-OktaGroupReport -Filter $Filter
+        }
+        if ($Id) {
+            $Group = Get-OktaGroupReport -Id $Id
         }
     }
-
-    if ($id) {
-        $RestSplat = @{
-            Uri     = 'https://{0}.okta.com/api/v1/groups/?filter=id eq "{1}"' -f $Url, $id
-            Headers = $Headers
-            Method  = 'Get'
-        }
-    }
-
-    if ($SearchString) {
-        $RestSplat = @{
-            Uri     = "https://$Url.okta.com/api/v1/groups/?q=$SearchString"
-            Headers = $Headers
-            Method  = 'Get'
-        }
-    }
-
-    $Group = Invoke-RestMethod @RestSplat
 
     foreach ($CurGroup in $Group) {
         $Id = $CurGroup.Id
-        $GName = $CurGroup.Profile.Name
-        $GDescription = $CurGroup.Profile.Description
-        
-        $RestSplat = @{
-            Uri     = 'https://{0}.okta.com/api/v1/apps?filter=group.id+eq+"{1}"' -f $Url, $Id
-            Headers = $Headers
-            Method  = 'Get'
-        }
-
-        $AppsInGroup = Invoke-RestMethod @RestSplat
-
+        $GName = $CurGroup.Name
+        $GDescription = $CurGroup.Description
+        $AppsInGroup = Get-OktaAppReport -GroupId $Id
         foreach ($App in $AppsInGroup) {
             [pscustomobject]@{
                 GroupName     = $GName
@@ -68,5 +49,5 @@ function Get-OktaAppGroupReport {
                 AppSignOnMode = $App.SignOnMode
             }
         }
-    }
+    } 
 }

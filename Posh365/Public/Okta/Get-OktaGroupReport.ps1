@@ -100,6 +100,9 @@ function Get-OktaGroupReport {
     }
 
     do {
+        if (($Response.Headers.'x-rate-limit-remaining' -lt 50) -and ($Response.Headers.'x-rate-limit-remaining')) {
+            Start-Sleep -Seconds 4
+        }
         $Response = Invoke-WebRequest @RestSplat
         $Headers = $Response.Headers
         $Group = $Response.Content | ConvertFrom-Json    

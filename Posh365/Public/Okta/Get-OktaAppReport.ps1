@@ -1,7 +1,8 @@
 function Get-OktaAppReport {
 
     Param (
-
+        [Parameter()]
+        [string] $GroupId
     )
     $Url = $OKTACredential.GetNetworkCredential().username
     $Token = $OKTACredential.GetNetworkCredential().Password
@@ -11,44 +12,78 @@ function Get-OktaAppReport {
         "Accept"        = "application/json"
         "Content-Type"  = "application/json"
     }
-    
-    $RestSplat = @{
-        Uri     = "https://$Url.okta.com/api/v1/apps/"
-        Headers = $Headers
-        Method  = 'Get'
+    if ($GroupId) {
+        $RestSplat = @{
+            Uri     = 'https://{0}.okta.com/api/v1/apps/?filter=group.id+eq+"{1}"' -f $Url, $GroupId
+            Headers = $Headers
+            Method  = 'Get'
+        }
     }
+    else {
+        $RestSplat = @{
+            Uri     = "https://$Url.okta.com/api/v1/apps/?limit=20"
+            Headers = $Headers
+            Method  = 'Get'
+        }
+    }
+    
+    do {
+        if (($Response.Headers.'x-rate-limit-remaining' -lt 50) -and ($Response.Headers.'x-rate-limit-remaining')) {
+            Start-Sleep -Seconds 4
+        }
+        $Response = Invoke-WebRequest @RestSplat
+        $Headers = $Response.Headers
+        $App = $Response.Content | ConvertFrom-Json
 
-    $App = Invoke-RestMethod @RestSplat
-
-    foreach ($CurApp in $App) {
-
-        $Id = $CurApp.Id
-        $Accessibility = ($CurApp).Accessibility
-        $Visibility = ($CurApp).Visibility
-        $Credentials = ($CurApp).Credentials
-        $Features = ($CurApp).Features
-        $Settings = ($CurApp).Settings
-
-        [PSCustomObject]@{
-            Name                 = $CurApp.Name
-            Label                = $CurApp.Label
-            Status               = $CurApp.Status
-            SignOnMode           = $CurApp.SignOnMode
-            TenantType           = $Settings.app.tenantType
-            Domain               = $Settings.app.domain
-            MsftTenant           = $Settings.app.msftTenant
-            CustomDomain         = $Settings.app.customDomain
-            FilterGroupsByOU     = $Settings.app.filterGroupsByOU
-            Created              = $CurApp.Created
-            LastUpdated          = $CurApp.LastUpdated
-            Activated            = $CurApp.Activated
-            UserNameTemplate     = $Credentials.UserNameTemplate.Template
-            UserNameTemplateType = $Credentials.UserNameTemplate.Type
-            CredentialScheme     = $Credentials.Scheme
-            AppId                = $Id
-            Features             = ($Features -join (';'))            
+        if ($Response.Headers['link'] -match '<([^>]+?)>;\s*rel="next"') {
+            $Next = $matches[1]
+        }
+        else {
+            $Next = $null
+        }
+        
+        $Headers = @{
+            "Authorization" = "SSWS $Token"
+            "Accept"        = "application/json"
+            "Content-Type"  = "application/json"
+        }
+        $RestSplat = @{
+            Uri     = $Next
+            Headers = $Headers
+            Method  = 'Get'
         }
 
-    }
+
+        foreach ($CurApp in $App) {
+
+            $Id = $CurApp.Id
+            $Accessibility = ($CurApp).Accessibility
+            $Visibility = ($CurApp).Visibility
+            $Credentials = ($CurApp).Credentials
+            $Features = ($CurApp).Features
+            $Settings = ($CurApp).Settings
+
+            [PSCustomObject]@{
+                Name                 = $CurApp.Name
+                Label                = $CurApp.Label
+                Status               = $CurApp.Status
+                SignOnMode           = $CurApp.SignOnMode
+                TenantType           = $Settings.app.tenantType
+                Domain               = $Settings.app.domain
+                MsftTenant           = $Settings.app.msftTenant
+                CustomDomain         = $Settings.app.customDomain
+                FilterGroupsByOU     = $Settings.app.filterGroupsByOU
+                Created              = $CurApp.Created
+                LastUpdated          = $CurApp.LastUpdated
+                Activated            = $CurApp.Activated
+                UserNameTemplate     = $Credentials.UserNameTemplate.Template
+                UserNameTemplateType = $Credentials.UserNameTemplate.Type
+                CredentialScheme     = $Credentials.Scheme
+                AppId                = $Id
+                Features             = ($Features -join (';'))            
+            }
     
+        }
+
+    } until (-not $next)
 }
