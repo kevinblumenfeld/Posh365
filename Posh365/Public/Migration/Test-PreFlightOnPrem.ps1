@@ -17,7 +17,8 @@
         $WhyFailed = ""
         $UPN = $CurImport.Check
         $CurImport.Check = $UPN
-
+        $CurImport.BatchName = $CurImport.BatchName
+        
         if ($CurImport.PreFlightComplete -ne "TRUE") {
 
             try {

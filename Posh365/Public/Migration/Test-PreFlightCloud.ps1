@@ -18,6 +18,7 @@
         $WhyFailed = ""
         $UPN = $CurImport.Check
         $CurImport.Check = $UPN
+        $CurImport.BatchName = $CurImport.BatchName
 
         if ($CurImport.PreFlightComplete -ne "TRUE") {
 
@@ -37,6 +38,14 @@
                 $CurImport.IsSynchronized = "TRUE"
                 $CurImport.DisplayName = $MailUser.DisplayName
                 $CurImport.PrimarySMTP = $MailUser.WindowsEmailAddress
+                $CurImport.CloudUPN = $MailUser.UserPrincipalName
+                
+                if ($CurImport.CloudUPN -eq $CurImport.UserPrincipalName ) {
+                    $CurImport.UPNsMatch = "TRUE"
+                }
+                else {
+                    $CurImport.UPNsMatch = "FALSE"
+                }
 
                 if ($MailUser.WindowsEmailAddress -eq $MailUser.MicrosoftOnlineServicesID) {
                     $CurImport.UpnSmtpMatch = "TRUE"  
@@ -126,7 +135,8 @@
                 ) -and
                 $CurImport.RoutingAddress -eq "TRUE" -and
                 $CurImport.UpnSmtpMatch -eq "TRUE" -and
-                $CurImport.GoodAddresses -eq "TRUE"
+                $CurImport.GoodAddresses -eq "TRUE" -and
+                $CurImport.UPNsMatch -eq "TRUE"
             ) {
                 $CurImport.PreFlightComplete = "TRUE"
                 Start-Sleep -Seconds 2

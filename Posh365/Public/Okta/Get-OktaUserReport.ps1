@@ -110,9 +110,14 @@ function Get-OktaUserReport {
     }
 
     do {
+
+        if (($Response.Headers.'x-rate-limit-remaining' -lt 50) -and ($Response.Headers.'x-rate-limit-remaining')) {
+            Start-Sleep -Seconds 4
+        }
         $Response = Invoke-WebRequest @RestSplat
         $Headers = $Response.Headers
-        $User = $Response.Content | ConvertFrom-Json    
+        $User = $Response.Content | ConvertFrom-Json 
+        
         if ($Response.Headers['link'] -match '<([^>]+?)>;\s*rel="next"') {
             $Next = $matches[1]
         }
@@ -157,4 +162,3 @@ function Get-OktaUserReport {
         }
     } until (-not $next)
 }
-    
