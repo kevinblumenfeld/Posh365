@@ -1,9 +1,8 @@
 function Get-OktaAppUserReport {
-
     Param (
         [Parameter()]
         [string] $SearchString,
-            
+
         [Parameter()]
         [string] $Filter,
 
@@ -23,7 +22,7 @@ function Get-OktaAppUserReport {
     else {
         if ($SearchString) {
             $User = Get-OktaUserReport -SearchString $SearchString
-        }    
+        }
         if ($Filter) {
             $User = Get-OktaUserReport -Filter $Filter
         }
@@ -34,7 +33,7 @@ function Get-OktaAppUserReport {
 
     $Url = $OKTACredential.GetNetworkCredential().username
     $Token = $OKTACredential.GetNetworkCredential().Password
-    
+
     foreach ($CurUser in $User) {
         $Id = $CurUser.Id
         $FirstName = $CurUser.FirstName
@@ -53,19 +52,24 @@ function Get-OktaAppUserReport {
         }
 
         do {
-            if (($Response.Headers.'x-rate-limit-remaining' -lt 50) -and ($Response.Headers.'x-rate-limit-remaining')) {
-                Start-Sleep -Seconds 4
+            if (($Response.Headers.'x-rate-limit-remaining') -and ($Response.Headers.'x-rate-limit-remaining' -lt 50)) {
+                $SleepTime = @{
+                    Start = ([DateTime]$Response.Headers.Date).ToUniversalTime()
+                    End   = [DateTimeOffset]::FromUnixTimeSeconds($Response.Headers.'X-Rate-Limit-Reset').DateTime
+                }
+                Start-Sleep -Seconds (New-TimeSpan @SleepTime).Seconds
+                Start-Sleep -Seconds 1
             }
-            $Response = Invoke-WebRequest @RestSplat
+            $Response = Invoke-WebRequest @RestSplat -Verbose:$false
             $Headers = $Response.Headers
-            $AppsinUser = $Response.Content | ConvertFrom-Json    
+            $AppsinUser = $Response.Content | ConvertFrom-Json
             if ($Response.Headers['link'] -match '<([^>]+?)>;\s*rel="next"') {
                 $Next = $matches[1]
             }
             else {
                 $Next = $null
             }
-            
+
             $Headers = @{
                 "Authorization" = "SSWS $Token"
                 "Accept"        = "application/json"

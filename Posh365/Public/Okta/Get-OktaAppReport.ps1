@@ -1,5 +1,4 @@
 function Get-OktaAppReport {
-
     Param (
         [Parameter()]
         [string] $GroupId
@@ -26,12 +25,17 @@ function Get-OktaAppReport {
             Method  = 'Get'
         }
     }
-    
+
     do {
-        if (($Response.Headers.'x-rate-limit-remaining' -lt 50) -and ($Response.Headers.'x-rate-limit-remaining')) {
-            Start-Sleep -Seconds 4
+        if (($Response.Headers.'x-rate-limit-remaining') -and ($Response.Headers.'x-rate-limit-remaining' -lt 50)) {
+            $SleepTime = @{
+                Start = ([DateTime]$Response.Headers.Date).ToUniversalTime()
+                End   = [DateTimeOffset]::FromUnixTimeSeconds($Response.Headers.'X-Rate-Limit-Reset').DateTime
+            }
+            Start-Sleep -Seconds (New-TimeSpan @SleepTime).Seconds
+            Start-Sleep -Seconds 1
         }
-        $Response = Invoke-WebRequest @RestSplat
+        $Response = Invoke-WebRequest @RestSplat -Verbose:$false
         $Headers = $Response.Headers
         $App = $Response.Content | ConvertFrom-Json
 
@@ -41,7 +45,7 @@ function Get-OktaAppReport {
         else {
             $Next = $null
         }
-        
+
         $Headers = @{
             "Authorization" = "SSWS $Token"
             "Accept"        = "application/json"
@@ -52,7 +56,6 @@ function Get-OktaAppReport {
             Headers = $Headers
             Method  = 'Get'
         }
-
 
         foreach ($CurApp in $App) {
 
@@ -80,10 +83,8 @@ function Get-OktaAppReport {
                 UserNameTemplateType = $Credentials.UserNameTemplate.Type
                 CredentialScheme     = $Credentials.Scheme
                 AppId                = $Id
-                Features             = ($Features -join (';'))            
+                Features             = ($Features -join (';'))
             }
-    
         }
-
     } until (-not $next)
 }

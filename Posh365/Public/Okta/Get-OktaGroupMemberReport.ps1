@@ -1,33 +1,23 @@
 function Get-OktaGroupMemberReport {
-    Param (
-        [Parameter()]
-        [string] $SearchString,
-            
-        [Parameter()]
-        [string] $Filter,
-
-        [Parameter()]
-        [string] $Id
-    )
     <#
     .SYNOPSIS
         Searches for specific or all Okta Groups and lists their members
-    
+
     .DESCRIPTION
         Searches for specific or all Okta Groups and lists their members.  Use no parameters to return all Groups. e.g Get-OktaGroupMemberReport
-    
+
     .PARAMETER SearchString
         Searches for groups by name in your organization and and lists their members
-        Search currently performs a startsWith match but it should be considered an implementation detail 
+        Search currently performs a startsWith match but it should be considered an implementation detail
         and may change without notice in the future. Exact matches will always be returned before partial matches
-    
+
     .PARAMETER ID
         Search by Group ID
 
     .PARAMETER Filter
         List Groups with a Filter
         Filters against the most up-to-date data. For example, if you create a user or change an attribute and then issue a filter request, the changes are reflected in your results.
-        Requires URL encoding. For example, filter=lastUpdated gt "2013-06-01T00:00:00.000Z" is encoded as filter=lastUpdated%20gt%20%222013-06-01T00:00:00.000Z%22. 
+        Requires URL encoding. For example, filter=lastUpdated gt "2013-06-01T00:00:00.000Z" is encoded as filter=lastUpdated%20gt%20%222013-06-01T00:00:00.000Z%22.
         Examples use cURL-style escaping instead of URL encoding to make them easier to read.
 
         Filter	                                                Description
@@ -51,16 +41,26 @@ function Get-OktaGroupMemberReport {
     .EXAMPLE
         Get-OktaGroupMemberReport -Id 00u4m2pk9NMihnsWJ356
     #>
+    Param (
+        [Parameter()]
+        [string] $SearchString,
+
+        [Parameter()]
+        [string] $Filter,
+
+        [Parameter()]
+        [string] $Id
+    )
 
     if ($SearchString -and $filter -or ($SearchString -and $Id) -or ($Filter -and $Id)) {
         Write-Warning "Choose between zero and one parameters only"
         Write-Warning "Please try again"
         break
     }
-    
+
     $Url = $OKTACredential.GetNetworkCredential().username
     $Token = $OKTACredential.GetNetworkCredential().Password
-    
+
     $Headers = @{
         "Authorization" = "SSWS $Token"
         "Accept"        = "application/json"
@@ -73,7 +73,7 @@ function Get-OktaGroupMemberReport {
             Headers = $Headers
             Method  = 'Get'
         }
-    
+
     }
     else {
         if ($SearchString) {
@@ -82,7 +82,7 @@ function Get-OktaGroupMemberReport {
                 Headers = $Headers
                 Method  = 'Get'
             }
-        }    
+        }
         if ($Filter) {
             $RestSplat = @{
                 Uri     = "https://$Url.okta.com/api/v1/groups/?limit=200&filter=$Filter"
@@ -100,12 +100,17 @@ function Get-OktaGroupMemberReport {
     }
 
     do {
-        if (($Response.Headers.'x-rate-limit-remaining' -lt 50) -and ($Response.Headers.'x-rate-limit-remaining')) {
-            Start-Sleep -Seconds 4
+        if (($Response.Headers.'x-rate-limit-remaining') -and ($Response.Headers.'x-rate-limit-remaining' -lt 50)) {
+            $SleepTime = @{
+                Start = ([DateTime]$Response.Headers.Date).ToUniversalTime()
+                End   = [DateTimeOffset]::FromUnixTimeSeconds($Response.Headers.'X-Rate-Limit-Reset').DateTime
+            }
+            Start-Sleep -Seconds (New-TimeSpan @SleepTime).Seconds
+            Start-Sleep -Seconds 1
         }
-        $Response = Invoke-WebRequest @RestSplat
+        $Response = Invoke-WebRequest @RestSplat -Verbose:$false
         $Headers = $Response.Headers
-        $Group = $Response.Content | ConvertFrom-Json    
+        $Group = $Response.Content | ConvertFrom-Json
         if ($Response.Headers['link'] -match '<([^>]+?)>;\s*rel="next"') {
             $Next = $matches[1]
         }
@@ -122,9 +127,9 @@ function Get-OktaGroupMemberReport {
             Headers = $Headers
             Method  = 'Get'
         }
-    
+
         foreach ($CurGroup in $Group) {
-            
+
             $ProfileDetail = $CurGroup.Profile
             $Member = Get-OKtaGroupMember -GroupId $CurGroup.Id
 
@@ -141,7 +146,7 @@ function Get-OktaGroupMemberReport {
                     GroupScope                 = $ProfileDetail.GroupScope
                     Id                         = $CurGroup.Id
                 }
-            } 
+            }
         }
     } until (-not $next)
 }

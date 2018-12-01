@@ -1,32 +1,32 @@
-function Get-ActiveDirectoryUser { 
+function Get-ActiveDirectoryUser {
     <#
     .SYNOPSIS
     Export Active Directory Users
-    
+
     .DESCRIPTION
     Export Active Directory Users
-    
+
     .PARAMETER ADUserFilter
     Provide specific AD Users to report on.  Otherwise, all AD Users will be reported.  Please review the examples provided.
-    
+
     .PARAMETER DetailedReport
     Provides a full report of all attributes.  Otherwise, only a refined report will be given.
-    
+
     .EXAMPLE
     Get-ActiveDirectoryUser | Export-Csv c:\scripts\ADUsers.csv -notypeinformation -encoding UTF8
-    
+
     .EXAMPLE
     Get-ActiveDirectoryUser | Export-Csv c:\scripts\ADUsers.csv -notypeinformation -encoding UTF8
-    
+
     .EXAMPLE
     '{proxyaddresses -like "*contoso.com"}' | Get-ActiveDirectoryUser | Export-Csv c:\scripts\ADUsers.csv -notypeinformation -encoding UTF8
-    
+
     .EXAMPLE
     '{proxyaddresses -like "*contoso.com"}' | Get-ActiveDirectoryUser -ArchivesOnly | Export-Csv c:\scripts\ADUsers.csv -notypeinformation -encoding UTF8
-    
+
     .EXAMPLE
     '{proxyaddresses -like "*contoso.com"}' | Get-ActiveDirectoryUser -DetailedReport | Export-Csv c:\scripts\ADUsers_Detailed.csv -notypeinformation -encoding UTF8
-    
+
     #>
     [CmdletBinding()]
     param (
@@ -107,7 +107,7 @@ function Get-ActiveDirectoryUser {
                 'MobilePhone', 'HomePhone', 'Fax', 'SamAccountName', 'DistinguishedName', 'Office', 'Enabled'
                 'whenChanged', 'whenCreated', 'adminCount', 'msExchRecipientTypeDetails', 'ObjectGUID'
             )
-            
+
             $CalculatedProps = @(
                 @{n = "PrimarySmtpAddress" ; e = {( $_.proxyAddresses | Where-Object {$_ -cmatch "SMTP:"})}},
                 @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
@@ -138,6 +138,6 @@ function Get-ActiveDirectoryUser {
         }
     }
     End {
-        
+
     }
 }

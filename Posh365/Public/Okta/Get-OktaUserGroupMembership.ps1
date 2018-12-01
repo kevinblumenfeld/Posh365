@@ -1,20 +1,18 @@
 function Get-OktaUserGroupMembership {
     Param (
-
         [Parameter()]
         [string] $SearchString
-            
     )
 
     $M2GHash = Get-OktaGroupMemberHash
 
     if (-not $SearchString) {
-        $User = Get-OktaUserReport 
+        $User = Get-OktaUserReport
     }
     else {
         $User = Get-OktaUserReport -SearchString $SearchString
     }
-    
+
     foreach ($CurUser in $User) {
         $Group = $M2GHash[$CurUser.Login]
         foreach ($CurGroup in $Group) {

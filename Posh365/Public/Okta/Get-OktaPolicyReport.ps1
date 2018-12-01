@@ -1,5 +1,5 @@
 function Get-OktaPolicyReport {
-    
+
     Param (
 
     )
@@ -12,7 +12,7 @@ function Get-OktaPolicyReport {
         "Content-Type"  = "application/json"
     }
     $PolicyType = 'OKTA_SIGN_ON', 'PASSWORD', 'MFA_ENROLL', 'OAUTH_AUTHORIZATION_POLICY'
-    
+
     foreach ($CurPolicyType in $PolicyType) {
         $RestSplat = @{
             Uri     = "https://$Url.okta.com/api/v1/policies?type=$CurPolicyType"
