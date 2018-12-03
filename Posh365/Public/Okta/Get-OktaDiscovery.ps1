@@ -49,7 +49,7 @@ function Get-OktaDiscovery {
     Get-OktaUserReport | Export-Csv $OktaUser -NoTypeInformation -Encoding UTF8
 
     Write-Verbose "Discovering`tOKTA User Group Membership"
-    Get-OktaUserGroupMembership | Export-Csv $OktaUserGroupMembership -NoTypeInformation -Encoding UTF8
+    Get-OktaUserGroupMembershipReport | Export-Csv $OktaUserGroupMembership -NoTypeInformation -Encoding UTF8
 
     Write-Verbose "Discovering`tOKTA Groups"
     Get-OktaGroupReport | Export-Csv $OktaGroup -NoTypeInformation -Encoding UTF8

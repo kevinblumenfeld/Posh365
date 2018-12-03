@@ -1,4 +1,4 @@
-function Get-OktaUserGroupMembership {
+function Get-OktaUserGroupMembershipReportReport {
     Param (
         [Parameter()]
         [string] $SearchString
