@@ -21,7 +21,7 @@ function Get-OktaPolicyReport {
         }
 
         try {
-            $Policy = Invoke-RestMethod @RestSplat -ErrorAction Stop
+            $Policy = Invoke-RestMethod @RestSplat -ErrorAction Stop -Verbose:$false
         }
         catch {
             continue
@@ -29,7 +29,7 @@ function Get-OktaPolicyReport {
 
         foreach ($CurPolicy in $Policy) {
             $Groups = (($CurPolicy).conditions.people.groups.include | ForEach-Object {
-                    ((Get-OktaGroupReport $_).name) -join ";"
+                    ((Get-OktaGroupReport -Id $_).name) -join ";"
                 })
 
             [PSCustomObject]@{
