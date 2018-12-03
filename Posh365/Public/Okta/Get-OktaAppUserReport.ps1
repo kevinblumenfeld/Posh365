@@ -76,14 +76,17 @@ function Get-OktaAppUserReport {
                 Method  = 'Get'
             }
             foreach ($App in $AppsInUser) {
+                write-host $App
                 [pscustomobject]@{
                     FirstName     = $FirstName
                     LastName      = $LastName
                     Login         = $Login
                     Email         = $Email
                     AppName       = $App.Name
+                    AppLabel      = $App.Label
                     AppStatus     = $App.Status
                     AppSignOnMode = $App.SignOnMode
+                    AppId         = $App.Id
                 }
             }
         } until (-not $next)
