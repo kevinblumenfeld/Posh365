@@ -127,14 +127,20 @@ function Get-OktaGroupReport {
         foreach ($CurGroup in $Group) {
 
             $ProfileDetail = $CurGroup.Profile
+
             [PSCustomObject]@{
-                Name                  = $ProfileDetail.Name
-                Description           = $ProfileDetail.Description
-                Type                  = $CurGroup.Type
-                Id                    = $CurGroup.Id
-                Created               = $CurGroup.Created
-                LastUpdated           = $CurGroup.LastUpdated
-                LastMembershipUpdated = $CurGroup.LastMembershipUpdated
+                Name                       = $ProfileDetail.Name
+                Description                = $ProfileDetail.Description
+                Type                       = $CurGroup.Type
+                windowsDomainQualifiedName = $ProfileDetail.windowsDomainQualifiedName
+                GroupType                  = $ProfileDetail.GroupType
+                GroupScope                 = $ProfileDetail.GroupScope
+                samAccountName             = $ProfileDetail.samAccountName
+                DistinguishedName          = $ProfileDetail.DistinguishedName
+                Id                         = $CurGroup.Id
+                Created                    = $CurGroup.Created
+                LastUpdated                = $CurGroup.LastUpdated
+                LastMembershipUpdated      = $CurGroup.LastMembershipUpdated
             }
         }
     } until (-not $next)
