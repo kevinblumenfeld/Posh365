@@ -76,7 +76,6 @@ function Get-OktaAppUserReport {
                 Method  = 'Get'
             }
             foreach ($App in $AppsInUser) {
-                write-host $App
                 [pscustomobject]@{
                     FirstName     = $FirstName
                     LastName      = $LastName
