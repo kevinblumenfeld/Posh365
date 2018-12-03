@@ -1,4 +1,25 @@
 function Get-OktaDiscovery {
+    <#
+    .SYNOPSIS
+    Runs the Okta Discovery Scripts
+
+    .DESCRIPTION
+    Runs the Okta Discovery Scripts
+
+    .PARAMETER Tenant
+    The name that describes the tenant..
+    for example: Contoso  could be used for contoso.okta.com
+
+    .PARAMETER ReportPath
+    Where the reports should be saved. There will be a folder created if it doesnt already exist
+    Under this folder a folder named the "tenant" will also be created.  Here you will find the reports.
+
+    .EXAMPLE
+    Get-OktaDiscovery -Tenant Contoso -ReportPath C:\Scripts\Okta -Verbose
+
+    .NOTES
+    Use the verbose switch to see progress
+    #>
     Param (
 
         [Parameter(Mandatory)]
