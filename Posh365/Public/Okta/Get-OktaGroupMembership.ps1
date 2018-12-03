@@ -1,4 +1,4 @@
-function Get-OktaGroupMember {
+function Get-OktaGroupMembership {
     Param (
         [Parameter(Mandatory)]
         [string] $GroupId
@@ -20,16 +20,11 @@ function Get-OktaGroupMember {
 
     do {
         if (($Response.Headers.'x-rate-limit-remaining') -and ($Response.Headers.'x-rate-limit-remaining' -lt 50)) {
-            $SleepTime = @{
-                Start = ([DateTime]$Response.Headers.Date).ToUniversalTime()
-                End   = [DateTimeOffset]::FromUnixTimeSeconds($Response.Headers.'X-Rate-Limit-Reset').DateTime
-            }
-            Start-Sleep -Seconds (New-TimeSpan @SleepTime).Seconds
-            Start-Sleep -Seconds 1
+            Start-Sleep -Seconds 4
         }
         $Response = Invoke-WebRequest @RestSplat -Verbose:$false
         $Headers = $Response.Headers
-        $GrpMember = $Response.Content | ConvertFrom-Json
+        $GroupMember = $Response.Content | ConvertFrom-Json
         if ($Response.Headers['link'] -match '<([^>]+?)>;\s*rel="next"') {
             $Next = $matches[1]
         }
@@ -47,12 +42,12 @@ function Get-OktaGroupMember {
             Method  = 'Get'
         }
 
-        foreach ($CurGrpMember in $GrpMember) {
+        foreach ($CurGroupMember in $GroupMember) {
 
             [PSCustomObject]@{
-                Login     = $CurGrpMember.Profile.login
-                FirstName = $CurGrpMember.Profile.firstName
-                LastName  = $CurGrpMember.Profile.lastName
+                Login     = $CurGroupMember.Profile.login
+                FirstName = $CurGroupMember.Profile.firstName
+                LastName  = $CurGroupMember.Profile.lastName
             }
 
         }

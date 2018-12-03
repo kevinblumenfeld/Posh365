@@ -32,12 +32,7 @@ function Get-OktaAppGroupReport {
 
         do {
             if (($Response.Headers.'x-rate-limit-remaining') -and ($Response.Headers.'x-rate-limit-remaining' -lt 50)) {
-                $SleepTime = @{
-                    Start = ([DateTime]$Response.Headers.Date).ToUniversalTime()
-                    End   = [DateTimeOffset]::FromUnixTimeSeconds($Response.Headers.'X-Rate-Limit-Reset').DateTime
-                }
-                Start-Sleep -Seconds (New-TimeSpan @SleepTime).Seconds
-                Start-Sleep -Seconds 1
+                Start-Sleep -Seconds 4
             }
 
             $Response = Invoke-WebRequest @RestSplat -Verbose:$false

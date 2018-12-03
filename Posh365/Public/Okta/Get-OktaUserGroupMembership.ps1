@@ -4,7 +4,7 @@ function Get-OktaUserGroupMembership {
         [string] $SearchString
     )
 
-    $M2GHash = Get-OktaGroupMemberHash
+    $M2GHash = Get-OktaMemberGroupHash
 
     if (-not $SearchString) {
         $User = Get-OktaUserReport

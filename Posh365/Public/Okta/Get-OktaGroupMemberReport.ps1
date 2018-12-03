@@ -101,12 +101,7 @@ function Get-OktaGroupMemberReport {
 
     do {
         if (($Response.Headers.'x-rate-limit-remaining') -and ($Response.Headers.'x-rate-limit-remaining' -lt 50)) {
-            $SleepTime = @{
-                Start = ([DateTime]$Response.Headers.Date).ToUniversalTime()
-                End   = [DateTimeOffset]::FromUnixTimeSeconds($Response.Headers.'X-Rate-Limit-Reset').DateTime
-            }
-            Start-Sleep -Seconds (New-TimeSpan @SleepTime).Seconds
-            Start-Sleep -Seconds 1
+            Start-Sleep -Seconds 4
         }
         $Response = Invoke-WebRequest @RestSplat -Verbose:$false
         $Headers = $Response.Headers
@@ -130,20 +125,20 @@ function Get-OktaGroupMemberReport {
 
         foreach ($CurGroup in $Group) {
 
-            $ProfileDetail = $CurGroup.Profile
-            $Member = Get-OKtaGroupMember -GroupId $CurGroup.Id
+            $CurGroupProfile = $CurGroup.Profile
+            $Member = Get-OktaGroupMembership -GroupId $CurGroup.Id
 
             foreach ($CurMember in $Member) {
                 [PSCustomObject]@{
                     MemberLogin                = $CurMember.Login
                     MemberFirstName            = $CurMember.FirstName
                     MemberLastName             = $CurMember.LastName
-                    Name                       = $ProfileDetail.Name
-                    Description                = $ProfileDetail.Description
+                    Name                       = $CurGroupProfile.Name
+                    Description                = $CurGroupProfile.Description
                     Type                       = $CurGroup.Type
-                    windowsDomainQualifiedName = $ProfileDetail.windowsDomainQualifiedName
-                    GroupType                  = $ProfileDetail.GroupType
-                    GroupScope                 = $ProfileDetail.GroupScope
+                    windowsDomainQualifiedName = $CurGroupProfile.windowsDomainQualifiedName
+                    GroupType                  = $CurGroupProfile.GroupType
+                    GroupScope                 = $CurGroupProfile.GroupScope
                     Id                         = $CurGroup.Id
                 }
             }

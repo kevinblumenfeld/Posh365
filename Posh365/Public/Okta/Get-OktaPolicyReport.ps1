@@ -43,6 +43,5 @@ function Get-OktaPolicyReport {
             }
 
         }
-
     }
 }

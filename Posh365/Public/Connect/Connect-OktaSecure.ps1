@@ -5,8 +5,8 @@ function Connect-OktaSecure {
 
         [Parameter()]
         [switch] $DeleteCreds
-        
-        
+
+
     )
     if (-not (Get-Module -ListAvailable Okta.Core.Automation)) {
         Install-Module Okta.Core.Automation -Force -SkipPublisherCheck
@@ -26,16 +26,16 @@ function Connect-OktaSecure {
         }
         Catch {
             throw $_.Exception.Message
-        }           
+        }
     }
     if (Test-Path ($KeyPath + "$($Tenant).OktaXml")) {
-        [System.Management.Automation.PSCredential]$Global:OKTACredential = Import-Clixml ($KeyPath + "$($Tenant).OktaXml")
+        [System.Management.Automation.PSCredential]$Script:OKTACredential = Import-Clixml ($KeyPath + "$($Tenant).OktaXml")
         $url = $OKTACredential.GetNetworkCredential().username
         $token = $OKTACredential.GetNetworkCredential().Password
 
     }
     else {
-        [System.Management.Automation.PSCredential]$Global:OKTACredential = Get-Credential -Message "Enter OKTA Tenant/Domain as Username and API Token as Password"
+        [System.Management.Automation.PSCredential]$Script:OKTACredential = Get-Credential -Message "Enter OKTA Tenant/Domain as Username and API Token as Password"
         $OKTACredential | Export-Clixml ($KeyPath + "$($Tenant).OktaXml")
         $url = $OKTACredential.GetNetworkCredential().username
         $token = $OKTACredential.GetNetworkCredential().Password
