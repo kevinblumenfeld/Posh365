@@ -1,4 +1,4 @@
-function Import-ActiveDirectoryGroupMember { 
+function Import-ActiveDirectoryGroupMember {
     <#
 .SYNOPSIS
 Import Active Directory Group Members
@@ -12,19 +12,26 @@ CSV of new AD Groups and Members
 .EXAMPLE
 Import-Csv .\GroupsAndMembers.csv | Import-ActiveDirectoryGroupMember
 
+.NOTES
+CSV Example (Group Display Names and Email addresses of members)
+=== =======
+
+Group, MembersSMTP
+Group1, joe@contoso.com; fred@contoso.com; sara@contoso.com
+Group2, diane@contoso.com; sam@contoso.com; naomi@contoso.com
 #>
 
     [CmdletBinding()]
     param (
 
         [Parameter(ValueFromPipeline = $true, Mandatory = $true)]
-        $Group
+        $GroupAndMembers
     )
     Begin {
         Import-Module ActiveDirectory -Verbose:$False
         $OutputPath = '.\'
         $LogFileName = $(get-date -Format yyyy-MM-dd_HH-mm-ss)
-        $ErrorLog = Join-Path $OutputPath ($LogFileName + "-Error_Log.csv")
+        $ErrorLog = Join-Path $OutputPath ($LogFileName + "-Adding_Members_To_Groups_Error_Log.csv")
 
         $DomainNameHash = Get-DomainNameHash
 
@@ -35,7 +42,7 @@ Import-Csv .\GroupsAndMembers.csv | Import-ActiveDirectoryGroupMember
         $ADHashMailToGuid = $AllADObjects | Get-ADHashMailToGuid -erroraction silentlycontinue
     }
     Process {
-        ForEach ($CurGroup in $Group) {
+        ForEach ($CurGroup in $GroupAndMembers) {
             try {
                 $errorActionPreference = 'Stop'
                 $Filter = {DisplayName -eq "{0}"} -f $CurGroup.DisplayName
@@ -50,9 +57,10 @@ Import-Csv .\GroupsAndMembers.csv | Import-ActiveDirectoryGroupMember
                 }
             }
             catch {
+                $ErrorMessage = $_.exception.message
                 [PSCustomObject]@{
                     DisplayName = $CurGroup.DisplayName
-                    Error       = $_
+                    Error       = $ErrorMessage
                     Member      = $EachMember
                     Members     = $CurGroup.MembersSMTP
                 } | Export-Csv $ErrorLog -Append -NoTypeInformation -Encoding UTF8

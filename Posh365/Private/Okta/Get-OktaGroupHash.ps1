@@ -2,31 +2,38 @@ function Get-OktaGroupHash {
     Param (
 
     )
-    # Just playing with this not used in production
     $Url = $OKTACredential.GetNetworkCredential().username
     $Token = $OKTACredential.GetNetworkCredential().Password
 
     $Group = Get-OktaGroupReport
     $GroupHash = @{}
+
     foreach ($CurGroup in $Group) {
-        $GName = $CurGroup.Name
         $GId = $CurGroup.Id
+        $GName = $CurGroup.Name
         $GDescription = $CurGroup.Description
         $GType = $CurGroup.Type
-        $WQDN = $CurGroup.windowsDomainQualifiedName
+        $Wqdn = $CurGroup.windowsDomainQualifiedName
         $GroupType = $CurGroup.GroupType
         $GroupScope = $CurGroup.GroupScope
+        $samAccountName = $CurGroup.samAccountName
+        $DistinguishedName = $CurGroup.DistinguishedName
+        $Created = $CurGroup.Created
+        $LastUpdated = $CurGroup.LastUpdated
+        $LastMembershipUpdated = $CurGroup.LastMembershipUpdated
 
         $GroupHash[$GId] = @{
-            Login                      = $Login
-            FirstName                  = $FirstName
-            LastName                   = $LastName
             Name                       = $GName
             Description                = $GDescription
             Type                       = $GType
-            windowsDomainQualifiedName = $WQDN
+            windowsDomainQualifiedName = $Wqdn
             GroupType                  = $GroupType
             GroupScope                 = $GroupScope
+            samAccountName             = $samAccountName
+            DistinguishedName          = $DistinguishedName
+            Created                    = $Created
+            LastUpdated                = $LastUpdated
+            LastMembershipUpdated      = $LastMembershipUpdated
         }
     }
     $GroupHash
