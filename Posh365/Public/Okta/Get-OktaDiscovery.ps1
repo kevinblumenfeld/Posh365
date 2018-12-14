@@ -41,7 +41,7 @@ function Get-OktaDiscovery {
     $OktaGroup = (Join-Path $TenantPath "$Tenant-Okta_Group.csv")
     $OktaGroupMember = (Join-Path $TenantPath "$Tenant-Okta_GroupMember.csv")
     $OktaApp = (Join-Path $TenantPath "$Tenant-Okta_App.csv")
-    $OktaAppUser = (Join-Path $TenantPath "$Tenant-Okta_AppUser.csv")
+    $OktaUserApp = (Join-Path $TenantPath "$Tenant-Okta_UserApp.csv")
     $OktaAppGroup = (Join-Path $TenantPath "$Tenant-Okta_AppGroup.csv")
     $OktaPolicy = (Join-Path $TenantPath "$Tenant-Policy.csv")
 
@@ -61,7 +61,7 @@ function Get-OktaDiscovery {
     Get-OktaAppReport | Export-Csv $OktaApp -NoTypeInformation -Encoding UTF8
 
     Write-Verbose "Discovering`tOKTA Users Assigned To Apps"
-    Get-OktaAppUserReport | Export-Csv $OktaAppUser -NoTypeInformation -Encoding UTF8
+    Get-OktaUserAppReport | Export-Csv $OktaUserApp -NoTypeInformation -Encoding UTF8
 
     Write-Verbose "Discovering`tOKTA Groups Assigned To Apps"
     Get-OktaAppGroupReport | Export-Csv $OktaAppGroup -NoTypeInformation -Encoding UTF8

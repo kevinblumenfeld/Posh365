@@ -1,93 +1,84 @@
 function Get-OktaAppUserReport {
+    <#
+        .SYNOPSIS
+            Searches for Users assigned to an Okta App
+
+        .DESCRIPTION
+            Searches for Users assigned to an Okta App
+
+        .PARAMETER AppID
+            Search by App ID
+
+        .EXAMPLE
+            Get-OktaAppUserReport -AppId 0oa5if2hrd9LRjCLK356
+
+        #>
     Param (
-        [Parameter()]
-        [string] $SearchString,
 
-        [Parameter()]
-        [string] $Filter,
-
-        [Parameter()]
-        [string] $Id
+        [Parameter(Mandatory)]
+        [string] $AppId
     )
 
-    if ($SearchString -and $filter -or ($SearchString -and $Id) -or ($Filter -and $Id)) {
-        Write-Warning "Choose between zero and one parameters only"
-        Write-Warning "Please try again"
-        break
-    }
-
-    if (-not $SearchString -and -not $id -and -not $Filter) {
-        $User = Get-OktaUserReport
-    }
-    else {
-        if ($SearchString) {
-            $User = Get-OktaUserReport -SearchString $SearchString
-        }
-        if ($Filter) {
-            $User = Get-OktaUserReport -Filter $Filter
-        }
-        if ($Id) {
-            $User = Get-OktaUserReport -Id $Id
-        }
-    }
 
     $Url = $OKTACredential.GetNetworkCredential().username
     $Token = $OKTACredential.GetNetworkCredential().Password
 
-    foreach ($CurUser in $User) {
-        $Id = $CurUser.Id
-        $FirstName = $CurUser.FirstName
-        $LastName = $CurUser.LastName
-        $Login = $CurUser.Login
-        $Email = $CurUser.Email
+    $Headers = @{
+        "Authorization" = "SSWS $Token"
+        "Accept"        = "application/json"
+        "Content-Type"  = "application/json"
+    }
+
+    $RestSplat = @{
+        Uri     = 'https://{0}.okta.com/api/v1/apps/{1}/users?limit=200' -f $Url, $AppID
+        Headers = $Headers
+        Method  = 'Get'
+    }
+
+    do {
+        if (($Response.Headers.'x-rate-limit-remaining') -and ($Response.Headers.'x-rate-limit-remaining' -lt 50)) {
+            Start-Sleep -Seconds 4
+        }
+        $Response = Invoke-WebRequest @RestSplat -Verbose:$false
+        $Headers = $Response.Headers
+        $User = $Response.Content | ConvertFrom-Json
+
+        if ($Response.Headers['link'] -match '<([^>]+?)>;\s*rel="next"') {
+            $Next = $matches[1]
+        }
+        else {
+            $Next = $null
+        }
         $Headers = @{
             "Authorization" = "SSWS $Token"
             "Accept"        = "application/json"
             "Content-Type"  = "application/json"
         }
         $RestSplat = @{
-            Uri     = 'https://{0}.okta.com/api/v1/apps/?limit=200&filter=user.id+eq+"{1}"' -f $Url, $Id
+            Uri     = $Next
             Headers = $Headers
             Method  = 'Get'
         }
 
-        do {
-            if (($Response.Headers.'x-rate-limit-remaining') -and ($Response.Headers.'x-rate-limit-remaining' -lt 50)) {
-                Start-Sleep -Seconds 4
-            }
-            $Response = Invoke-WebRequest @RestSplat -Verbose:$false
-            $Headers = $Response.Headers
-            $AppsinUser = $Response.Content | ConvertFrom-Json
-            if ($Response.Headers['link'] -match '<([^>]+?)>;\s*rel="next"') {
-                $Next = $matches[1]
-            }
-            else {
-                $Next = $null
-            }
+        foreach ($CurUser in $User) {
+            $ProfileDetail = ($CurUser).Profile
+            $CredDetail = ($CurUser).Credentials
 
-            $Headers = @{
-                "Authorization" = "SSWS $Token"
-                "Accept"        = "application/json"
-                "Content-Type"  = "application/json"
+            [PSCustomObject]@{
+                AppID        = $AppId
+                DisplayName  = $ProfileDetail.displayName
+                FirstName    = $ProfileDetail.FirstName
+                LastName     = $ProfileDetail.LastName
+                UserName     = $CredDetail.UserName
+                Scope        = $CurUser.Scope
+                Status       = $CurUser.Status
+                Id           = $CurUser.Id
+                SyncState    = $CurUser.SyncState
+                Created      = $CurUser.Created
+                LastUpdated  = $CurUser.LastUpdated
+                StatusChange = $CurUser.StatusChange
+
             }
-            $RestSplat = @{
-                Uri     = $Next
-                Headers = $Headers
-                Method  = 'Get'
-            }
-            foreach ($App in $AppsInUser) {
-                [pscustomobject]@{
-                    FirstName     = $FirstName
-                    LastName      = $LastName
-                    Login         = $Login
-                    Email         = $Email
-                    AppName       = $App.Name
-                    AppLabel      = $App.Label
-                    AppStatus     = $App.Status
-                    AppSignOnMode = $App.SignOnMode
-                    AppId         = $App.Id
-                }
-            }
-        } until (-not $next)
-    }
+        }
+    } until (-not $next)
 }
