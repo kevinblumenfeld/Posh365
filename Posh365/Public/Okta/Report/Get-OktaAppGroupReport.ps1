@@ -63,6 +63,10 @@ function Get-OktaAppGroupReport {
                     GroupDesc     = $GDescription
                     GroupId       = $Id
                     AppName       = $App.Name
+                    AppLabel      = $App.Label
+                    Template      = $App.Credentials.UserNameTemplate.Template
+                    Type          = $App.Credentials.UserNameTemplate.Type
+                    AppId         = $App.Id
                     AppStatus     = $App.Status
                     AppSignOnMode = $App.SignOnMode
                 }
