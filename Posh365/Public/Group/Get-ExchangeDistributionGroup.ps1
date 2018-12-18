@@ -9,6 +9,9 @@ function Get-ExchangeDistributionGroup {
     .PARAMETER ListofGroups
     Provide a text list of specific groups to report on.  Otherwise, all groups will be reported.
     
+    .PARAMETER ListofGroups
+    Use it for PowerShell 2
+    
     .EXAMPLE
     Get-EXOGroup | Export-Csv c:\scripts\All365GroupExport.csv -notypeinformation -encoding UTF8
     
@@ -35,70 +38,128 @@ function Get-ExchangeDistributionGroup {
         [switch] $DetailedReport,
 
         [Parameter(ValueFromPipeline = $true, Mandatory = $false)]
-        [string[]] $ListofGroups
+        [string[]] $ListofGroups,
+
+        [Parameter(Mandatory = $false)]
+        [switch] $PowerShell2
     )
     Begin {
-        if ($DetailedReport) {
-            $Selectproperties = @(
-                'Name', 'DisplayName', 'Alias', 'GroupType', 'Identity', 'PrimarySmtpAddress', 'RecipientType'
-                'RecipientTypeDetails', 'WindowsEmailAddress', 'ArbitrationMailbox', 'CustomAttribute1'
-                'CustomAttribute10', 'CustomAttribute11', 'CustomAttribute12', 'CustomAttribute13'
-                'CustomAttribute14', 'CustomAttribute15', 'CustomAttribute2', 'CustomAttribute3'
-                'CustomAttribute4', 'CustomAttribute5', 'CustomAttribute6', 'CustomAttribute7'
-                'CustomAttribute8', 'CustomAttribute9', 'DistinguishedName', 'ExchangeVersion'
-                'ExpansionServer', 'ExternalDirectoryObjectId', 'Id', 'LegacyExchangeDN'
-                'MaxReceiveSize', 'MaxSendSize', 'MemberDepartRestriction', 'MemberJoinRestriction'
-                'ObjectCategory', 'ObjectState', 'OrganizationalUnit', 'OrganizationId', 'OriginatingServer'
-                'SamAccountName', 'SendModerationNotifications', 'SimpleDisplayName'
-                'BypassNestedModerationEnabled', 'EmailAddressPolicyEnabled', 'HiddenFromAddressListsEnabled'
-                'IsDirSynced', 'IsValid', 'MigrationToUnifiedGroupInProgress', 'ModerationEnabled'
-                'ReportToManagerEnabled', 'ReportToOriginatorEnabled', 'RequireSenderAuthenticationEnabled'
-                'SendOofMessageToOriginatorEnabled'
-            )
-    
-            $CalculatedProps = @(
-                @{n = "OU" ; e = {$_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'}},
-                @{n = "AcceptMessagesOnlyFrom" ; e = {($_.AcceptMessagesOnlyFrom | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "AcceptMessagesOnlyFromDLMembers" ; e = {($_.AcceptMessagesOnlyFromDLMembers | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = {($_.AcceptMessagesOnlyFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "AddressListMembership" ; e = {($_.AddressListMembership | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "AdministrativeUnits" ; e = {($_.AdministrativeUnits | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "BypassModerationFromSendersOrMembers" ; e = {($_.BypassModerationFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "GrantSendOnBehalfTo" ; e = {($_.GrantSendOnBehalfTo | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ManagedBy" ; e = {($_.ManagedBy | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ModeratedBy" ; e = {($_.ModeratedBy | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "RejectMessagesFrom" ; e = {($_.RejectMessagesFrom | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "RejectMessagesFromDLMembers" ; e = {($_.RejectMessagesFromDLMembers | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "RejectMessagesFromSendersOrMembers" ; e = {($_.RejectMessagesFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ExtensionCustomAttribute1" ; e = {($_.ExtensionCustomAttribute1 | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ExtensionCustomAttribute2" ; e = {($_.ExtensionCustomAttribute2 | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ExtensionCustomAttribute3" ; e = {($_.ExtensionCustomAttribute3 | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ExtensionCustomAttribute4" ; e = {($_.ExtensionCustomAttribute4 | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ExtensionCustomAttribute5" ; e = {($_.ExtensionCustomAttribute5 | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "MailTipTranslations" ; e = {($_.MailTipTranslations | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ObjectClass" ; e = {($_.ObjectClass | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "PoliciesExcluded" ; e = {($_.PoliciesExcluded | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "PoliciesIncluded" ; e = {($_.PoliciesIncluded | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "x500" ; e = {"x500:" + $_.LegacyExchangeDN}},
-                @{n = "membersName" ; e = {($Members.name | Where-Object {$_ -ne $null}) -join ";"}}
-                @{n = "membersSMTP" ; e = {($Members.PrimarySmtpAddress | Where-Object {$_ -ne $null}) -join ";"}}
-            )
-        }
-        else {
-            $Selectproperties = @(
-                'Name', 'DisplayName', 'Alias', 'GroupType', 'Identity', 'PrimarySmtpAddress', 'RecipientTypeDetails', 'WindowsEmailAddress'
-            )
-    
-            $CalculatedProps = @(
-                @{n = "OU" ; e = {$_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'}},
-                @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = {($_.AcceptMessagesOnlyFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ManagedBy" ; e = {($_.ManagedBy | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "x500" ; e = {"x500:" + $_.LegacyExchangeDN}},
-                @{n = "membersName" ; e = {($Members.name | Where-Object {$_ -ne $null}) -join ";"}}
-                @{n = "membersSMTP" ; e = {($Members.PrimarySmtpAddress | Where-Object {$_ -ne $null}) -join ";"}}
-            )
+        $Selectproperties = New-Object System.Collections.ArrayList
+
+        # [void] to prevent Array returning index after each add
+        [void]$Selectproperties.Add('Name')
+        [void]$Selectproperties.Add('DisplayName')
+        [void]$Selectproperties.Add('Alias')
+        [void]$Selectproperties.Add('GroupType')
+        [void]$Selectproperties.Add('Identity')
+        [void]$Selectproperties.Add('PrimarySmtpAddress')
+        [void]$Selectproperties.Add('RecipientTypeDetails')
+        [void]$Selectproperties.Add('WindowsEmailAddress')       
+        
+        $CalculatedProps = New-Object System.Collections.ArrayList
+        [void]$CalculatedProps.Add(@{n = "OU" ; e = {$_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'}})
+        [void]$CalculatedProps.Add(@{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = {($_.AcceptMessagesOnlyFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }})
+        [void]$CalculatedProps.Add(@{n = "ManagedBy" ; e = {($_.ManagedBy | Where-Object {$_ -ne $null}) -join ";" }})
+        [void]$CalculatedProps.Add( @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join ";" }})
+        [void]$CalculatedProps.Add(@{n = "x500" ; e = {"x500:" + $_.LegacyExchangeDN}})
+        [void]$CalculatedProps.Add(
+            @{n = "membersName" ; e ={
+                    if($PowerShell2)
+                    {
+                        ($Members | ForEach { $_.Name }) -join ';'
+                    }
+                    else
+                    {
+                        ($Members.name | Where-Object {$_ -ne $null}) -join ";"
+                    }
+                }
+            }
+        )
+        [void]$CalculatedProps.Add(
+            @{n = "membersSMTP" ; e ={
+                    if($PowerShell2)
+                    {
+                        ($Members | ForEach { $_.PrimarySmtpAddress }) -join ';'
+                    }
+                    else
+                    {
+                        ($Members.PrimarySmtpAddress | Where-Object {$_ -ne $null}) -join ";"
+                    }
+                }
+            }
+        )
+
+        
+        if ($DetailedReport) 
+        {
+            [void]$Selectproperties.Add('RecipientType')
+            [void]$Selectproperties.Add('ArbitrationMailbox')
+            [void]$Selectproperties.Add('CustomAttribute1')
+            [void]$Selectproperties.Add('CustomAttribute10')
+            [void]$Selectproperties.Add('CustomAttribute11')
+            [void]$Selectproperties.Add('CustomAttribute12')
+            [void]$Selectproperties.Add('CustomAttribute13')
+            [void]$Selectproperties.Add('CustomAttribute14')
+            [void]$Selectproperties.Add('CustomAttribute15')
+            [void]$Selectproperties.Add('CustomAttribute2')
+            [void]$Selectproperties.Add('CustomAttribute3')
+            [void]$Selectproperties.Add('CustomAttribute4')
+            [void]$Selectproperties.Add('CustomAttribute5')
+            [void]$Selectproperties.Add('CustomAttribute6')
+            [void]$Selectproperties.Add('CustomAttribute7')
+            [void]$Selectproperties.Add('CustomAttribute8')
+            [void]$Selectproperties.Add('CustomAttribute9')
+            [void]$Selectproperties.Add('DistinguishedName')
+            [void]$Selectproperties.Add('ExchangeVersion')
+            [void]$Selectproperties.Add('ExpansionServer')
+            [void]$Selectproperties.Add('ExternalDirectoryObjectId')
+            [void]$Selectproperties.Add('Id')
+            [void]$Selectproperties.Add('LegacyExchangeDN')
+            [void]$Selectproperties.Add('MaxReceiveSize')
+            [void]$Selectproperties.Add('MaxSendSize')
+            [void]$Selectproperties.Add('MemberDepartRestriction')
+            [void]$Selectproperties.Add('MemberJoinRestriction')
+            [void]$Selectproperties.Add('ObjectCategory')
+            [void]$Selectproperties.Add('ObjectState')
+            [void]$Selectproperties.Add('OrganizationalUnit')
+            [void]$Selectproperties.Add('OrganizationId')
+            [void]$Selectproperties.Add('OriginatingServer')
+            [void]$Selectproperties.Add('SamAccountName')
+            [void]$Selectproperties.Add('SendModerationNotifications')
+            [void]$Selectproperties.Add('SimpleDisplayName')
+            [void]$Selectproperties.Add('BypassNestedModerationEnabled')
+            [void]$Selectproperties.Add('EmailAddressPolicyEnabled')
+            [void]$Selectproperties.Add('HiddenFromAddressListsEnabled')
+            [void]$Selectproperties.Add('IsDirSynced')
+            [void]$Selectproperties.Add('IsValid')
+            [void]$Selectproperties.Add('MigrationToUnifiedGroupInProgress')
+            [void]$Selectproperties.Add('ModerationEnabled')
+            [void]$Selectproperties.Add('ReportToManagerEnabled')
+            [void]$Selectproperties.Add('ReportToOriginatorEnabled')
+            [void]$Selectproperties.Add('RequireSenderAuthenticationEnabled')
+            [void]$Selectproperties.Add('SendOofMessageToOriginatorEnabled')
+
+            [void]$CalculatedProps.Add(@{n = "AcceptMessagesOnlyFrom" ; e = {($_.AcceptMessagesOnlyFrom | Where-Object {$_ -ne $null}) -join ";" }})
+            [void]$CalculatedProps.Add(@{n = "AcceptMessagesOnlyFromDLMembers" ; e = {($_.AcceptMessagesOnlyFromDLMembers | Where-Object {$_ -ne $null}) -join ";" }})
+            [void]$CalculatedProps.Add(@{n = "AddressListMembership" ; e = {($_.AddressListMembership | Where-Object {$_ -ne $null}) -join ";" }})
+            [void]$CalculatedProps.Add(@{n = "AdministrativeUnits" ; e = {($_.AdministrativeUnits | Where-Object {$_ -ne $null}) -join ";" }})
+            [void]$CalculatedProps.Add(@{n = "BypassModerationFromSendersOrMembers" ; e = {($_.BypassModerationFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }})
+            [void]$CalculatedProps.Add(@{n = "GrantSendOnBehalfTo" ; e = {($_.GrantSendOnBehalfTo | Where-Object {$_ -ne $null}) -join ";" }})
+            [void]$CalculatedProps.Add(@{n = "ModeratedBy" ; e = {($_.ModeratedBy | Where-Object {$_ -ne $null}) -join ";" }})
+            [void]$CalculatedProps.Add(@{n = "RejectMessagesFrom" ; e = {($_.RejectMessagesFrom | Where-Object {$_ -ne $null}) -join ";" }})
+            [void]$CalculatedProps.Add(@{n = "RejectMessagesFromDLMembers" ; e = {($_.RejectMessagesFromDLMembers | Where-Object {$_ -ne $null}) -join ";" }})
+            [void]$CalculatedProps.Add(@{n = "RejectMessagesFromSendersOrMembers" ; e = {($_.RejectMessagesFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }})
+            [void]$CalculatedProps.Add(@{n = "ExtensionCustomAttribute1" ; e = {($_.ExtensionCustomAttribute1 | Where-Object {$_ -ne $null}) -join ";" }})
+            [void]$CalculatedProps.Add(@{n = "ExtensionCustomAttribute2" ; e = {($_.ExtensionCustomAttribute2 | Where-Object {$_ -ne $null}) -join ";" }})
+            [void]$CalculatedProps.Add(@{n = "ExtensionCustomAttribute3" ; e = {($_.ExtensionCustomAttribute3 | Where-Object {$_ -ne $null}) -join ";" }})
+            [void]$CalculatedProps.Add(@{n = "ExtensionCustomAttribute4" ; e = {($_.ExtensionCustomAttribute4 | Where-Object {$_ -ne $null}) -join ";" }})
+            [void]$CalculatedProps.Add(@{n = "ExtensionCustomAttribute5" ; e = {($_.ExtensionCustomAttribute5 | Where-Object {$_ -ne $null}) -join ";" }})
+            [void]$CalculatedProps.Add(@{n = "MailTip" ; e = {($_.MailTip | Where-Object {$_ -ne $null}) -join ";" }})
+            [void]$CalculatedProps.Add(@{n = "MailTipTranslations" ; e = {($_.MailTipTranslations | Where-Object {$_ -ne $null}) -join ";" }})
+            [void]$CalculatedProps.Add(@{n = "UMDtmfMap" ; e = {($_.UMDtmfMap | Where-Object {$_ -ne $null}) -join ";" }})
+            [void]$CalculatedProps.Add(@{n = "ObjectClass" ; e = {($_.ObjectClass | Where-Object {$_ -ne $null}) -join ";" }})
+            [void]$CalculatedProps.Add(@{n = "PoliciesExcluded" ; e = {($_.PoliciesExcluded | Where-Object {$_ -ne $null}) -join ";" }})
+            [void]$CalculatedProps.Add(@{n = "PoliciesIncluded" ; e = {($_.PoliciesIncluded | Where-Object {$_ -ne $null}) -join ";" }})
         }
     }
     Process {
