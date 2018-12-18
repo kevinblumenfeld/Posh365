@@ -1,8 +1,18 @@
 function Get-OktaAppReport {
     Param (
         [Parameter()]
+        [string] $AppId,
+
+        [Parameter()]
         [string] $GroupId
     )
+
+    if ($AppId -and $GroupId) {
+        Write-Warning "Choose between zero and one parameters only"
+        Write-Warning "Please try again"
+        break
+    }
+
     $Url = $OKTACredential.GetNetworkCredential().username
     $Token = $OKTACredential.GetNetworkCredential().Password
 
@@ -11,6 +21,13 @@ function Get-OktaAppReport {
         "Accept"        = "application/json"
         "Content-Type"  = "application/json"
     }
+    if ($AppId) {
+        $RestSplat = @{
+            Uri     = 'https://{0}.okta.com/api/v1/apps/{1}' -f $Url, $AppId
+            Headers = $Headers
+            Method  = 'Get'
+        }
+    }
     if ($GroupId) {
         $RestSplat = @{
             Uri     = 'https://{0}.okta.com/api/v1/apps/?filter=group.id+eq+"{1}"' -f $Url, $GroupId
@@ -18,7 +35,7 @@ function Get-OktaAppReport {
             Method  = 'Get'
         }
     }
-    else {
+    if (-not $AppId -and -not $GroupId) {
         $RestSplat = @{
             Uri     = "https://$Url.okta.com/api/v1/apps/?limit=20"
             Headers = $Headers
