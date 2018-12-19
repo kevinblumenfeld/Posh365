@@ -15,7 +15,7 @@ function Get-OktaAppUserReport {
         #>
     Param (
 
-        [Parameter()]
+        [Parameter(Mandatory)]
         [string] $AppId
     )
 

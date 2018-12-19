@@ -40,6 +40,7 @@ function Get-OktaUserAppReport {
         $LastName = $CurUser.LastName
         $Login = $CurUser.Login
         $Email = $CurUser.Email
+        $Status = $CurUser.Status
         $Headers = @{
             "Authorization" = "SSWS $Token"
             "Accept"        = "application/json"
@@ -81,6 +82,7 @@ function Get-OktaUserAppReport {
                     LastName      = $LastName
                     Login         = $Login
                     Email         = $Email
+                    Status        = $Status
                     AppName       = $App.Name
                     AppLabel      = $App.Label
                     AppStatus     = $App.Status
