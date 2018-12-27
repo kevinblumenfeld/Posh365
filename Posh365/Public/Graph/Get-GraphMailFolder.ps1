@@ -18,12 +18,11 @@ function Get-GraphMailFolder {
     }
     process {
         foreach ($CurUser in $User) {
+            $Token = Connect-Graph -Tenant $Tenant
             $DisplayName = $CurUser.DisplayName
             $UPN = $CurUser.UserPrincipalName
             $Mail = $CurUser.Mail
             $Id = $CurUser.Id
-            $Token = Connect-Graph -Tenant $Tenant
-
             $Headers = @{
                 "Authorization" = "Bearer $Token"
             }
@@ -33,23 +32,49 @@ function Get-GraphMailFolder {
                 Headers = $Headers
                 Method  = 'Get'
             }
-            $Response = Invoke-WebRequest @RestSplat -Verbose:$false
-            $Headers = $Response.Headers
-            $Folder = ($Response.Content | ConvertFrom-Json).value
-            if ($WellKnownFolder) {
-                $Folder = $Folder.Where{$_.wellKnownName -eq $WellKnownFolder}
-            }
-            foreach ($CurFolder in $Folder) {
-                [PSCustomObject]@{
-                    DisplayName       = $DisplayName
-                    UserPrincipalName = $UPN
-                    Mail              = $Mail
-                    Id                = $Id
-                    FolderName        = $CurFolder.DisplayName
-                    wellKnownName     = $CurFolder.wellKnownName
-                    FolderId          = $CurFolder.Id
+
+            do {
+                $Token = Connect-Graph -Tenant $Tenant
+                try {
+                    $Response = Invoke-RestMethod @RestSplat -Verbose:$false -ErrorAction Stop
+                    $Folder = $Response.value
+                    if ($WellKnownFolder) {
+                        $Folder = $Folder.Where{$_.wellKnownName -eq $WellKnownFolder}
+                    }
+                    if ($Response.'@odata.nextLink' -match 'skip') {
+                        $Next = $Response.'@odata.nextLink'
+                    }
+                    else {
+                        $Next = $null
+                    }
+                    $Headers = @{
+                        "Authorization" = "Bearer $Token"
+                    }
+
+                    $RestSplat = @{
+                        Uri     = $Next
+                        Headers = $Headers
+                        Method  = 'Get'
+                    }
+                    foreach ($CurFolder in $Folder) {
+                        [PSCustomObject]@{
+                            DisplayName       = $DisplayName
+                            UserPrincipalName = $UPN
+                            Mail              = $Mail
+                            Id                = $Id
+                            FolderName        = $CurFolder.DisplayName
+                            wellKnownName     = $CurFolder.wellKnownName
+                            FolderId          = $CurFolder.Id
+                            nextLink          = $Response.'@odata.nextLink'
+                        }
+                    }
                 }
-            }
+                catch {
+                    $errormessage = $_.exception.message
+                    Write-Host "$UPN"
+                    write-host "$errormessage"
+                }
+            } until (-not $next)
         }
     }
     end {

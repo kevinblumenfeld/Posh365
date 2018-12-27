@@ -1,40 +1,48 @@
 function Get-GraphUser {
-    [CmdletBinding(DefaultParameterSetName = 'NoFilter')]
+    [CmdletBinding()]
     param (
 
         [Parameter(Mandatory)]
         [string] $Tenant,
 
-        [Parameter()]
-        [string] $Mailbox
+        [Parameter(ValueFromPipeline)]
+        $UserPrincipalName
     )
     begin {
-
-        $Token = Connect-Graph -Tenant $Tenant
-
-        $Headers = @{
-            "Authorization" = "Bearer $Token"
-        }
-        $RestSplat = @{
-            Uri     = "https://graph.microsoft.com/v1.0/users"
-            Headers = $Headers
-            Method  = 'Get'
-        }
-        $Response = Invoke-WebRequest @RestSplat -Verbose:$false
-        $Headers = $Response.Headers
-        $User = ($Response.Content | ConvertFrom-Json).value
-        foreach ($CurUser in $User) {
-
-            [PSCustomObject]@{
-                DisplayName       = $CurUser.DisplayName
-                UserPrincipalName = $CurUser.UserPrincipalName
-                Mail              = $CurUser.Mail
-                Id                = $CurUser.Id
-            }
+        if (-not $UserPrincipalName) {
+            $UserPrincipalName = (Get-GraphUserAll -Tenant $Tenant).Id
         }
     }
     process {
-
+        foreach ($CurUserPrincipalName in $UserPrincipalName) {
+            $Token = Connect-Graph -Tenant $Tenant
+            $Headers = @{
+                "Authorization" = "Bearer $Token"
+            }
+            $RestSplat = @{
+                Uri     = 'https://graph.microsoft.com/beta/users/{0}' -f $CurUserPrincipalName
+                Headers = $Headers
+                Method  = 'Get'
+            }
+            try {
+                $User = Invoke-RestMethod @RestSplat -Verbose:$false -ErrorAction Stop
+                foreach ($CurUser in $User) {
+                    [PSCustomObject]@{
+                        DisplayName       = $CurUser.DisplayName
+                        UserPrincipalName = $CurUser.UserPrincipalName
+                        Mail              = $CurUser.Mail
+                        Id                = $CurUser.Id
+                        OU                = $CurUser.onPremisesDistinguishedName -replace '^.+?,(?=(OU|CN)=)'
+                        proxyAddresses    = ($CurUser.proxyAddresses | Where-Object {$_ -ne $null}) -join ";"
+                    }
+                }
+            }
+            catch {
+                $ErrorMessage = $_.Exception.Message
+                Write-Host $CurUserPrincipalName
+                Write-Host $ErrorMessage
+            }
+        }
     }
     end {
 
