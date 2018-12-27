@@ -109,7 +109,6 @@
                 $CurImport.PrimarySMTP = "NOT FOUND"
                 $CurImport.CloudUPN = "NOT FOUND"
                 if (Get-Mailbox $UPN -ErrorAction SilentlyContinue) {
-                    $CurImport.IsSynchronized = "Already Exists in O365"
                     $CurImport.PreFlightComplete = "Already Exists in O365"
                     $CurImport.IsSynchronized = "Already Exists in O365"
                     $CurImport.DisplayName = "Already Exists in O365"
