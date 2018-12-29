@@ -1,6 +1,7 @@
-﻿function Export-CsvData {
+﻿function Export-QCsvData {
     <#
 .SYNOPSIS
+Use Export-CsvData instead.. this is a one-off function!!!!
 Export ProxyAddresses from a CSV and output one per line.  Filtering if desired.  Automatically a csv will be exported.
 
 .DESCRIPTION
@@ -45,24 +46,28 @@ Parameter description
 Parameter description
 
 .EXAMPLE
-Import-Csv .\CSVofADUsers.csv | Export-CsvData -Match "." -JoinType and -fileName "NewCsv.csv"
+Import-Csv .\CSVofADUsers.csv | Export-QCsvData -caseMatchAnd "brann" -MatchNotAnd @("JAIME","John") -JoinType and -fileName "NewCsv.csv"
+
+.EXAMPLE
+Import-Csv .\CSVofADUsers.csv | Export-QCsvData -caseMatchAnd "Harry Franklin" -MatchNotAnd @("JAIME","John") -JoinType or -fileName "NewCsv.csv"
+
+.EXAMPLE
+Import-Csv .\CSVofADUsers.csv | Export-QCsvData -Match "." -JoinType and -fileName "NewCsv.csv"
 Above matches all in column you choose "FindInColumn" including blanks
 
 .EXAMPLE
-Import-Csv .\CSVofADUsers.csv | Export-CsvData -caseMatchAnd "brann" -MatchNotAnd @("JAIME","John") -JoinType and -fileName "NewCsv.csv"
-
-.EXAMPLE
-Import-Csv .\CSVofADUsers.csv | Export-CsvData -caseMatchAnd "Harry Franklin" -MatchNotAnd @("JAIME","John") -JoinType or -fileName "NewCsv.csv"
+Import-Csv .\CSVofADUsers.csv | Export-QCsvData -Match "^\s" -JoinType and -fileName "NewCsv.csv"
+Above matches all in column you choose "FindInColumn" excluding blanks. This match currently does not work!
 
 .NOTES
 Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attribute in Active Directory) are expected to be semicolon separated.
 Example:
-import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -caseMatch "SMTP:" -StripPrefix -AddPrefix "smtp:" -fileName "NewCsv.csv"
-import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -caseMatch "SMTP:" -Domain "fabrikam.com" -NewDomain "contoso.com" -fileName "NewCsv.csv"
-import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -Match "SIP:" -fileName "NewCsv.csv"
-import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -Match "SIP:" -Domain "fabrikam.com" -NewDomain "contoso.com" -fileName "NewCsv.csv"
-import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -caseMatch "SMTP:" -fileName "NewCsv.csv"
-import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresses -caseMatch "SMTP:" -Domain "fabrikam.com" -NewDomain "contoso.com" -StripPrefix -fileName "NewCsv.csv"
+import-csv .\file.csv | Export-QCsvData -JoinType and -FindInColumn ProxyAddresses -caseMatch "SMTP:" -StripPrefix -AddPrefix "smtp:" -fileName "NewCsv.csv"
+import-csv .\file.csv | Export-QCsvData -JoinType and -FindInColumn ProxyAddresses -caseMatch "SMTP:" -Domain "fabrikam.com" -NewDomain "contoso.com" -fileName "NewCsv.csv"
+import-csv .\file.csv | Export-QCsvData -JoinType and -FindInColumn ProxyAddresses -Match "SIP:" -fileName "NewCsv.csv"
+import-csv .\file.csv | Export-QCsvData -JoinType and -FindInColumn ProxyAddresses -Match "SIP:" -Domain "fabrikam.com" -NewDomain "contoso.com" -fileName "NewCsv.csv"
+import-csv .\file.csv | Export-QCsvData -JoinType and -FindInColumn ProxyAddresses -caseMatch "SMTP:" -fileName "NewCsv.csv"
+import-csv .\file.csv | Export-QCsvData -JoinType and -FindInColumn ProxyAddresses -caseMatch "SMTP:" -Domain "fabrikam.com" -NewDomain "contoso.com" -StripPrefix -fileName "NewCsv.csv"
 
 #>
     [CmdletBinding(SupportsShouldProcess = $true)]
@@ -79,7 +84,7 @@ import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresse
         [String]$JoinType,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet("ProxyAddresses", "EmailAddresses", "EmailAddress", "AddressOrMember", "x500", "UserPrincipalName", "PrimarySmtpAddress", "MembersName", "Member", "Members", "MemberOf")]
+        [ValidateSet("ProxyAddresses", "EmailAddresses", "EmailAddress", "AddressOrMember", "x500", "UserPrincipalName", "PrimarySmtpAddress", "MembersName", "Member", "Members", "MemberOf", "Aliases", "Owners", "Managers")]
         [String]$FindInColumn,
 
         [Parameter()]
@@ -172,7 +177,11 @@ import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresse
     Process {
         ForEach ($CurRow in $Row) {
             # Add Error Handling for more than one SMTP:
-            $Display = $CurRow.Displayname
+            $Email = $CurRow.Email
+            $Name = $CurRow.Name
+            $Description = $CurRow.Description
+            $DisplayName = $CurRow.DisplayName
+            $WhoCanContactOwner = $CurRow.whoCanContactOwner
             $RecipientTypeDetails = $CurRow.RecipientTypeDetails
             $PrimarySmtpAddress = $CurRow.PrimarySmtpAddress
             $objectGUID = $CurRow.objectGUID
@@ -181,11 +190,11 @@ import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresse
             $msExchRecipientTypeDetails = $CurRow.msExchRecipientTypeDetails
             $mail = $CurRow.mail
             if ($filter) {
-                $Address = $CurRow."$FindInColumn" -split ";" | Where-Object $filter
+                $Address = $CurRow."$FindInColumn" -split "`r`n" | Where-Object $filter
                 Write-Verbose "Filtered Address: $Address"
             }
             else {
-                $Address = $CurRow.EmailAddresses -split ";"
+                $Address = $CurRow.EmailAddresses
             }
             if ($Domain) {
                 $Address = $Address | ForEach-Object {
@@ -205,7 +214,7 @@ import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresse
             $AllProxyAddresses = $($CurRow."$FindInColumn")
 
             if ((-not [String]::IsNullOrWhiteSpace($AllProxyAddresses)) -and ([String]::IsNullOrWhiteSpace($PrimarySmtpAddress))) {
-                $PrimarySmtpAddress = $CurRow."$FindInColumn" -split ";" | Where-Object {$_ -cmatch 'SMTP:'}
+                $PrimarySmtpAddress = $CurRow."$FindInColumn" | Where-Object {$_ -cmatch 'SMTP:'}
             }
             if ($PrimarySmtpAddress -cmatch 'SMTP:') {
                 $PrimaryTrimmed = $PrimarySmtpAddress.Substring(5)
@@ -214,12 +223,17 @@ import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresse
             if ($Address) {
                 foreach ($CurAddress in $Address) {
                     [PSCustomObject]@{
-                        DisplayName                = $Display
+                        Email                      = $Email
+                        Name                       = $Name
+                        AddressOrMember            = $CurAddress
+                        FoundInColumn              = $FindInColumn
+                        WhoCanContactOwner         = $WhoCanContactOwner
+                        Description                = $Description
+                        DisplayName                = $DisplayName
                         OU                         = $OU
                         UserPrincipalName          = $UserPrincipalName
                         PrimarySmtpAddress         = $PrimarySmtpAddress
                         PrimarySmtpTrimmed         = $PrimaryTrimmed
-                        AddressOrMember            = $CurAddress
                         RecipientTypeDetails       = $RecipientTypeDetails
                         msExchRecipientTypeDetails = $msExchRecipientTypeDetails
                         objectGUID                 = $objectGUID
@@ -228,12 +242,17 @@ import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresse
             }
             else {
                 [PSCustomObject]@{
-                    DisplayName                = $Display
+                    Email                      = $Email
+                    Name                       = $Name
+                    AddressOrMember            = ""
+                    FoundInColumn              = $FindInColumn
+                    WhoCanContactOwner         = $WhoCanContactOwner
+                    Description                = $Description
+                    DisplayName                = $DisplayName
                     OU                         = $OU
                     UserPrincipalName          = $UserPrincipalName
                     PrimarySmtpAddress         = $PrimarySmtpAddress
                     PrimarySmtpTrimmed         = $PrimaryTrimmed
-                    AddressOrMember            = ""
                     RecipientTypeDetails       = $RecipientTypeDetails
                     msExchRecipientTypeDetails = $msExchRecipientTypeDetails
                     objectGUID                 = $objectGUID
