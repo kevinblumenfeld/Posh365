@@ -23,16 +23,16 @@ function Import-GoogleToEXOGroup {
     If Google Group's "whoCanJoin" contains INVITED_CAN_JOIN,
     the default behavior sets, "MemberJoinRestriction" to 'ApprovalRequired'.
 
-    Use this parameter to override it to either 'Open' or 'Closed'
+    Use this parameter to override with either 'Open' or 'Closed'
 
     .PARAMETER CAN_REQUEST_TO_JOIN_TranslatesTo
     If Google Group's "whoCanJoin" contains CAN_REQUEST_TO_JOIN,
     the default behavior sets, "MemberJoinRestriction" to 'ApprovalRequired'.
 
-    Use this parameter to override it to either 'Open' or 'Closed'
+    Use this parameter to override with either 'Open' or 'Closed'
 
     .EXAMPLE
-    An example
+    Import-Csv C:\scripts\GoogleGroups.csv | Import-GoogleToEXOGroup
 
     .NOTES
     Choosing both -DontAddOwnersToManagedBy & -DontAddManagersToManagedBy results in
@@ -117,7 +117,7 @@ function Import-GoogleToEXOGroup {
                 Default {'Closed'}
 
             }
-
+            write-host $CurGroup.Name
             $NewHash = @{
 
                 Name                    = $CurGroup.Name
@@ -177,22 +177,22 @@ function Import-GoogleToEXOGroup {
 
             # Create a splat with only parameters with values for New-DistributionGroup
             $NewSplat = @{}
-            ForEach ($h in $NewHash.keys) {
-                if ($($NewHash.item($h))) {
-                    $NewSplat.add($h, $($NewHash.item($h)))
+            ForEach ($Key in $NewHash.keys) {
+                if ($($NewHash.item($Key))) {
+                    $NewSplat.add($Key, $($NewHash.item($Key)))
                 }
             }
 
             # Create a splat with only parameters with values for Set-DistributionGroup
             $SetSplat = @{}
-            ForEach ($h in $SetHash.keys) {
-                if ($($SetHash.item($h))) {
-                    $SetSplat.add($h, $($SetHash.item($h)))
+            ForEach ($Key in $SetHash.keys) {
+                if ($($SetHash.item($Key))) {
+                    $SetSplat.add($Key, $($SetHash.item($Key)))
                 }
             }
 
-            $NewDL = New-DistributionGroup @NewParams
-            Set-DistributionGroup @SetParams
+            New-DistributionGroup @NewSplat
+            Set-DistributionGroup @SetSplat
 
         }
     }
