@@ -122,7 +122,6 @@ function Import-GoogleToEXOGroup {
             }
 
             $NewHash = @{
-
                 Name                    = $CurGroup.Name
                 DisplayName             = $CurGroup.Name
                 Alias                   = $Alias
@@ -131,7 +130,6 @@ function Import-GoogleToEXOGroup {
                 MemberJoinRestriction   = $MemberJoinRestriction
                 MemberDepartRestriction = $MemberDepartRestriction
                 Notes                   = $CurGroup.Description
-
             }
 
             # Are Owners and/or Managers copied to the Group's Membership?
@@ -144,10 +142,8 @@ function Import-GoogleToEXOGroup {
 
 
             $SetHash = @{
-
                 Identity                      = $CurGroup.Email
                 HiddenFromAddressListsEnabled = -not [bool]::Parse($CurGroup.includeInGlobalAddressList)
-
             }
 
             # messageModerationLevel (A moderator approves messages sent to recipient before delivered)
