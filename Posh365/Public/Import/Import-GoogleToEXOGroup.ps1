@@ -114,10 +114,10 @@ function Import-GoogleToEXOGroup {
             $MemberDepartRestriction = switch ($CurGroup.whoCanLeaveGroup) {
 
                 'ALL_MEMBERS_CAN_LEAVE' { 'Open' }
-                Default {'Closed'}
+                Default { 'Open' }
 
             }
-            write-host $CurGroup.Name
+
             $NewHash = @{
 
                 Name                    = $CurGroup.Name
@@ -191,9 +191,29 @@ function Import-GoogleToEXOGroup {
                 }
             }
 
-            New-DistributionGroup @NewSplat
-            Set-DistributionGroup @SetSplat
+            try {
+                $NewDL = New-DistributionGroup @NewSplat -ErrorAction Stop
+                Write-HostLog -Message "Creating`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status Success
+                try {
+                    Set-DistributionGroup @SetSplat -ErrorAction Stop -WarningAction SilentlyContinue
+                    Write-HostLog -Message "Setting`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status Success
+                }
+                catch {
+                    $Failure = $_.CategoryInfo.Reason
+                    Write-HostLog -Message "Setting`t$($CurGroup.Name)`t$Failure" -Status Failed
+                }
+            }
+            catch {
+                $Failure = $_.CategoryInfo.Reason
+                if ($_ -match 'The email address') {
+                    $Failure = "The email address $($CurGroup.Email) isn't correct"
+                }
 
+                if ($_ -match 'is already managed by recipient') {
+                    $Failure = 'DL already managed by recipient'
+                }
+                Write-HostLog -Message "Creating`t$($CurGroup.Name)`t$Failure" -Status Failed
+            }
         }
     }
     End {
