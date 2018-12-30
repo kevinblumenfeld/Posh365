@@ -45,6 +45,9 @@ function Import-GoogleToEXOGroup {
     [CmdletBinding()]
     Param
     (
+        [Parameter(Mandatory)]
+        $LogPath,
+
         [Parameter(Mandatory, ValueFromPipeline)]
         $Group,
 
@@ -200,6 +203,7 @@ function Import-GoogleToEXOGroup {
                 }
                 catch {
                     $Failure = $_.CategoryInfo.Reason
+                    '"Setting Group","{0}","{1}","{2}","{3}"' -f $CurGroup.Name, $CurGroup.Email, $Failure, $_.Exception.Message | Add-Content -Path $LogPath
                     Write-HostLog -Message "Setting`t$($CurGroup.Name)`t$Failure" -Status Failed
                 }
             }
@@ -212,6 +216,7 @@ function Import-GoogleToEXOGroup {
                 if ($_ -match 'is already managed by recipient') {
                     $Failure = 'DL already managed by recipient'
                 }
+                '"Creating Group","{0}","{1}","{2}","{3}"' -f $CurGroup.Name, $CurGroup.Email, $Failure, $_.Exception.Message | Add-Content -Path $LogPath
                 Write-HostLog -Message "Creating`t$($CurGroup.Name)`t$Failure" -Status Failed
             }
         }
