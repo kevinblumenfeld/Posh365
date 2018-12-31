@@ -10,10 +10,10 @@ function Add-ContentFilterPolicyDetail {
         Name of the Content Filter Policy to use.
 
     .PARAMETER AllowedSenderDomains
-        The AllowedSenderDomains parameter specifies trusted domains that aren't processed by the spam filter. 
+        The AllowedSenderDomains parameter specifies trusted domains that aren't processed by the spam filter.
         Messages from senders in these domains are stamped with SFV:SKA in the X-Forefront-Antispam-Report header and receive a spam confidence level (SCL) of -1,
         so the messages are delivered to the recipient's inbox. Valid values are one or more SMTP domains.
-    
+
     .PARAMETER AllowedSenders
         The AllowedSenders parameter specifies a list of trusted senders that aren't processed by the spam filter.
         Messages from these senders are stamped with SFV:SKA in the X-Forefront-Antispam-Report header and receive an SCL of -1,
@@ -38,7 +38,7 @@ function Add-ContentFilterPolicyDetail {
 
         Example of PolicyDetail.csv
 
-        AllowedSenderDomains, AllowedSenders, BlockedSenders, BlockedSenderDomains 
+        AllowedSenderDomains, AllowedSenders, BlockedSenders, BlockedSenderDomains
         fabrikam.com, fred@contoso.com, harry@contoso.com, evil.com
         google.com, john@contoso.com, bad@contoso.com, bad.com
         wingtip.com, jane@contoso.com, pla@contosa.com, worse.com
@@ -52,7 +52,7 @@ function Add-ContentFilterPolicyDetail {
 #>
     [CmdletBinding()]
     param (
-		
+
         [Parameter(Mandatory = $true)]
         [String]
         $ContentFilterPolicy,
@@ -62,19 +62,19 @@ function Add-ContentFilterPolicyDetail {
         [Alias('AllowedDomain')]
         [string[]]
         $AllowedSenderDomains,
-        
+
         [Parameter(ValueFromPipelineByPropertyName = $true)]
         [Alias('AllowedSender')]
         [string[]]
         $AllowedSenders,
-        
+
         [Parameter(ValueFromPipelineByPropertyName = $true)]
         [Alias('BlockedSenderDomain')]
         [Alias('BlockedDomains')]
         [Alias('BlockedDomain')]
         [string[]]
         $BlockedSenderDomains,
-        
+
         [Parameter(ValueFromPipelineByPropertyName = $true)]
         [Alias('BlockedSender')]
         [string[]]
@@ -92,12 +92,12 @@ function Add-ContentFilterPolicyDetail {
 
         $headerstring = ("ContentFilterPolicy" + "," + "Detail")
         $errheaderstring = ("ContentFilterPolicy" + "," + "Detail" + "," + "Error")
-		
+
         $successPath = Join-Path $OutputPath "Success.csv"
         $failedPath = Join-Path $OutputPath "Failed.csv"
         Out-File -FilePath $successPath -InputObject $headerstring -Encoding UTF8 -append
         Out-File -FilePath $failedPath -InputObject $errheaderstring -Encoding UTF8 -append
-		
+
     }
     process {
         if ($AllowedSenderDomains) {
@@ -151,11 +151,11 @@ function Add-ContentFilterPolicyDetail {
             Write-Warning "First create Content Filter Policy in GUI: `"$ContentFilterPolicy`" and then rerun this function."
             Throw
         }
-        else { 
+        else {
             Write-Verbose "Content Filter Policy `"$ContentFilterPolicy`" already exists."
             try {
                 Set-HostedContentFilterPolicy -Identity $ContentFilterPolicy @Params -ErrorAction Stop
-                Write-Verbose "Parameters: `t $($Params.values | % { $_ -join " "})" 
+                Write-Verbose "Parameters: `t $($Params.values | % { $_ -join " "})"
                 $ContentFilterPolicy + "," + ($Params.values | % { $_ -join " "}) | Out-file $successPath -Encoding UTF8 -append
             }
             catch {

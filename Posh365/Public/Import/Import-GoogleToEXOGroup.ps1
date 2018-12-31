@@ -7,6 +7,9 @@ function Import-GoogleToEXOGroup {
     .DESCRIPTION
     Import CSV of Google Groups into Office 365 as Distribution Groups
 
+    .PARAMETER LogPath
+    The full path and file name of the log ex. c:\scripts\AddGroupsLog.csv (use csv for best results)
+
     .PARAMETER Group
     Google Group(s) and respective attributes
 
@@ -20,13 +23,13 @@ function Import-GoogleToEXOGroup {
     Unless you use this switch, all in "ManagedBy" will become members of the Distribution Group
 
     .PARAMETER INVITED_CAN_JOIN_TranslatesTo
-    If Google Group's "whoCanJoin" contains INVITED_CAN_JOIN,
+    If Google Group's "whoCanJoin" attribute contains the option INVITED_CAN_JOIN,
     the default behavior sets, "MemberJoinRestriction" to 'ApprovalRequired'.
 
     Use this parameter to override with either 'Open' or 'Closed'
 
     .PARAMETER CAN_REQUEST_TO_JOIN_TranslatesTo
-    If Google Group's "whoCanJoin" contains CAN_REQUEST_TO_JOIN,
+    If Google Group's "whoCanJoin" attribute contains the option CAN_REQUEST_TO_JOIN,
     the default behavior sets, "MemberJoinRestriction" to 'ApprovalRequired'.
 
     Use this parameter to override with either 'Open' or 'Closed'
@@ -77,16 +80,16 @@ function Import-GoogleToEXOGroup {
             $Alias = ($CurGroup.Email -split "@")[0]
 
             # Managers and Owners
-            $ManagedBy = [System.Collections.Generic.List[PSObject]]::new()
+            $ManagedBy = [System.Collections.Generic.HashSet[string]]::new()
 
             if (-not $DontAddManagersToManagedBy -and -not [string]::IsNullOrWhiteSpace($CurGroup.Managers)) {
                 $CurGroup.Managers -split "`r`n" | ForEach-Object {
-                    $ManagedBy.Add($_)
+                    $ManagedBy.Add($_) > $null
                 }
             }
             if (-not $DontAddOwnersToManagedBy -and -not [string]::IsNullOrWhiteSpace($CurGroup.Owners)) {
                 $CurGroup.Owners -split "`r`n" | ForEach-Object {
-                    $ManagedBy.Add($_)
+                    $ManagedBy.Add($_) > $null
                 }
             }
 
@@ -192,15 +195,46 @@ function Import-GoogleToEXOGroup {
 
             try {
                 $NewDL = New-DistributionGroup @NewSplat -ErrorAction Stop
+                [PSCustomObject]@{
+                    Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
+                    Result          = 'SUCCESS'
+                    Action          = 'CREATING'
+                    Object          = 'GROUP'
+                    Name            = $CurGroup.Name
+                    Email           = $CurGroup.Email
+                    Message         = 'SUCCESS'
+                    ExtendedMessage = 'SUCCESS'
+
+                } | Export-Csv -Path $LogPath -NoTypeInformation -Append
                 Write-HostLog -Message "Creating`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status Success
                 try {
                     Set-DistributionGroup @SetSplat -ErrorAction Stop -WarningAction SilentlyContinue
+                    [PSCustomObject]@{
+                        Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
+                        Result          = 'SUCCESS'
+                        Action          = 'SETTING'
+                        Object          = 'GROUP'
+                        Name            = $CurGroup.Name
+                        Email           = $CurGroup.Email
+                        Message         = 'SUCCESS'
+                        ExtendedMessage = 'SUCCESS'
+
+                    } | Export-Csv -Path $LogPath -NoTypeInformation -Append
                     Write-HostLog -Message "Setting`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status Success
                 }
                 catch {
                     $Failure = $_.CategoryInfo.Reason
-                    '"Setting Group","{0}","{1}","{2}","{3}"' -f $CurGroup.Name, $CurGroup.Email, $Failure, $_.Exception.Message | Add-Content -Path $LogPath
-                    Write-HostLog -Message "Setting`t$($CurGroup.Name)`t$Failure" -Status Failed
+                    [PSCustomObject]@{
+                        Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
+                        Result          = 'FAILURE'
+                        Action          = 'SETTING'
+                        Object          = 'GROUP'
+                        Name            = $CurGroup.Name
+                        Email           = $CurGroup.Email
+                        Message         = $Failure
+                        ExtendedMessage = $_.Exception.Message
+
+                    } | Export-Csv -Path $LogPath -NoTypeInformation -Append
                 }
             }
             catch {
@@ -212,7 +246,17 @@ function Import-GoogleToEXOGroup {
                 if ($_ -match 'is already managed by recipient') {
                     $Failure = 'DL already managed by recipient'
                 }
-                '"Creating Group","{0}","{1}","{2}","{3}"' -f $CurGroup.Name, $CurGroup.Email, $Failure, $_.Exception.Message | Add-Content -Path $LogPath
+                [PSCustomObject]@{
+                    Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
+                    Result          = 'FAILURE'
+                    Action          = 'CREATING'
+                    Object          = 'GROUP'
+                    Name            = $CurGroup.Name
+                    Email           = $CurGroup.Email
+                    Message         = $Failure
+                    ExtendedMessage = $_.Exception.Message
+
+                } | Export-Csv -Path $LogPath -NoTypeInformation -Append
                 Write-HostLog -Message "Creating`t$($CurGroup.Name)`t$Failure" -Status Failed
             }
         }
