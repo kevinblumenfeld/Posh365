@@ -14,7 +14,7 @@ function Import-GoogleToEXOGroupMember {
     Google Group(s) and respective attributes (most importantly a column of "Members")
 
     .EXAMPLE
-    Import-Csv C:\scripts\GoogleGroups.csv | Import-GoogleToEXOGroupMember
+    Import-Csv C:\scripts\GoogleGroups.csv | Import-GoogleToEXOGroupMember -LogPath C:\Scripts\EXOGroupMemberResults.csv
 
     .NOTES
 

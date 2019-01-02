@@ -1,11 +1,12 @@
 
-function Import-GoogleToEXOGroup {
+function Import-GoogleTo365Group {
     <#
     .SYNOPSIS
-    Import CSV of Google Groups into Office 365 as Distribution Groups
+    NOT READY!! JUST FRAMEWORK - DONT USE!
+    Import CSV of Google Groups into Office 365 as Office 365 Groups (Unified Groups)
 
     .DESCRIPTION
-    Import CSV of Google Groups into Office 365 as Distribution Groups
+    Import CSV of Google Groups into Office 365 as Office 365 Groups (Unified Groups)
 
     .PARAMETER LogPath
     The full path and file name of the log ex. c:\scripts\AddGroupsLog.csv (use csv for best results)
@@ -35,7 +36,7 @@ function Import-GoogleToEXOGroup {
     Use this parameter to override with either 'Open' or 'Closed'
 
     .EXAMPLE
-    Import-Csv C:\scripts\GoogleGroups.csv | Import-GoogleToEXOGroup
+    Import-Csv C:\scripts\GoogleGroups.csv | Import-GoogleTo365Group -LogPath C:\scripts\365GroupResults.csv
 
     .NOTES
     Choosing both -DontAddOwnersToManagedBy & -DontAddManagersToManagedBy results in
@@ -194,7 +195,7 @@ function Import-GoogleToEXOGroup {
             }
 
             try {
-                $NewDL = New-DistributionGroup @NewSplat -ErrorAction Stop
+                # $NewDL = New-DistributionGroup @NewSplat -ErrorAction Stop
                 [PSCustomObject]@{
                     Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                     Result          = 'SUCCESS'
@@ -208,7 +209,7 @@ function Import-GoogleToEXOGroup {
                 } | Export-Csv -Path $LogPath -NoTypeInformation -Append
                 Write-HostLog -Message "Creating`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status Success
                 try {
-                    Set-DistributionGroup @SetSplat -ErrorAction Stop -WarningAction SilentlyContinue
+                    # Set-DistributionGroup @SetSplat -ErrorAction Stop -WarningAction SilentlyContinue
                     [PSCustomObject]@{
                         Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                         Result          = 'SUCCESS'
