@@ -32,8 +32,8 @@
         [switch] $RemoveDLProxy
     )
 
-    $RoutingDomain = "*@qualyssoftware.onmicrosoft.com"
-    $DomainSuffix = "@qualyssoftware.onmicrosoft.com"
+    $RoutingDomain = "*@contoso.onmicrosoft.com"
+    $DomainSuffix = "@contoso.onmicrosoft.com"
     $WildCardDomain = "*.onmicrosoft.com"
 
     if ($ExportOnly) {
