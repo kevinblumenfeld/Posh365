@@ -42,7 +42,7 @@
         $MsolUser = Get-MsolUser -All | Sort-Object -Property UserPrincipalName
         $Mailbox = Get-Mailbox -ResultSize Unlimited | Where-Object { $_.Name -notlike "DiscoverySearchMailbox*" } | Sort-Object -Property UserPrincipalName
         $MailUser = Get-MailUser -ResultSize Unlimited | Sort-Object -Property UserPrincipalName
-        Write-HostLog -Message "`nTotal Msol Users Found: $($MsolUser.count)" -Status "Success"
+        Write-HostLog -Message "`nTotal MsolUsers Found: $($MsolUser.count)" -Status "Success"
         Write-HostLog -Message "Total MailUsers Found: $($MailUser.count)" -Status "Success"
         Write-HostLog -Message "Total Mailboxes Found: $($Mailbox.count)" -Status "Success"
 
@@ -90,7 +90,7 @@
 
     if ($FlipUPN) {
         $MsolUser = Get-MsolUser -All | Sort-Object -Property UserPrincipalName
-        Write-HostLog -Message "`nTotal Msol Users Found: $($MsolUser.count)" -Status "Success"
+        Write-HostLog -Message "`nTotal MsolUsers Found: $($MsolUser.count)" -Status "Success"
 
         $Total = $MsolUser.Count
         $ConfirmCount = Read-Host "Do you want to split the count?:(y/n)"
@@ -380,7 +380,7 @@
         }
 
         if ($RemoveMailUserProxy) {
-            $MailUser = Get-MailUser -ResultSize unlimited | Where-Object {$_.RecipientTypeDetails -ne "GuestMailUser"}| Sort-Object -Property UserPrincipalName
+            $MailUser = Get-MailUser -ResultSize unlimited | Where-Object {$_.RecipientTypeDetails -ne "GuestMailUser"} | Sort-Object -Property UserPrincipalName
             Write-HostLog -Message "`nTotal MailUsers Found: $($MailUser.count)" -Status "Success"
 
             $ConfirmCount = Read-Host "Do you want to split the count?:(y/n)"
