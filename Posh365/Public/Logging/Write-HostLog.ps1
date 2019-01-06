@@ -6,7 +6,13 @@ function Write-HostLog {
 
         [Parameter()]
         [ValidateSet("Success", "Failed", "Neutral", "Information")]
-        [String]$Status = "Information"
+        [String]$Status = "Information",
+
+        [Parameter()]
+        [int] $Total,
+
+        [Parameter()]
+        [int] $Count
 
     )
     $_ESC = "$([char]27)"
@@ -24,7 +30,7 @@ function Write-HostLog {
         "Neutral" { $Color = $_Cyan }
         Default { $Color = $_White }
     }
-
-    $TimeStamp = "${_Yellow}[${_White}{0}${_Yellow}]${_Yellow}[${Color}{1}${_Yellow}]: ${Color}{2}" -f (Get-Date).ToString("HH:mm:ss"), $Status, $Message
+    $Pct = [int](($Count / $Total) * 100)
+    $TimeStamp = "${_Yellow}[${_White}{0}%${_Yellow}]${_Yellow}[${_White}{1}${_Yellow}]${_Yellow}[${Color}{2}${_Yellow}]: ${Color}{3}" -f $Pct, (Get-Date).ToString("HH:mm:ss"), $Status, $Message
     Write-host $TimeStamp
 }

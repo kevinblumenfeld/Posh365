@@ -42,15 +42,15 @@
         $MsolUser = Get-MsolUser -All | Sort-Object -Property UserPrincipalName
         $Mailbox = Get-Mailbox -ResultSize Unlimited | Where-Object { $_.Name -notlike "DiscoverySearchMailbox*" } | Sort-Object -Property UserPrincipalName
         $MailUser = Get-MailUser -ResultSize Unlimited | Sort-Object -Property UserPrincipalName
-        Write-HostLog -Message "`nTotal Msol Users Found: $($MsolUser.count)" -Status Success
-        Write-HostLog -Message "Total MailUsers Found: $($MailUser.count)" -Status Success
-        Write-HostLog -Message "Total Mailboxes Found: $($Mailbox.count)" -Status Success
+        Write-HostLog -Message "`nTotal Msol Users Found: $($MsolUser.count)" -Status "Success"
+        Write-HostLog -Message "Total MailUsers Found: $($MailUser.count)" -Status "Success"
+        Write-HostLog -Message "Total Mailboxes Found: $($Mailbox.count)" -Status "Success"
 
-        $MSOLProps = @(
+        $MsolProps = @(
             'DisplayName', 'BlockCredential', 'UserPrincipalName', 'UserType', 'ImmutableId'
         )
 
-        $MSOLCalcProps = @(
+        $MsolCalcProps = @(
             @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join ";" }}
         )
 
@@ -63,17 +63,17 @@
             @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join ";" }}
         )
 
-        $MsolUser | Select-Object ($MSOLProps + $MSOLCalcProps) | Export-Csv ".\MsolUsers.csv" -NoTypeInformation -Encoding UTF8
+        $MsolUser | Select-Object ($MsolProps + $MsolCalcProps) | Export-Csv ".\MsolUsers.csv" -NoTypeInformation -Encoding UTF8
         $Mailbox | Select-Object ($MailProps + $MailCalcProps) | Export-Csv ".\Mailboxes.csv" -NoTypeInformation -Encoding UTF8
         $MailUser | Select-Object ($MailProps + $MailCalcProps) | Export-Csv ".\MailUsers.csv" -NoTypeInformation -Encoding UTF8
 
         Write-HostLog -Message "Exported Users, MailUsers & Mailbox details in CSV`n"
 
         Write-HostLog -Message "Running discovery on Group accounts"
-        $DistributionGroups = Get-DistributionGroup -ResultSize unlimited
-        $UnifiedGroups = Get-UnifiedGroup -ResultSize unlimited
-        Write-HostLog -Message "`nTotal Distribution Groups Found: $($DistributionGroups.count)" -Status Success
-        Write-HostLog -Message "Total O365 Groups Found: $($UnifiedGroups.count)" -Status Success
+        $DistributionGroup = Get-DistributionGroup -ResultSize unlimited
+        $UnifiedGroup = Get-UnifiedGroup -ResultSize unlimited
+        Write-HostLog -Message "`nTotal Distribution Groups Found: $($DistributionGroup.count)" -Status "Success"
+        Write-HostLog -Message "Total O365 Groups Found: $($UnifiedGroup.count)" -Status "Success"
 
         $GroupProps = @(
             'DisplayName', 'BlockCredential', 'UserPrincipalName', 'UserType', 'ImmutableId'
@@ -83,16 +83,16 @@
             @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join ";" }}
         )
 
-        $DistributionGroups |  Select-Object ($GroupProps + $GroupCalcProps)  | Export-Csv ".\DistributionGroups.csv" -NoTypeInformation
-        $UnifiedGroups | Select-Object ($GroupProps + $GroupCalcProps) | Export-Csv ".\O365Groups.csv" -NoTypeInformation
+        $DistributionGroup |  Select-Object ($GroupProps + $GroupCalcProps)  | Export-Csv ".\DistributionGroups.csv" -NoTypeInformation
+        $UnifiedGroup | Select-Object ($GroupProps + $GroupCalcProps) | Export-Csv ".\O365Groups.csv" -NoTypeInformation
         Write-HostLog -Message "Exported Distribution Groups & O365 Groups details in CSV`n"
     }
 
     if ($FlipUPN) {
         $MsolUser = Get-MsolUser -All | Sort-Object -Property UserPrincipalName
-        Write-HostLog -Message "`nTotal Msol Users Found: $($MsolUser.count)" -Status Success
+        Write-HostLog -Message "`nTotal Msol Users Found: $($MsolUser.count)" -Status "Success"
 
-        $Count = $MsolUser.Count
+        $Total = $MsolUser.Count
         $ConfirmCount = Read-Host "Do you want to split the count?:(y/n)"
 
         if ($ConfirmCount -eq 'y') {
@@ -104,59 +104,50 @@
             Write-HostLog "Enter 'StartNumber' as '1000' and 'EndNumber' as '1999' and so on...`n"
             Write-HostLog "#############################################################`n"
             $StartNumber = Read-Host "Enter StartNumber"
-            $EndNumber = Read-Host "Enter Lastnumber"
+            $EndNumber = Read-Host "Enter EndNumber"
 
             Write-HostLog -Message "`n"
 
-            $NewCount = $MsolUser[$StartNumber..$EndNumber]
+            $SplitMsol = $MsolUser[$StartNumber..$EndNumber]
             $i = 1
-            $Counting = $NewCount.count
+            $Total = $SplitMsol.count
 
-            ForEach ($newuser in $NewCount) {
-                $pct = [int](($i / $Counting) * 100)
-                Write-Progress -Activity "Flipping Primary for MsolUser" -Status " $($newuser.UserPrincipalName) ($i of $Counting)" -PercentComplete $pct
-
-                if ($newuser.UserPrincipalName -notlike $RoutingDomain) {
-                    $MSOLproxyAddress = $newuser.userprincipalname.Split("@")[0] + $DomainSuffix
-                    Write-HostLog -Message "$($newuser.UserPrincipalName): " -NoNewline
+            ForEach ($CurSplitMsol in $SplitMsol) {
+                if ($CurSplitMsol.UserPrincipalName -notlike $RoutingDomain) {
+                    $MsolProxyAddress = $CurSplitMsol.UserPrincipalName.Split("@")[0] + $DomainSuffix
                     try {
-                        Set-MsolUserPrincipalName -UserPrincipalName $($newuser.userprincipalname) -NewUserPrincipalName $MSOLproxyAddress -ErrorAction Stop
-                        Write-HostLog -Message "SUCCESS" -Status Success
+                        Set-MsolUserPrincipalName -UserPrincipalName $($CurSplitMsol.UserPrincipalName) -NewUserPrincipalName $MsolProxyAddress -ErrorAction Stop
+                        Write-HostLog -Message "$($CurSplitMsol.UserPrincipalName)" -Status "Success" -Total $Total -Count $i
                     }
                     catch {
-                        Write-HostLog -Message "FAILED" -Status Failed
+                        Write-HostLog -Message "$($CurSplitMsol.UserPrincipalName)" -Status "Failed" -Total $Total -Count $i
                     }
                     Start-Sleep -Seconds 2
                 }
                 else {
-                    Write-HostLog -Message "No UPN Flip required: $($newuser.userprincipalName)" -Status Neutral
+                    Write-HostLog -Message "No UPN Flip required: $($CurSplitMsol.UserPrincipalName)" -Status Neutral
                 }
                 $i++
             }
         }
 
         if ($ConfirmCount -eq 'n') {
-
             $i = 1
 
             ForEach ($CurMsoluser in $MsolUser) {
-                $pct = [int](($i / $Count) * 100)
-                Write-Progress -Activity "Flipping Primary for MsolUser" -Status " $($CurMsoluser.UserPrincipalName) ($i of $Count)" -PercentComplete $pct
-
                 if ($CurMsoluser.UserPrincipalName -notlike $RoutingDomain) {
-                    $MSOLproxyAddress = $CurMsoluser.userprincipalname.Split("@")[0] + $DomainSuffix
-                    Write-HostLog -Message "$($CurMsoluser.UserPrincipalName): " -NoNewline
+                    $MsolProxyAddress = $CurMsoluser.UserPrincipalName.Split("@")[0] + $DomainSuffix
                     try {
-                        Set-MsolUserPrincipalName -UserPrincipalName $($CurMsoluser.userprincipalname) -NewUserPrincipalName $MSOLproxyAddress -ErrorAction Stop
-                        Write-HostLog -Message "SUCCESS" -Status Success
+                        Set-MsolUserPrincipalName -UserPrincipalName $($CurMsoluser.UserPrincipalName) -NewUserPrincipalName $MsolProxyAddress -ErrorAction Stop
+                        Write-HostLog -Message "$($CurMsoluser.UserPrincipalName)" -Status "Success" -Total $Total -Count $i
                     }
                     catch {
-                        Write-HostLog -Message "FAILED" -Status Failed
+                        Write-HostLog -Message "$($CurMsoluser.UserPrincipalName)" -Status "Failed" -Total $Total -Count $i
                     }
                     Start-Sleep -Seconds 2
                 }
                 else {
-                    Write-HostLog -Message "No UPN Flip required: " -NoNewline; Write-HostLog -Message $($CurMsoluser.userprincipalName) -Status Neutral
+                    Write-HostLog -Message "No UPN Flip required: " -NoNewline; Write-HostLog -Message $($CurMsoluser.UserPrincipalName) -Status Neutral
                 }
                 $i++
             }
@@ -166,9 +157,9 @@
 
     if ($FlipMailbox) {
         $Mailbox = Get-Mailbox -ResultSize Unlimited | Sort-Object -Property UserPrincipalName
-        Write-HostLog -Message "`nTotal Mailboxes Found: $($Mailbox.count)" -Status Success
+        Write-HostLog -Message "`nTotal Mailboxes Found: $($Mailbox.count)" -Status "Success" -Total $Total -Count $i
 
-        $Count = $Mailbox.Count
+        $Total = $Mailbox.Count
         $ConfirmCount = Read-Host "Do you want to split the count?:(y/n)"
 
         if ($ConfirmCount -eq 'y') {
@@ -181,28 +172,23 @@
             Write-HostLog "#############################################################`n"
 
             $StartNumber = Read-Host "Enter StartNumber"
-            $EndNumber = Read-Host "Enter Lastnumber"
+            $EndNumber = Read-Host "Enter EndNumber"
 
             Write-HostLog -Message "`n"
 
-            $NewCount = $Mailbox[$StartNumber..$EndNumber]
+            $SplitMailbox = $Mailbox[$StartNumber..$EndNumber]
             $i = 1
-            $Counting = $NewCount.count
+            $Total = $SplitMailbox.count
 
-            ForEach ($CurMailbox in $NewCount) {
-                $pct = [int](($i / $Counting) * 100)
-                Write-Progress -Activity "Flipping Primary for Mailbox" -Status " $($CurMailbox.PrimarySmtpAddress) ($i of $Counting)" -PercentComplete $pct
-
+            ForEach ($CurMailbox in $SplitMailbox) {
                 if ($CurMailbox.PrimarySmtpAddress -notlike $RoutingDomain) {
-                    Write-HostLog -Message "$($CurMailbox.PrimarySmtpAddress): " -NoNewline
                     $NewPrimary = $CurMailbox.PrimarySmtpAddress.Split("@")[0] + $DomainSuffix
-
                     try {
                         Set-Mailbox -Identity $($CurMailbox.PrimarySmtpAddress) -WindowsEmailAddress $NewPrimary -ErrorAction Stop
-                        Write-HostLog -Message "SUCCESS" -Status Success
+                        Write-HostLog -Message "$($CurMailbox.PrimarySmtpAddress)" -Status "Success" -Total $Total -Count $i
                     }
                     catch {
-                        Write-HostLog -Message "FAILED" -Status Failed
+                        Write-HostLog -Message "$($CurMailbox.PrimarySmtpAddress)" -Status "Failed" -Total $Total -Count $i
                     }
                     Start-Sleep -Seconds 2
                 }
@@ -215,17 +201,17 @@
         if ($ConfirmCount -eq 'n') {
             $i = 1
             ForEach ($CurMailbox in $Mailbox) {
-                $pct = [int](($i / $Count) * 100)
-                Write-Progress -Activity "Flipping Primary for Mailbox" -Status " $($CurMailbox.PrimarySmtpAddress) ($i of $Count)" -PercentComplete $pct
+                $pct = [int](($i / $Total) * 100)
+                Write-Progress -Activity "Flipping Primary for Mailbox" -Status " $($CurMailbox.PrimarySmtpAddress) ($i of $Total)" -PercentComplete $pct
 
                 if ($CurMailbox.PrimarySmtpAddress -notlike $RoutingDomain) {
                     $NewPrimary = $CurMailbox.PrimarySmtpAddress.Split("@")[0] + $DomainSuffix
                     try {
                         Set-Mailbox -Identity $($CurMailbox.PrimarySmtpAddress) -WindowsEmailAddress $NewPrimary -ErrorAction Stop
-                        Write-HostLog -Message "$($CurMailbox.PrimarySmtpAddress): $NewPrimary" -Status Success
+                        Write-HostLog -Message "$($CurMailbox.PrimarySmtpAddress): $NewPrimary" -Status "Success" -Total $Total -Count $i
                     }
                     catch {
-                        Write-HostLog -Message "$($CurMailbox.PrimarySmtpAddress): $NewPrimary" -Status Failed
+                        Write-HostLog -Message "$($CurMailbox.PrimarySmtpAddress): $NewPrimary" -Status "Failed" -Total $Total -Count $i
                     }
                     Start-Sleep -Seconds 2
                 }
@@ -239,12 +225,9 @@
     }
 
     if ($FlipMailUser) {
-        $MailUser = Get-MailUser -ResultSize unlimited | Where-Object {
-            $_.RecipientTypeDetails -ne "GuestMailUser"
-        } | Sort-Object -Property UserPrincipalName
-        Write-HostLog -Message "`nTotal MailUsers Found: $($MailUser.count)" -Status Success
-
-        $Count = $MailUser.Count
+        $MailUser = Get-MailUser -ResultSize unlimited | Where-Object { $_.RecipientTypeDetails -ne "GuestMailUser" } | Sort-Object -Property UserPrincipalName
+        Write-HostLog -Message "`nTotal MailUsers Found: $($MailUser.count)" -Status "Success"
+        $Total = $MailUser.Count
         $ConfirmCount = Read-Host "Do you want to split the count?:(y/n)"
 
         if ($ConfirmCount -eq 'y') {
@@ -257,27 +240,22 @@
             Write-HostLog "#############################################################`n"
 
             $StartNumber = Read-Host "Enter StartNumber"
-            $EndNumber = Read-Host "Enter Lastnumber"
+            $EndNumber = Read-Host "Enter EndNumber"
 
             Write-Host "`n"
 
-            $NewCount = $MailUser[$StartNumber..$EndNumber]
+            $SplitMailUser = $MailUser[$StartNumber..$EndNumber]
             $i = 1
-            $Counting = $NewCount.count
-            ForEach ($CurMailUser in $NewCount) {
-                $pct = [int](($i / $Counting) * 100)
-                Write-Progress -Activity "Flipping Primary for MailUser" -Status " $($CurMailUser.PrimarySmtpAddress) ($i of $Counting)" -PercentComplete $pct
-
+            $Total = $SplitMailUser.count
+            ForEach ($CurMailUser in $SplitMailUser) {
                 if ($CurMailUser.PrimarySmtpAddress -notlike $RoutingDomain) {
-                    Write-HostLog -Message "$($CurMailUser.PrimarySmtpAddress): " -NoNewline
                     $MailUsrPrimary = $CurMailUser.PrimarySmtpAddress.Split("@")[0] + $DomainSuffix
-
                     Try {
                         Set-MailUser -Identity $($CurMailUser.PrimarySmtpAddress) -WindowsEmailAddress $MailUsrPrimary -ErrorAction Stop
-                        Write-HostLog -Message "SUCCESS" -Status Success
+                        Write-HostLog -Message "$($CurMailUser.PrimarySmtpAddress)" -Status "Success" -Total $Total -Count $i
                     }
                     catch {
-                        Write-HostLog -Message "FAILED" -Status Failed
+                        Write-HostLog -Message "$($CurMailUser.PrimarySmtpAddress)" -Status "Failed" -Total $Total -Count $i
                     }
                     Start-Sleep -Seconds 2
                 }
@@ -290,17 +268,14 @@
         if ($ConfirmCount -eq 'n') {
             $i = 1
             ForEach ($CurMailUser in $MailUser) {
-                $pct = [int](($i / $Count) * 100)
-                Write-Progress -Activity "Flipping Primary for MailUser" -Status " $($CurMailUser.PrimarySmtpAddress) ($i of $Count)" -PercentComplete $pct
                 if ($CurMailUser.PrimarySmtpAddress -notlike $RoutingDomain) {
-                    Write-HostLog -Message "$($CurMailUser.PrimarySmtpAddress): " -NoNewline
                     $MailUsrPrimary = $CurMailUser.PrimarySmtpAddress.Split("@")[0] + $DomainSuffix
                     Try {
                         Set-MailUser -Identity $($CurMailUser.PrimarySmtpAddress) -WindowsEmailAddress $MailUsrPrimary -ErrorAction Stop
-                        Write-HostLog -Message "SUCCESS" -Status Success
+                        Write-HostLog -Message "$($CurMailUser.PrimarySmtpAddress)" -Status "Success" -Total $Total -Count $i
                     }
                     catch {
-                        Write-HostLog -Message "FAILED" -Status Failed
+                        Write-HostLog -Message "$($CurMailUser.PrimarySmtpAddress)" -Status "Failed" -Total $Total -Count $i
                     }
                     Start-Sleep -Seconds 2
                 }
@@ -315,7 +290,7 @@
 
     if ($RemoveMbxProxy) {
         $Mailbox = Get-Mailbox -ResultSize Unlimited | Sort-Object -Property UserPrincipalName
-        Write-HostLog -Message "`nTotal Mailboxes Found: $($Mailbox.count)" -Status Success
+        Write-HostLog -Message "`nTotal Mailboxes Found: $($Mailbox.count)" -Status "Success"
 
         $ConfirmCount = Read-Host "Do you want to split the count?:(y/n)"
 
@@ -329,33 +304,29 @@
             Write-HostLog "#############################################################`n"
 
             $StartNumber = Read-Host "Enter StartNumber"
-            $EndNumber = Read-Host "Enter Lastnumber"
+            $EndNumber = Read-Host "Enter EndNumber"
             Write-HostLog -Message "`n"
 
-            $NewCount = $Mailbox[$StartNumber..$EndNumber]
+            $SplitMailbox = $Mailbox[$StartNumber..$EndNumber]
 
             $i = 1
-            $Counting = $NewCount.count
+            $Total = $SplitMailbox.count
 
-            ForEach ($CurMailbox in $NewCount) {
-                $pct = [int](($i / $Counting) * 100)
-                Write-Progress -Activity "Removing ProxyAddresses for Mailbox" -Status " $($CurMailbox.PrimarySmtpAddress) ($i of $Counting)" -PercentComplete $pct
-
+            ForEach ($CurMailbox in $SplitMailbox) {
                 if ($CurMailbox.PrimarySmtpAddress -like $RoutingDomain) {
                     $ProxyAddress = $CurMailbox.EmailAddresses | Where-Object {
                         $_ -notlike $WildCardDomain -and $_ -like "smtp*"
                     }
-                    Write-HostLog -Message "`tDomains Found for user $($CurMailbox.PrimarySmtpAddress): " -NoNewline; Write-HostLog -Message $($ProxyAddress.count) -Status Success
+                    Write-HostLog -Message "`tDomains Found for user $($CurMailbox.PrimarySmtpAddress): $($ProxyAddress.count)" -Status "Success"
 
                     if ($ProxyAddress.Count -gt '1') {
-
-                        ForEach ($proxy in $ProxyAddress) {
+                        ForEach ($CurProxyAddress in $ProxyAddress) {
                             try {
-                                Set-Mailbox -Identity $CurMailbox.PrimarySmtpAddress -EmailAddresses @{Remove = $proxy} -ErrorAction Stop
-                                Write-HostLog -Message "t`tRemoving $proxy" -Status Success
+                                Set-Mailbox -Identity $CurMailbox.PrimarySmtpAddress -EmailAddresses @{Remove = $CurProxyAddress} -ErrorAction Stop
+                                Write-HostLog -Message "t`tRemoving $CurProxyAddress" -Status "Success" -Total $Total -Count $i
                             }
                             catch {
-                                Write-HostLog -Message "t`tRemoving $proxy" -Status Failed
+                                Write-HostLog -Message "t`tRemoving $CurProxyAddress" -Status "Failed" -Total $Total -Count $i
                             }
                             Start-Sleep -Seconds 2
                         }
@@ -363,10 +334,10 @@
                     if ($ProxyAddress.count -eq '1') {
                         try {
                             Set-Mailbox -Identity $CurMailbox.PrimarySmtpAddress -EmailAddresses @{Remove = $ProxyAddress} -ErrorAction Stop
-                            Write-HostLog -Message "`t`tRemoving $ProxyAddress" -Status Success
+                            Write-HostLog -Message "`t`tRemoving $ProxyAddress" -Status "Success" -Total $Total -Count $i
                         }
                         catch {
-                            Write-HostLog -Message "`t`tRemoving $ProxyAddress" -Status Failed
+                            Write-HostLog -Message "`t`tRemoving $ProxyAddress" -Status "Failed" -Total $Total -Count $i
                         }
                         Start-Sleep -Seconds 2
                     }
@@ -374,37 +345,37 @@
                 }
             }
             if ($ConfirmCount -eq 'n') {
-                #Progress
                 $i = 1
-                $Count = $Mailbox.Count
+                $Total = $Mailbox.Count
 
                 ForEach ($CurMailbox in $Mailbox) {
-                    $pct = [int](($i / $Count) * 100)
-                    Write-Progress -Activity "Removing PrimarySmtpAddress for Mailbox" -Status " $($CurMailbox.PrimarySmtpAddress) ($i of $Count)" -PercentComplete $pct
+                    $pct = [int](($i / $Total) * 100)
+                    Write-Progress -Activity "Removing PrimarySmtpAddress for Mailbox" -Status " $($CurMailbox.PrimarySmtpAddress) ($i of $Total)" -PercentComplete $pct
 
                     if ($CurMailbox.PrimarySmtpAddress -like $RoutingDomain) {
                         $ProxyAddress = $CurMailbox.EmailAddresses | Where-Object {$_ -notlike $WildCardDomain -and $_ -like "smtp*"}
-                        Write-HostLog -Message "`tDomains Found for user $($CurMailbox.PrimarySmtpAddress): $($ProxyAddress.count)" -Status Success
+                        Write-HostLog -Message "`tDomains Found for user $($CurMailbox.PrimarySmtpAddress): $($ProxyAddress.count)" -Status "Success"
 
                         if ($ProxyAddress.Count -gt '1') {
-
-                            ForEach ($proxy in $ProxyAddress) {
-
-                                Write-HostLog -Message "`t`tRemoving $proxy : " -NoNewline
-                                try {Set-Mailbox -Identity $CurMailbox.PrimarySmtpAddress -EmailAddresses @{Remove = $proxy} -ErrorAction Stop
-                                    Write-HostLog -Message "SUCCESS" -Status Success
+                            ForEach ($CurProxyAddress in $ProxyAddress) {
+                                try {
+                                    Set-Mailbox -Identity $CurMailbox.PrimarySmtpAddress -EmailAddresses @{Remove = $CurProxyAddress} -ErrorAction Stop
+                                    Write-HostLog -Message "`t`tRemoving $CurProxyAddress " -Status "Success" -Total $Total -Count $i
                                 }
-                                catch {Write-HostLog -Message "FAILED" -Status Failed}
+                                catch {
+                                    Write-HostLog -Message "`t`tRemoving $CurProxyAddress " -Status "Failed" -Total $Total -Count $i
+                                }
                                 Start-Sleep -Seconds 2
                             }
                         }
                         if ($ProxyAddress.count -eq '1') {
-
-                            Write-HostLog -Message "`t`tRemoving $ProxyAddress :" -Status Neutral -NoNewline
-                            try {Set-Mailbox -Identity $CurMailbox.PrimarySmtpAddress -EmailAddresses @{Remove = $ProxyAddress} -ErrorAction Stop
-                                Write-HostLog -Message "SUCCESS" -Status Success
+                            try {
+                                Set-Mailbox -Identity $CurMailbox.PrimarySmtpAddress -EmailAddresses @{Remove = $ProxyAddress} -ErrorAction Stop
+                                Write-HostLog -Message "`t`tRemoving $ProxyAddress" -Status "Success" -Total $Total -Count $i
                             }
-                            catch {Write-HostLog -Message "FAILED" -Status Failed}
+                            catch {
+                                Write-HostLog -Message "`t`tRemoving $ProxyAddress" -Status "Failed" -Total $Total -Count $i
+                            }
                             Start-Sleep -Seconds 2
                         }
                     }
@@ -416,7 +387,7 @@
 
         if ($RemoveMailUserProxy) {
             $MailUser = Get-MailUser -ResultSize unlimited | Where-Object {$_.RecipientTypeDetails -ne "GuestMailUser"}| Sort-Object -Property UserPrincipalName
-            Write-HostLog -Message "`nTotal MailUsers Found: $($MailUser.count)" -Status Success
+            Write-HostLog -Message "`nTotal MailUsers Found: $($MailUser.count)" -Status "Success"
 
             $ConfirmCount = Read-Host "Do you want to split the count?:(y/n)"
 
@@ -430,35 +401,32 @@
                 Write-HostLog "#############################################################`n"
 
                 $StartNumber = Read-Host "Enter StartNumber"
-                $EndNumber = Read-Host "Enter Lastnumber"
+                $EndNumber = Read-Host "Enter EndNumber"
 
                 Write-HostLog -Message "`n"
 
-                $NewCount = $MailUser[$StartNumber..$EndNumber]
-
+                $SplitMailUser = $MailUser[$StartNumber..$EndNumber]
                 $i = 1
-                $Counting = $NewCount.count
+                $Total = $SplitMailUser.count
 
-                ForEach ($CurMailUser in $NewCount) {
-                    $pct = [int](($i / $Counting) * 100)
-                    Write-Progress -Activity "Flipping Primary for MailUser" -Status " $($CurMailUser.PrimarySmtpAddress) ($i of $Counting)" -PercentComplete $pct
+                ForEach ($CurMailUser in $SplitMailUser) {
+                    $pct = [int](($i / $Total) * 100)
+                    Write-Progress -Activity "Flipping Primary for MailUser" -Status " $($CurMailUser.PrimarySmtpAddress) ($i of $Total)" -PercentComplete $pct
 
                     if ($CurMailUser.PrimarySmtpAddress -like $RoutingDomain) {
                         $MailUsrProxyAddress = $CurMailUser.EmailAddresses | Where-Object {
                             $_ -notlike $WildCardDomain -and $_ -like "smtp*"
                         }
-                        Write-HostLog -Message "`tDomains Found for user $($CurMailUser.PrimarySmtpAddress): $($MailUsrProxyAddress.count)" -Status Success
+                        Write-HostLog -Message "`tDomains Found for user $($CurMailUser.PrimarySmtpAddress): $($MailUsrProxyAddress.count)" -Status "Success"
 
                         if ($MailUsrProxyAddress.Count -gt '1') {
                             ForEach ($MailProxy in $MailUsrProxyAddress) {
-                                Write-HostLog -Message "`t`tRemoving $MailProxy : " -NoNewline
-
                                 try {
                                     Set-MailUser -Identity $CurMailUser.PrimarySmtpAddress -EmailAddresses @{Remove = $MailProxy} -ErrorAction Stop
-                                    Write-HostLog -Message "SUCCESS" -Status Success
+                                    Write-HostLog -Message "`t`tRemoving $MailProxy" -Status "Success"
                                 }
                                 catch {
-                                    Write-HostLog -Message "FAILED" -Status Failed
+                                    Write-HostLog -Message "`t`tRemoving $MailProxy" -Status "Failed"
                                 }
                                 Start-Sleep -Seconds 2
                             }
@@ -466,11 +434,11 @@
                         if ($MailUsrProxyAddress.count -eq '1') {
                             try {
                                 Set-MailUser -Identity $CurMailUser.PrimarySmtpAddress -EmailAddresses @{Remove = $MailUsrProxyAddress} -ErrorAction Stop
-                                Write-HostLog -Message "`t`tRemoving $MailUsrProxyAddress" -Status Success
+                                Write-HostLog -Message "`t`tRemoving $MailUsrProxyAddress" -Status "Success"
                             }
                             catch {
-                            Write-HostLog -Message "`t`tRemoving $MailUsrProxyAddress" -Status Failed
-                        }
+                                Write-HostLog -Message "`t`tRemoving $MailUsrProxyAddress" -Status "Failed"
+                            }
                             Start-Sleep -Seconds 2
                         }
                     }
@@ -480,25 +448,25 @@
 
             if ($ConfirmCount -eq 'n') {
                 $i = 1
-                $Count = $MailUser.Count
+                $Total = $MailUser.Count
 
                 ForEach ($CurMailUser in $MailUser) {
-                    $pct = [int](($i / $Count) * 100)
-                    Write-Progress -Activity "Flipping Primary for MailUser" -Status " $($CurMailUser.PrimarySmtpAddress) ($i of $Count)" -PercentComplete $pct
+                    $pct = [int](($i / $Total) * 100)
+                    Write-Progress -Activity "Flipping Primary for MailUser" -Status " $($CurMailUser.PrimarySmtpAddress) ($i of $Total)" -PercentComplete $pct
 
                     if ($CurMailUser.PrimarySmtpAddress -like $RoutingDomain) {
                         $MailUsrProxyAddress = $CurMailUser.EmailAddresses | Where-Object {$_ -notlike $WildCardDomain -and $_ -like "smtp*"}
-                        Write-HostLog -Message "`tDomains Found for user $($CurMailUser.PrimarySmtpAddress): " -NoNewline; Write-HostLog -Message $($MailUsrProxyAddress.count) -Status Success
+                        Write-HostLog -Message "`tDomains Found for user $($CurMailUser.PrimarySmtpAddress): " -NoNewline; Write-HostLog -Message $($MailUsrProxyAddress.count) -Status "Success"
 
                         if ($MailUsrProxyAddress.Count -gt '1') {
                             ForEach ($MailProxy in $MailUsrProxyAddress) {
                                 Write-HostLog -Message "`t`tRemoving $MailProxy : " -NoNewline
                                 try {
                                     Set-MailUser -Identity $CurMailUser.PrimarySmtpAddress -EmailAddresses @{Remove = $MailProxy} -ErrorAction Stop
-                                    Write-HostLog -Message "SUCCESS" -Status Success
+                                    Write-HostLog -Message "SUCCESS" -Status "Success"
                                 }
                                 catch {
-                                    Write-HostLog -Message "FAILED" -Status Failed
+                                    Write-HostLog -Message "FAILED" -Status "Failed"
                                 }
                                 Start-Sleep -Seconds 2
                             }
@@ -506,10 +474,10 @@
                         if ($MailUsrProxyAddress.count -eq '1') {
                             try {
                                 Set-MailUser -Identity $CurMailUser.PrimarySmtpAddress -EmailAddresses @{Remove = $MailUsrProxyAddress} -ErrorAction Stop
-                                Write-HostLog -Message "Removing $MailUsrProxyAddress" -Status Success
+                                Write-HostLog -Message "Removing $MailUsrProxyAddress" -Status "Success"
                             }
                             catch {
-                                Write-HostLog -Message "Removing $MailUsrProxyAddress" -Status Failed
+                                Write-HostLog -Message "Removing $MailUsrProxyAddress" -Status "Failed"
                             }
                             Start-Sleep -Seconds 2
                         }
@@ -522,31 +490,26 @@
         }
 
         if ($FlipDLPrimary) {
-            $DistributionGroups = Get-DistributionGroup -ResultSize unlimited | Sort-Object -Property PrimarySmtpAddress
-            Write-HostLog -Message "`nTotal Distribution Groups Found: $($DistributionGroups.count)" -Status Success
+            $DistributionGroup = Get-DistributionGroup -ResultSize unlimited | Sort-Object -Property PrimarySmtpAddress
+            Write-HostLog -Message "`nTotal Distribution Groups Found: $($DistributionGroup.count)" -Status "Success"
 
             $i = 1
-            $Count = $DistributionGroups.Count
+            $Total = $DistributionGroup.Count
 
-            ForEach ($DistGroup in $DistributionGroups) {
-                $pct = [int](($i / $Count) * 100)
-                Write-Progress -Activity "Flipping Primary for DL" -Status " $($DistGroup.PrimarySmtpAddress) ($i of $Count)" -PercentComplete $pct
-
-                if ($DistGroup.PrimarySmtpAddress -notlike $RoutingDomain) {
-                    Write-HostLog -Message "$($DistGroup.PrimarySmtpAddress): " -NoNewline
-                    $NewDLPrimary = $DistGroup.PrimarySmtpAddress.Split("@")[0] + $DomainSuffix
-
+            ForEach ($CurDistributionGroup in $DistributionGroup) {
+                if ($CurDistributionGroup.PrimarySmtpAddress -notlike $RoutingDomain) {
+                    $NewDLPrimary = $CurDistributionGroup.PrimarySmtpAddress.Split("@")[0] + $DomainSuffix
                     try {
-                        Set-DistributionGroup -Identity $($DistGroup.PrimarySmtpAddress) -PrimarySmtpAddress $NewDLPrimary -ErrorAction Stop
-                        Write-HostLog -Message "SUCCESS" -Status Success
+                        Set-DistributionGroup -Identity $($CurDistributionGroup.PrimarySmtpAddress) -PrimarySmtpAddress $NewDLPrimary -ErrorAction Stop
+                        Write-HostLog -Message "$($CurDistributionGroup.PrimarySmtpAddress)" -Status "Success" -Total $Total -Count $i
                     }
                     catch {
-                        Write-HostLog -Message "FAILED" -Status Failed
+                        Write-HostLog -Message "$($CurDistributionGroup.PrimarySmtpAddress)" -Status "Failed" -Total $Total -Count $i
                     }
                     Start-Sleep -Seconds 2
                 }
                 else {
-                    Write-HostLog -Message "No Primary Flip required: $($DistGroup.PrimarySmtpAddress)" -Status Neutral
+                    Write-HostLog -Message "No Primary Flip required: $($CurDistributionGroup.PrimarySmtpAddress)" -Status Neutral
                 }
                 $i++
             }
@@ -554,31 +517,27 @@
         }
 
         if ($FlipO365Primary) {
-            $UnifiedGroups = Get-UnifiedGroup -ResultSize unlimited | Sort-Object -Property PrimarySmtpAddress
-            Write-HostLog -Message "`nTotal O365 Groups Found: $($UnifiedGroups.count)" -Status Success
+            $UnifiedGroup = Get-UnifiedGroup -ResultSize unlimited | Sort-Object -Property PrimarySmtpAddress
+            Write-HostLog -Message "`nTotal O365 Groups Found: $($UnifiedGroup.count)" -Status "Success"
 
             $i = 1
-            $Count = $UnifiedGroups.Count
+            $Total = $UnifiedGroup.Count
 
-            ForEach ($O365Group in $UnifiedGroups) {
-                $pct = [int](($i / $Count) * 100)
-                Write-Progress -Activity "Flipping Primary for O365 Group" -Status " $($O365Group.PrimarySmtpAddress) ($i of $Count)" -PercentComplete $pct
-
-                if ($O365Group.PrimarySmtpAddress -notlike $RoutingDomain) {
-                    Write-HostLog -Message "$($O365Group.PrimarySmtpAddress): " -NoNewline
-                    $NewO365Primary = $O365Group.PrimarySmtpAddress.Split("@")[0] + $DomainSuffix
+            ForEach ($CurUnifiedGroup in $UnifiedGroup) {
+                if ($CurUnifiedGroup.PrimarySmtpAddress -notlike $RoutingDomain) {
+                    $NewO365Primary = $CurUnifiedGroup.PrimarySmtpAddress.Split("@")[0] + $DomainSuffix
 
                     try {
-                        Set-UnifiedGroup -Identity $($O365Group.PrimarySmtpAddress) -PrimarySmtpAddress $NewO365Primary -ErrorAction Stop
-                        Write-HostLog -Message "SUCCESS" -Status Success
+                        Set-UnifiedGroup -Identity $($CurUnifiedGroup.PrimarySmtpAddress) -PrimarySmtpAddress $NewO365Primary -ErrorAction Stop
+                        Write-HostLog -Message "$($CurUnifiedGroup.PrimarySmtpAddress):" -Status "Success" -Total $Total -Count $i
                     }
                     catch {
-                        Write-HostLog -Message "FAILED" -Status Failed
+                        Write-HostLog -Message "$($CurUnifiedGroup.PrimarySmtpAddress):" -Status "Failed" -Total $Total -Count $i
                     }
                     Start-Sleep -Seconds 2
                 }
                 else {
-                    Write-HostLog -Message "No Primary Flip required: $($O365Group.PrimarySmtpAddress)"
+                    Write-HostLog -Message "No Primary Flip required: $($CurUnifiedGroup.PrimarySmtpAddress)"
                 }
                 $i++
             }
@@ -586,42 +545,36 @@
         }
 
         if ($RemoveO365Proxy) {
-            $UnifiedGroups = Get-UnifiedGroup -ResultSize unlimited | Sort-Object -Property PrimarySmtpAddress
-            Write-HostLog -Message "`nTotal O365 Groups Found: $($UnifiedGroups.count)" -Status Success
+            $UnifiedGroup = Get-UnifiedGroup -ResultSize unlimited | Sort-Object -Property PrimarySmtpAddress
+            Write-HostLog -Message "`nTotal O365 Groups Found: $($UnifiedGroup.count)" -Status "Success"
 
             $i = 1
-            $Count = $UnifiedGroups.Count
+            $Total = $UnifiedGroup.Count
 
-            ForEach ($O365Group in $UnifiedGroups) {
-                $pct = [int](($i / $Count) * 100)
-                Write-Progress -Activity "Removing Proxies from O365 Group" -Status " $($O365Group.PrimarySmtpAddress) ($i of $Count)" -PercentComplete $pct
-
-                if ($O365Group.PrimarySmtpAddress -like $RoutingDomain) {
-                    $ProxyUGAddress = $O365Group.EmailAddresses | Where-Object {
-                        $_ -notlike $WildCardDomain -and $_ -like "smtp*"
-                    }
-                    Write-HostLog -Message "`tDomains Found for O365 Group $($O365Group.PrimarySmtpAddress): $($ProxyUGAddress.count)" -Status Success
+            ForEach ($CurUnifiedGroup in $UnifiedGroup) {
+                if ($CurUnifiedGroup.PrimarySmtpAddress -like $RoutingDomain) {
+                    $ProxyUGAddress = $CurUnifiedGroup.EmailAddresses | Where-Object { $_ -notlike $WildCardDomain -and $_ -like "smtp*" }
+                    Write-HostLog -Message "`tDomains Found for O365 Group $($CurUnifiedGroup.PrimarySmtpAddress): $($ProxyUGAddress.count)" -Status "Success"
 
                     if ($ProxyUGAddress.Count -gt '1') {
-                        ForEach ($proxyUG in $ProxyUGAddress) {
+                        ForEach ($CurProxyUGAddress in $ProxyUGAddress) {
                             try {
-                                Set-UnifiedGroup -Identity $O365Group.PrimarySmtpAddress -EmailAddresses @{Remove = $proxyUG} -ErrorAction Stop
-                                Write-HostLog -Message "t`tRemoving $proxyUG" -Status Success
+                                Set-UnifiedGroup -Identity $CurUnifiedGroup.PrimarySmtpAddress -EmailAddresses @{Remove = $CurProxyUGAddress} -ErrorAction Stop
+                                Write-HostLog -Message "t`tRemoving $CurProxyUGAddress" -Status "Success" -Total $Total -Count $i
                             }
                             catch {
-                                Write-HostLog -Message ": FAILED" -Status Failed
+                                Write-HostLog -Message "t`tRemoving $CurProxyUGAddress" -Status "Failed" -Total $Total -Count $i
                             }
                             Start-Sleep -Seconds 2
                         }
-
                     }
                     if ($ProxyUGAddress.count -eq '1') {
                         try {
-                            Set-UnifiedGroup -Identity $O365Group.PrimarySmtpAddress -EmailAddresses @{Remove = $ProxyUGAddress} -ErrorAction Stop
-                            Write-HostLog -Message "`t`tRemoving $ProxyUGAddress" -Status Success
+                            Set-UnifiedGroup -Identity $CurUnifiedGroup.PrimarySmtpAddress -EmailAddresses @{Remove = $ProxyUGAddress} -ErrorAction Stop
+                            Write-HostLog -Message "`t`tRemoving $ProxyUGAddress" -Status "Success" -Total $Total -Count $i
                         }
                         catch {
-                            Write-HostLog -Message "`t`tRemoving $ProxyUGAddress" -Status Failed
+                            Write-HostLog -Message "`t`tRemoving $ProxyUGAddress" -Status "Failed" -Total $Total -Count $i
                         }
                         Start-Sleep -Seconds 2
                     }
@@ -632,39 +585,34 @@
         }
 
         if ($RemoveDLProxy) {
-            $DistributionGroups = Get-DistributionGroup -ResultSize unlimited | Sort-Object -Property PrimarySmtpAddress
-            Write-HostLog -Message "`nTotal Distribution Groups Found: $($DistributionGroups.count)" -Status Success
-            $Count = $DistributionGroups.Count
+            $DistributionGroup = Get-DistributionGroup -ResultSize unlimited | Sort-Object -Property PrimarySmtpAddress
+            Write-HostLog -Message "`nTotal Distribution Groups Found: $($DistributionGroup.count)" -Status "Success"
+            $Total = $DistributionGroup.Count
 
-            ForEach ($DistGroup in $DistributionGroups) {
-                $pct = [int](($i / $Count) * 100)
-                Write-Progress -Activity "Removing proxies for DL" -Status " $($DistGroup.PrimarySmtpAddress) ($i of $Count)" -PercentComplete $pct
-
-                if ($DistGroup.PrimarySmtpAddress -like $RoutingDomain) {
-                    $ProxyDLAddress = $DistGroup.EmailAddresses | Where-Object {
-                        $_ -notlike $WildCardDomain -and $_ -like "smtp*"
-                    }
-                    Write-HostLog -Message "`tDomains Found for DL $($DistGroup.PrimarySmtpAddress): $($ProxyDLAddress.count)" -Status Success
+            ForEach ($CurDistributionGroup in $DistributionGroup) {
+                if ($CurDistributionGroup.PrimarySmtpAddress -like $RoutingDomain) {
+                    $ProxyDLAddress = $CurDistributionGroup.EmailAddresses | Where-Object { $_ -notlike $WildCardDomain -and $_ -like "smtp*" }
+                    Write-HostLog -Message "`tDomains Found for DL $($CurDistributionGroup.PrimarySmtpAddress): $($ProxyDLAddress.count)" -Status "Success"
 
                     if ($ProxyDLAddress.Count -gt '1') {
-                        ForEach ($ProxyDL in $ProxyDLAddress) {
+                        ForEach ($CurProxyDLAddress in $ProxyDLAddress) {
                             try {
-                                Set-DistributionGroup -Identity $DistGroup.PrimarySmtpAddress -EmailAddresses @{Remove = $ProxyDL} -ErrorAction Stop
-                                Write-HostLog -Message "t`tRemoving $ProxyDL" -Status Success
+                                Set-DistributionGroup -Identity $CurDistributionGroup.PrimarySmtpAddress -EmailAddresses @{Remove = $CurProxyDLAddress} -ErrorAction Stop
+                                Write-HostLog -Message "t`tRemoving $CurProxyDLAddress" -Status "Success" -Total $Total -Count $i
                             }
                             catch {
-                                Write-HostLog -Message "t`tRemoving $ProxyDL" -Status Failed
+                                Write-HostLog -Message "t`tRemoving $CurProxyDLAddress" -Status "Failed" -Total $Total -Count $i
                             }
                             Start-Sleep -Seconds 2
                         }
                     }
                     if ($ProxyDLAddress.count -eq '1') {
                         try {
-                            Set-DistributionGroup -Identity $DistGroup.PrimarySmtpAddress -EmailAddresses @{Remove = $ProxyDLAddress} -ErrorAction Stop
-                            Write-HostLog -Message "`t`tRemoving $ProxyDLAddress" -Status Success
+                            Set-DistributionGroup -Identity $CurDistributionGroup.PrimarySmtpAddress -EmailAddresses @{Remove = $ProxyDLAddress} -ErrorAction Stop
+                            Write-HostLog -Message "`t`tRemoving $ProxyDLAddress" -Status "Success" -Total $Total -Count $i
                         }
                         catch {
-                            Write-HostLog -Message "`t`tRemoving $ProxyDLAddress" -Status Failed
+                            Write-HostLog -Message "`t`tRemoving $ProxyDLAddress" -Status "Failed" -Total $Total -Count $i
                         }
                         Start-Sleep -Seconds 2
                     }
