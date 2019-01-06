@@ -201,9 +201,6 @@
         if ($ConfirmCount -eq 'n') {
             $i = 1
             ForEach ($CurMailbox in $Mailbox) {
-                $pct = [int](($i / $Total) * 100)
-                Write-Progress -Activity "Flipping Primary for Mailbox" -Status " $($CurMailbox.PrimarySmtpAddress) ($i of $Total)" -PercentComplete $pct
-
                 if ($CurMailbox.PrimarySmtpAddress -notlike $RoutingDomain) {
                     $NewPrimary = $CurMailbox.PrimarySmtpAddress.Split("@")[0] + $DomainSuffix
                     try {
@@ -349,9 +346,6 @@
                 $Total = $Mailbox.Count
 
                 ForEach ($CurMailbox in $Mailbox) {
-                    $pct = [int](($i / $Total) * 100)
-                    Write-Progress -Activity "Removing PrimarySmtpAddress for Mailbox" -Status " $($CurMailbox.PrimarySmtpAddress) ($i of $Total)" -PercentComplete $pct
-
                     if ($CurMailbox.PrimarySmtpAddress -like $RoutingDomain) {
                         $ProxyAddress = $CurMailbox.EmailAddresses | Where-Object {$_ -notlike $WildCardDomain -and $_ -like "smtp*"}
                         Write-HostLog -Message "`tDomains Found for user $($CurMailbox.PrimarySmtpAddress): $($ProxyAddress.count)" -Status "Success"
@@ -410,9 +404,6 @@
                 $Total = $SplitMailUser.count
 
                 ForEach ($CurMailUser in $SplitMailUser) {
-                    $pct = [int](($i / $Total) * 100)
-                    Write-Progress -Activity "Flipping Primary for MailUser" -Status " $($CurMailUser.PrimarySmtpAddress) ($i of $Total)" -PercentComplete $pct
-
                     if ($CurMailUser.PrimarySmtpAddress -like $RoutingDomain) {
                         $MailUsrProxyAddress = $CurMailUser.EmailAddresses | Where-Object {
                             $_ -notlike $WildCardDomain -and $_ -like "smtp*"
@@ -451,9 +442,6 @@
                 $Total = $MailUser.Count
 
                 ForEach ($CurMailUser in $MailUser) {
-                    $pct = [int](($i / $Total) * 100)
-                    Write-Progress -Activity "Flipping Primary for MailUser" -Status " $($CurMailUser.PrimarySmtpAddress) ($i of $Total)" -PercentComplete $pct
-
                     if ($CurMailUser.PrimarySmtpAddress -like $RoutingDomain) {
                         $MailUsrProxyAddress = $CurMailUser.EmailAddresses | Where-Object {$_ -notlike $WildCardDomain -and $_ -like "smtp*"}
                         Write-HostLog -Message "`tDomains Found for user $($CurMailUser.PrimarySmtpAddress): " -NoNewline; Write-HostLog -Message $($MailUsrProxyAddress.count) -Status "Success"
