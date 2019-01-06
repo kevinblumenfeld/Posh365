@@ -5,7 +5,7 @@ function Write-HostLog {
         [String]$Message,
 
         [Parameter()]
-        [ValidateSet("Success", "Failed", "Information" )]
+        [ValidateSet("Success", "Failed", "Neutral", "Information")]
         [String]$Status = "Information"
 
     )
@@ -13,6 +13,7 @@ function Write-HostLog {
     $_FG = "$_ESC[38;5"
     $_BG = "$_ESC[48;5"
     $_Yellow = "$([char]27)[38;5;11m"
+    $_Cyan = "$([char]27)[1;49;96m"
     $_White = "$([char]27)[38;5;3m"
     $_Red = "$([char]27)[91m"
     $_Green = "$([char]27)[38;5;2m"
@@ -20,6 +21,7 @@ function Write-HostLog {
     switch ($Status) {
         "Success" { $Color = $_Green }
         "Failed" { $Color = $_Red }
+        "Neutral" { $Color = $_Cyan }
         Default { $Color = $_White }
     }
 

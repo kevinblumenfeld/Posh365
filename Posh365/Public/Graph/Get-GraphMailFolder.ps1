@@ -26,21 +26,42 @@ function Get-GraphMailFolder {
             $Headers = @{
                 "Authorization" = "Bearer $Token"
             }
-
+<#
             $RestSplat = @{
                 Uri     = 'https://graph.microsoft.com/beta/users/{0}/mailFolders' -f $Id
                 Headers = $Headers
                 Method  = 'Get'
+            }  
+            $RestSplat = @{
+                Uri     = "https://graph.microsoft.com/beta/users/{0}/mailFolders('{1}')/messages" -f $Id, $WellKnownFolder
+                Headers = $Headers
+                Method  = 'Get'
             }
+            $RestSplat = @{
+                Uri     = "https://graph.microsoft.com/beta/users/{0}/mailFolders('{1}')/childFolders" -f $Id, $WellKnownFolder
+                Headers = $Headers
+                Method  = 'Get'
+            }
+#>
 
+
+            $RestSplat = @{
+                Uri     = "https://graph.microsoft.com/beta/users/{0}/mailFolders/msgfolderroot/childFolders" -f $Id
+                Headers = $Headers
+                Method  = 'Get'
+            }
+            
             do {
                 $Token = Connect-Graph -Tenant $Tenant
                 try {
                     $Response = Invoke-RestMethod @RestSplat -Verbose:$false -ErrorAction Stop
                     $Folder = $Response.value
+                    <#                    
                     if ($WellKnownFolder) {
                         $Folder = $Folder.Where{$_.wellKnownName -eq $WellKnownFolder}
                     }
+                    #>
+
                     if ($Response.'@odata.nextLink' -match 'skip') {
                         $Next = $Response.'@odata.nextLink'
                     }
@@ -65,6 +86,7 @@ function Get-GraphMailFolder {
                             FolderName        = $CurFolder.DisplayName
                             wellKnownName     = $CurFolder.wellKnownName
                             FolderId          = $CurFolder.Id
+                            ParentFolderId    = $CurFolder.parentFolderId
                             nextLink          = $Response.'@odata.nextLink'
                         }
                     }
