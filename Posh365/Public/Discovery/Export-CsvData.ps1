@@ -1,10 +1,10 @@
 ﻿function Export-CsvData {
     <#
 .SYNOPSIS
-Export ProxyAddresses from a CSV and output one per line.  Filtering if desired.  Automatically a csv will be exported.
+Export ProxyAddresses from a CSV and output one per line.  Filtering if desired.
 
 .DESCRIPTION
-Export ProxyAddresses from a CSV and output one per line.  Filtering if desired.  Automatically a csv will be exported.
+Export ProxyAddresses from a CSV and output one per line.  Filtering if desired.
 
 .PARAMETER Row
 Parameter description
