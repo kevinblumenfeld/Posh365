@@ -9,28 +9,25 @@ function Get-ExchangeDistributionGroup {
     .PARAMETER ListofGroups
     Provide a text list of specific groups to report on.  Otherwise, all groups will be reported.
     
-    .PARAMETER ListofGroups
+    .PARAMETER PowerShell2
     Use it for PowerShell version 2
     
     .EXAMPLE
-    Get-EXOGroup | Export-Csv c:\scripts\All365GroupExport.csv -notypeinformation -encoding UTF8
+    Get-ExchangeDistributionGroup | Export-Csv c:\scripts\All365GroupExport.csv -Notypeinformation -Encoding UTF8
     
     .EXAMPLE
-    Get-DistributionGroup -Filter "emailaddresses -like '*contoso.com*'" -ResultSize Unlimited | Select -ExpandProperty Name | Get-EXOGroup | Export-Csv c:\scripts\365GroupExport.csv -notypeinformation -encoding UTF8
+    Get-DistributionGroup -Filter "emailaddresses -like '*contoso.com*'" -ResultSize Unlimited | Select -ExpandProperty Name | Get-ExchangeDistributionGroup | Export-Csv c:\scripts\365GroupExport.csv -Notypeinformation -Encoding UTF8
     
     .EXAMPLE
-    Get-Content "c:\scripts\groups.txt" | Get-EXOGroup | Export-Csv c:\scripts\365GroupExport.csv -notypeinformation -encoding UTF8
+    Get-Content "c:\scripts\groups.txt" | Get-ExchangeDistributionGroup | Export-Csv c:\scripts\365GroupExport.csv -Notypeinformation -Encoding UTF8
     
     Example of groups.txt
     #####################
-
     Group01
     Group02
     Group03
     Accounting Team
-
     #####################
-
     #>
     [CmdletBinding()]
     param (
@@ -166,14 +163,14 @@ function Get-ExchangeDistributionGroup {
         if ($ListofGroups) {
             foreach ($CurGroup in $ListofGroups) {
                 $Members = Get-DistributionGroupMember -Identity $CurGroup -ResultSize Unlimited | Select-Object name, primarysmtpaddress
-                Get-DistributionGroup -identity $CurGroup | Select-Object ($Selectproperties + $CalculatedProps)
+                Get-DistributionGroup -identity $CurGroup  -ResultSize Unlimited | Select-Object ($Selectproperties + $CalculatedProps)
             }
         }
         else {
             $Groups = Get-DistributionGroup -ResultSize unlimited
             foreach ($CurGroup in $Groups) {
                 $Members = Get-DistributionGroupMember -Identity $CurGroup.identity -ResultSize Unlimited | Select-Object name, primarysmtpaddress
-                Get-DistributionGroup -identity $CurGroup.identity | Select-Object ($Selectproperties + $CalculatedProps)
+                Get-DistributionGroup -identity $CurGroup.identity -ResultSize Unlimited | Select-Object ($Selectproperties + $CalculatedProps)
             }
         }
     }
