@@ -10,7 +10,7 @@ function Get-ExchangeDistributionGroup {
     Provide a text list of specific groups to report on.  Otherwise, all groups will be reported.
     
     .PARAMETER ListofGroups
-    Use it for PowerShell 2
+    Use it for PowerShell version 2
     
     .EXAMPLE
     Get-EXOGroup | Export-Csv c:\scripts\All365GroupExport.csv -notypeinformation -encoding UTF8
