@@ -15,6 +15,7 @@ function Clear-SFBAttribute {
     The process to move from On-Premises Skype to Skype for Business Online (where there is not hybrid or transition, contact lists are NOT preserved)
 
     1. Remove Skype for Business Licenses from user(s)
+        Install-Module Posh365 -Force -SkipPublisherCheck  (Run PowerShell as admin. this step is one-time thing)
         Connect-Cloud -tenant Contoso -AzureADver2
         Get-Content .\UpnList.txt | Set-CloudLicense -RemoveOptions    (Select-click all entries named Skype & click OK)
     2. Sync AD Connect
@@ -86,15 +87,19 @@ function Clear-SFBAttribute {
             'msRTCSIP-PrimaryHomeServer', 'msRTCSIP-PrimaryUserAddress', 'msRTCSIP-UserEnabled', 'msExchShadowProxyAddresses', 'msRTCSIP-UserPolicies'
             'msRTCSIP-UserRoutingGroupId', 'DisplayName')
 
+        $Clear = @('msRTCSIP-DeploymentLocator', 'msRTCSIP-FederationEnabled', 'msRTCSIP-InternetAccessEnabled', 'msRTCSIP-OptionFlags'
+            'msRTCSIP-PrimaryHomeServer', 'msRTCSIP-PrimaryUserAddress', 'msRTCSIP-UserEnabled', 'msExchShadowProxyAddresses', 'msRTCSIP-UserPolicies'
+            'msRTCSIP-UserRoutingGroupId')
+
     }
     Process {
         ForEach ($CurUpn in $Upn) {
             $FilterString = "UserPrincipalName -eq '{0}'" -f $CurUpn
             $ADUser = Get-ADUser -Filter $FilterString -properties $Attribute  |  Select-Object ($SelectProperties + $CalculatedProperties)
             if (-not $LogOnly) {
-                foreach ($CurAttribute in $Attribute) {
-                    Write-Verbose "Clearing Current Attribute: $CurAttribute"
-                    Set-ADUser -identity $ADUser.ObjectGuid -clear $CurAttribute
+                foreach ($CurClear in $Clear) {
+                    Write-Verbose "Clearing Current Attribute: $CurClear"
+                    Set-ADUser -identity $ADUser.ObjectGuid -clear $CurClear
                 }
                 $ADUser
             }

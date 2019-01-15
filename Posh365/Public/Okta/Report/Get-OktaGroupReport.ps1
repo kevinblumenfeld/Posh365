@@ -11,6 +11,9 @@ function Get-OktaGroupReport {
         Search currently performs a startsWith match but it should be considered an implementation detail
         and may change without notice in the future. Exact matches will always be returned before partial matches
 
+    .PARAMETER GroupName
+        Searches for groups by exact name
+
     .PARAMETER ID
         Search by Group ID
 
@@ -36,28 +39,29 @@ function Get-OktaGroupReport {
         Get-OktaGroupReport | Export-Csv .\OktaGroups.csv -notypeinformation -Encoding UTF8
 
     .EXAMPLE
-        Get-OktaGroupReport -filter 'profile.name eq "Accounting"'
+        Get-OktaGroupReport -filter 'type eq "APP_GROUP"'
+
+    .EXAMPLE
+        Get-OktaGroupReport -GroupName 'Accounting'
 
     .EXAMPLE
         Get-OktaGroupReport -Id 00u4m2pk9NMihnsWJ356
     #>
-
+    [CmdletBinding(DefaultParameterSetName = 'Id')]
     Param (
-        [Parameter()]
+        [Parameter(ParameterSetName = "SearchString")]
         [string] $SearchString,
 
-        [Parameter()]
+        [Parameter(ParameterSetName = "GroupName")]
+        [string] $GroupName,
+
+        [Parameter(ParameterSetName = "Filter")]
         [string] $Filter,
 
-        [Parameter()]
+        [Parameter(ParameterSetName = "Id")]
         [string] $Id
     )
 
-    if ($SearchString -and $filter -or ($SearchString -and $Id) -or ($Filter -and $Id)) {
-        Write-Warning "Choose between zero and one parameters only"
-        Write-Warning "Please try again"
-        break
-    }
 
     $Url = $OKTACredential.GetNetworkCredential().username
     $Token = $OKTACredential.GetNetworkCredential().Password
@@ -68,7 +72,7 @@ function Get-OktaGroupReport {
         "Content-Type"  = "application/json"
     }
 
-    if (-not $SearchString -and -not $id -and -not $Filter) {
+    if (-not $SearchString -and -not $id -and -not $Filter -and -not $GroupName) {
         $RestSplat = @{
             Uri     = "https://$Url.okta.com/api/v1/groups/?limit=200"
             Headers = $Headers
@@ -77,6 +81,13 @@ function Get-OktaGroupReport {
 
     }
     else {
+        if ($GroupName) {
+            $GroupId = (Get-OktaGroupReport | Where-Object {$_.Name -eq $GroupName}).id
+            foreach ($CurGroupId in $GroupId) {
+                Get-OktaGroupReport -id $CurGroupId
+            }
+            return
+        }
         if ($SearchString) {
             $RestSplat = @{
                 Uri     = "https://$Url.okta.com/api/v1/groups/?limit=200&q=$SearchString"

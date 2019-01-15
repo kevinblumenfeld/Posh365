@@ -59,7 +59,7 @@ function Import-GoogleToEXOGroupMember {
                         ExtendedMessage = 'SUCCESS'
 
                     } | Export-Csv -Path $LogPath -NoTypeInformation -Append
-                    Write-HostLog -Message "Adding to Group`t$($CurGroup.Name)Member`t$($CurMember)" -Status Success
+                    Write-HostLog -Message "Adding to Group`t$($CurGroup.Name)Member`t$($CurMember)" -Status "Success"
                 }
                 catch {
                     $Failure = $_.CategoryInfo.Reason
@@ -85,7 +85,7 @@ function Import-GoogleToEXOGroupMember {
                         ExtendedMessage = $_.Exception.Message
 
                     } | Export-Csv -Path $LogPath -NoTypeInformation -Append
-                    Write-HostLog -Message "Adding to Group`t$($CurGroup.Name)Member`t$CurMember`t$Failure" -Status Failed
+                    Write-HostLog -Message "Adding to Group`t$($CurGroup.Name)Member`t$CurMember`t$Failure" -Status "Failed"
                 }
             }
         }

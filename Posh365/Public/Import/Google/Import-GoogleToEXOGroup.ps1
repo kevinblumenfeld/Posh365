@@ -70,7 +70,7 @@ function Import-GoogleToEXOGroup {
         [Parameter()]
         [ValidateSet('Open', 'Closed')]
         [string] $CAN_REQUEST_TO_JOIN_TranslatesTo,
-    
+
         [Parameter()]
         [ValidateSet('MemberJoinRestrictionTo_Closed', 'MemberJoinRestrictionTo_ApprovalRequired', 'MemberJoinRestrictionTo_Open')]
         [string] $NONE_CAN_ADD_members_Overrides
@@ -118,15 +118,16 @@ function Import-GoogleToEXOGroup {
                     }
                 }
             }
+
             # When "whoCanAdd" is "NONE_CAN_ADD" this overrides any "MemberJoinRestriction"
             if ($NONE_CAN_ADD_members_Overrides) {
                 $MemberJoinRestriction = switch ($NONE_CAN_ADD_members_Overrides) {
-                    'MemberJoinRestrictionTo_Closed'{ 'Closed' } 
-                    'MemberJoinRestrictionTo_ApprovalRequired'{ 'ApprovalRequired' }
-                    'MemberJoinRestrictionTo_Open' { 'Open' } 
+                    'MemberJoinRestrictionTo_Closed' { 'Closed' }
+                    'MemberJoinRestrictionTo_ApprovalRequired' { 'ApprovalRequired' }
+                    'MemberJoinRestrictionTo_Open' { 'Open' }
                 }
             }
-            
+
             # whoCanLeave
             $MemberDepartRestriction = switch ($CurGroup.whoCanLeaveGroup) {
 
@@ -138,6 +139,7 @@ function Import-GoogleToEXOGroup {
             }
 
             $NewHash = @{
+
                 Name                    = $CurGroup.Name
                 DisplayName             = $CurGroup.Name
                 Alias                   = $Alias
@@ -146,6 +148,7 @@ function Import-GoogleToEXOGroup {
                 MemberJoinRestriction   = $MemberJoinRestriction
                 MemberDepartRestriction = $MemberDepartRestriction
                 Notes                   = $CurGroup.Description
+
             }
 
             # Are Owners and/or Managers copied to the Group's Membership?
@@ -211,8 +214,11 @@ function Import-GoogleToEXOGroup {
             }
 
             try {
+
                 $NewDL = New-DistributionGroup @NewSplat -ErrorAction Stop
+
                 [PSCustomObject]@{
+
                     Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                     Result          = 'SUCCESS'
                     Action          = 'CREATING'
@@ -223,10 +229,15 @@ function Import-GoogleToEXOGroup {
                     ExtendedMessage = 'SUCCESS'
 
                 } | Export-Csv -Path $LogPath -NoTypeInformation -Append
-                Write-HostLog -Message "Creating`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status Success
+
+                Write-HostLog -Message "Creating`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status "Success"
+
                 try {
+
                     Set-DistributionGroup @SetSplat -ErrorAction Stop -WarningAction SilentlyContinue
+
                     [PSCustomObject]@{
+
                         Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                         Result          = 'SUCCESS'
                         Action          = 'SETTING'
@@ -237,11 +248,14 @@ function Import-GoogleToEXOGroup {
                         ExtendedMessage = 'SUCCESS'
 
                     } | Export-Csv -Path $LogPath -NoTypeInformation -Append
-                    Write-HostLog -Message "Setting`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status Success
+
+                    Write-HostLog -Message "Setting`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status "Failed"
+
                 }
                 catch {
                     $Failure = $_.CategoryInfo.Reason
                     [PSCustomObject]@{
+
                         Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                         Result          = 'FAILURE'
                         Action          = 'SETTING'
@@ -252,6 +266,9 @@ function Import-GoogleToEXOGroup {
                         ExtendedMessage = $_.Exception.Message
 
                     } | Export-Csv -Path $LogPath -NoTypeInformation -Append
+
+                    Write-HostLog -Message "Setting`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status "Success"
+
                 }
             }
             catch {
@@ -274,7 +291,9 @@ function Import-GoogleToEXOGroup {
                     ExtendedMessage = $_.Exception.Message
 
                 } | Export-Csv -Path $LogPath -NoTypeInformation -Append
-                Write-HostLog -Message "Creating`t$($CurGroup.Name)`t$Failure" -Status Failed
+
+                Write-HostLog -Message "Creating`t$($CurGroup.Name)`t$Failure" -Status "Failed"
+
             }
         }
     }
