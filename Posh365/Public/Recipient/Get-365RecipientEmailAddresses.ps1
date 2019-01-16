@@ -1,24 +1,24 @@
-function Get-365RecipientEmailAddresses { 
+function Get-365RecipientEmailAddresses {
     <#
     .SYNOPSIS
     Export Office 365 Recipients Email Addresses
-    
+
     .DESCRIPTION
     Export Office 365 Recipients Email Addresses one per line
-    
+
     .PARAMETER SpecificRecipients
     Provide specific Recipients to report on.  Otherwise, all Recipients will be reported.  Please review the examples provided.
 
     .EXAMPLE
     Get-365RecipientEmailAddresses | Export-Csv c:\scripts\All365RecipientEmails.csv -notypeinformation -encoding UTF8
-    
+
     .EXAMPLE
-    '{UserPrincipalName -like "*contoso.com" -or 
-        emailaddresses -like "*contoso.com" -or 
-        ExternalEmailAddress -like "*contoso.com" -or 
+    '{UserPrincipalName -like "*contoso.com" -or
+        emailaddresses -like "*contoso.com" -or
+        ExternalEmailAddress -like "*contoso.com" -or
         PrimarySmtpAddress -like "*contoso.com"}' | Get-365RecipientEmailAddresses | Export-Csv .\RecipientReport.csv -notypeinformation -encoding UTF8
     .EXAMPLE
-    
+
 
     #>
     [CmdletBinding()]
@@ -29,11 +29,11 @@ function Get-365RecipientEmailAddresses {
     )
     Begin {
         $Selectproperties = @(
-            'RecipientTypeDetails', 'DisplayName', 'Alias', 'Identity', 'PrimarySmtpAddress'              
+            'RecipientTypeDetails', 'DisplayName', 'Alias', 'Identity', 'PrimarySmtpAddress'
         )
 
         $CalculatedProps = @(
-            @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join ";" }}
+            @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join '|' }}
         )
     }
     Process {
@@ -44,14 +44,14 @@ function Get-365RecipientEmailAddresses {
         }
         else {
             Get-Recipient -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps) | ForEach-Object {
-                
+
                 $DisplayName = $_.DisplayName
                 $Identity = $_.Identity
                 $Alias = $_.Alias
                 $PrimarySmtpAddress = $_.PrimarySmtpAddress
                 $RecipientTypeDetails = $_.RecipientTypeDetails
 
-                $_.EmailAddresses -split ";" | ForEach-Object {
+                $_.EmailAddresses -split [regex]::Escape('|') | ForEach-Object {
                     [PSCustomObject]@{
                         DisplayName          = $DisplayName
                         Identity             = $Identity
@@ -65,6 +65,6 @@ function Get-365RecipientEmailAddresses {
         }
     }
     End {
-        
+
     }
 }

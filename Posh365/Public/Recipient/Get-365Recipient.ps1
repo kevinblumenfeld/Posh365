@@ -1,27 +1,27 @@
-function Get-365Recipient { 
+function Get-365Recipient {
     <#
     .SYNOPSIS
     Export Office 365 Recipients
-    
+
     .DESCRIPTION
     Export Office 365 Recipients
-    
+
     .PARAMETER SpecificRecipients
     Provide specific Recipients to report on.  Otherwise, all Recipients will be reported.  Please review the examples provided.
-    
+
     .PARAMETER DetailedReport
     Provides a full report of all attributes.  Otherwise, only a refined report will be given.
-    
+
     .EXAMPLE
     Get-365Recipient | Export-Csv c:\scripts\All365Recipients.csv -notypeinformation -encoding UTF8
-    
+
     .EXAMPLE
-    '{UserPrincipalName -like "*contoso.com" -or 
-        emailaddresses -like "*contoso.com" -or 
-        ExternalEmailAddress -like "*contoso.com" -or 
+    '{UserPrincipalName -like "*contoso.com" -or
+        emailaddresses -like "*contoso.com" -or
+        ExternalEmailAddress -like "*contoso.com" -or
         PrimarySmtpAddress -like "*contoso.com"}' | Get-365Recipient | Export-Csv .\RecipientReport.csv -notypeinformation -encoding UTF8
     .EXAMPLE
-    
+
 
     #>
     [CmdletBinding()]
@@ -106,7 +106,7 @@ function Get-365Recipient {
                 @{n = "ProtocolSettings" ; e = {($_.ProtocolSettings | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "ResourceCustom" ; e = {($_.ResourceCustom | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "UMDtmfMap" ; e = {($_.UMDtmfMap | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join '|' }},
                 @{n = "MailboxLocations" ; e = {($_.MailboxLocations | Where-Object {$_ -ne $null}) -join ";" }}
             )
         }
@@ -115,11 +115,11 @@ function Get-365Recipient {
                 'RecipientTypeDetails', 'Name', 'DisplayName', 'Office', 'Alias', 'Identity', 'PrimarySmtpAddress', 'UserPrincipalName'
                 'WindowsEmailAddress', 'WindowsLiveID', 'ForwardingAddress', 'ForwardingSmtpAddress', 'LitigationHoldEnabled', 'LitigationHoldDuration'
                 'LitigationHoldDate', 'DeliverToMailboxAndForward', 'IsDirSynced', 'RequireSenderAuthenticationEnabled', 'RetentionHoldEnabled'
-                'SingleItemRecoveryEnabled'                
+                'SingleItemRecoveryEnabled'
             )
 
             $CalculatedProps = @(
-                @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join '|' }},
                 @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = {($_.AcceptMessagesOnlyFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "RejectMessagesFromSendersOrMembers" ; e = {($_.RejectMessagesFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "ArchiveName" ; e = {($_.ArchiveName | Where-Object {$_ -ne $null}) -join ";" }},
@@ -138,6 +138,6 @@ function Get-365Recipient {
         }
     }
     End {
-        
+
     }
 }

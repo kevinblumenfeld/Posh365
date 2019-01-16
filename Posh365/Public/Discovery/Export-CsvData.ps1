@@ -80,44 +80,47 @@ import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresse
 
         [Parameter(Mandatory = $true)]
         [ValidateSet("ProxyAddresses", "EmailAddresses", "EmailAddress", "AddressOrMember", "x500", "UserPrincipalName", "PrimarySmtpAddress", "MembersName", "Member", "Members", "MemberOf")]
-        [String]$FindInColumn,
+        [String] $FindInColumn,
 
         [Parameter()]
-        [String[]]$Match,
+        [String[]] $Match,
 
         [Parameter()]
-        [String[]]$caseMatch,
+        [String[]] $caseMatch,
 
         [Parameter()]
-        [String[]]$matchAnd,
+        [String[]] $matchAnd,
 
         [Parameter()]
-        [String[]]$caseMatchAnd,
+        [String[]] $caseMatchAnd,
 
         [Parameter()]
-        [String[]]$MatchNot,
+        [String[]] $MatchNot,
 
         [Parameter()]
-        [String[]]$caseMatchNot,
+        [String[]] $caseMatchNot,
 
         [Parameter()]
-        [String[]]$MatchNotAnd,
+        [String[]] $MatchNotAnd,
 
         [Parameter()]
-        [String[]]$caseMatchNotAnd,
+        [String[]] $caseMatchNotAnd,
 
         [Parameter()]
-        [string]$Domain,
+        [string] $Domain,
 
         [Parameter()]
-        [string]$NewDomain,
+        [string] $NewDomain,
 
         [Parameter()]
-        [switch]$StripPrefix,
+        [switch] $StripPrefix,
 
         [Parameter()]
         [ValidateSet("SMTP:", "smtp:", "SIP:", "sip:", "x500:")]
-        [string]$AddPrefix,
+        [string] $AddPrefix,
+
+        [Parameter()]
+        [string] $Delimiter = '|',
 
         [Parameter(ValueFromPipeline = $true, Mandatory = $true)]
         $Row
@@ -181,11 +184,11 @@ import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresse
             $msExchRecipientTypeDetails = $CurRow.msExchRecipientTypeDetails
             $mail = $CurRow.mail
             if ($filter) {
-                $Address = $CurRow."$FindInColumn" -split ";" | Where-Object $filter
+                $Address = $CurRow."$FindInColumn" -split [regex]::Escape($Delimiter)| Where-Object $filter
                 Write-Verbose "Filtered Address: $Address"
             }
             else {
-                $Address = $CurRow.EmailAddresses -split ";"
+                $Address = $CurRow.EmailAddresses -split [regex]::Escape($Delimiter)
             }
             if ($Domain) {
                 $Address = $Address | ForEach-Object {
@@ -205,7 +208,7 @@ import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresse
             $AllProxyAddresses = $($CurRow."$FindInColumn")
 
             if ((-not [String]::IsNullOrWhiteSpace($AllProxyAddresses)) -and ([String]::IsNullOrWhiteSpace($PrimarySmtpAddress))) {
-                $PrimarySmtpAddress = $CurRow."$FindInColumn" -split ";" | Where-Object {$_ -cmatch 'SMTP:'}
+                $PrimarySmtpAddress = $CurRow."$FindInColumn" -split [regex]::Escape($Delimiter)| Where-Object {$_ -cmatch 'SMTP:'}
             }
             if ($PrimarySmtpAddress -cmatch 'SMTP:') {
                 $PrimaryTrimmed = $PrimarySmtpAddress.Substring(5)

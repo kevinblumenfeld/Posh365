@@ -1,20 +1,20 @@
-function Get-ActiveDirectoryContact { 
+function Get-ActiveDirectoryContact {
     <#
     .SYNOPSIS
     Export Active Directory Contacts
-    
+
     .DESCRIPTION
     Export Active Directory Contacts
-    
+
     .PARAMETER SpecificOU
     Provide specific OU(s) from where to pull.  Otherwise, all AD Contacts will be reported.  Please review the examples provided.
-    
+
     .PARAMETER IncludeSubOUs
     Switch to include sub OU(s) if SpecificOU is specified.  Otherwise, just the single OU will be included.
 
     .EXAMPLE
     Get-ActiveDirectoryContact | Export-Csv c:\scripts\ADContacts.csv -notypeinformation -encoding UTF8
-    
+
     .EXAMPLE
     "OU=CONTACTS,OU=CORP,DC=corp,DC=ad,DC=contoso,DC=com" | Get-ActiveDirectoryContact -IncludeSubOUs| Export-Csv c:\scripts\ADContacts.csv -notypeinformation -encoding UTF8
 
@@ -23,7 +23,7 @@ function Get-ActiveDirectoryContact {
 
     .EXAMPLE
     "OU=CONTACTS,OU=CORP,DC=corp,DC=ad,DC=contoso,DC=com", "OU=AnotherOUofContacts,OU=CORP,DC=corp,DC=ad,DC=contoso,DC=com" | Get-ActiveDirectoryContact | Export-Csv c:\scripts\TwoOUsofContacts.csv -notypeinformation -encoding UTF8
-    
+
     #>
     [CmdletBinding()]
     param (
@@ -33,7 +33,7 @@ function Get-ActiveDirectoryContact {
 
         [Parameter(ValueFromPipeline = $true, Mandatory = $false)]
         [switch] $IncludeSubOUs
-        
+
     )
     Begin {
         $Props = @(
@@ -46,7 +46,7 @@ function Get-ActiveDirectoryContact {
             'mailnickname', 'proxyAddresses', 'msExchRecipientDisplayType'
             'msExchRecipientTypeDetails', 'msExchRemoteRecipientType', 'info'
         )
-    
+
         $Selectproperties = @(
             'DisplayName', 'name', 'initials', 'sn', 'Title', 'Department', 'Division'
             'Company', 'EmployeeID', 'EmployeeNumber', 'Description', 'GivenName', 'StreetAddress'
@@ -56,10 +56,10 @@ function Get-ActiveDirectoryContact {
             'legacyExchangeDN', 'mail', 'msExchRecipientDisplayType', 'msExchRecipientTypeDetails'
             'msExchRemoteRecipientType', 'info', 'CanonicalName'
         )
-    
+
         $CalculatedProps = @(
             @{n = "OU" ; e = {$_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'}},
-            @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join ";" }}
+            @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join '|' }}
         )
     }
     Process {
@@ -72,12 +72,12 @@ function Get-ActiveDirectoryContact {
                     Get-ADObject -LDAPFilter "objectClass=Contact" -Properties $Props -SearchBase $CurSpecificOU -SearchScope OneLevel -ResultSetSize $null | Select-Object ($Selectproperties + $CalculatedProps)
                 }
             }
-        }     
+        }
         else {
             Get-ADObject -LDAPFilter "objectClass=Contact" -Properties $Props -ResultSetSize $null | Select-Object ($Selectproperties + $CalculatedProps)
-        }     
+        }
     }
     End {
-        
+
     }
 }

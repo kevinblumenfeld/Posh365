@@ -1,30 +1,30 @@
-function Get-365MsolUser { 
+function Get-365MsolUser {
     <#
     .SYNOPSIS
     Export Office 365 MsolUsers
-    
+
     .DESCRIPTION
     Export Office 365 MsolUsers
-    
+
     .PARAMETER DomainFilter
     Specifies the domain to filter results on. This must be a verified domain for the company.
     All users with an email address, primary or secondary, on this domain is returned.
-    
+
     .PARAMETER DetailedReport
     Provides a full report of all attributes.  Otherwise, only a refined report will be given.
-    
+
     .EXAMPLE
     Get-365MsolUser | Export-Csv c:\scripts\All365MsolUsers.csv -notypeinformation -encoding UTF8
-    
+
     .EXAMPLE
     Get-365MsolUser -DetailedReport | Export-Csv c:\scripts\All365MsolUsers.csv -notypeinformation -encoding UTF8
-        
+
     .EXAMPLE
     'contoso.com','fabrikam.com' | Get-365MsolUser -DetailedReport| Export-Csv c:\scripts\365MsolUsers.csv -notypeinformation -encoding UTF8
-    
+
     .EXAMPLE
     'contoso.com','fabrikam.com' | Get-365MsolUser | Export-Csv c:\scripts\365MsolUsers.csv -notypeinformation -encoding UTF8
-    
+
     #>
     [CmdletBinding()]
     param (
@@ -56,12 +56,12 @@ function Get-365MsolUser {
                 @{n = "Licenses" ; e = {($_.Licenses | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "OverallProvisioningStatus" ; e = {($_.OverallProvisioningStatus | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "PortalSettings" ; e = {($_.PortalSettings | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ProxyAddresses" ; e = {($_.ProxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join '|' }},
                 @{n = "ServiceInformation" ; e = {($_.ServiceInformation | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "StrongAuthenticationMethods" ; e = {($_.StrongAuthenticationMethods | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "StrongAuthenticationPhoneAppDetails" ; e = {($_.StrongAuthenticationPhoneAppDetails | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "StrongAuthenticationRequirements" ; e = {($_.StrongAuthenticationRequirements | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "StrongAuthenticationUserDetails" ; e = {($_.StrongAuthenticationUserDetails | Where-Object {$_ -ne $null}) -join ";" }}                              
+                @{n = "StrongAuthenticationUserDetails" ; e = {($_.StrongAuthenticationUserDetails | Where-Object {$_ -ne $null}) -join ";" }}
             )
         }
         else {
@@ -72,7 +72,7 @@ function Get-365MsolUser {
             )
 
             $CalculatedProps = @(
-                @{n = "ProxyAddresses" ; e = {($_.ProxyAddresses | Where-Object {$_ -ne $null}) -join ";" }}
+                @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join '|' }}
             )
         }
     }
@@ -87,6 +87,6 @@ function Get-365MsolUser {
         }
     }
     End {
-        
+
     }
 }

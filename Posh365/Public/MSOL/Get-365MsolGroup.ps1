@@ -1,26 +1,26 @@
-function Get-365MsolGroup { 
+function Get-365MsolGroup {
     <#
     .SYNOPSIS
     Export Office 365 MsolGroups
-    
+
     .DESCRIPTION
     Export Office 365 MsolGroups
-    
+
     .PARAMETER SpecificMsolGroups
     Provide specific MsolGroups to report on.  Otherwise, all MsolGroups will be reported.  Please review the examples provided.
-    
+
     .PARAMETER DetailedReport
     Provides a full report of all attributes.  Otherwise, only a refined report will be given.
-    
+
     .EXAMPLE
     Get-365MsolGroup | Export-Csv c:\scripts\All365MsolGroups.csv -notypeinformation -encoding UTF8
-    
+
     .EXAMPLE
     Get-MsolGroup -All | Where-Object {$_.proxyaddresses -like "*contoso.com"} | Select -ExpandProperty ObjectId | Get-365MsolGroup | Export-Csv c:\scripts\365MsolGroups.csv -notypeinformation -encoding UTF8
-        
+
     .EXAMPLE
     Get-Content "c:\scripts\ObjectIDs.txt" | Get-365MsolGroup | Export-Csv c:\scripts\365MsolGroupExport.csv -notypeinformation -encoding UTF8
-    
+
     Example of ObjectIDs.txt
     #####################
 
@@ -53,8 +53,8 @@ function Get-365MsolGroup {
                 @{n = "LastDirSyncTime" ; e = {($_.LastDirSyncTime | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "Licenses" ; e = {($_.Licenses | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "ObjectId" ; e = {($_.ObjectId | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ProxyAddresses" ; e = {($_.ProxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ValidationStatus" ; e = {($_.ValidationStatus | Where-Object {$_ -ne $null}) -join ";" }}                                             
+                @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join '|' }},
+                @{n = "ValidationStatus" ; e = {($_.ValidationStatus | Where-Object {$_ -ne $null}) -join ";" }}
             )
         }
         else {
@@ -65,7 +65,7 @@ function Get-365MsolGroup {
             $CalculatedProps = @(
                 @{n = "GroupType" ; e = {($_.GroupType | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "LastDirSyncTime" ; e = {($_.LastDirSyncTime | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ProxyAddresses" ; e = {($_.ProxyAddresses | Where-Object {$_ -ne $null}) -join ";" }}
+                @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join '|' }}
             )
         }
     }
@@ -80,6 +80,6 @@ function Get-365MsolGroup {
         }
     }
     End {
-        
+
     }
 }

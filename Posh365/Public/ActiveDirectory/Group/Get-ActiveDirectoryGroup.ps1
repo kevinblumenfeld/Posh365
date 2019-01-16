@@ -1,23 +1,23 @@
-function Get-ActiveDirectoryGroup { 
+function Get-ActiveDirectoryGroup {
     <#
     .SYNOPSIS
     Export Office 365 Distribution Groups & Mail-Enabled Security Groups
-    
+
     .DESCRIPTION
     Export Office 365 Distribution & Mail-Enabled Security Groups
-    
+
     .PARAMETER ListofGroups
     Provide a text list of specific groups to report on.  Otherwise, all groups will be reported.
-    
+
     .EXAMPLE
     Get-ActiveDirectoryGroup | Export-Csv c:\scripts\All365GroupExport.csv -notypeinformation -encoding UTF8
-    
+
     .EXAMPLE
     Get-ADGroup -Filter "emailaddresses -like '*contoso.com*'" -ResultSize Unlimited | Select -ExpandProperty Name | Get-ActiveDirectoryGroup | Export-Csv c:\scripts\365GroupExport.csv -notypeinformation -encoding UTF8
-    
+
     .EXAMPLE
     Get-Content "c:\scripts\groups.txt" | Get-ActiveDirectoryGroup | Export-Csv c:\scripts\365GroupExport.csv -notypeinformation -encoding UTF8
-    
+
     Example of groups.txt
     #####################
 
@@ -57,7 +57,7 @@ function Get-ActiveDirectoryGroup {
             'ProtectedFromAccidentalDeletion', 'SamAccountName', 'sAMAccountType', 'sDRightsEffective', 'isCriticalSystemObject'
         )
         $CalculatedProps2 = @(
-            @{n = "ProxyAddresses" ; e = {($_.ProxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
+            @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join '|' }},
             @{n = "x500" ; e = {"x500:" + $_.LegacyExchangeDN}},
             @{n = "Member" ; e = {($_.Members | Where-Object {$_ -ne $null}) -join ";"}},
             @{n = "MemberOf" ; e = {($_.MemberOf | Where-Object {$_ -ne $null}) -join ";"}},
@@ -89,6 +89,6 @@ function Get-ActiveDirectoryGroup {
         }
     }
     End {
-        
+
     }
 }

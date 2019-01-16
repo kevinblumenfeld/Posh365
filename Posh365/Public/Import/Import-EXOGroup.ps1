@@ -1,14 +1,14 @@
-function Import-EXOGroup { 
+function Import-EXOGroup {
     <#
     .SYNOPSIS
     Import Office 365 Distribution Groups
-    
+
     .DESCRIPTION
     Import Office 365 Distribution Groups
-    
+
     .PARAMETER Groups
     CSV of new groups and attributes to create.
-    
+
     .EXAMPLE
     Import-Csv .\importgroups.csv | Import-EXOGroup
 
@@ -16,7 +16,7 @@ function Import-EXOGroup {
     #>
 
     [CmdletBinding()]
-    Param 
+    Param
     (
         [Parameter(Mandatory = $true,
             ValueFromPipeline = $true)]
@@ -40,7 +40,7 @@ function Import-EXOGroup {
                 PrimarySmtpAddress                 = $CurGroup.PrimarySmtpAddress
                 RequireSenderAuthenticationEnabled = [bool]::Parse($CurGroup.RequireSenderAuthenticationEnabled)
                 SendModerationNotifications        = $CurGroup.SendModerationNotifications
-            }            
+            }
             $sethash = @{
                 CustomAttribute1                  = $CurGroup.CustomAttribute1
                 CustomAttribute10                 = $CurGroup.CustomAttribute10
@@ -71,7 +71,7 @@ function Import-EXOGroup {
                 if ($($newhash.item($h))) {
                     $newparams.add($h, $($newhash.item($h)))
                 }
-            }            
+            }
             $setparams = @{}
             ForEach ($h in $sethash.keys) {
                 if ($($sethash.item($h))) {
@@ -173,7 +173,7 @@ function Import-EXOGroup {
                 }
             }
             if ($CurGroup.EmailAddresses) {
-                $CurGroup.EmailAddresses -Split ";" | Where-Object {!($_ -clike "SMTP:*")} | ForEach-Object {
+                $CurGroup.EmailAddresses -split [regex]::Escape('|') | Where-Object {!($_ -clike "SMTP:*")} | ForEach-Object {
                     Set-DistributionGroup -Identity $CurGroup.Identity -emailaddresses @{Add = "$_"}
                 }
             }
@@ -189,6 +189,6 @@ function Import-EXOGroup {
         }
     }
     End {
-        
+
     }
 }

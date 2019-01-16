@@ -1,20 +1,20 @@
-function Get-EXOMailContact { 
+function Get-EXOMailContact {
     <#
     .SYNOPSIS
     Export Office 365 Mail Contacts
-    
+
     .DESCRIPTION
     Export Office 365 Mail Contacts
-    
+
     .PARAMETER Filter
     Provide specific Mail Contacts to report on.  Otherwise, all Mail Contacts will be reported.  Please review the examples provided.
 
     .EXAMPLE
     Get-EXOMailContact | Export-Csv c:\scripts\All365MailContacts.csv -notypeinformation -encoding UTF8
-    
+
     .EXAMPLE
     '{emailaddresses -like "*contoso.com"}' | Get-EXOMailContact | Export-Csv c:\scripts\365MailContacts.csv -notypeinformation -encoding UTF8
-    
+
     #>
     [CmdletBinding()]
     param (
@@ -58,7 +58,7 @@ function Get-EXOMailContact {
             @{n = "PoliciesExcluded" ; e = {($_.PoliciesExcluded | Where-Object {$_ -ne $null}) -join ";" }},
             @{n = "PoliciesIncluded" ; e = {($_.PoliciesIncluded | Where-Object {$_ -ne $null}) -join ";" }},
             @{n = "UMDtmfMap" ; e = {($_.UMDtmfMap | Where-Object {$_ -ne $null}) -join ";" }},
-            @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join ";" }}       
+            @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join '|' }}
         )
     }
     Process {
@@ -72,6 +72,6 @@ function Get-EXOMailContact {
         }
     }
     End {
-        
+
     }
 }

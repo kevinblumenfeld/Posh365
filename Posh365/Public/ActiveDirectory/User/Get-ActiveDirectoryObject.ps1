@@ -1,32 +1,32 @@
-function Get-ActiveDirectoryObject { 
+function Get-ActiveDirectoryObject {
     <#
     .SYNOPSIS
     Export Active Directory Objects
-    
+
     .DESCRIPTION
     Export Active Directory Objects
-    
+
     .PARAMETER ADObjectFilter
     Provide specific AD Objects to report on.  Otherwise, all AD Objects will be reported.  Please review the examples provided.
-    
+
     .PARAMETER DetailedReport
     Provides a full report of all attributes.  Otherwise, only a refined report will be given.
-    
+
     .EXAMPLE
     Get-ActiveDirectoryObject | Export-Csv c:\scripts\ADObjects.csv -notypeinformation -encoding UTF8
-    
+
     .EXAMPLE
     Get-ActiveDirectoryObject | Export-Csv c:\scripts\ADObjects.csv -notypeinformation -encoding UTF8
-    
+
     .EXAMPLE
     {objectclass -eq "publicFolder"} | Get-ActiveDirectoryObject -DetailedReport | Export-Csv .\PFs.csv -NoTypeInformation -Encoding UTF8
-    
+
     .EXAMPLE
     '{proxyaddresses -like "*contoso.com"}' | Get-ActiveDirectoryObject | Export-Csv c:\scripts\ADObjects.csv -notypeinformation -encoding UTF8
-    
+
     .EXAMPLE
     '{proxyaddresses -like "*contoso.com"}' | Get-ActiveDirectoryObject -DetailedReport | Export-Csv c:\scripts\ADObjects_Detailed.csv -notypeinformation -encoding UTF8
-    
+
     #>
     [CmdletBinding()]
     param (
@@ -64,7 +64,7 @@ function Get-ActiveDirectoryObject {
 
             $CalculatedProps = @(
                 @{n = "OU" ; e = {$_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'}},
-                @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join '|' }},
                 @{n = "altRecipientBL" ; e = {($_.altRecipientBL | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "AuthenticationPolicy" ; e = {($_.AuthenticationPolicy | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "AuthenticationPolicySilo" ; e = {($_.AuthenticationPolicySilo | Where-Object {$_ -ne $null}) -join ";" }},
@@ -105,9 +105,9 @@ function Get-ActiveDirectoryObject {
                 'MobilePhone', 'HomePhone', 'Fax', 'SamAccountName', 'DistinguishedName', 'Office', 'Enabled'
                 'whenChanged', 'whenCreated', 'adminCount'
             )
-            
+
             $CalculatedProps = @(
-                @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join '|' }},
                 @{n = "OU" ; e = {$_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'}},
                 @{n = "MemberOf" ; e = {($_.MemberOf | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "msExchPoliciesExcluded" ; e = {($_.msExchPoliciesExcluded | Where-Object {$_ -ne $null}) -join ";" }}
@@ -135,6 +135,6 @@ function Get-ActiveDirectoryObject {
         }
     }
     End {
-        
+
     }
 }

@@ -1,4 +1,4 @@
-function Import-ADUserProxyAddress { 
+function Import-ADUserProxyAddress {
     <#
     .SYNOPSIS
     Import ProxyAddresses into Active Directory from a CSV file.
@@ -10,60 +10,60 @@ function Import-ADUserProxyAddress {
 
     .PARAMETER LogOnly
     Always use this parameter to show a "WHAT IF" scenario prior to using in production.  It creates a file in the directory from which you executed this script.
-    
+
     .PARAMETER FindADUserBy
     This uses the AD Attributes named either: "Mail", "UserPrincipalName", or "DisplayName".
     When finding the AD user by "Mail" attribute the script looks in the CSV for the column headers ProxyAddresses, Mail then WindowsEmailAddress.
     The script matches against the first mail attribute with the value it finds in the first column (in the CSV) that has data.
     So if ProxyAddresses column has data, Mail and WindowsEmailAddress columns will not be considered.
-    
+
     .PARAMETER FindAddressInColumn
     In the CSV passed the function will look in one of these columns to find the email addresses to be added, "ProxyAddresses", "EmailAddresses", "x500"
     These are the addresses that get populated into AD's ProxyAddresses column.
-    
+
     .PARAMETER Match
     This matches one or more items when looking at email addresses.  This uses the logic operator OR.
     For example -Match @("smtp:","onmicrosoft.com") means it will find all attributes that match smtp: OR onmicrosoft.com
-    
+
     .PARAMETER caseMatch
     Same as Match parameter but case sensitive
-    
+
     .PARAMETER matchAnd
     The same as Match parameter but uses the AND logic operator
-    
+
     .PARAMETER caseMatchAnd
     The same as matchAnd parameter but case sensitive
-    
+
     .PARAMETER MatchNot
     The same as Match but with the comparison operator of NOT.  Uses logic operator of OR.
     For example -MatchNot @("smtp:","onmicrosoft.com") means it will find all attributes that DO NOT MATCH smtp: OR onmicrosoft.com
-    
+
     .PARAMETER caseMatchNot
     The same as MatchNot but case sensitive
-    
+
     .PARAMETER MatchNotAnd
     The same as MatchNot but with the logic operator of AND.
-    
+
     .PARAMETER caseMatchNotAnd
     The same as MatchNotAnd but case sensitive
-    
+
     .PARAMETER FirstClearAllProxyAddresses
     Use this with caution as it will completely clear out all the addresses in the ProxyAddresses AD Attribute
-    
+
     .PARAMETER UpdateUPN
     Looks for the primarySMTPAddress (SMTP:) in either proxyaddresses or emailaddresses column (depends on your selection with -FindAddressInColumn parameter)
     and uses that to update the AD User's UserPrincipalName
-    
+
     .PARAMETER UpdateEmailAddress
     Looks for the primarySMTPAddress (SMTP:) in either proxyaddresses or emailaddresses column (depends on your selection with -FindAddressInColumn parameter)
     and uses that to update the AD User's MAIL attribute
-    
+
     .PARAMETER Domain
     Use to modify what you are importing into 1 or more of the following attributes (depends on if you use -updateUPN or -UpdateEmailAddress)
     1. proxyaddresses
     2. UserPrincipalName
     3. Mail
-    
+
     It looks for the domain (or any string for that matter) you specify in this attribute and replaces it with the NewDomain Attribute
 
     .PARAMETER NewDomain
@@ -71,38 +71,38 @@ function Import-ADUserProxyAddress {
     1. proxyaddresses
     2. UserPrincipalName
     3. Mail
-    
+
     It looks for the domain (or any string for that matter) you specify in the Domain attribute and replaces it with the domain (or any string) from this parameter, NewDomain.
-    
+
     .PARAMETER Row
     Each Row imported via CSV.  Use the method to pass the rows via pipeline instead of this parameter.
-    
+
     .PARAMETER JoinType
     This joins all the elements for the filter string together. Either AND or OR.
 
-        AND or OR are the options here.  This decides if the filter is 
+        AND or OR are the options here.  This decides if the filter is
 
     (foo -eq 'bar' -or bar -eq 'foo') -AND (foo -eq 'bar' -or bar -eq 'foo')
                                         or
     (foo -eq 'bar' -or bar -eq 'foo') -OR (foo -eq 'bar' -or bar -eq 'foo')
 
     The DEFAULT is AND
-    
+
     .EXAMPLE
     Import-Csv .\mbxs.csv | Import-ADUserProxyAddress -FindADUserBy DisplayName -FindAddressInColumn EmailAddresses -Match "contoso.com"
 
     .EXAMPLE
     Import-Csv .\mbxs.csv | Import-ADUserProxyAddress -FindADUserBy DisplayName -FindAddressInColumn EmailAddresses -caseMatch "SMTP:"
-    
+
     .EXAMPLE
     Import-Csv .\mbxs.csv | Import-ADUserProxyAddress -FindADUserBy DisplayName -FindAddressInColumn ProxyAddresses -caseNotMatch "SMTP:"
-    
+
     .EXAMPLE
     Import-Csv .\mbxs.csv | Import-ADUserProxyAddress -FindADUserBy DisplayName -FindAddressInColumn x500 -Match x500
-        
+
     .EXAMPLE
     Import-Csv .\mbxs.csv | Import-ADUserProxyAddress -FindADUserBy DisplayName -FindAddressInColumn ProxyAddresses -Match @("smtp:","onmicrosoft.com") -UpdateUPN -UpdateEmailAddress
-        
+
     .EXAMPLE
     Import-Csv .\mbxs.csv | Import-ADUserProxyAddress -FindADUserBy DisplayName -FindAddressInColumn ProxyAddresses -Match "^(smtp|x500|sip):" -notMatchAnd "@(contoso\.com|contoso\.mail\.onmicrosoft\.com|contoso\.onmicrosoft\.com)$" -UpdateUPN -UpdateEmailAddress
 
@@ -111,7 +111,7 @@ function Import-ADUserProxyAddress {
 
     .EXAMPLE
     Import-Csv .\addys.csv | Import-ADUserProxyAddress -caseMatch "brann" -MatchNotAnd @("JAIME","John") -JoinType and
-    
+
     .EXAMPLE
     Import-Csv .\csv.csv | Import-ADUserProxyAddress -caseMatch "Harry Franklin" -MatchNotAnd @("JAIME","John") -JoinType or
 
@@ -154,16 +154,16 @@ function Import-ADUserProxyAddress {
 
         [Parameter()]
         [String[]]$caseMatchNot,
-        
+
         [Parameter()]
         [String[]]$MatchNotAnd,
 
         [Parameter()]
         [String[]]$caseMatchNotAnd,
-        
+
         [Parameter()]
         [Switch]$FirstClearAllProxyAddresses,
-        
+
         [Parameter()]
         [Switch]$UpdateUPN,
 
@@ -207,7 +207,7 @@ function Import-ADUserProxyAddress {
             else {
                 $logicOperator = ' -or '
             }
-            
+
             $comparisonOperator = switch ($_) {
                 { $_.StartsWith('case') } { '-cmatch' }
                 default { '-match' }
@@ -237,10 +237,10 @@ function Import-ADUserProxyAddress {
                 $Mail = $CurRow.WindowsEmailAddress
             }
             $UPN = $CurRow.UserPrincipalName
-            
+
             if ($FindAddressInColumn -ne "x500") {
-                $PrimarySMTP = $CurRow."$FindAddressInColumn" -split ";" | Where-Object {$_ -cmatch 'SMTP:'}
-                $Address = $CurRow."$FindAddressInColumn" -split ";" | Where-Object $filter
+                $PrimarySMTP = $CurRow."$FindAddressInColumn" -split [regex]::Escape('|') | Where-Object {$_ -cmatch 'SMTP:'}
+                $Address = $CurRow."$FindAddressInColumn" -split [regex]::Escape('|') | Where-Object $filter
             }
             else {
                 $Address = $CurRow.x500 -split ";" | Where-Object $filter
@@ -268,7 +268,7 @@ function Import-ADUserProxyAddress {
 
                         }
                     }
-                    
+
                     $ObjectGUID = $user.objectGUID
 
                     if ($FirstClearAllProxyAddresses) {
@@ -280,7 +280,7 @@ function Import-ADUserProxyAddress {
                     if ($UpdateUPN) {
                         $params.UserPrincipalName = $UPNandMail
                     }
-    
+
                     if ($UpdateEmailAddress) {
                         $params.EmailAddress = $UPNandMail
                     }
@@ -306,7 +306,7 @@ function Import-ADUserProxyAddress {
                         Error       = $_
                         UPNandMail  = $UPNandMail
                         Addresses   = $Address -join ','
-                        
+
                     } | Export-Csv $ErrorLog -Append -NoTypeInformation -Encoding UTF8
                 }
             }

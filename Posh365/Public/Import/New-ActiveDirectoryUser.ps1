@@ -1,4 +1,4 @@
-function New-ActiveDirectoryUser { 
+function New-ActiveDirectoryUser {
     <#
     .SYNOPSIS
     Create New Active Directory Users
@@ -8,10 +8,10 @@ function New-ActiveDirectoryUser {
 
     .PARAMETER Row
     Parameter description
-    
+
     .PARAMETER OU
     Parameter description
-    
+
     .PARAMETER LogOnly
     Parameter description
 
@@ -20,7 +20,7 @@ function New-ActiveDirectoryUser {
 
     .NOTES
     Input of ProxyAddresses are expected to be semicolon seperated.  Password is set to Random Password
-    
+
     #>
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (
@@ -56,8 +56,8 @@ function New-ActiveDirectoryUser {
                 $i++
             }
             Write-Verbose "Name: $Name"
-            $PrimarySMTP = $CurRow.EmailAddresses -split ";" | Where-Object {$_ -cmatch 'SMTP:'}
-            
+            $PrimarySMTP = $CurRow.EmailAddresses -split [regex]::Escape('|') | Where-Object {$_ -cmatch 'SMTP:'}
+
             if ($PrimarySMTP) {
                 $UPNandMail = ($PrimarySMTP.Substring(5)).ToLower()
                 Write-Verbose "UPNandMail: $UPNandMail"
@@ -66,17 +66,17 @@ function New-ActiveDirectoryUser {
                 try {
                     $errorActionPreference = 'Stop'
                     $NewADUser = @{
-                        Path                  = $OU 
-                        Name                  = $Name 
+                        Path                  = $OU
+                        Name                  = $Name
                         DisplayName           = $Display
-                        UserPrincipalName     = $UPNandMail 
+                        UserPrincipalName     = $UPNandMail
                         Enabled               = $False
                         PasswordNotRequired   = $true
                         ChangePasswordAtLogon = $false
                         PasswordNeverExpires  = $True
                     }
                     $HashNulls = $NewADUser.GetEnumerator() | Where-Object {
-                        $_.Value -eq $null 
+                        $_.Value -eq $null
                     }
                     $HashNulls | ForEach-Object {
                         $NewADUser.remove($_.key)
@@ -95,7 +95,7 @@ function New-ActiveDirectoryUser {
                         Error       = $_
                         UPNandMail  = $UPNandMail
                         PrimarySMTP = $PrimarySMTP
-                        
+
                     } | Export-Csv $ErrorLog -Append -NoTypeInformation -Encoding UTF8
                 }
             }

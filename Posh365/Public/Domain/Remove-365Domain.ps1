@@ -51,7 +51,7 @@
         )
 
         $MsolCalcProps = @(
-            @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join ";" }}
+            @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join '|' }}
         )
 
         $MailProps = @(
@@ -60,7 +60,7 @@
         )
 
         $MailCalcProps = @(
-            @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join ";" }}
+            @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join '|' }}
         )
 
         $MsolUser | Select-Object ($MsolProps + $MsolCalcProps) | Export-Csv ".\MsolUsers.csv" -NoTypeInformation -Encoding UTF8
@@ -80,7 +80,7 @@
         )
 
         $GroupCalcProps = @(
-            @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join ";" }}
+            @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join '|' }}
         )
 
         $DistributionGroup |  Select-Object ($GroupProps + $GroupCalcProps)  | Export-Csv ".\DistributionGroups.csv" -NoTypeInformation

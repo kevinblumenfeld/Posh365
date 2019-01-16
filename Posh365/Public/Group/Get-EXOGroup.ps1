@@ -1,23 +1,23 @@
-function Get-EXOGroup { 
+function Get-EXOGroup {
     <#
     .SYNOPSIS
     Export Office 365 Distribution Groups & Mail-Enabled Security Groups
-    
+
     .DESCRIPTION
     Export Office 365 Distribution & Mail-Enabled Security Groups
-    
+
     .PARAMETER ListofGroups
     Provide a text list of specific groups to report on.  Otherwise, all groups will be reported.
-    
+
     .EXAMPLE
     Get-EXOGroup | Export-Csv c:\scripts\All365GroupExport.csv -notypeinformation -encoding UTF8
-    
+
     .EXAMPLE
     Get-DistributionGroup -Filter "emailaddresses -like '*contoso.com*'" -ResultSize Unlimited | Select -ExpandProperty Name | Get-EXOGroup | Export-Csv c:\scripts\365GroupExport.csv -notypeinformation -encoding UTF8
-    
+
     .EXAMPLE
     Get-Content "c:\scripts\groups.txt" | Get-EXOGroup | Export-Csv c:\scripts\365GroupExport.csv -notypeinformation -encoding UTF8
-    
+
     Example of groups.txt
     #####################
 
@@ -55,7 +55,7 @@ function Get-EXOGroup {
                 'ReportToManagerEnabled', 'ReportToOriginatorEnabled', 'RequireSenderAuthenticationEnabled'
                 'SendOofMessageToOriginatorEnabled'
             )
-    
+
             $CalculatedProps = @(
                 @{n = "AcceptMessagesOnlyFrom" ; e = {($_.AcceptMessagesOnlyFrom | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "AcceptMessagesOnlyFromDLMembers" ; e = {($_.AcceptMessagesOnlyFromDLMembers | Where-Object {$_ -ne $null}) -join ";" }},
@@ -78,7 +78,7 @@ function Get-EXOGroup {
                 @{n = "ObjectClass" ; e = {($_.ObjectClass | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "PoliciesExcluded" ; e = {($_.PoliciesExcluded | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "PoliciesIncluded" ; e = {($_.PoliciesIncluded | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join '|' }},
                 @{n = "x500" ; e = {"x500:" + $_.LegacyExchangeDN}},
                 @{n = "membersName" ; e = {($Members.name | Where-Object {$_ -ne $null}) -join ";"}}
                 @{n = "membersSMTP" ; e = {($Members.PrimarySmtpAddress | Where-Object {$_ -ne $null}) -join ";"}}
@@ -88,11 +88,11 @@ function Get-EXOGroup {
             $Selectproperties = @(
                 'Name', 'DisplayName', 'Alias', 'GroupType', 'Identity', 'PrimarySmtpAddress', 'RecipientTypeDetails', 'WindowsEmailAddress'
             )
-    
+
             $CalculatedProps = @(
                 @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = {($_.AcceptMessagesOnlyFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "ManagedBy" ; e = {($_.ManagedBy | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join '|' }},
                 @{n = "x500" ; e = {"x500:" + $_.LegacyExchangeDN}},
                 @{n = "membersName" ; e = {($Members.name | Where-Object {$_ -ne $null}) -join ";"}}
                 @{n = "membersSMTP" ; e = {($Members.PrimarySmtpAddress | Where-Object {$_ -ne $null}) -join ";"}}
@@ -115,6 +115,6 @@ function Get-EXOGroup {
         }
     }
     End {
-        
+
     }
 }

@@ -66,7 +66,7 @@ function Get-ActiveDirectoryUser {
             $CalculatedProps = @(
                 @{n = "OU" ; e = {$_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'}},
                 @{n = "PrimarySmtpAddress" ; e = {( $_.proxyAddresses | Where-Object {$_ -cmatch "SMTP:"})}},
-                @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join '|' }},
                 @{n = 'InheritanceBroken'; e = {$_.nTSecurityDescriptor.AreAccessRulesProtected}},
                 @{n = "altRecipientBL" ; e = {($_.altRecipientBL | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "AuthenticationPolicy" ; e = {($_.AuthenticationPolicy | Where-Object {$_ -ne $null}) -join ";" }},
@@ -110,7 +110,7 @@ function Get-ActiveDirectoryUser {
 
             $CalculatedProps = @(
                 @{n = "PrimarySmtpAddress" ; e = {( $_.proxyAddresses | Where-Object {$_ -cmatch "SMTP:"})}},
-                @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join '|' }},
                 @{n = "OU" ; e = {$_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'}},
                 @{n = "MemberOf" ; e = {($_.MemberOf | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "msExchPoliciesExcluded" ; e = {($_.msExchPoliciesExcluded | Where-Object {$_ -ne $null}) -join ";" }}

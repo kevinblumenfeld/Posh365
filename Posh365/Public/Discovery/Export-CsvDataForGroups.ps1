@@ -1,4 +1,4 @@
-﻿function Export-CsvDataforGroups { 
+﻿function Export-CsvDataforGroups {
     <#
 .SYNOPSIS
 Export ProxyAddresses from a CSV and output one per line.  Filtering if desired.  Automatically a csv will be exported.
@@ -85,7 +85,7 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
 
         [Parameter()]
         [String[]]$caseMatchNot,
-        
+
         [Parameter()]
         [String[]]$MatchNotAnd,
 
@@ -120,7 +120,7 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
             else {
                 $logicOperator = ' -or '
             }
-            
+
             $comparisonOperator = switch ($_) {
                 { $_.StartsWith('case') } { '-cmatch' }
                 default { '-match' }
@@ -150,18 +150,19 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
             $PrimarySmtpAddress = $CurRow.PrimarySmtpAddress
             $objectGUID = $CurRow.objectGUID
             $OU = $CurRow.OU
-            if ($filter) {    
-                $Member = $CurRow."$FindAddressInColumn" -split ";" | Where-Object $filter
+            if ($filter) {
+                $Member = $CurRow."$FindAddressInColumn" -split [regex]::Escape('|') | Where-Object $filter
             }
             else {
-                $Member = $CurRow.EmailAddresses -split ";"
+                # Why is this not $CurRow."$FindAddressInColumn"
+                $Member = $CurRow.EmailAddresses -split [regex]::Escape('|')
             }
             if ($Domain) {
                 $Member = $Member | ForEach-Object {
                     $_ -replace ([Regex]::Escape($Domain), $NewDomain)
                 }
             }
-            $PrimarySMTP = $CurRow.EmailAddresses -split ";" | Where-Object {$_ -cmatch 'SMTP:'}
+            $PrimarySMTP = $CurRow.EmailAddresses -split [regex]::Escape('|') | Where-Object {$_ -cmatch 'SMTP:'}
 
             if ($Member) {
                 foreach ($CurMember in $Member) {
@@ -174,7 +175,7 @@ Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attrib
                         Member             = $CurMember
                         EmailAddresses     = $EmailAddresses
                     } | Export-Csv $Log -Append -NoTypeInformation -Encoding UTF8
-                } 
+                }
             }
             else {
                 [PSCustomObject]@{

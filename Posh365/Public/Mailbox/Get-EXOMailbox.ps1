@@ -1,32 +1,32 @@
-function Get-EXOMailbox { 
+function Get-EXOMailbox {
     <#
     .SYNOPSIS
     Export Office 365 Mailboxes
-    
+
     .DESCRIPTION
     Export Office 365 Mailboxes
-    
+
     .PARAMETER SpecificMailboxes
     Provide specific mailboxes to report on.  Otherwise, all mailboxes will be reported.  Please review the examples provided.
-    
+
     .PARAMETER DetailedReport
     Provides a full report of all attributes.  Otherwise, only a refined report will be given.
-    
+
     .EXAMPLE
     Get-EXOMailbox | Export-Csv c:\scripts\All365Mailboxes.csv -notypeinformation -encoding UTF8
-    
+
     .EXAMPLE
     Get-EXOMailbox -ArchivesOnly | Export-Csv c:\scripts\All365Mailboxes.csv -notypeinformation -encoding UTF8
-    
+
     .EXAMPLE
     '{emailaddresses -like "*contoso.com"}' | Get-EXOMailbox | Export-Csv c:\scripts\365Mailboxes.csv -notypeinformation -encoding UTF8
-    
+
     .EXAMPLE
     '{emailaddresses -like "*contoso.com"}' | Get-EXOMailbox -ArchivesOnly | Export-Csv c:\scripts\365Mailboxes.csv -notypeinformation -encoding UTF8
-    
+
     .EXAMPLE
     '{emailaddresses -like "*contoso.com"}' | Get-EXOMailbox -DetailedReport | Export-Csv c:\scripts\365Mailboxes_Detailed.csv -notypeinformation -encoding UTF8
-    
+
     #>
     [CmdletBinding()]
     param (
@@ -109,9 +109,9 @@ function Get-EXOMailbox {
                 @{n = "ProtocolSettings" ; e = {($_.ProtocolSettings | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "ResourceCustom" ; e = {($_.ResourceCustom | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "UMDtmfMap" ; e = {($_.UMDtmfMap | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join ";" }},
+                @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join '|' }},
                 @{n = "x500" ; e = {"x500:" + $_.LegacyExchangeDN}},
-                @{n = "MailboxLocations" ; e = {($_.MailboxLocations | Where-Object {$_ -ne $null}) -join ";" }}       
+                @{n = "MailboxLocations" ; e = {($_.MailboxLocations | Where-Object {$_ -ne $null}) -join ";" }}
             )
         }
         else {
@@ -132,7 +132,7 @@ function Get-EXOMailbox {
                 @{n = "RejectMessagesFromSendersOrMembers" ; e = {($_.RejectMessagesFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "InPlaceHolds" ; e = {($_.InPlaceHolds | Where-Object {$_ -ne $null}) -join ";" }},
                 @{n = "x500" ; e = {"x500:" + $_.LegacyExchangeDN}},
-                @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join ";" }}
+                @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join '|' }}
             )
         }
     }
@@ -157,6 +157,6 @@ function Get-EXOMailbox {
         }
     }
     End {
-        
+
     }
 }
