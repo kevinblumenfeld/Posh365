@@ -110,6 +110,9 @@ import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresse
         [string] $Domain,
 
         [Parameter()]
+        [switch] $AnySourceDomain,
+
+        [Parameter()]
         [string] $NewDomain,
 
         [Parameter()]
@@ -127,14 +130,6 @@ import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresse
 
     )
     Begin {
-        if ($Domain -and (! $NewDomain)) {
-            Write-Warning "Must use NewDomain parameter when specifying Domain parameter"
-            break
-        }
-        if ($NewDomain -and (! $Domain)) {
-            Write-Warning "Must use Domain parameter when specifying NewDomain parameter"
-            break
-        }
 
         if (-not $ReportPath) {
             $ReportPath = '.\'
@@ -190,8 +185,15 @@ import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresse
             else {
                 $Address = $CurRow.EmailAddresses -split [regex]::Escape($Delimiter)
             }
-            if ($Domain) {
+            if ($AnySourceDomain) {
                 $Address = $Address | ForEach-Object {
+                    $AnyDomain = ($_ -split '@')[1]
+                    $_ -replace ([Regex]::Escape($AnyDomain), $NewDomain)
+                }
+            }
+            elseif ($Domain -and -not $AnySourceDomain) {
+                $Address = $Address | ForEach-Object {
+
                     $_ -replace ([Regex]::Escape($Domain), $NewDomain)
                 }
             }
