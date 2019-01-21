@@ -8,8 +8,19 @@ function Get-AzureNSGReport {
     }
     process {
         foreach ($CurNSG in $NSG) {
-
+            $NSGName = $CurNSG.Name
+            $NSGNic = ($CurNSG.NetworkInterfaces.Id -replace '.*\/') -Join "`r`n"
+            $NSGState = $CurNSG.ProvisioningState
+            if ($CurNSG.Tag) {
+                $NSGTag = ($CurNSG.Tag.GetEnumerator() | ForEach-Object {$_.key + " " + $_.value}) -Join "`r`n"
+            }
+            else {
+                $NSGTag = $null
+            }
+            $NSGSubnet = ($CurNSG.Subnets.Id -replace '.*\/') -Join "`r`n"
             $NSGRule = $CurNSG.SecurityRules
+
+
 
             if (-not $NSGRule) {
                 continue
@@ -17,6 +28,11 @@ function Get-AzureNSGReport {
 
             foreach ($CurNSGRule in $NSGRule) {
                 [PSCustomObject]@{
+                    NSGName                  = $NSGName
+                    NSGNic                   = $NSGNic
+                    NSGSubnet                = $NSGSubnet
+                    NSGState                 = $NSGState
+                    NSGTag                   = $NSGTag
                     Name                     = $CurNSGRule.Name
                     Priority                 = $CurNSGRule.Priority
                     Protocol                 = $CurNSGRule.Protocol

@@ -13,6 +13,7 @@ function Get-AzureTrafficManagerReport {
             [PSCustomObject]@{
                 ResourceGroupName      = $CurTrafficMgrProfile.ResourceGroupName
                 ProfileName            = $CurTrafficMgrProfile.Name
+                ProfileDnsName         = $CurTrafficMgrProfile.RelativeDnsName + '.trafficmanager.net'
                 ProfileTtl             = $CurTrafficMgrProfile.Ttl
                 ProfileStatus          = $CurTrafficMgrProfile.ProfileStatus
                 ProfileRoutingMethod   = $CurTrafficMgrProfile.TrafficRoutingMethod
@@ -22,7 +23,7 @@ function Get-AzureTrafficManagerReport {
                 ProfileMonitorInterval = $CurTrafficMgrProfile.MonitorIntervalInSeconds
                 ProfileMonitorTimeout  = $CurTrafficMgrProfile.MonitorTimeoutInSeconds
                 ProfileMonitorFailures = $CurTrafficMgrProfile.MonitorToleratedNumberOfFailures
-                ProfileEndpoints       = ($CurTrafficMgrProfile.Endpoints.Name | Where-Object {$_ -ne $null}) -join ';'
+                ProfileEndpoints       = ($CurTrafficMgrProfile.Endpoints.Name | Where-Object {$_ -ne $null}) -join "`r`n"
 
             }
         }

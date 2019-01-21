@@ -20,8 +20,8 @@ function Get-AzureTrafficManagerEndpointReport {
                 ResourceGroupName     = $CurTrafficMgrProfile.ResourceGroupName
                 Type                  = $CurTrafficMgrProfile.Type
                 EndpointStatus        = $CurTrafficMgrProfile.EndpointStatus
-                Id                    = $CurTrafficMgrProfile.Id
-                TargetResourceId      = $CurTrafficMgrProfile.TargetResourceId
+                Id                    = $CurTrafficMgrProfile.Id -replace '.*\/'
+                TargetResourceId      = $CurTrafficMgrProfile.TargetResourceId -replace '.*\/'
                 EndpointMonitorStatus = $CurTrafficMgrProfile.EndpointMonitorStatus
                 MinChildEndpoints     = $CurTrafficMgrProfile.MinChildEndpoints
                 GeoMapping            = $CurTrafficMgrProfile.GeoMapping

@@ -30,11 +30,9 @@ function Get-AzureLoadBalancerHelper {
                 $CurBackendIpConfig = ($CurBackendPool.BackendIpConfigurations.id | Where-Object {$_ -ne $null}) -join "`r`n"
                 $PoolName = "BackendPool" + $Index
                 $PoolId = "PoolId" + $Index
-                $PoolBackendIpConfig = "PoolBackendIpConfig" + $Index
 
                 $LBObj.Add($PoolName, $CurBackendPool.Name)
-                $LBObj.Add($PoolId, $CurBackendPool.Id)
-                $LBObj.Add($PoolBackendIpConfig, $CurBackendIpConfig)
+                $LBObj.Add($PoolId, $CurBackendPool.Id -replace '.*\/')
             }
 
             $FrontEndIpConfig = $CurLoadBalancer.FrontendIpConfigurations
@@ -52,9 +50,9 @@ function Get-AzureLoadBalancerHelper {
                 $LBObj.Add($FEName, $CurFrontEndIpConfig.Name)
                 $LBObj.Add($PrivateIp, $CurFrontEndIpConfig.PrivateIpAddress)
                 $LBObj.Add($PublicIp, $CurFrontEndIpConfig.PublicIpAddress.IpAddress)
-                $LBObj.Add($PublicIpId, $CurFrontEndIpConfig.PublicIpAddress.Id)
-                $LBObj.Add($SubnetId, $CurFrontEndIpConfig.Subnet.Id)
-                $LBObj.Add($FEId, $CurFrontEndIpConfig.Id)
+                $LBObj.Add($PublicIpId, $CurFrontEndIpConfig.PublicIpAddress.Id -replace '.*\/')
+                $LBObj.Add($SubnetId, $CurFrontEndIpConfig.Subnet.Id -replace '.*\/')
+                $LBObj.Add($FEId, $CurFrontEndIpConfig.Id -replace '.*\/')
             }
 
             [PSCustomObject]$LBObj
