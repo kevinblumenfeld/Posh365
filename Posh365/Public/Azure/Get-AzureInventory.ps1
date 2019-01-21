@@ -39,15 +39,16 @@ function Get-AzureInventory {
     }
 
     Write-Host "Collecting data on Azure Load Balancers (LB)"
-    $LB = Get-AzureRmLoadBalancer
-    if ($LB) {
-        $LB | Get-AzureLoadBalancerReport | Export-Csv (Join-Path $SubPath 'Azure_LoadBalancer_Report.csv') -NoTypeInformation
+    $LoadBalancer = Get-AzureRmLoadBalancer
+    if ($LoadBalancer) {
+        $LoadBalancerData = Get-AzureLoadBalancerReport -LoadBalancer $LoadBalancer
+        $LoadBalancerData | Export-Csv (Join-Path $SubPath 'Azure_LoadBalancer_Report.csv') -NoTypeInformation
     }
 
     Write-Host "Collecting data on Azure Virtual Networks (VNet)"
     $VNet = Get-AzureRmVirtualNetwork
     if ($VNet) {
-        $VNetData = Get-AzureVNetHelper -VNet $VNet
+        $VNetData = Get-AzureVNetReport -VNet $VNet
         $VNetData | Export-Csv (Join-Path $SubPath 'Azure_VNet_Report.csv') -NoTypeInformation
     }
 

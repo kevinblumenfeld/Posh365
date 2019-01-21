@@ -48,7 +48,7 @@ function Get-AzureVMReport {
                 OSDisk             = $CurVM.StorageProfile.OSDisk.OsType
                 OSImageType        = $CurVM.StorageProfile.ImageReference.sku
                 AdminUserName      = $CurVM.OSProfile.AdminUsername
-                NICId              = $CurVM.NetworkProfile.NetworkInterfaces.id
+                NICId              = ($CurVM.NetworkProfile.NetworkInterfaces.id | Where-Object {$_ -ne $null}) -join ';'
                 OSVersion          = $CurVM.StorageProfile.ImageReference.Sku
                 PrivateIP          = $PrivateIP
                 ManagedOSDiskURI   = $OSDiskManaged

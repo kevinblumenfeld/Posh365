@@ -21,10 +21,10 @@ function Get-AzureNSGReport {
                     Priority                 = $CurNSGRule.Priority
                     Protocol                 = $CurNSGRule.Protocol
                     Direction                = $CurNSGRule.Direction
-                    SourcePortRange          = ($CurNSGRule | Select-Object @{Name = 'SourcePortRange'; Expression = {$_.SourcePortRange}})
-                    DestinationPortRange     = ($CurNSGRule | Select-Object @{Name = 'DestinationPortRange'; Expression = {$_.DestinationPortRange}})
-                    SourceAddressPrefix      = ($CurNSGRule | Select-Object @{Name = 'SourceAddressPrefix'; Expression = {$_.SourceAddressPrefix}})
-                    DestinationAddressPrefix = ($CurNSGRule | Select-Object @{Name = 'DestinationAddressPrefix'; Expression = {$_.DestinationAddressPrefix}})
+                    SourcePortRange          = ($CurNSGRule.SourcePortRange | Where-Object {$_ -ne $null}) -join ';'
+                    DestinationPortRange     = ($CurNSGRule.DestinationPortRange | Where-Object {$_ -ne $null}) -join ';'
+                    SourceAddressPrefix      = ($CurNSGRule.SourceAddressPrefix | Where-Object {$_ -ne $null}) -join ';'
+                    DestinationAddressPrefix = ($CurNSGRule.DestinationAddressPrefix | Where-Object {$_ -ne $null}) -join ';'
                     Access                   = $CurNSGRule.Access
                 }
             }

@@ -6,7 +6,7 @@ function Get-AzureReport {
         [Parameter(Mandatory)]
         [string] $ReportPath,
 
-        [Parameter(Mandatory)]
+        [Parameter()]
         [switch] $SkipLogin,
 
         [Parameter()]
