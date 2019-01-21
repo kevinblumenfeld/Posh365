@@ -5,11 +5,14 @@ function Get-AzureInventory {
         [String] $SubID,
 
         [Parameter(Mandatory)]
+        [String] $SubName,
+
+        [Parameter(Mandatory)]
         [String] $ReportPath
 
     )
 
-    $SubPath = Join-Path $ReportPath $SubID
+    $SubPath = Join-Path $ReportPath $SubName
     if (-not (Test-Path $SubPath)) {
         New-Item -Path $SubPath -ItemType Directory -Force > $null
     }

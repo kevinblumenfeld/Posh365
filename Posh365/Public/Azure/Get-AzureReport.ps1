@@ -27,10 +27,11 @@ function Get-AzureReport {
 
     foreach ($CurSub in $Sub) {
 
-        $SubID = $CurSub.id
+        $SubId = $CurSub.Id
+        $SubName = $CurSub.Name
 
         if ($CurSub.State -ne "Disabled") {
-            Get-AzureInventory -SubID $SubID -ReportPath $TenantPath
+            Get-AzureInventory -SubId $SubId -SubName $SubName -ReportPath $TenantPath
         }
     }
     if (-not $SaveContext) {
