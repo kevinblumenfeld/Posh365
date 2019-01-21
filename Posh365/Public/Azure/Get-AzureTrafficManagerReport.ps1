@@ -1,25 +1,14 @@
 function Get-AzureTrafficManagerReport {
-    Param(
+    param (
         [Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
-        $ResourceGroupName
+        $TrafficMgrProfile
     )
     begin {
 
     }
     process {
-        $TrafficMgrProfile = Get-AzureRmTrafficManagerProfile
 
         foreach ($CurTrafficMgrProfile in $TrafficMgrProfile) {
-
-            $TrafficSplat = @{
-                ResourceGroupName = $ResourceGroupName
-                Name              = $CurTrafficMgrProfile.Endpoints
-                Type              = 'AzureEndpoints'
-                ProfileName       = $CurTrafficMgrProfile.Name
-            }
-
-            $TrafficMgrEndpoint = Get-AzureRmTrafficManagerEndpoint @TrafficSplat
-            $TrafficMgrEndpoint.Priority | GM
 
             [PSCustomObject]@{
                 ResourceGroupName      = $CurTrafficMgrProfile.ResourceGroupName
@@ -33,8 +22,8 @@ function Get-AzureTrafficManagerReport {
                 ProfileMonitorInterval = $CurTrafficMgrProfile.MonitorIntervalInSeconds
                 ProfileMonitorTimeout  = $CurTrafficMgrProfile.MonitorTimeoutInSeconds
                 ProfileMonitorFailures = $CurTrafficMgrProfile.MonitorToleratedNumberOfFailures
-                ProfileEndpoints       = $CurTrafficMgrProfile.Endpoints
-                EndpointNamePriority   = $TrafficMgrEndpoint.Priority
+                ProfileEndpoints       = ($CurTrafficMgrProfile.Endpoints.Name | Where-Object {$_ -ne $null}) -join ';'
+
             }
         }
     }

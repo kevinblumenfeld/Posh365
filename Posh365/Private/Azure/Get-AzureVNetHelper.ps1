@@ -5,7 +5,6 @@ function Get-AzureVNetHelper {
         $VNet
     )
 
-    $VNet | Get-AzureVNetReport -MaxSubnets
     $MaxSubnets = ($VNet.foreach( {$_.Subnets.count}) | Measure-Object -Maximum).Maximum
 
     $VNet | Get-AzureVNetReport -MaxSubnets $MaxSubnets
