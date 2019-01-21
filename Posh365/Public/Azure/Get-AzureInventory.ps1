@@ -12,7 +12,8 @@ function Get-AzureInventory {
 
     )
 
-    $SubPath = Join-Path $ReportPath $SubName
+    $NameAndId = '{0} ({1})' -f $SubName, [regex]::Matches("$SubID", "(\d+)[^-]*$").value
+    $SubPath = Join-Path $ReportPath $NameAndId
     if (-not (Test-Path $SubPath)) {
         New-Item -Path $SubPath -ItemType Directory -Force > $null
     }
