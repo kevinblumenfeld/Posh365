@@ -21,39 +21,41 @@ function Get-AzureInventory {
     Select-AzureRmSubscription -Subscription $SubID
 
     Write-Host "Collecting data on Azure Virtual Machines (VM)"
-    $VM = Get-AzureRmVM
+    $VM = Get-AzureRmVM -WarningAction SilentlyContinue
     if ($VM) {
-        $VM | Get-AzureVMReport | Export-Csv (Join-Path $SubPath 'Azure_VM_Report.csv') -NoTypeInformation
+        $VMData = Get-AzureVMReport -VM $VM
+        $VMData | Export-Csv (Join-Path $SubPath 'Azure_VM_Report.csv') -NoTypeInformation
     }
 
     Write-Host "Collecting data on Azure Storage Accounts (SA)"
-    $StorageAcct = Get-AzureRmStorageAccount
+    $StorageAcct = Get-AzureRmStorageAccount -WarningAction SilentlyContinue
     if ($StorageAcct) {
         $StorageAcct | Get-AzureStorageReport | Export-Csv (Join-Path $SubPath 'Azure_Storage_Report.csv') -NoTypeInformation
     }
 
     Write-Host "Collecting data on Azure Network Security Groups (NSG)"
-    $NSG = Get-AzureRmNetworkSecurityGroup
+    $NSG = Get-AzureRmNetworkSecurityGroup -WarningAction SilentlyContinue
     if ($NSG) {
         $NSG | Get-AzureNSGReport | Export-Csv (Join-Path $SubPath 'Azure_NSG_Report.csv') -NoTypeInformation
     }
 
     Write-Host "Collecting data on Azure Load Balancers (LB)"
-    $LoadBalancer = Get-AzureRmLoadBalancer
+    $LoadBalancer = Get-AzureRmLoadBalancer -WarningAction SilentlyContinue
     if ($LoadBalancer) {
         $LoadBalancerData = Get-AzureLoadBalancerReport -LoadBalancer $LoadBalancer
         $LoadBalancerData | Export-Csv (Join-Path $SubPath 'Azure_LoadBalancer_Report.csv') -NoTypeInformation
     }
 
     Write-Host "Collecting data on Azure Virtual Networks (VNet)"
-    $VNet = Get-AzureRmVirtualNetwork
+    $VNet = Get-AzureRmVirtualNetwork -WarningAction SilentlyContinue
+
     if ($VNet) {
         $VNetData = Get-AzureVNetReport -VNet $VNet
         $VNetData | Export-Csv (Join-Path $SubPath 'Azure_VNet_Report.csv') -NoTypeInformation
     }
 
     Write-Host "Collecting data on Azure Traffic Managers (TM)"
-    $TrafficMgrProfile = Get-AzureRmTrafficManagerProfile
+    $TrafficMgrProfile = Get-AzureRmTrafficManagerProfile -WarningAction SilentlyContinue
     $TrafficManager = $TrafficMgrProfile | Get-AzureTrafficManagerReport
     if ($TrafficManager) {
         $TrafficManager | Export-Csv (Join-Path $SubPath "Azure_TrafficManager_Report.csv") -NoTypeInformation
@@ -65,14 +67,19 @@ function Get-AzureInventory {
         $TrafficManagerEndpoint | Export-Csv (Join-Path $SubPath "Azure_TrafficManagerEndPoint_Report.csv") -NoTypeInformation
     }
 
-    $ResourceGroup = Get-AzureRmResourceGroup
+    $AllVPNGateway = [System.Collections.Generic.List[PSCustomObject]]::New()
+    $ResourceGroup = Get-AzureRmResourceGroup -WarningAction SilentlyContinue
     foreach ($CurResourceGroup in $ResourceGroup) {
         $ResGroup = $CurResourceGroup.ResourceGroupName
-        $VPNGateway = Get-AzureRmVirtualNetworkGateway -ResourceGroupName $ResGroup
+        $VPNGateway = Get-AzureRmVirtualNetworkGateway -ResourceGroupName $ResGroup -WarningAction SilentlyContinue
 
         if ($VPNGateway) {
             Write-Host "Collecting data on Azure Virtual Private Networks (VPN) in Resource Group: $ResGroup"
-            $VPNGateway | Get-AzureVPNReport -ResourceGroupName $ResGroup | Export-Csv (Join-Path $SubPath "Azure_VPN_Report_RG_$ResGroup.csv") -NoTypeInformation
+            $VPNGateway | Get-AzureVPNReport -ResourceGroupName $ResGroup |
+                ForEach-Object { $AllVPNGateway.Add($_) }
         }
+    }
+    if ($AllVPNGateway) {
+        $AllVPNGateway | Export-Csv (Join-Path $SubPath "Azure_VPN_Report.csv") -NoTypeInformation
     }
 }

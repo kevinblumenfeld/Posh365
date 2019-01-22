@@ -51,7 +51,7 @@ function Get-AzureVMHelper {
                 $CreateOption = "DiskCreateOption" + $Index
                 $StorageAccountType = "DiskStorageAccountType" + $Index
                 $ManagedDisk = "ManagedDisk" + $Index
-                $SourceImage = "DDiskSourceImage" + $Index
+                $SourceImage = "DiskSourceImage" + $Index
                 $VHD = "DiskVHD" + $Index
 
                 $VMObj.Add($DiskName, $CurDataDisk.Name)
