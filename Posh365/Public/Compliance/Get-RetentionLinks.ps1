@@ -6,62 +6,45 @@ function Get-RetentionLinks {
     (
 
     )
-    Begin {
 
-    }
-    Process {
-        $resultArray = @()
-        $findParameter = "RetentionPolicyTagLinks"
-        $retPols = Get-RetentionPolicy | Select name, identity, IsDefault, RetentionPolicyTagLinks
-        $retTags = Get-RetentionPolicyTag
-        $retPolProps = $retPols | Get-Member -MemberType 'NoteProperty' | Select Name
-        
-        $tagHash = @{}
-        foreach ($tag in $retTags) {
-            foreach ($id in $tag.name) {
-                $tagHash[$id] = $tag 
-            }
-        }
-      
-        foreach ($row in $retPols) {           
-            ForEach ($link in $row.$findParameter) {
-                $polHash = @{}
-                $polHash['TagName'] = ($tagHash[$link]).name
-                $polHash['TagType'] = ($tagHash[$link]).type
-                $polHash['TagEnabled'] = ($tagHash[$link]).RetentionEnabled
-                $polHash['TagAgeLimit'] = ($tagHash[$link]).AgeLimitForRetention  
-                $polHash['TagAction'] = ($tagHash[$link]).RetentionAction
-                $polHash['TagComment'] = ($tagHash[$link]).Comment                                             
-                foreach ($field in $retPolProps.name) {
-                    $polHash[$field] = ($row.$field) -join ","
-                }  
-                $resultArray += [psCustomObject]$polHash        
-            }
-        }
-        $links = @()
-        foreach ($nPolicy in $RetPols) {
-            foreach ($nId in $nPolicy.RetentionPolicyTagLinks) {
-                $links += $nId 
-            }
-        }
-        foreach ($nTag in $retTags) {
-            if ($links -notcontains $nTag.name) {
-                $polHash = @{}
-                $polHash['TagName'] = $nTag.name
-                $polHash['TagType'] = $nTag.type
-                $polHash['TagEnabled'] = $nTag.RetentionEnabled
-                $polHash['TagAgeLimit'] = $nTag.AgeLimitForRetention  
-                $polHash['TagAction'] = $nTag.RetentionAction
-                $polHash['TagComment'] = $nTag.Comment 
-                foreach ($field in $retPolProps.name) {
-                    $polHash[$field] = "Tag_Not_Linked" -join ","
-                }  
-                $resultArray += [psCustomObject]$polHash  
-            }
-           
+    $LinkedTag = New-Object System.Collections.Generic.List[string]
+    $Policy = Get-RetentionPolicy
+    $RetTag = Get-RetentionPolicyTag
+
+    $TagHash = @{}
+    foreach ($Tag in $RetTag) {
+        foreach ($Name in $Tag.name) {
+            $TagHash[$Name] = $Tag
         }
     }
-    End {
-            $resultArray | Select "IsDefault", "Name", "TagName", "TagAgeLimit", "TagAction", "TagType", "TagEnabled", "TagComment", "RetentionPolicyTagLinks", "Identity" | Sort Name
+
+    foreach ($CurPolicy in $Policy) {
+        Foreach ($CurLink in $CurPolicy.RetentionPolicyTagLinks) {
+            $LinkedTag.Add($CurLink)
+            $Linked = New-Object -TypeName PSObject -Property @{
+                IsDefault   = $CurPolicy.IsDefault
+                PolicyName  = $CurPolicy.Name
+                TagName     = $CurLink
+                TagAgeLimit = $TagHash."$CurLink".AgeLimitForRetention
+                TagAction   = $TagHash."$CurLink".RetentionAction
+                TagType     = $TagHash."$CurLink".Type
+                TagEnabled  = $TagHash."$CurLink".RetentionEnabled
+            }
+            $Linked | Select IsDefault, PolicyName, TagName, TagAgeLimit, TagAction, TagType, TagEnabled
+        }
+    }
+    foreach ($CurRetTag in $RetTag) {
+        if ($LinkedTag -notcontains $CurRetTag.name) {
+            $UnLinked = New-Object -TypeName PSObject -Property @{
+                IsDefault   = 'Tag Not Linked'
+                PolicyName  = 'Tag Not Linked'
+                TagName     = $CurRetTag.name
+                TagAgeLimit = $TagHash."$CurRetTag".AgeLimitForRetention
+                TagAction   = $TagHash."$CurRetTag".RetentionAction
+                TagType     = $TagHash."$CurRetTag".Type
+                TagEnabled  = $TagHash."$CurRetTag".RetentionEnabled
+            }
+            $UnLinked | Select IsDefault, PolicyName, TagName, TagAgeLimit, TagAction, TagType, TagEnabled
+        }
     }
 }
