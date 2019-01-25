@@ -142,18 +142,22 @@ function Get-ExchangeMailbox {
             foreach ($CurMailboxFilter in $MailboxFilter) {
                 if (! $ArchivesOnly) {
                     Get-Mailbox -Filter $CurMailboxFilter -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
+                    Get-RemoteMailbox -Filter $CurMailboxFilter -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
                 }
                 else {
                     Get-Mailbox -Archive -Filter $CurMailboxFilter -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
+                    Get-RemoteMailbox -Archive -Filter $CurMailboxFilter -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
                 }
             }
         }
         else {
             if (! $ArchivesOnly) {
                 Get-Mailbox -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
+                Get-RemoteMailbox -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
             }
             else {
                 Get-Mailbox -Archive -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
+                Get-RemoteMailbox -Archive -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
             }
         }
     }

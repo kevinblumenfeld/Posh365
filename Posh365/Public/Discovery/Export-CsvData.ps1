@@ -54,6 +54,12 @@ Import-Csv .\CSVofADUsers.csv | Export-CsvData -caseMatchAnd "brann" -MatchNotAn
 .EXAMPLE
 Import-Csv .\CSVofADUsers.csv | Export-CsvData -caseMatchAnd "Harry Franklin" -MatchNotAnd @("JAIME","John") -JoinType or -fileName "NewCsv.csv"
 
+
+.EXAMPLE
+Import-Csv .\all.csv | ? { $_.EmailAddressPolicyEnabled -eq "FALSE"-and -not ($_.emailaddresses -match "@contoso.com")} |
+    Export-CsvData -ReportPath C:\Scripts\ -fileName NoUserWithAnyEmailsofContoso.com.csv -JoinType and -FindInColumn EmailAddresses -Match "smtp:"
+
+
 .NOTES
 Input (from the CSV) of the Addresses (to be imported into ProxyAddresses attribute in Active Directory) are expected to be semicolon separated.
 Example:
