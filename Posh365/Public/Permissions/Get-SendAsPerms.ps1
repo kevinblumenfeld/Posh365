@@ -3,15 +3,15 @@
     .SYNOPSIS
     Outputs Send As permissions for each mailbox that has permissions assigned.
     This is for On-Premises Exchange 2010, 2013, 2016+
-    
-    .EXAMPLE 
-    
+
+    .EXAMPLE
+
     (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-SendAsPerms | Export-csv .\SA.csv -NoTypeInformation
 
     If not running from Exchange Management Shell (EMS), run this first:
 
     Connect-Exchange -NoPrefix
-    
+
     #>
     [CmdletBinding()]
     Param (
@@ -20,7 +20,7 @@
 
         [parameter()]
         [hashtable] $ADHashDN,
-        
+
         [parameter()]
         [hashtable] $ADHash
     )
@@ -39,15 +39,16 @@
             $mailbox = $curDN
             Write-Verbose "Inspecting: `t $mailbox"
             Get-ADPermission $curDN | Where-Object {
-                $_.ExtendedRights -like "*Send-As*" -and 
-                ($_.IsInherited -eq $false) -and 
-                !($_.User -like "NT AUTHORITY\SELF") -and 
-                !($_.User.tostring().startswith('S-1-5-21-'))
+                $_.ExtendedRights -like "*Send-As*" -and
+                ($_.IsInherited -eq $false) -and
+                !($_.User -like "NT AUTHORITY\SELF") -and
+                !($_.User.tostring().startswith('S-1-5-21-')) -and
+                !$_.Deny
             } | ForEach-Object {
                 $User = $_.User
                 Write-Verbose "Has Send As: `t $User"
                 try {
-                    Get-ADGroupMember ($_.user -split "\\")[1] -Recursive -ErrorAction stop | 
+                    Get-ADGroupMember ($_.user -split "\\")[1] -Recursive -ErrorAction stop |
                         ForEach-Object {
                         New-Object -TypeName psobject -property @{
                             Object             = $ADHashDN["$mailbox"].DisplayName
@@ -60,9 +61,9 @@
                             GroupMember        = $($_.distinguishedname)
                             Type               = "GroupMember"
                             Permission         = "SendAs"
-                        }    
+                        }
                     }
-                } 
+                }
                 Catch {
                     New-Object -TypeName psobject -property @{
                         Object             = $ADHashDN["$mailbox"].DisplayName
@@ -81,6 +82,6 @@
         }
     }
     END {
-        
+
     }
 }

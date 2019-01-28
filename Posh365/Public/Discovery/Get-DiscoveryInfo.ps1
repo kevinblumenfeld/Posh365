@@ -1,17 +1,16 @@
 ﻿Function Get-DiscoveryInfo {
-    ##
     <#
     .SYNOPSIS
     On-Premises Active Directory and Exchange Discovery script
-    
+
     .EXAMPLE
     Get-DiscoveryInfo -ReportPath C:\PermsReports -PowerShell2 -ExchangeServer "ExServer01" -Verbose
     ***ONLY PS2: When running from PowerShell 2 (Exchange 2010 Server)***
 
     ***FIRST***: Be sure to dot-source the function with the below command (change the path):
     Get-ChildItem -Path "C:\scripts\Posh365\" -filter *.ps1 -Recurse | % { . $_.fullname }
-    It is normal to see errors when running the above command, as some of the functions (that aren't needed here) do not support PS2                 
-    
+    It is normal to see errors when running the above command, as some of the functions (that aren't needed here) do not support PS2
+
     #>
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (
@@ -20,10 +19,10 @@
 
         [Parameter()]
         [switch] $EstablishRemoteSessionToExchange,
-        
+
         [Parameter()]
         [switch] $PowerShell2,
-        
+
         [Parameter()]
         [string] $ExchangeServer,
 
@@ -50,9 +49,9 @@
     $User = $env:USERNAME
 
     Get-PSSession -ErrorAction SilentlyContinue | Where-Object {
-        ($_.name -eq "OnPremExchage" -or $_.name -like "Session for implicit remoting module at*") -and ($_.availability -ne "Available" -and $_.State -ne "Opened")} | 
+        ($_.name -eq "OnPremExchage" -or $_.name -like "Session for implicit remoting module at*") -and ($_.availability -ne "Available" -and $_.State -ne "Opened")} |
         ForEach-Object {Remove-PSSession $_.id}
-    
+
     if ($PowerShell2) {
         Write-Warning "**************************************************************************************************"
         Write-Warning "    You have selected -PowerShell2 which indicates that you are running this from PowerShell 2    "
@@ -110,7 +109,7 @@
 
     Write-Verbose "Caching hash table. CN as Key and Values of DisplayName, UPN & LogonName"
     $ADHashCN = $allADObjects | Get-ADHashCN
-    
+
     Write-Verbose "Retrieving all Active Directory Users"
     $allADUsers = Get-ActiveDirectoryUser -DetailedReport
 
@@ -146,7 +145,7 @@
         'AcceptMessagesOnlyFromDLMembers', 'AcceptMessagesOnlyFromSendersOrMembers', 'RejectMessagesFrom', 'RejectMessagesFromDLMembers'
         'RejectMessagesFromSendersOrMembers', 'InPlaceHolds', 'x500', 'EmailAddresses'
     )
-    
+
     $GroupProperties = @(
         'DisplayName', 'OU', 'RecipientTypeDetails', 'Alias', 'ManagedBy', 'GroupType', 'Identity', 'PrimarySmtpAddress', 'WindowsEmailAddress'
         'AcceptMessagesOnlyFromSendersOrMembers', 'x500', 'EmailAddresses'
@@ -157,22 +156,22 @@
         Export-csv (Join-Path -Path $ADPath -ChildPath "InheritanceBroken.csv") -NoTypeInformation -Encoding UTF8
 
     Write-Verbose "Exporting all Exchange Mailboxes to ExchangeMailboxes.csv"
-    $allMailbox | Select $MailboxProperties | 
+    $allMailbox | Select $MailboxProperties |
         Export-csv (Join-Path -Path $ExchangePath -ChildPath "ExchangeMailboxes.csv") -NoTypeInformation -Encoding UTF8
 
     Write-Verbose "Exporting all smtp addresses for Exchange Mailboxes"
     $allMailbox | Export-CsvData -JoinType and -Match "smtp:" -FindInColumn "EmailAddresses" -ReportPath "$ExchangePath" -fileName "MailboxSmtpAddresses.csv"
-    
+
     Write-Verbose "Exporting all sip addresses for Exchange Mailboxes"
     $allMailbox | Export-CsvData -JoinType and -Match "sip:" -FindInColumn "EmailAddresses" -ReportPath "$ExchangePath" -fileName "MailboxSipAddresses.csv"
-    
+
     Write-Verbose "Exporting all Exchange Distribution Groups to ExchangeDistributionGroups.csv"
-    $allGroups | Select $GroupProperties | 
+    $allGroups | Select $GroupProperties |
         Export-csv (Join-Path -Path $ExchangePath -ChildPath "ExchangeDistributionGroups.csv") -NoTypeInformation -Encoding UTF8
 
     Write-Verbose "Exporting all smtp addresses for Exchange Distribution Groups"
     $allGroups | Export-CsvData -JoinType and -Match "smtp:" -FindInColumn "EmailAddresses" -ReportPath "$ExchangePath" -fileName "DistributionGroupSmtpAddresses.csv"
-        
+
     $FwdSelect = @('DisplayName', 'UserPrincipalName', 'ForwardingAddress')
     $FwdSelectCalc = @(
         @{n = 'FwdDisplayName'; e = {$ADHashCN["$($_.ForwardingAddress)"].DisplayName}},
@@ -196,13 +195,13 @@
         $allMailboxDN | Get-SendAsPerms -ADHashDN $ADHashDN -ADHash $ADHash  | Select Object, UPN, Granted, GrantedUPN, Permission |
             Export-csv (Join-Path $ExchangePath -ChildPath "SendAsPerms.csv") -NoTypeInformation -Encoding UTF8
     }
-    
+
     if (-not $SkipSendOnBehalf) {
         Write-Verbose "Getting SendOnBehalf permissions for each mailbox and writing to file SendOnBehalfPerms.csv"
         $allMailboxDN | Get-SendOnBehalfPerms -ADHashCN $ADHashCN | Select Object, UPN, Granted, GrantedUPN, Permission |
             Export-csv (Join-Path $ExchangePath -ChildPath "SendOnBehalfPerms.csv") -NoTypeInformation -Encoding UTF8
     }
-    
+
     if (-not $SkipFullAccess) {
         Write-Verbose "Getting FullAccess permissions for each mailbox and writing to file FullAccessPerms.csv"
         $allMailboxDN | Get-FullAccessPerms -ADHashDN $ADHashDN -ADHash $ADHash | Select Object, UPN, Granted, GrantedUPN, Permission |
@@ -215,7 +214,7 @@
     $AllPermissions = Get-ChildItem -Path $Report -Include "SendAsPerms.csv", "SendOnBehalfPerms.csv", "FullAccessPerms.csv" -Exclude "AllPermissions.csv" | % {
         Import-Csv $_
     }
-    
+
     $AllPermissions | Export-Csv (Join-Path $ExchangePath -ChildPath "AllPermissions.csv") -NoTypeInformation -Encoding UTF8
     Write-Verbose "Combined all Mailbox Delegate Permission CSV's into a single file named, AllPermissions.csv"
 
