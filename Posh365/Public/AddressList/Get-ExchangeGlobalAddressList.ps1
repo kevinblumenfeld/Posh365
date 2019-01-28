@@ -34,7 +34,7 @@ function Get-ExchangeGlobalAddressList {
     Process {
         foreach ($CurGAL in $GAL) {
             $GlobalList = New-Object -TypeName PSObject -Property @{
-                DisplayName                  = $CurGAL.Name
+                Name                         = $CurGAL.Name
                 IsDefaultGlobalAddressList   = $CurGAL.IsDefaultGlobalAddressList
                 IncludedRecipients           = $CurGAL.IncludedRecipients
                 RecipientFilterType          = $CurGAL.RecipientFilterType
