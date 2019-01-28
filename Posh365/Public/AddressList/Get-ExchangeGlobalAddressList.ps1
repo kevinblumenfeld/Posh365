@@ -34,7 +34,7 @@ function Get-ExchangeGlobalAddressList {
     Process {
         foreach ($CurGAL in $GAL) {
             $GlobalList = New-Object -TypeName PSObject -Property @{
-                DisplayName                  = $CurGAL.DisplayName
+                DisplayName                  = $CurGAL.Name
                 IsDefaultGlobalAddressList   = $CurGAL.IsDefaultGlobalAddressList
                 IncludedRecipients           = $CurGAL.IncludedRecipients
                 RecipientFilterType          = $CurGAL.RecipientFilterType
@@ -63,6 +63,7 @@ function Get-ExchangeGlobalAddressList {
                 Container                    = $CurGAL.Container
                 RecipientContainer           = $CurGAL.RecipientContainer
                 LdapRecipientFilter          = $CurGAL.LdapRecipientFilter
+                Guid                         = $CurGAL.Guid
             }
             $GlobalList | Select 'DisplayName', 'IsDefaultGlobalAddressList', 'IncludedRecipients', 'RecipientFilterType', 'RecipientFilterApplied', 'RecipientFilter', 'LastUpdatedRecipientFilter', 'ConditionalCustomAttribute1', 'ConditionalCustomAttribute2', 'ConditionalCustomAttribute3', 'ConditionalCustomAttribute4', 'ConditionalCustomAttribute5', 'ConditionalCustomAttribute6', 'ConditionalCustomAttribute7', 'ConditionalCustomAttribute8', 'ConditionalCustomAttribute9', 'ConditionalCustomAttribute10', 'ConditionalCustomAttribute11', 'ConditionalCustomAttribute12', 'ConditionalCustomAttribute13', 'ConditionalCustomAttribute14', 'ConditionalCustomAttribute15', 'ConditionalCompany', 'ConditionalDepartment', 'ConditionalStateOrProvince', 'Containter', 'RecipientContainer', 'LdapRecipientFilter'
         }
