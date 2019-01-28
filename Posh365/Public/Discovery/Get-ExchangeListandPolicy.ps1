@@ -10,7 +10,7 @@
     Parameter description
 
     .EXAMPLE
-    Get-ExchangeListandPolicy -ReportPath c:\scripts
+    Get-ExchangeListandPolicy -ReportPath "c:\scripts"
 
     .NOTES
     General notes
@@ -27,19 +27,19 @@
 
     Write-Verbose "Retrieving Address Lists"
     Get-AddressList | Get-ExchangeAddressList |
-        Export-csv (Join-Path $ExchangePath "AddressLists.csv") -NoTypeInformation -Encoding UTF8
+        Export-Csv (Join-Path $ExchangePath "AddressLists.csv") -NoTypeInformation -Encoding UTF8
 
     Write-Verbose "Retrieving Global Address Lists"
-    Get-GlobalAddressList | Get-ExchangeGlobalAddressList
-    Export-csv (Join-Path $ExchangePath "GlobalAddressLists.csv") -NoTypeInformation -Encoding UTF8
+    Get-GlobalAddressList | Get-ExchangeGlobalAddressList |
+        Export-Csv (Join-Path $ExchangePath "GlobalAddressLists.csv") -NoTypeInformation -Encoding UTF8
 
 
     Write-Verbose "Retrieving Offline Address Books"
     Get-OfflineAddressBook | Get-ExchangeOfflineAddressBook |
-        Export-csv (Join-Path $ExchangePath "OfflineAddressBooks.csv") -NoTypeInformation -Encoding UTF8
+        Export-Csv (Join-Path $ExchangePath "OfflineAddressBooks.csv") -NoTypeInformation -Encoding UTF8
 
 
     Write-Verbose "Retrieving Address Book Policies"
     Get-AddressBookPolicy | Get-ExchangeAddressBookPolicy |
-        Export-csv (Join-Path $ExchangePath "AddressBookPolicies.csv") -NoTypeInformation -Encoding UTF8
+        Export-Csv (Join-Path $ExchangePath "AddressBookPolicies.csv") -NoTypeInformation -Encoding UTF8
 }
