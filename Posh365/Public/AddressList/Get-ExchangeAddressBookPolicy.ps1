@@ -33,10 +33,10 @@ function Get-ExchangeAddressBookPolicy {
     }
     Process {
         foreach ($CurABP in $ABP) {
+            $ListName = $CurABP.AddressLists | Select -ExpandProperty Name
             $Policy = New-Object -TypeName PSObject -Property @{
                 Name               = $CurABP.Name
-                IsDefault          = $CurABP.IsDefault
-                AddressLists       = ($CurABP | Where {$_.AddressLists -ne $null}) -join '|'
+                AddressLists       = ($ListName | Where {$_ -ne $null}) -join '|'
                 GlobalAddressList  = $CurABP.GlobalAddressList
                 OfflineAddressBook = $CurABP.OfflineAddressBook
                 RoomList           = $CurABP.RoomList
@@ -44,7 +44,7 @@ function Get-ExchangeAddressBookPolicy {
                 Guid               = $CurABP.Guid
                 ExchangeVersion    = $CurABP.ExchangeVersion
             }
-            $Policy | Select 'Name', 'IsDefault', 'AddressLists', 'GlobalAddressList', 'OfflineAddressBook', 'RoomList', 'Identity', 'Guid', 'ExchangeVersion'
+            $Policy | Select 'Name', 'AddressLists', 'GlobalAddressList', 'OfflineAddressBook', 'RoomList', 'Identity', 'Guid', 'ExchangeVersion'
         }
     }
     End {
