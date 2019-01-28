@@ -60,7 +60,7 @@ function Get-ExchangeGlobalAddressList {
                 ConditionalDepartment        = ($CurGAL | Where {$_.ConditionalDepartment -ne $null}) -join '|'
                 ConditionalStateOrProvince   = ($CurGAL | Where {$_.ConditionalStateOrProvince -ne $null}) -join '|'
                 Identity                     = $CurGAL.Identity
-                Containter                   = $CurGAL.Containter
+                Container                    = $CurGAL.Container
                 RecipientContainer           = $CurGAL.RecipientContainer
                 LdapRecipientFilter          = $CurGAL.LdapRecipientFilter
             }

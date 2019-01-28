@@ -33,10 +33,11 @@ function Get-ExchangeOfflineAddressBook {
     }
     Process {
         foreach ($CurOAB in $OAB) {
+            $ListName = $CurOAB.AddressLists | Select -ExpandProperty Name
             $OfflineAddressBook = New-Object -TypeName PSObject -Property @{
                 Name            = $CurOAB.Name
                 IsDefault       = $CurOAB.IsDefault
-                AddressLists    = ($CurOAB | Where {$_.AddressLists -ne $null}) -join '|'
+                AddressLists    = ($ListName | Where {$_ -ne $null}) -join '|'
                 Identity        = $CurOAB.Identity
                 Guid            = $CurOAB.Guid
                 ExchangeVersion = $CurOAB.ExchangeVersion
