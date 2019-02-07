@@ -14,14 +14,14 @@ function Get-ExchangeMailboxStatistics {
     Process {
         foreach ($CurMailbox in $Mailbox) {
             $ArchiveGB = $CurMailbox | Get-MailboxStatistics -Archive -ErrorAction SilentlyContinue | ForEach-Object {
-                [Math]::Round([Int]($_.TotalItemSize -replace '^.*\(| .+$|,') / 1GB, 5)
+                [Math]::Round([Double]($_.TotalItemSize -replace '^.*\(| .+$|,') / 1GB, 5)
             }
             $CurMailbox | Get-MailboxStatistics | Select-Object @(
                 'DisplayName'
                 @{
                     Name       = 'MailboxGB'
                     Expression = {
-                        [Math]::Round([Int]($_.TotalItemSize -replace '^.*\(| .+$|,') / 1GB, 5)
+                        [Math]::Round([Double]($_.TotalItemSize -replace '^.*\(| .+$|,') / 1GB, 5)
                     }
                 }
                 @{
@@ -31,7 +31,7 @@ function Get-ExchangeMailboxStatistics {
                 @{
                     Name       = 'TotalGB'
                     Expression = {
-                        [Math]::Round([Int]($_.TotalItemSize -replace '^.*\(| .+$|,') / 1GB, 5) + $ArchiveGB
+                        [Math]::Round([Double]($_.TotalItemSize -replace '^.*\(| .+$|,') / 1GB, 5) + $ArchiveGB
                     }
                 }
                 'LastLogonTime'

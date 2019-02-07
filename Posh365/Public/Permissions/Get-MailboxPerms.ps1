@@ -14,24 +14,24 @@
 
     .EXAMPLE
     Get-MailboxPerms -ReportPath C:\PermsReports -Verbose
-    
+
     .EXAMPLE
     Get-MailboxPerms -ReportPath C:\PermsReports -SkipFullAccess -Verbose
-    
+
     .EXAMPLE
     Get-MailboxPerms -ReportPath C:\PermsReports -SkipSendOnBehalf -Verbose
 
     .EXAMPLE
     Get-MailboxPerms -ReportPath C:\PermsReports -SkipSendAs -SkipFullAccess -Verbose
-    
+
     .EXAMPLE
     Get-MailboxPerms -ReportPath C:\PermsReports -PowerShell2 -ExchangeServer "ExServer01" -Verbose
     ***ONLY PS2: When running from PowerShell 2 (Exchange 2010 Server)***
 
     ***FIRST***: Be sure to dot-source the function with the below command (change the path):
     Get-ChildItem -Path "C:\scripts\Posh365\" -filter *.ps1 -Recurse | % { . $_.fullname }
-    It is normal to see errors when running the above command, as some of the functions (that aren't needed here) do not support PS2                 
-    
+    It is normal to see errors when running the above command, as some of the functions (that aren't needed here) do not support PS2
+
     #>
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (
@@ -48,8 +48,11 @@
         [switch] $SkipFullAccess,
 
         [Parameter()]
+        [switch] $SkipFolderPerms,
+
+        [Parameter()]
         [switch] $PowerShell2,
-        
+
         [Parameter()]
         [string] $ExchangeServer
     )
@@ -67,9 +70,9 @@
     $User = $env:USERNAME
 
     Get-PSSession -ErrorAction SilentlyContinue | Where-Object {
-        ($_.name -eq "OnPremExchage" -or $_.name -like "Session for implicit remoting module at*") -and ($_.availability -ne "Available" -and $_.State -ne "Opened")} | 
+        ($_.name -eq "OnPremExchage" -or $_.name -like "Session for implicit remoting module at*") -and ($_.availability -ne "Available" -and $_.State -ne "Opened")} |
         ForEach-Object {Remove-PSSession $_.id}
-    
+
     if ($PowerShell2) {
         Write-Warning "**************************************************************************************************"
         Write-Warning "    You have selected -PowerShell2 which indicates that you are running this from PowerShell 2    "
@@ -102,42 +105,52 @@
     }
     New-Item -ItemType Directory -Path $ReportPath -ErrorAction SilentlyContinue
 
-    $DomainNameHash = Get-DomainNameHash
+    if (-not $SkipFolderPerms -and ($SkipSendAs -and $SkipSendOnBehalf -and $SkipFullAccess)) {
+        $DomainNameHash = Get-DomainNameHash
 
-    Write-Verbose "Importing Active Directory Users and Groups that have at least one proxy address"
-    $AllADUsers = Get-ADUsersandGroupsWithProxyAddress -DomainNameHash $DomainNameHash
+        Write-Verbose "Importing Active Directory Users and Groups that have at least one proxy address"
+        $AllADUsers = Get-ADUsersandGroupsWithProxyAddress -DomainNameHash $DomainNameHash
 
-    Write-Verbose "Caching hash table. LogonName as Key and Values of DisplayName & UPN"
-    $ADHash = $AllADUsers | Get-ADHash
+        Write-Verbose "Caching hash table. LogonName as Key and Values of DisplayName & UPN"
+        $ADHash = $AllADUsers | Get-ADHash
 
-    Write-Verbose "Caching hash table. DN as Key and Values of DisplayName, UPN & LogonName"
-    $ADHashDN = $AllADUsers | Get-ADHashDN
+        Write-Verbose "Caching hash table. DN as Key and Values of DisplayName, UPN & LogonName"
+        $ADHashDN = $AllADUsers | Get-ADHashDN
 
-    Write-Verbose "Caching hash table. CN as Key and Values of DisplayName, UPN & LogonName"
-    $ADHashCN = $AllADUsers | Get-ADHashCN
+        Write-Verbose "Caching hash table. CN as Key and Values of DisplayName, UPN & LogonName"
+        $ADHashCN = $AllADUsers | Get-ADHashCN
+    }
 
-    Write-Verbose "Retrieving distinguishedname's of all Exchange Mailboxes"
-    $allMailboxes = (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname)
+    Write-Verbose "Retrieving all Exchange Mailboxes"
+    $allBoxes = Get-Mailbox -ResultSize unlimited
+    $allMailboxes = $allBoxes | Select -expandproperty distinguishedname
 
-    if (! $SkipSendAs) {
+    if (-not $SkipSendAs) {
         Write-Verbose "Getting SendAs permissions for each mailbox and writing to file"
         $allMailboxes | Get-SendAsPerms -ADHashDN $ADHashDN -ADHash $ADHash  |
             Select Object, UPN, PrimarySMTPAddress, Granted, GrantedUPN, GrantedSMTP, Checking, GroupMember, Type, Permission |
-            Export-csv (Join-Path $ReportPath "SendAsPerms.csv") -NoTypeInformation
+            Export-csv (Join-Path $ReportPath "SendAsPerms.csv") -NoTypeInformation -Encoding UTF8
     }
-    
-    if (! $SkipSendOnBehalf) {
+
+    if (-not $SkipSendOnBehalf) {
         Write-Verbose "Getting SendOnBehalf permissions for each mailbox and writing to file"
-        $allMailboxes | Get-SendOnBehalfPerms -ADHashCN $ADHashCN -ADHashDN $ADHashDN| 
+        $allMailboxes | Get-SendOnBehalfPerms -ADHashCN $ADHashCN -ADHashDN $ADHashDN|
             Select Object, UPN, PrimarySMTPAddress, Granted, GrantedUPN, GrantedSMTP, Checking, GroupMember, Type, Permission |
-            Export-csv (Join-Path $ReportPath "SendOnBehalfPerms.csv") -NoTypeInformation
+            Export-csv (Join-Path $ReportPath "SendOnBehalfPerms.csv") -NoTypeInformation -Encoding UTF8
     }
-    
-    if (! $SkipFullAccess) {
+
+    if (-not $SkipFullAccess) {
         Write-Verbose "Getting FullAccess permissions for each mailbox and writing to file"
         $allMailboxes | Get-FullAccessPerms -ADHashDN $ADHashDN -ADHash $ADHash |
-        Select Object, UPN, PrimarySMTPAddress, Granted, GrantedUPN, GrantedSMTP, Checking, GroupMember, Type, Permission |
-            Export-csv (Join-Path $ReportPath "FullAccessPerms.csv") -NoTypeInformation
+            Select Object, UPN, PrimarySMTPAddress, Granted, GrantedUPN, GrantedSMTP, Checking, GroupMember, Type, Permission |
+            Export-csv (Join-Path $ReportPath "FullAccessPerms.csv") -NoTypeInformation -Encoding UTF8
+    }
+
+    if (-not $SkipFolderPerms) {
+        Write-Verbose "Getting Folder Permissions for each mailbox and writing to file"
+        $allBoxes | Get-MailboxFolderPerms |
+            Select DisplayName, PrimarySMTPAddress, UserPrincipalName, Folder, AccessRights, User |
+            Export-csv (Join-Path $ReportPath "FolderPerms.csv") -NoTypeInformation -Encoding UTF8
     }
 
     $AllPermissions = $null
@@ -146,7 +159,7 @@
     $AllPermissions = Get-ChildItem -Path $Report -Include "SendAsPerms.csv", "SendOnBehalfPerms.csv", "FullAccessPerms.csv" -Exclude "AllPermissions.csv" | % {
         Import-Csv $_
     }
-    
-    $AllPermissions | Export-Csv (Join-Path $ReportPath "AllPermissions.csv") -NoTypeInformation
+
+    $AllPermissions | Export-Csv (Join-Path $ReportPath "AllPermissions.csv") -NoTypeInformation -Encoding UTF8
     Write-Verbose "Combined all CSV's into a single file named, AllPermissions.csv"
 }

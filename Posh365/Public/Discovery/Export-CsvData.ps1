@@ -85,7 +85,7 @@ import-csv .\file.csv | Export-CsvData -JoinType and -FindInColumn ProxyAddresse
         [String]$JoinType,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet("ProxyAddresses", "EmailAddresses", "EmailAddress", "AddressOrMember", "x500", "UserPrincipalName", "PrimarySmtpAddress", "MembersName", "Member", "Members", "MemberOf")]
+        [ValidateSet("ProxyAddresses", "EmailAddresses", "EmailAddress", "AddressOrMember", "x500", "UserPrincipalName", "PrimarySmtpAddress", "MembersName", "Member", "Members", "MemberOf", "ManagedBy")]
         [String] $FindInColumn,
 
         [Parameter()]

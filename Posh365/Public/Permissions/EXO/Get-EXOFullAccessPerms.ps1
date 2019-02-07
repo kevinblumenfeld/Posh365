@@ -3,15 +3,15 @@ function Get-EXOFullAccessPerms {
     .SYNOPSIS
     Outputs Full Access permissions for each object that has permissions assigned.
     This is for On-Premises Exchange 2010, 2013, 2016+
-    
+
     .EXAMPLE
-    
+
     (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-EXOFullAccessPerms | Export-csv .\FA.csv -NoTypeInformation
 
     If not running from Exchange Management Shell (EMS), run this first:
 
     Connect-Exchange -NoPrefix
-    
+
     #>
     [CmdletBinding()]
     Param (
@@ -29,17 +29,18 @@ function Get-EXOFullAccessPerms {
 
     )
     Begin {
-        
+
 
     }
     Process {
         Write-Verbose "Inspecting: `t $_"
         Get-MailboxPermission $_ |
             Where-Object {
-            $_.AccessRights -like "*FullAccess*" -and 
-            !$_.IsInherited -and !$_.user.startswith('S-1-5-21-') -and 
+            $_.AccessRights -like "*FullAccess*" -and
+            !$_.IsInherited -and !$_.user.startswith('S-1-5-21-') -and
             !$_.user.startswith('NT AUTHORITY\SELF') -and
-            !$_.user.contains('\')
+            !$_.user.contains('\') -and
+            !$_.Deny
         } | ForEach-Object {
             $Type = $null
             $User = $_.User
@@ -52,23 +53,23 @@ function Get-EXOFullAccessPerms {
             if ($RecipientHash.ContainsKey($_.User)) {
                 $Email = $RecipientHash["$($_.User)"].PrimarySMTPAddress
                 $Type = $RecipientHash["$($_.User)"].RecipientTypeDetails
-            }            
+            }
             if ($RecipientLiveIDHash.ContainsKey($_.User)) {
-                $User = $RecipientLiveIDHash["$($_.User)"].Name 
+                $User = $RecipientLiveIDHash["$($_.User)"].Name
                 $Email = $RecipientLiveIDHash["$($_.User)"].PrimarySMTPAddress
                 $Type = $RecipientLiveIDHash["$($_.User)"].RecipientTypeDetails
             }
             [pscustomobject]@{
-                Object              = $_.Identity
-                ObjectPrimarySMTP   = $RecipientHash["$($_.Identity)"].PrimarySMTPAddress
+                Object               = $_.Identity
+                ObjectPrimarySMTP    = $RecipientHash["$($_.Identity)"].PrimarySMTPAddress
                 Granted              = $User
                 GrantedPrimarySMTP   = $Email
-                RecipientTypeDetails = $Type          
+                RecipientTypeDetails = $Type
                 Permission           = "FullAccess"
-            }  
+            }
         }
     }
     END {
-        
+
     }
 }
