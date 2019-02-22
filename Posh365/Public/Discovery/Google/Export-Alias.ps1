@@ -47,7 +47,10 @@ function Export-Alias {
         [string] $DontImportCsv,
 
         [Parameter()]
-        [string] $DontImportCsvHeader = 'Mail'
+        [string] $DontImportCsvHeader = 'Mail',
+
+        [Parameter()]
+        [switch] $DontPrependsmtp
 
     )
     $Prop = @(
@@ -64,26 +67,55 @@ function Export-Alias {
     )
 
     $Alias = Import-Csv $AliasCsv
-    if ($DontImportCsv) {
-        $DontImport = (Import-Csv $DontImportCsv).$DontImportCsvHeader
-        foreach ($CurAlias in $Alias) {
-            foreach ($CurProp in $Prop) {
-                if ($CurAlias.$CurProp -and -not ($DontImport -contains $CurAlias.$CurProp)) {
-                    [PSCustomObject]@{
-                        Mail  = $CurAlias.$AliasCsvHeader
-                        Alias = 'smtp:{0}' -f $CurAlias.$CurProp
+    if (-not $DontPrependsmtp) {
+        if ($DontImportCsv) {
+            $DontImport = (Import-Csv $DontImportCsv).$DontImportCsvHeader
+            foreach ($CurAlias in $Alias) {
+                foreach ($CurProp in $Prop) {
+                    if ($CurAlias.$CurProp -and -not ($DontImport -contains $CurAlias.$CurProp)) {
+                        [PSCustomObject]@{
+                            Mail  = $CurAlias.$AliasCsvHeader
+                            Alias = 'smtp:{0}' -f $CurAlias.$CurProp
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            foreach ($CurAlias in $Alias) {
+                foreach ($CurProp in $Prop) {
+                    if ($CurAlias.$CurProp) {
+                        [PSCustomObject]@{
+                            Mail  = $CurAlias.$AliasCsvHeader
+                            Alias = 'smtp:{0}' -f $CurAlias.$CurProp
+                        }
                     }
                 }
             }
         }
     }
     else {
-        foreach ($CurAlias in $Alias) {
-            foreach ($CurProp in $Prop) {
-                if ($CurAlias.$CurProp) {
-                    [PSCustomObject]@{
-                        Mail  = $CurAlias.$AliasCsvHeader
-                        Alias = 'smtp:{0}' -f $CurAlias.$CurProp
+        if ($DontImportCsv) {
+            $DontImport = (Import-Csv $DontImportCsv).$DontImportCsvHeader
+            foreach ($CurAlias in $Alias) {
+                foreach ($CurProp in $Prop) {
+                    if ($CurAlias.$CurProp -and -not ($DontImport -contains $CurAlias.$CurProp)) {
+                        [PSCustomObject]@{
+                            Mail  = $CurAlias.$AliasCsvHeader
+                            Alias = $CurAlias.$CurProp
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            foreach ($CurAlias in $Alias) {
+                foreach ($CurProp in $Prop) {
+                    if ($CurAlias.$CurProp) {
+                        [PSCustomObject]@{
+                            Mail  = $CurAlias.$AliasCsvHeader
+                            Alias = $CurAlias.$CurProp
+                        }
                     }
                 }
             }

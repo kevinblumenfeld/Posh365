@@ -249,7 +249,7 @@ function Import-GoogleToEXOGroup {
 
                     } | Export-Csv -Path $LogPath -NoTypeInformation -Append
 
-                    Write-HostLog -Message "Setting`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status "Failed"
+                    Write-HostLog -Message "Setting`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status "Success"
 
                 }
                 catch {
@@ -267,7 +267,7 @@ function Import-GoogleToEXOGroup {
 
                     } | Export-Csv -Path $LogPath -NoTypeInformation -Append
 
-                    Write-HostLog -Message "Setting`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status "Success"
+                    Write-HostLog -Message "Setting`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status "Failed"
 
                 }
             }
