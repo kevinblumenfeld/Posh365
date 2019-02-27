@@ -1,39 +1,29 @@
 function Export-GoogleAddress {
     <#
     .SYNOPSIS
-    Google's GAM tool exports aliases
-    This transforms that data and exports it into an importable format in the Microsoft world
+    Google's GAM shared mailbox dump is exported with relevant data to import into 365
 
     .DESCRIPTION
-    Google's GAM tool exports aliases
-    This transforms that data and exports it into an importable format in the Microsoft world
+    Long description
 
-    .PARAMETER AliasCsv
-    Mandatory Parameter example -AliasCsv "c:\scripts\aliases.csv"
-
-    .PARAMETER AliasCsvHeader
-    Defaults to PrimaryEmail header but can be changed as needed
-    Must match the header name of the key of the spreadsheet
-
-    .PARAMETER DontImportCsv
-    Optional Parameter
-    A CSV that typically contains primary smtp addresses
-    Since you are importing only aliases they should not match any entries on this list
-    This will filter out any matches to this list
-
-    .PARAMETER DontImportCsvHeader
-    Optional Parameter
-    Defaults to Mail header but can be changed as needed
+    .PARAMETER SharedCsv
+    Parameter description
 
     .EXAMPLE
-    Export-Alias -AliasCsv .\Aliases.csv -DontImportCsv .\Primaries.csv | Export-Csv .\ToImport.csv -NoTypeInformation -Encoding UTF8
+    Export-GoogleAddress -SharedCsv C:\Scripts\Q\archive\QShared.csv
 
     .EXAMPLE
-    Export-Alias -AliasCsv c:\scripts\Aliases.csv -DontImportCsv c:\scripts\Primaries.csv | Export-Csv c:\scripts\ToImport.csv -NoTypeInformation -Encoding UTF8
+    Export-GoogleAddress -SharedCsv C:\Scripts\Q\archive\QShared.csv | Export-csv .\for365.csv -notypeinformation
 
     .NOTES
-    General notes
+    EXAMPLE OF OUTPUT....
+
+    primaryEmail,name.familyName,name.fullName,name.givenName
+    joe@contoso.com,smith,joe smith,joe
+    jane@contoso.com,jones,jane jones,jane
+
     #>
+
 
     param (
 

@@ -1,4 +1,4 @@
-function Export-Alias {
+function Export-GoogleAlias {
     <#
     .SYNOPSIS
     Google's GAM tool exports aliases
@@ -26,10 +26,10 @@ function Export-Alias {
     Defaults to Mail header but can be changed as needed
 
     .EXAMPLE
-    Export-Alias -AliasCsv .\Aliases.csv -DontImportCsv .\Primaries.csv | Export-Csv .\ToImport.csv -NoTypeInformation -Encoding UTF8
+    Export-GoogleAlias -AliasCsv .\Aliases.csv -DontImportCsv .\Primaries.csv | Export-Csv .\ToImport.csv -NoTypeInformation -Encoding UTF8
 
     .EXAMPLE
-    Export-Alias -AliasCsv c:\scripts\Aliases.csv -DontImportCsv c:\scripts\Primaries.csv | Export-Csv c:\scripts\ToImport.csv -NoTypeInformation -Encoding UTF8
+    Export-GoogleAlias -AliasCsv c:\scripts\Aliases.csv -DontImportCsv c:\scripts\Primaries.csv | Export-Csv c:\scripts\ToImport.csv -NoTypeInformation -Encoding UTF8
 
     .NOTES
     General notes
