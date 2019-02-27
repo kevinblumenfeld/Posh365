@@ -13,19 +13,19 @@
     "Object","UPN","Granted","GrantedUPN","Permission"
 
     .EXAMPLE
-    Get-MailboxPerms -ReportPath C:\PermsReports -Verbose
+    Get-MailboxPerms -ReportPath C:\pScripts -Verbose
 
     .EXAMPLE
-    Get-MailboxPerms -ReportPath C:\PermsReports -SkipFullAccess -Verbose
+    Get-MailboxPerms -ReportPath C:\pScripts -SkipFullAccess -Verbose
 
     .EXAMPLE
-    Get-MailboxPerms -ReportPath C:\PermsReports -SkipSendOnBehalf -Verbose
+    Get-MailboxPerms -ReportPath C:\pScripts -SkipSendOnBehalf -Verbose
 
     .EXAMPLE
-    Get-MailboxPerms -ReportPath C:\PermsReports -SkipSendAs -SkipFullAccess -Verbose
+    Get-MailboxPerms -ReportPath C:\pScripts -SkipSendAs -SkipFullAccess -Verbose
 
     .EXAMPLE
-    Get-MailboxPerms -ReportPath C:\PermsReports -PowerShell2 -ExchangeServer "ExServer01" -Verbose
+    Get-MailboxPerms -ReportPath C:\pScripts -PowerShell2 -ExchangeServer "ExServer01" -Verbose
     ***ONLY PS2: When running from PowerShell 2 (Exchange 2010 Server)***
 
     ***FIRST***: Be sure to dot-source the function with the below command (change the path):
@@ -83,7 +83,7 @@
         if (!$ExchangeServer) {
             Write-Warning "********************************************************************************************"
             Write-Warning "               Re-Run the command specifying the -ExchangeServer parameter                  "
-            Write-Warning "ex. Get-MailboxPerms -ReportPath C:\PermsReports -PowerShell2 -ExchangeServer `"ExServer01`""
+            Write-Warning "ex. Get-MailboxPerms -ReportPath C:\pScripts -PowerShell2 -ExchangeServer `"ExServer01`""
             Write-Warning "                               Script is terminating                                        "
             Write-Warning "********************************************************************************************"
             throw

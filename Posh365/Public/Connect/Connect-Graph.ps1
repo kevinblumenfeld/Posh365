@@ -2,9 +2,12 @@ function Connect-Graph {
     [CmdletBinding()]
     param(
 
-        [parameter(Mandatory, HelpMessage = "Use either format, tenant or tenant.onmicrosoft.com")]
+        [Parameter(Mandatory, HelpMessage = "Use either format, tenant or tenant.onmicrosoft.com")]
         [ValidateNotNullOrEmpty()]
         [string] $Tenant,
+
+        [Parameter()]
+        [string] $Identifier,
 
         [Parameter()]
         [switch] $DeleteCreds
@@ -17,8 +20,16 @@ function Connect-Graph {
     $RootPath = $env:USERPROFILE + "\ps\"
     $KeyPath = $Rootpath + "creds\"
 
+    if ($Identifier) {
+        $TenantAndID = $Tenant + $Identifier
+    }
+    else {
+        $TenantAndID = $Tenant
+    }
+
+
     if ($DeleteCreds) {
-        Remove-Item ($KeyPath + "$($Tenant).AzureXml")
+        Remove-Item ($KeyPath + "$($TenantAndID).AzureXml")
         break
     }
     # Create KeyPath Directory
@@ -30,15 +41,15 @@ function Connect-Graph {
             throw $_.Exception.Message
         }
     }
-    if (Test-Path ($KeyPath + "$($Tenant).AzureXml")) {
-        [System.Management.Automation.PSCredential]$Script:AzureCredential = Import-Clixml ($KeyPath + "$($Tenant).AzureXml")
+    if (Test-Path ($KeyPath + "$($TenantAndID).AzureXml")) {
+        [System.Management.Automation.PSCredential]$Script:AzureCredential = Import-Clixml ($KeyPath + "$($TenantAndID).AzureXml")
         $ClientID = $AzureCredential.GetNetworkCredential().username
         $Secret = $AzureCredential.GetNetworkCredential().Password
 
     }
     else {
         [System.Management.Automation.PSCredential]$Script:AzureCredential = Get-Credential -Message "Enter Application ID (client id) as Username and API Secret as Password"
-        $AzureCredential | Export-Clixml ($KeyPath + "$($Tenant).AzureXml")
+        $AzureCredential | Export-Clixml ($KeyPath + "$($TenantAndID).AzureXml")
         $ClientID = $AzureCredential.GetNetworkCredential().username
         $Secret = $AzureCredential.GetNetworkCredential().Password
     }
@@ -62,6 +73,6 @@ function Connect-Graph {
         Write-Error 'Could not get the session. incorrect app or account?'
         throw $_
     }
-
+    #$Session
     $Session.access_token
 }

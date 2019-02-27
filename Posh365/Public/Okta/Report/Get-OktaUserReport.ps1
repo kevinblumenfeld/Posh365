@@ -59,7 +59,10 @@ function Get-OktaUserReport {
         [string] $Filter,
 
         [Parameter()]
-        [string] $Id
+        [string] $Id,
+
+        [Parameter()]
+        [string] $Login
     )
 
     if ($SearchString -and $filter -or ($SearchString -and $Id) -or ($Filter -and $Id)) {
@@ -77,7 +80,7 @@ function Get-OktaUserReport {
         "Content-Type"  = "application/json"
     }
 
-    if (-not $SearchString -and -not $id -and -not $Filter) {
+    if (-not $SearchString -and -not $id -and -not $Filter -and -not $Login) {
         $RestSplat = @{
             Uri     = "https://$Url.okta.com/api/v1/users/?limit=200"
             Headers = $Headers
@@ -103,6 +106,13 @@ function Get-OktaUserReport {
         if ($Id) {
             $RestSplat = @{
                 Uri     = 'https://{0}.okta.com/api/v1/users/?limit=200&filter=id eq "{1}"' -f $Url, $id
+                Headers = $Headers
+                Method  = 'Get'
+            }
+        }
+        if ($Login) {
+            $RestSplat = @{
+                Uri     = "https://$Url.okta.com/api/v1/users/$Login"
                 Headers = $Headers
                 Method  = 'Get'
             }
