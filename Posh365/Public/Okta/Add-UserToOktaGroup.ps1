@@ -1,36 +1,41 @@
+using namespace System.Management.Automation
+
 function Add-UserToOktaGroup {
     <#
     .SYNOPSIS
-    Add Uses to Okta Groups
+    Add Users to Okta Groups
 
     .DESCRIPTION
     Add any user that lives in Okta to Okta Groups (these are groups mastered in Okta Only)
 
-    .PARAMETER UserList
-    This is a list of logins (Microsoft uses the term UserPrincipalName) fed by pipeline (See Examples)
-
     .PARAMETER GroupName
-    This is the name of the Okta Group
+    The name of the Okta group
+
+    .PARAMETER UserPrincipalName
+    To add a user to a group without feeding from pipeline use this see example below
+
+    .PARAMETER User
+    This is used by the script when feeding users via pipeline
 
     .EXAMPLE
-    Import-Csv .\users2add.csv | Add-UserToOktaGroup -GroupName "Accounting"
+    Import-Csv .\users.csv | Add-UserToOktaGroup -GroupName 'Accounting' -Verbose
+
+    .EXAMPLE
+    Add-UserToOktaGroup -GroupName 'Accounting' -UserPrincipalName 'jane@contoso.com' -Verbose
+
+    .EXAMPLE
+    Add-UserToOktaGroup -GroupName 'Accounting' -UserPrincipalName 'jane@contoso.com','joe@contoso.com' -Verbose
 
     .NOTES
-    CSV must have at least one column with header named either UserPrincipalName OR Login
+    CSV must have at least one column with header named login
 
     for example...
-
-    DisplayName, UserPrincipalName, Email
-    Jane Smith, Jane@contoso.com, Jane@contoso.com
-    Joe Smith, Joe@contoso.com, Joe@contoso.com
-
-    OR
 
     DisplayName, Login, Email
     Jane Smith, Jane@contoso.com, Jane@contoso.com
     Joe Smith, Joe@contoso.com, Joe@contoso.com
 
-    OR
+    OR perhaps just one column
 
     Login
     Jane@contoso.com
@@ -40,48 +45,92 @@ function Add-UserToOktaGroup {
 
     #>
 
-    Param (
+    [CmdletBinding(DefaultParameterSetName = 'UPN')]
+    param(
 
-        [Parameter(Mandatory)]
-        [string] $GroupName,
+        [Parameter(Position = 0, Mandatory)]
+        [string]
+        $GroupName,
 
-        [Parameter(ValueFromPipeline)]
-        [Alias("Login", "UserPrincipalName")]
-        $UserList
+        [Parameter(Position = 1, ParameterSetName = "UPN")]
+        [Alias("UPN")]
+        [string[]]
+        $UserPrincipalName,
+
+        [Parameter(Mandatory, ValueFromPipeline, ParameterSetName = "Pipeline")]
+        [Alias("InputObject")]
+        [object[]]
+        $User
 
     )
     begin {
-        $GroupId = (Get-OktaGroupReport -filter 'type eq "OKTA_GROUP"' | Where-Object {$_.Name -eq $GroupName}).id
+        $GroupId = Get-OktaGroupReport -Filter 'type eq "OKTA_GROUP"' |
+            Where-Object Name -eq $GroupName |
+            Select-Object -ExpandProperty id
+
         if (-not $GroupId) {
-            Write-Host "-------------------------------------------------------------------" -ForegroundColor "Red" -BackgroundColor "White"
-            Write-Host "              Group: NOT FOUND. PLEASE TRY AGAIN!                  " -ForegroundColor "Red" -BackgroundColor "White"
-            Write-Host "              Try finding your group like this...                  " -ForegroundColor "Red" -BackgroundColor "White"
-            Write-Host "  Get-OktaGroupReport -SearchString TheFirstFewLettersOfGroupName  " -ForegroundColor "Red" -BackgroundColor "White"
-            Write-Host "-------------------------------------------------------------------" -ForegroundColor "Red" -BackgroundColor "White"
-            break
+            $ErrorRecord = [ErrorRecord]::new(
+                [ArgumentException]::new("Group $GroupName not found. Please try again, or locate the group name first with <Get-OktaGroupReport -SearchString TheFirstFewLettersOfGroupName>."),
+                'Okta.GroupNotFound',
+                [ErrorCategory]::InvalidArgument,
+                $GroupName
+            )
+
+            $PSCmdlet.ThrowTerminatingError($ErrorRecord)
         }
-        Write-Host "Group: $GroupName     ID:$GroupId" -ForegroundColor "Blue" -BackgroundColor "White"
+
+        Write-Information ("Group: {0} ID: {1}" -f $GroupName, $GroupId)
     }
     process {
-        foreach ($User in $UserList) {
-            $Login = $User.Login
-            $Url = $OKTACredential.GetNetworkCredential().username
-            $Token = $OKTACredential.GetNetworkCredential().Password
-            $Headers = @{
-                "Authorization" = "SSWS $Token"
-                "Accept"        = "application/json"
-                "Content-Type"  = "application/json"
-            }
-            $UserId = (Get-SingleOktaUserReport -Login $Login).id
+        switch ($PSCmdlet.ParameterSetName) {
+            "UPN" {
+                foreach ($Object in $UserPrincipalName) {
+                    $Url = $OKTACredential.GetNetworkCredential().username
+                    $Token = $OKTACredential.GetNetworkCredential().Password
+                    $UserId = Get-SingleOktaUserReport -Login $Object |
+                        Select-Object -ExpandProperty id
+                    $Headers = @{
+                        "Authorization" = "SSWS $Token"
+                        "Accept"        = "application/json"
+                        "Content-Type"  = "application/json"
+                    }
 
-            $RestSplat = @{
-                Uri     = 'https://{0}.okta.com/api/v1/groups/{1}/users/{2}' -f $Url, $GroupId, $UserId
-                Headers = $Headers
-                Method  = 'Put'
-            }
-            $Response = Invoke-WebRequest @RestSplat
+                    $RestSplat = @{
+                        Uri     = 'https://{0}.okta.com/api/v1/groups/{1}/users/{2}' -f $Url, $GroupId, $UserId
+                        Headers = $Headers
+                        Method  = 'Put'
+                    }
+                    $null = Invoke-WebRequest @RestSplat -Verbose:$false
 
-            Write-Host -ForegroundColor Green "Adding:`t$Login`tID:$UserId"
+                    Write-Verbose ("Adding: {0} ID: {1}" -f $Object, $UserId)
+                }
+            }
+            "Pipeline" {
+                if ($MyInvocation.ExpectingInput) {
+                    $User = , $User
+                }
+
+                foreach ($Object in $User) {
+                    $Url = $OKTACredential.GetNetworkCredential().username
+                    $Token = $OKTACredential.GetNetworkCredential().Password
+                    $UserId = Get-SingleOktaUserReport -Login $Object.Login |
+                        Select-Object -ExpandProperty id
+                    $Headers = @{
+                        "Authorization" = "SSWS $Token"
+                        "Accept"        = "application/json"
+                        "Content-Type"  = "application/json"
+                    }
+
+                    $RestSplat = @{
+                        Uri     = 'https://{0}.okta.com/api/v1/groups/{1}/users/{2}' -f $Url, $GroupId, $UserId
+                        Headers = $Headers
+                        Method  = 'Put'
+                    }
+                    $null = Invoke-WebRequest @RestSplat -Verbose:$false
+
+                    Write-Verbose ("Adding: {0} ID: {1}" -f $Object.Login, $UserId)
+                }
+            }
         }
     }
     end {
