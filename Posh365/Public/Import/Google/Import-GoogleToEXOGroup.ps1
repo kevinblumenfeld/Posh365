@@ -160,8 +160,11 @@ function Import-GoogleToEXOGroup {
             }
 
             $SetHash = @{
-                Identity                      = $CurGroup.Email
-                HiddenFromAddressListsEnabled = -not [bool]::Parse($CurGroup.includeInGlobalAddressList)
+                Identity = $CurGroup.Email
+            }
+
+            if ($CurGroup.includeInGlobalAddressList) {
+                $SetHash['HiddenFromAddressListsEnabled'] = -not [bool]::Parse($CurGroup.includeInGlobalAddressList)
             }
 
             # messageModerationLevel (A moderator approves messages sent to recipient before delivered)
@@ -200,7 +203,7 @@ function Import-GoogleToEXOGroup {
             # Create a splat with only parameters with values for New-DistributionGroup
             $NewSplat = @{}
             ForEach ($Key in $NewHash.keys) {
-                if ($($NewHash.item($Key))) {
+                if ($NewHash.item($Key) -ne $null) {
                     $NewSplat.add($Key, $($NewHash.item($Key)))
                 }
             }
@@ -208,7 +211,7 @@ function Import-GoogleToEXOGroup {
             # Create a splat with only parameters with values for Set-DistributionGroup
             $SetSplat = @{}
             ForEach ($Key in $SetHash.keys) {
-                if ($($SetHash.item($Key))) {
+                if ($SetHash.item($Key) -ne $null) {
                     $SetSplat.add($Key, $($SetHash.item($Key)))
                 }
             }

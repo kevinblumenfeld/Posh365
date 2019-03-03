@@ -1,18 +1,18 @@
 ﻿function Get-MigrationChain {
     param (
-        [Parameter(Mandatory = $true,
-            ValueFromPipeline = $true,
-            ValueFromPipelineByPropertyName = $true)]
-        [string[]] $Names,   
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        [string[]] $Names,
 
+        [Parameter()]
         [PSObject[]] $DataSet,
-        
+
         [Parameter(Mandatory = $false)]
         [string] $swvar = $swvar,
-        
+
+        [Parameter()]
         [Hashtable] $LoopDetection = @{}
     )
-	
+
     if ($swvar -notmatch "FullAccess|SendAs|SendOnBehalf") {
         $swvar = 'placeholder'
     }

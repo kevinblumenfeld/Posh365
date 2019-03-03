@@ -10,26 +10,35 @@
     This can be used as the migration batch file - just add a header of EmailAddress and you are ready to migrate!
 
     .EXAMPLE
-    Get-Content .\UPNs.txt  | Get-PermissionChain | Export-Csv .\MigrationBatch.csv -notypeinformation
+    Get-Content .\UPNs.txt  | Get-PermissionChain -PermissionReport C:\Scripts\perms.csv | Export-Csv .\MigrationBatch.csv -notypeinformation
 
     .EXAMPLE
-    "mailbox01@contoso.com" | Get-PermissionChain | Export-Csv .\MigrationBatch.csv -notypeinformation
+    "mailbox01@contoso.com" | Get-PermissionChain -PermissionReport C:\Scripts\perms.csv | Export-Csv .\MigrationBatch.csv -notypeinformation
 
     .EXAMPLE
-
-    Get-Content .\UPNs.txt  | Get-PermissionChain -IgnoreFullAccess | Export-Csv .\MigrationBatch.csv -notypeinformation
-    .EXAMPLE
-
-    Get-Content .\UPNs.txt  | Get-PermissionChain -IgnoreFullAccess -IgnoreSendOnBehalf | Export-Csv .\MigrationBatch.csv -notypeinformation
+    Get-Content .\UPNs.txt  | Get-PermissionChain -PermissionReport C:\Scripts\perms.csv -IgnoreFullAccess | Export-Csv .\MigrationBatch.csv -notypeinformation
 
     .EXAMPLE
-    "mailbox01@contoso.com","mailbox02@contoso.com" | Get-PermissionChain | Export-Csv .\MigrationBatch.csv -notypeinformation
+    Get-Content .\UPNs.txt  | Get-PermissionChain -PermissionReport C:\Scripts\perms.csv -IgnoreFullAccess -IgnoreSendOnBehalf | Export-Csv .\MigrationBatch.csv -notypeinformation
 
     .EXAMPLE
-    Get-Content .\UPNs.txt | Get-PermissionChain -ReportPath C:\Scripts\perms  | % {$upn = $_ ; try {Get-Mailbox -Identity $upn -ErrorAction stop > $null} catch {$upn}}
+    "mailbox01@contoso.com","mailbox02@contoso.com" | Get-PermissionChain -PermissionReport C:\Scripts\perms.csv | Export-Csv .\MigrationBatch.csv -notypeinformation
+
+    .EXAMPLE
+    Get-Content .\UPNs.txt | Get-PermissionChain -PermissionReport C:\Scripts\perms.csv  | % {$upn = $_ ; try {Get-Mailbox -Identity $upn -ErrorAction stop > $null} catch {$upn}}
 
     Make sure you are connect to Exchange Online for this example.
     This will verify that the mailbox has not been migrated to Exchange Online and only output the UPNs of mailboxes yet to be migrated
+
+    .NOTES
+    Must supply a csv -PermssionReport with all of the permissions that you would like to check against.
+
+    CSV must have this format/headers
+
+    UPN, GRANTEDUPN, PERMISSION
+    joe@contoso.com, fred@contoso.com, FULLACCESS
+    joe@contoso.com, fred@contoso.com, SENDAS
+    joe@contoso.com, fred@contoso.com, SENDONBEHALF
 
     #>
 
@@ -38,7 +47,7 @@
         [string] $Names,
 
         [Parameter(Mandatory = $true)]
-        [System.IO.FileInfo] $ReportPath,
+        [string] $PermissionReport,
 
         [Parameter(Mandatory = $false)]
         [switch] $IgnoreFullAccess,
@@ -50,10 +59,8 @@
         [switch] $IgnoreSendOnBehalf,
 
         [Parameter(Mandatory = $false)]
-        [switch] $CombineResultsWithOriginalList,
+        [switch] $CombineResultsWithOriginalList
 
-        [Parameter(Mandatory = $false, ParameterSetName = "Cache")]
-        [switch] $GeneratePermissionCacheOnly
     )
     Begin {
         $swvar = @()
@@ -68,22 +75,13 @@
         }
         $swvar = $swvar -join ("|")
 
-        New-Item -ItemType Directory c:\pScripts -ErrorAction SilentlyContinue
-
-        if (![System.IO.File]::Exists((Join-Path $ReportPath "allPermissions.csv"))) {
-            Get-MailboxPerms -ReportPath "C:\PermsReports"
-        }
-        If ($GeneratePermissionCacheOnly) {
-            Break
-        }
-
-        $Data = Import-Csv (Join-Path $ReportPath "allPermissions.csv")
+        $DataSet = Import-Csv $PermissionReport
         $Output = [System.Collections.Generic.HashSet[string]]::new()
         $AllNames = [System.Collections.Generic.HashSet[string]]::new()
     }
     Process {
         $AllNames.add($_) > $null
-        $Names | Get-MigrationChain -DataSet $Data -swvar $swvar | % { $Output.add($_) > $null }
+        $Names | Get-MigrationChain -DataSet $DataSet -swvar $swvar | % { $Output.add($_) > $null }
 
     }
     End {
@@ -95,3 +93,4 @@
         $Output | Sort
     }
 }
+
