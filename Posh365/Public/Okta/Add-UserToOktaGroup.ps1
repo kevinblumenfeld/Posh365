@@ -1,5 +1,3 @@
-using namespace System.Management.Automation
-
 function Add-UserToOktaGroup {
     <#
     .SYNOPSIS
@@ -69,10 +67,10 @@ function Add-UserToOktaGroup {
             Select-Object -ExpandProperty id
 
         if (-not $GroupId) {
-            $ErrorRecord = [ErrorRecord]::new(
+            $ErrorRecord = [System.Management.Automation.ErrorRecord]::new(
                 [ArgumentException]::new("Group $GroupName not found. Please try again, or locate the group name first with <Get-OktaGroupReport -SearchString TheFirstFewLettersOfGroupName>."),
                 'Okta.GroupNotFound',
-                [ErrorCategory]::InvalidArgument,
+                [System.Management.Automation.ErrorCategory]::InvalidArgument,
                 $GroupName
             )
 
