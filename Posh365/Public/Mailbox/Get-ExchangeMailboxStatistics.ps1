@@ -5,18 +5,18 @@ function Get-ExchangeMailboxStatistics {
     [CmdletBinding()]
     param (
 
-        [Parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Mandatory = $false)]
-        [Microsoft.Exchange.Data.Directory.Management.Mailbox] $Mailbox
+        [Parameter(ValueFromPipeline = $true, Mandatory = $false)]
+        $Mailbox
     )
     Begin {
 
     }
     Process {
         foreach ($CurMailbox in $Mailbox) {
-            $ArchiveGB = $CurMailbox | Get-MailboxStatistics -Archive -ErrorAction SilentlyContinue | ForEach-Object {
+            $ArchiveGB = Get-MailboxStatistics -identity $CurMailbox.PrimarySmtpAddress -Archive -ErrorAction SilentlyContinue | ForEach-Object {
                 [Math]::Round([Double]($_.TotalItemSize -replace '^.*\(| .+$|,') / 1GB, 5)
             }
-            $CurMailbox | Get-MailboxStatistics | Select-Object @(
+            Get-MailboxStatistics -identity $CurMailbox.PrimarySmtpAddress | Select-Object @(
                 'DisplayName'
                 @{
                     Name       = 'MailboxGB'
@@ -35,6 +35,7 @@ function Get-ExchangeMailboxStatistics {
                     }
                 }
                 'LastLogonTime'
+                'ItemCount'
             )
         }
     }
@@ -42,3 +43,5 @@ function Get-ExchangeMailboxStatistics {
 
     }
 }
+
+
