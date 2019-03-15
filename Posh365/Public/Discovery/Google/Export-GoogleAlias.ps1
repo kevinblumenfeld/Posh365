@@ -8,65 +8,58 @@ function Export-GoogleAlias {
     Google's GAM tool exports aliases
     This transforms that data and exports it into an importable format in the Microsoft world
 
-    .PARAMETER AliasCsv
-    Mandatory Parameter example -AliasCsv "c:\scripts\aliases.csv"
+    .PARAMETER MailboxCsv
+    Csv of mailboxes and aliases
 
-    .PARAMETER AliasCsvHeader
-    Defaults to PrimaryEmail header but can be changed as needed
-    Must match the header name of the key of the spreadsheet
+    .PARAMETER MailboxCsvHeaderOfPrimary
+    Defaults to header PrimaryEmail
 
     .PARAMETER DontImportCsv
-    Optional Parameter
-    A CSV that typically contains primary smtp addresses
-    Since you are importing only aliases they should not match any entries on this list
-    This will filter out any matches to this list
+    Csv with a list of addresses that you dont want to be imported
 
     .PARAMETER DontImportCsvHeader
-    Optional Parameter
-    Defaults to Mail header but can be changed as needed
+    Defaults to header PrimaryEmail
+    This is the "column" header that contains the list of addresses that you dont want to be imported
+    Useful when you are importing aliases and you dont want a primary email address to be imported as a secondary
+
+    .PARAMETER DontPrependsmtp
+    by default each address is prepended with "smtp:" like so...
+    smtp:user@contoso.com
+
+    This switch causes output to be like so...
+    user@contoso.com
 
     .EXAMPLE
-    Export-GoogleAlias -AliasCsv .\Aliases.csv -DontImportCsv .\Primaries.csv | Export-Csv .\ToImport.csv -NoTypeInformation -Encoding UTF8
-
-    .EXAMPLE
-    Export-GoogleAlias -AliasCsv c:\scripts\Aliases.csv -DontImportCsv c:\scripts\Primaries.csv | Export-Csv c:\scripts\ToImport.csv -NoTypeInformation -Encoding UTF8
+    Export-GoogleAlias -MailboxCsv .\Sharedmbx.csv -DontImportCsv .\Sharedmbx.csv -DontPrependsmtp | Export-Csv .\Shared-Aliases.csv -nti -Encoding UTF8
 
     .NOTES
     General notes
     #>
 
+
     param (
 
         [Parameter(Mandatory)]
-        [string] $AliasCsv,
+        [string] $MailboxCsv,
 
         [Parameter()]
-        [string] $AliasCsvHeader = 'PrimaryEmail',
+        [string] $MailboxCsvHeaderOfPrimary = 'PrimaryEmail',
 
         [Parameter()]
         [string] $DontImportCsv,
 
         [Parameter()]
-        [string] $DontImportCsvHeader = 'Mail',
+        [string] $DontImportCsvHeader = 'PrimaryEmail',
 
         [Parameter()]
         [switch] $DontPrependsmtp
 
     )
-    $Prop = @(
-        'aliases.0', 'aliases.1', 'aliases.2', 'aliases.3', 'aliases.4', 'aliases.5', 'aliases.6'
-        'aliases.7', 'aliases.8', 'aliases.9', 'aliases.10', 'aliases.11', 'aliases.12', 'aliases.13', 'aliases.14'
-        'aliases.15', 'aliases.16', 'aliases.17', 'aliases.18', 'aliases.19', 'aliases.20', 'aliases.21', 'aliases.22'
-        'aliases.23', 'aliases.24', 'aliases.25', 'aliases.26', 'aliases.27', 'aliases.28', 'aliases.29', 'emails.0.address'
-        'emails.1.address', 'emails.10.address', 'emails.11.address', 'emails.12.address', 'emails.13.address'
-        'emails.14.address', 'emails.15.address', 'emails.16.address', 'emails.17.address', 'emails.18.address'
-        'emails.19.address', 'emails.2.address', 'emails.20.address', 'emails.21.address', 'emails.22.address'
-        'emails.23.address', 'emails.24.address', 'emails.25.address', 'emails.26.address', 'emails.27.address'
-        'emails.28.address', 'emails.29.address', 'emails.29.primary', 'emails.3.address', 'emails.30.address'
-        'emails.4.address', 'emails.5.address', 'emails.6.address', 'emails.7.address', 'emails.8.address', 'emails.9.address'
-    )
 
-    $Alias = Import-Csv $AliasCsv
+    $Alias = Import-Csv $MailboxCsv
+    $Prop = ($Alias | Select-Object -first 1).psobject.properties.name.where{
+        $_ -like 'emails.*.address' -or $_ -like 'aliases.*'
+    }
     if (-not $DontPrependsmtp) {
         if ($DontImportCsv) {
             $DontImport = (Import-Csv $DontImportCsv).$DontImportCsvHeader
@@ -74,8 +67,8 @@ function Export-GoogleAlias {
                 foreach ($CurProp in $Prop) {
                     if ($CurAlias.$CurProp -and -not ($DontImport -contains $CurAlias.$CurProp)) {
                         [PSCustomObject]@{
-                            Mail  = $CurAlias.$AliasCsvHeader
-                            Alias = 'smtp:{0}' -f $CurAlias.$CurProp
+                            PrimarySmtpAddress = $CurAlias.$MailboxCsvHeaderOfPrimary
+                            Alias              = 'smtp:{0}' -f $CurAlias.$CurProp
                         }
                     }
                 }
@@ -86,8 +79,8 @@ function Export-GoogleAlias {
                 foreach ($CurProp in $Prop) {
                     if ($CurAlias.$CurProp) {
                         [PSCustomObject]@{
-                            Mail  = $CurAlias.$AliasCsvHeader
-                            Alias = 'smtp:{0}' -f $CurAlias.$CurProp
+                            PrimarySmtpAddress = $CurAlias.$MailboxCsvHeaderOfPrimary
+                            Alias              = 'smtp:{0}' -f $CurAlias.$CurProp
                         }
                     }
                 }
@@ -101,8 +94,8 @@ function Export-GoogleAlias {
                 foreach ($CurProp in $Prop) {
                     if ($CurAlias.$CurProp -and -not ($DontImport -contains $CurAlias.$CurProp)) {
                         [PSCustomObject]@{
-                            Mail  = $CurAlias.$AliasCsvHeader
-                            Alias = $CurAlias.$CurProp
+                            PrimarySmtpAddress = $CurAlias.$MailboxCsvHeaderOfPrimary
+                            Alias              = $CurAlias.$CurProp
                         }
                     }
                 }
@@ -113,8 +106,8 @@ function Export-GoogleAlias {
                 foreach ($CurProp in $Prop) {
                     if ($CurAlias.$CurProp) {
                         [PSCustomObject]@{
-                            Mail  = $CurAlias.$AliasCsvHeader
-                            Alias = $CurAlias.$CurProp
+                            PrimarySmtpAddress = $CurAlias.$MailboxCsvHeaderOfPrimary
+                            Alias              = $CurAlias.$CurProp
                         }
                     }
                 }

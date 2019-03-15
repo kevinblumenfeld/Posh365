@@ -41,7 +41,7 @@ function Import-QADData {
         [Parameter()]
         [Switch]$LogOnly,
 
-        [Parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Mandatory = $true)]
+        [Parameter(ValueFromPipeline = $true, Mandatory = $true)]
         $Row
 
     )

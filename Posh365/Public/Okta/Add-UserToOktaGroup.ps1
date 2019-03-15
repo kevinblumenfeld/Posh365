@@ -55,6 +55,9 @@ function Add-UserToOktaGroup {
         [string[]]
         $UserPrincipalName,
 
+        [Parameter()]
+        [string] $ErrorLog,
+
         [Parameter(Mandatory, ValueFromPipeline, ParameterSetName = "Pipeline")]
         [Alias("InputObject")]
         [object[]]
@@ -85,8 +88,7 @@ function Add-UserToOktaGroup {
                 foreach ($Object in $UserPrincipalName) {
                     $Url = $OKTACredential.GetNetworkCredential().username
                     $Token = $OKTACredential.GetNetworkCredential().Password
-                    $UserId = Get-SingleOktaUserReport -Login $Object |
-                        Select-Object -ExpandProperty id
+                    $UserLU = Get-SingleOktaUserReport -Login $Object
                     $Headers = @{
                         "Authorization" = "SSWS $Token"
                         "Accept"        = "application/json"
@@ -94,13 +96,13 @@ function Add-UserToOktaGroup {
                     }
 
                     $RestSplat = @{
-                        Uri     = 'https://{0}.okta.com/api/v1/groups/{1}/users/{2}' -f $Url, $GroupId, $UserId
+                        Uri     = 'https://{0}.okta.com/api/v1/groups/{1}/users/{2}' -f $Url, $GroupId, $UserLU.id
                         Headers = $Headers
                         Method  = 'Put'
                     }
                     $null = Invoke-WebRequest @RestSplat -Verbose:$false
 
-                    Write-Verbose ("Adding: {0} ID: {1}" -f $Object, $UserId)
+                    Write-Verbose ("Adding: {0} ID: {1}" -f $Object, $UserLU.id)
                 }
             }
             "Pipeline" {
@@ -111,22 +113,51 @@ function Add-UserToOktaGroup {
                 foreach ($Object in $User) {
                     $Url = $OKTACredential.GetNetworkCredential().username
                     $Token = $OKTACredential.GetNetworkCredential().Password
-                    $UserId = Get-SingleOktaUserReport -Login $Object.Login |
-                        Select-Object -ExpandProperty id
-                    $Headers = @{
-                        "Authorization" = "SSWS $Token"
-                        "Accept"        = "application/json"
-                        "Content-Type"  = "application/json"
-                    }
+                    try {
+                        $UserLU = Get-SingleOktaUserReport -Login $Object.Login -ErrorAction Stop
+                        write-host $UserLU.status
+                        if ($UserLu.status -eq 'DEPROVISIONED') {
+                            Write-Host "USER DEPROVISIONED: $($Object.Login)" -ForegroundColor RED
+                            if ($ErrorLog) {
+                                Add-Content -Path $ErrorLog -Value ("USERDEPROVISIONED" + "," + $Object.Login + "," + "USERDEPROVISIONED")
+                            }
+                            continue
+                        }
+                        else {
 
-                    $RestSplat = @{
-                        Uri     = 'https://{0}.okta.com/api/v1/groups/{1}/users/{2}' -f $Url, $GroupId, $UserId
-                        Headers = $Headers
-                        Method  = 'Put'
-                    }
-                    $null = Invoke-WebRequest @RestSplat -Verbose:$false
+                            Write-Host "USER FOUND: $($Object.Login)" -ForegroundColor Green
 
-                    Write-Verbose ("Adding: {0} ID: {1}" -f $Object.Login, $UserId)
+                            $Headers = @{
+                                "Authorization" = "SSWS $Token"
+                                "Accept"        = "application/json"
+                                "Content-Type"  = "application/json"
+                            }
+
+                            $RestSplat = @{
+                                Uri     = 'https://{0}.okta.com/api/v1/groups/{1}/users/{2}' -f $Url, $GroupId, $UserLU.id
+                                Headers = $Headers
+                                Method  = 'Put'
+                            }
+                            try {
+                                Write-Verbose ("Adding: {0} ID: {1}" -f $Object.Login, $UserLU.id)
+                                $null = Invoke-WebRequest @RestSplat -Verbose:$false -ErrorAction Stop
+                                Write-Host "SUCCESS ADD: $($Object.Login)" -ForegroundColor Green
+                            }
+                            catch {
+                                Write-Host "FAILED ADD: $($Object.Login)" -ForegroundColor Red
+                                if ($ErrorLog) {
+                                    Add-Content -Path $ErrorLog -Value ("FAILEDTOADD" + "," + $Object.Login + "," + $($_.Exception.Message))
+                                }
+
+                            }
+                        }
+                    }
+                    catch {
+                        Write-Host "USER NOT FOUND:`t$($Object.Login)" -ForegroundColor Red
+                        if ($ErrorLog) {
+                            Add-Content -Path $ErrorLog -Value ("USERNOTFOUND" + "," + $Object.Login + "," + $($_.Exception.Message))
+                        }
+                    }
                 }
             }
         }

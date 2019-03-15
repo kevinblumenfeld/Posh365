@@ -14,6 +14,9 @@ function Import-GoogleToSharedMailbox {
     .EXAMPLE
     Import-Csv .\GoogleShared.csv | Import-GoogleToSharedMailbox -LogPath .\EXOSharedMbxResults.csv
 
+    .EXAMPLE
+    Import-Csv .\Shared-Intial_and_Phone.csv | Import-GoogleToSharedMailbox -LogPath .\SharedMailboxCreation.csv
+
     .NOTES
 
     #>
@@ -21,6 +24,7 @@ function Import-GoogleToSharedMailbox {
     [CmdletBinding()]
     Param
     (
+
         [Parameter(Mandatory)]
         $LogPath,
 
@@ -34,96 +38,60 @@ function Import-GoogleToSharedMailbox {
     Process {
         ForEach ($Shared in $SharedList) {
 
-            $Alias = ($Shared.Email -split "@")[0]
+            $Alias = ($Shared.PrimarySmtpAddress -split "@")[0]
 
-            $ResourceType = switch ($Shared.resourceCategory) {
-                'CATEGORY_UNKNOWN' { 'ROOM' }
-                'CONFERENCE_ROOM' { 'ROOM' }
-            }
-
-            $NewHash = @{
-                Name               = $Shared.Name
-                DisplayName        = $Shared.Name
+            $NewSharedSplat = @{
+                Name               = $Shared.DisplayName
+                DisplayName        = $Shared.DisplayName
+                FirstName          = $Shared.FirstName
+                LastName           = $Shared.LastName
                 Alias              = $Alias
-                PrimarySmtpAddress = $Shared.Email
-                $ResourceType      = $True
-                Office             = $Shared.BuildingName
-            }
-
-            if ($Shared.Capacity) {
-                $NewHash['ResourceCapacity'] = $Shared.Capacity
+                PrimarySmtpAddress = $Shared.PrimarySmtpAddress
+                Shared             = $True
+                ErrorAction        = 'Stop'
             }
 
             try {
-                $NewResource = New-Mailbox @NewHash -ErrorAction Stop
+                $NewShared = New-Mailbox @NewSharedSplat
 
                 [PSCustomObject]@{
-                    Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
-                    Result          = 'SUCCESS'
-                    Action          = 'CREATING'
-                    Object          = $ResourceType
-                    Name            = $Shared.Name
-                    Email           = $Shared.Email
-                    FullNameError   = 'SUCCESS'
-                    Message         = 'SUCCESS'
-                    ExtendedMessage = 'SUCCESS'
+                    Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
+                    Result             = 'SUCCESS'
+                    Action             = 'CREATING'
+                    Object             = $NewShared.RecipientTypeDetails
+                    Name               = $NewShared.Name
+                    Alias              = $NewShared.Alias
+                    UserPrincipalName  = $NewShared.UserPrincipalName
+                    PrimarySmtpAddress = $NewShared.PrimarySmtpAddress
+                    EmailAddresses     = [string]::join('|', [string[]]$NewShared.EmailAddresses)
+                    ObjectId           = $NewShared.ExternalDirectoryObjectId
+                    FullNameError      = 'SUCCESS'
+                    Message            = 'SUCCESS'
+                    ExtendedMessage    = 'SUCCESS'
                 } | Export-Csv -Path $LogPath -NoTypeInformation -Append
 
-                Write-HostLog -Message "Creating`t$($NewResource.Name)`t$($NewResource.PrimarySmtpAddress)" -Status "Success"
-                try {
-                    if ($Shared.featureInstances) {
+                Write-HostLog -Message "Creating Mailbox`t$($NewShared.Name)`t$($NewShared.PrimarySmtpAddress)" -Status "Success"
 
-                        $NewResource | Set-Mailbox -ResourceCustom ($Shared.featureInstances)
-
-                        [PSCustomObject]@{
-                            Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
-                            Result          = 'SUCCESS'
-                            Action          = 'SETTING'
-                            Object          = $ResourceType
-                            Name            = $Shared.Name
-                            Email           = $Shared.Email
-                            FullNameError   = 'SUCCESS'
-                            Message         = 'SUCCESS'
-                            ExtendedMessage = 'SUCCESS'
-                        } | Export-Csv -Path $LogPath -NoTypeInformation -Append
-
-                        Write-HostLog -Message "Setting`t$($NewResource.Name)`t$($NewResource.PrimarySmtpAddress)" -Status "Success"
-                    }
-                }
-                catch {
-
-                    [PSCustomObject]@{
-                        Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
-                        Result          = 'FAILURE'
-                        Action          = 'SETTING'
-                        Object          = $ResourceType
-                        Name            = $Shared.Name
-                        Email           = $Shared.Email
-                        FullNameError   = $_.Exception.GetType().fullname
-                        Message         = $_.CategoryInfo.Reason
-                        ExtendedMessage = $_.Exception.Message
-                    } | Export-Csv -Path $LogPath -NoTypeInformation -Append
-
-                    Write-HostLog -Message "Setting`t$($NewResource.Name)`t$($NewResource.PrimarySmtpAddress)" -Status "Failed"
-                }
             }
             catch {
 
                 [PSCustomObject]@{
-                    Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
-                    Result          = 'FAILURE'
-                    Action          = 'CREATING'
-                    Object          = $ResourceType
-                    Name            = $Shared.Name
-                    Email           = $Shared.Email
-                    FullNameError   = $_.Exception.GetType().fullname
-                    Message         = $_.CategoryInfo.Reason
-                    ExtendedMessage = $_.Exception.Message
-
-
+                    Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
+                    Result             = 'FAILED'
+                    Action             = 'CREATING'
+                    Object             = 'SHAREDMAILBOX'
+                    Name               = $Shared.DisplayName
+                    Alias              = $Alias
+                    UserPrincipalName  = 'FAILED'
+                    PrimarySmtpAddress = $Shared.PrimarySmtpAddress
+                    EmailAddresses     = 'FAILED'
+                    ObjectId           = 'FAILED'
+                    FullNameError      = $_.Exception.GetType().fullname
+                    Message            = $_.CategoryInfo.Reason
+                    ExtendedMessage    = $_.Exception.Message
                 } | Export-Csv -Path $LogPath -NoTypeInformation -Append
 
-                Write-HostLog -Message "Creating`t$($Shared.Name)" -Status "Failed"
+                Write-HostLog -Message "Creating Mailbox`t$($Shared.DisplayName)" -Status "Failed"
             }
         }
     }

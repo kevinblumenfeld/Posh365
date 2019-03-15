@@ -2,13 +2,13 @@ function Import-PrimarySmtpasUpn {
     param (
 
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
-        [string] $MailboxList,
+        [string] $MailboxCsv,
 
         [Parameter(Mandatory = $true)]
         [string] $ErrorLog
 
     )
-
+    $MailboxList = Import-Csv $MailboxCsv
     Foreach ($Mailbox in $MailboxList) {
         $DisplayName = $Mailbox.DisplayName
         $PrimarySmtpAddress = $Mailbox.PrimarySMTPAddress

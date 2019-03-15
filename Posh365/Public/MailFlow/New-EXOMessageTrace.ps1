@@ -10,25 +10,25 @@ Function New-EXOMessageTrace {
     Just click OK once you have selected the message(s)
 
     Many thanks to Matt Marchese for the initial framework of this function
-    
+
     .PARAMETER SenderAddress
     Senders Email Address
-    
+
     .PARAMETER RecipientAddress
     Recipients Email Address
 
     .PARAMETER StartSearchHoursAgo
     Number of hours from today to start the search. Default is (.25) 15 minutes ago
-    
+
     .PARAMETER EndSearchHoursAgo
     Number of hours from today to end the search. "Now" is the default, the number "0"
-    
+
     .PARAMETER Subject
     Partial or full subject of message(s) of which are being searched
 
     .PARAMETER FromIP
     The IP address from which the email originated
-    
+
     .PARAMETER ToIP
     The IP address to which the email was destined
 
@@ -40,10 +40,10 @@ Function New-EXOMessageTrace {
     Pending: Message delivery is underway or was deferred and is being retried.
     Delivered: The message was delivered to its destination.
     Expanded: There was no message delivery because the message was addressed to a distribution group, and the membership of the distribution was expanded.
-    
+
     .EXAMPLE
     New-EXOMessageTrace
-        
+
     .EXAMPLE
     New-EXOMessageTrace -StartSearchHoursAgo 10 -EndSearchHoursAgo 5 -Subject "arizona"
 
@@ -55,7 +55,7 @@ Function New-EXOMessageTrace {
     .EXAMPLE
     New-EXOMessageTrace -SenderAddress "User@domain.com" -RecipientAddress "recipient@domain.com" -StartSearchHoursAgo 15 -FromIP "xx.xx.xx.xx"
 
-    #>  
+    #>
     [CmdletBinding()]
     param
     (
@@ -130,7 +130,7 @@ Function New-EXOMessageTrace {
                             RecipientAddress = $_.RecipientAddress
                             Subject          = $_.Subject
                             FromIP           = $_.FromIP
-                            ToIP             = $_.ToIP                                                
+                            ToIP             = $_.ToIP
                             MessageTraceId   = $_.MessageTraceId
                             MessageId        = $_.MessageId
                         }
@@ -158,7 +158,7 @@ Function New-EXOMessageTrace {
                             RecipientAddress = $_.RecipientAddress
                             Subject          = $_.Subject
                             FromIP           = $_.FromIP
-                            ToIP             = $_.ToIP                                                
+                            ToIP             = $_.ToIP
                             MessageTraceId   = $_.MessageTraceId
                             MessageId        = $_.MessageId
                         }
@@ -195,8 +195,8 @@ Function New-EXOMessageTrace {
                 }
                 $TraceDetail = Get-MessageTraceDetail @Splat
                 $TraceDetail |
-                    Select-Object Date, Event, Action, Detail, Data, MessageTraceID, MessageID | 
-                    Out-GridView -Title "DATE: $($Wants.Received) STATUS: $($Wants.Status) FROM: $($Wants.SenderAddress) TO: $($Wants.RecipientAddress) TRACEID: $($Wants.MessageTraceId)" 
+                    Select-Object Date, Event, Action, Detail, Data, MessageTraceID, MessageID |
+                    Out-GridView -Title "DATE: $($Wants.Received) STATUS: $($Wants.Status) FROM: $($Wants.SenderAddress) TO: $($Wants.RecipientAddress) TRACEID: $($Wants.MessageTraceId)"
             }
         }
     }

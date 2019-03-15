@@ -1,4 +1,4 @@
-function Export-GooglePhone {
+function Export-GoogleInitialandPhone {
     <#
     .SYNOPSIS
     Google's GAM tool exports aliases
@@ -33,7 +33,7 @@ function Export-GooglePhone {
             $WorkNumMatch = $WorkNum.where{ $_ -match "(?<=\.)\d+(?=\.)" }
             if ($WorkNumMatch) {
                 $Num = $Matches[0]
-                $Phone.add('PhoneNumber', $Mbx."phones.$Num.value")
+                $Phone.add('Phone', $Mbx."phones.$Num.value")
             }
             $MobileNum = $Prop.where{ $Mbx.$_ -eq "mobile" }
             $MobileNumMatch = $MobileNum.where{ $_ -match "(?<=\.)\d+(?=\.)" }
@@ -42,8 +42,8 @@ function Export-GooglePhone {
                 $Phone.add('MobilePhone', $Mbx."phones.$Num.value")
             }
         }
-        if (-not $Phone.PhoneNumber) {
-            $Phone.add('PhoneNumber', $null)
+        if (-not $Phone.Phone) {
+            $Phone.add('Phone', $null)
         }
         if (-not $Phone.MobilePhone) {
             $Phone.add('MobilePhone', $null)

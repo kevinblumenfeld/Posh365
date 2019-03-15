@@ -42,6 +42,10 @@ function Get-ExchangeMailboxStatistics {
                     Expression = { $CurMailbox.PrimarySmtpAddress }
                 }
                 @{
+                    Name       = 'UserPrincipalName'
+                    Expression = { $CurMailbox.UserPrincipalName }
+                }
+                @{
                     Name       = 'MailboxGB'
                     Expression = {
                         [Math]::Round([Double]($_.TotalItemSize -replace '^.*\(| .+$|,') / 1GB, 5)
