@@ -184,7 +184,7 @@ function Import-QADAlias {
 
                     [PSCustomObject]@{
                         Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
-                        Result             = 'USERNOTFOUND'
+                        Result             = 'PROXYNOTADDED'
                         Action             = 'SETADUSER'
                         Object             = $User.DisplayName
                         PrimarySmtpAddress = $PrimarySmtpAddress
