@@ -77,7 +77,6 @@ function Remove-GoogleCalendarACL {
                             if ($OwnersOnly) {
                                 $AclList = (Get-GSCalendarAcl -CalendarId $Owned.Id -ErrorAction SilentlyContinue | Where-Object {
                                         $_.Role -eq 'Owner' -and
-                                        $_.Scope.Value -ne $_.User -and
                                         $_.Scope.Value -notmatch 'calendar.google.com'
                                     })
                             }
@@ -85,7 +84,8 @@ function Remove-GoogleCalendarACL {
                                 $AclList = Get-GSCalendarAcl -CalendarId $Owned.Id -ErrorAction SilentlyContinue
                             }
                             foreach ($Acl in $AclList) {
-                                $Owner = $Acl | Select-Object @{n = 'Owner'; e = {$_.Scope.Value}}
+                                $ScopeType = $Acl | Select-Object @{n = 'Type'; e = {$_.Scope.Type}}
+                                $ScopeValue = $Acl | Select-Object @{n = 'Value'; e = {$_.Scope.Value}}
 
 
                                 if ($Remove) {
@@ -95,7 +95,8 @@ function Remove-GoogleCalendarACL {
                                 [PSCustomObject]@{
                                     Calendar   = $Owned.User
                                     User       = $Acl.User
-                                    Owner      = $Owner.Owner
+                                    ScopeType  = $ScopeType.Type
+                                    ScopeValue = $ScopeValue.Value
                                     Summary    = $Owned.Summary
                                     CalendarId = $Acl.CalendarId
                                     ETag       = $Acl.ETag
@@ -103,7 +104,6 @@ function Remove-GoogleCalendarACL {
                                     Kind       = $Acl.Kind
                                     Role       = $Acl.Role
                                 }
-
                             }
                         }
                     }
