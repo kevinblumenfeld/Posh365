@@ -32,7 +32,7 @@ function Get-ADConnectError {
                 PropertyName    = $Prov.PropertyName
                 PropertyValue   = $Prov.PropertyValue
                 WhenStarted     = $Prov.WhenStarted
-                ProxyAddresses  = [string]::join('|', [string[]]$Err.ProxyAddresses)
+                ProxyAddresses  = [string]::join('|', [string[]]$Err.ProxyAddresses).where{$_}
                 ObjectId        = $Err.ObjectId
                 LastDirSyncTime = $Err.LastDirSyncTime
             }

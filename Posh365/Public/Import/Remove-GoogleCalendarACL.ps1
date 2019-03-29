@@ -16,6 +16,9 @@ function Remove-GoogleCalendarACL {
         [Parameter()]
         [switch] $Remove,
 
+        [Parameter()]
+        [string] $Domain,
+
         [Parameter(Mandatory, ValueFromPipeline, ParameterSetName = 'PIPELINE')]
         [Alias("InputObject")]
         [object[]]
@@ -46,7 +49,7 @@ function Remove-GoogleCalendarACL {
                         if ($OwnersOnly) {
                             $OwnedCalList = Get-GSCalendar -User $Object.User -ErrorAction Stop |
                                 Where-Object {
-                                $_.AccessRole -eq 'Owner' -and
+                                $_.Id -like '*@group.calendar.google.com' -and
                                 $_.Primary -ne 'True'
                             }
                         }
@@ -67,18 +70,17 @@ function Remove-GoogleCalendarACL {
                                 Kind            = $Owned.Kind
                                 Summary         = $Owned.Summary
                                 Description     = $Owned.Description
-                                Owner           = 'SUCCESS'
                                 FullNameError   = 'SUCCESS'
                                 Message         = 'SUCCESS'
-                                ExtendedMessage = 'SUCCEES'
+                                ExtendedMessage = 'SUCCESS'
 
                             } | Export-Csv -Path $Log -NoTypeInformation -Append -Encoding UTF8
 
                             if ($OwnersOnly) {
-                                $AclList = (Get-GSCalendarAcl -CalendarId $Owned.Id -ErrorAction SilentlyContinue | Where-Object {
-                                        $_.Role -eq 'Owner' -and
-                                        $_.Scope.Value -notmatch 'calendar.google.com'
-                                    })
+                                $AclList = Get-GSCalendarAcl -CalendarId $Owned.Id -ErrorAction SilentlyContinue | Where-Object {
+                                    $_.Role -eq 'Owner' -and
+                                    $_.Scope.type -ne 'domain'
+                                }
                             }
                             else {
                                 $AclList = Get-GSCalendarAcl -CalendarId $Owned.Id -ErrorAction SilentlyContinue
@@ -89,10 +91,11 @@ function Remove-GoogleCalendarACL {
 
 
                                 if ($Remove) {
-                                    $Acl | Remove-GSCalendarAcl -Confirm:$false -Verbose
+                                    $Acl | Remove-GSCalendarAcl -Confirm:$false -ErrorAction SilentlyContinue > $null
                                 }
 
                                 [PSCustomObject]@{
+                                    Object     = 'ACL'
                                     Calendar   = $Owned.User
                                     User       = $Acl.User
                                     ScopeType  = $ScopeType.Type
@@ -111,7 +114,7 @@ function Remove-GoogleCalendarACL {
                         Write-Verbose ("FAILED: to find user {0}" -f $Object.User)
                         [PSCustomObject]@{
                             Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
-                            Result          = 'SUCCESS'
+                            Result          = 'FAILED'
                             Action          = 'FINDCALENDAR'
                             User            = $Object.User
                             ETag            = 'FAILED'
@@ -119,7 +122,6 @@ function Remove-GoogleCalendarACL {
                             Kind            = 'FAILED'
                             Summary         = 'FAILED'
                             Description     = 'FAILED'
-                            Owner           = 'FAILED'
                             FullNameError   = $_.Exception.GetType().fullname
                             Message         = $_.CategoryInfo.Reason
                             ExtendedMessage = $_.Exception.Message
@@ -131,7 +133,7 @@ function Remove-GoogleCalendarACL {
         }
     }
     end {
-
+        Import-Csv $Log | Out-GridView -Title "SUCCESS OR FAILURE LOG WHEN RUNNING Get-GSCalendar"
     }
 
 }

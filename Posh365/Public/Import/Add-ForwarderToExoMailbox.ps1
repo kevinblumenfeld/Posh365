@@ -73,7 +73,7 @@ function Add-ForwarderToExoMailbox {
     )
     begin {
 
-        $LogFileName = $(Get-Date -Format yyyy-MM-dd_HH-mm-ss)
+        $LogFileName = $(Get-Date -Format yyyy-MM-dd)
         $Log = Join-Path $OutputPath ($LogFileName + "-Add_Fowarder-Log.csv")
         $ForwardSuffix = $ForwardSuffix.Trim('@')
 
@@ -82,46 +82,63 @@ function Add-ForwarderToExoMailbox {
         switch ($PSCmdlet.ParameterSetName) {
             "UPN" {
                 foreach ($Object in $PrimarySmtpAddress) {
-                    $Object.Login
-                    Do {
-                        $Filterstring = "PrimarySmtpAddress -eq '{0}'" -f $Object.Login
-                        $Mailbox = Get-Mailbox -Filter $Filterstring
-                        Write-Verbose ("Waiting 1 minute for mailbox provisioning for {0}" -f $Object.Login)
-                        Start-Sleep -Seconds 60
-                    } while (-not $Mailbox)
-
-                    $Forward = '{0}@{1}' -f $Mailbox.PrimarySmtpAddress.Split('@')[0], $ForwardSuffix
-
-                    try {
-                        $Mailbox | Set-Mailbox -ForwardingSmtpAddress $Forward -erroraction stop
-                        Write-Verbose ("SUCCESS: Mailbox forwarder set {0}" -f $Mailbox.DisplayName)
-                        [PSCustomObject]@{
-                            Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
-                            Result             = 'SUCCESS'
-                            Action             = 'SETFORWARD'
-                            Object             = $Object.Login
-                            PrimarySmtpAddress = $Mailbox.PrimarySmtpAddress
-                            DisplayName        = $Mailbox.DisplayName
-                            ExchangeGuid       = $Mailbox.ExchangeGuid
-                            FullNameError      = 'SUCCESS'
-                            Message            = 'SUCCESS'
-                            ExtendedMessage    = 'SUCCEES'
-
-                        } | Export-Csv -Path $Log -NoTypeInformation -Append -Encoding UTF8
+                    Write-Host "Object: $($Object.Login)"
+                    $Filterstring = "PrimarySmtpAddress -eq '{0}'" -f $Object.Login
+                    if ($Mailbox = Get-Mailbox -Filter $Filterstring) {
+                        $Forward = '{0}@{1}' -f $Mailbox.PrimarySmtpAddress.Split('@')[0], $ForwardSuffix
+                        try {
+                            $Mailbox | Set-Mailbox -ForwardingSmtpAddress $Forward -erroraction stop
+                            Write-Verbose ("SUCCESS: Mailbox forwarder set {0}" -f $Mailbox.DisplayName)
+                            $AfterSet = Get-Mailbox -Filter $Filterstring
+                            Write-Host "$($AfterSet.DisplayName) New Forwarding Address: $($AfterSet.ForwardingSmtpAddress)" -ForegroundColor Green
+                            [PSCustomObject]@{
+                                Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
+                                Result             = 'SUCCESS'
+                                Action             = 'SETFORWARD'
+                                Object             = $Object.Login
+                                PrimarySmtpAddress = $Mailbox.PrimarySmtpAddress
+                                DisplayName        = $Mailbox.DisplayName
+                                ExchangeGuid       = $Mailbox.ExchangeGuid
+                                ForwardingBefore   = $Mailbox.ForwardingSmtpAddress
+                                FowardingAfter     = $AfterSet.ForwardingSmtpAddress
+                                FullNameError      = 'SUCCESS'
+                                Message            = 'SUCCESS'
+                                ExtendedMessage    = 'SUCCEES'
+                            } | Export-Csv -Path $Log -NoTypeInformation -Append -Encoding UTF8
+                        }
+                        catch {
+                            Write-Verbose ("FAILED: Mailbox forwarder not set {0}" -f $Mailbox.DisplayName)
+                            [PSCustomObject]@{
+                                Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
+                                Result             = 'FAILED'
+                                Action             = 'SETFORWARD'
+                                Object             = $Object.Login
+                                PrimarySmtpAddress = $Mailbox.PrimarySmtpAddress
+                                DisplayName        = $Mailbox.DisplayName
+                                ExchangeGuid       = $Mailbox.ExchangeGuid
+                                ForwardingBefore   = $Mailbox.ForwardingSmtpAddress
+                                FowardingAfter     = 'FAILED'
+                                FullNameError      = $_.Exception.GetType().fullname
+                                Message            = $_.CategoryInfo.Reason
+                                ExtendedMessage    = $_.Exception.Message
+                            } | Export-Csv -Path $Log -NoTypeInformation -Append -Encoding UTF8
+                        }
                     }
-                    catch {
-                        Write-Verbose ("FAILED: Mailbox forwarder not set {0}" -f $Mailbox.DisplayName)
+                    else {
+                        Write-Verbose ("FAILED: Mailbox not found {0}" -f $Object.Login)
                         [PSCustomObject]@{
                             Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                             Result             = 'FAILED'
-                            Action             = 'SETFORWARD'
+                            Action             = 'MAILBOXNOTFOUND'
                             Object             = $Object.Login
-                            PrimarySmtpAddress = $Mailbox.PrimarySmtpAddress
-                            DisplayName        = $Mailbox.DisplayName
-                            ExchangeGuid       = $Mailbox.ExchangeGuid
-                            FullNameError      = $_.Exception.GetType().fullname
-                            Message            = $_.CategoryInfo.Reason
-                            ExtendedMessage    = $_.Exception.Message
+                            PrimarySmtpAddress = 'MAILBOXNOTFOUND'
+                            DisplayName        = 'MAILBOXNOTFOUND'
+                            ExchangeGuid       = 'MAILBOXNOTFOUND'
+                            ForwardingBefore   = 'MAILBOXNOTFOUND'
+                            FowardingAfter     = 'MAILBOXNOTFOUND'
+                            FullNameError      = 'MAILBOXNOTFOUND'
+                            Message            = 'MAILBOXNOTFOUND'
+                            ExtendedMessage    = 'MAILBOXNOTFOUND'
 
                         } | Export-Csv -Path $Log -NoTypeInformation -Append -Encoding UTF8
                     }
@@ -133,46 +150,63 @@ function Add-ForwarderToExoMailbox {
                 }
 
                 foreach ($Object in $User) {
-                    $Object.Login
-                    Do {
-                        $Filterstring = "PrimarySmtpAddress -eq '{0}'" -f $Object.Login
-                        $Mailbox = Get-Mailbox -Filter $Filterstring
-                        Write-Verbose ("Waiting 1 minute for mailbox provisioning for {0}" -f $Object.Login)
-                        Start-Sleep -Seconds 60
-                    } while (-not $Mailbox)
-
-                    $Forward = '{0}@{1}' -f $Mailbox.PrimarySmtpAddress.Split('@')[0], $ForwardSuffix
-
-                    try {
-                        $Mailbox | Set-Mailbox -ForwardingSmtpAddress $Forward -erroraction stop
-                        Write-Verbose ("SUCCESS: Mailbox forwarder set {0}" -f $Mailbox.DisplayName)
-                        [PSCustomObject]@{
-                            Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
-                            Result             = 'SUCCESS'
-                            Action             = 'SETFORWARD'
-                            Object             = $Object.Login
-                            PrimarySmtpAddress = $Mailbox.PrimarySmtpAddress
-                            DisplayName        = $Mailbox.DisplayName
-                            ExchangeGuid       = $Mailbox.ExchangeGuid
-                            FullNameError      = 'SUCCESS'
-                            Message            = 'SUCCESS'
-                            ExtendedMessage    = 'SUCCEES'
-
-                        } | Export-Csv -Path $Log -NoTypeInformation -Append -Encoding UTF8
+                    Write-Host "Object: $($Object.Login)"
+                    $Filterstring = "PrimarySmtpAddress -eq '{0}'" -f $Object.Login
+                    if ($Mailbox = Get-Mailbox -Filter $Filterstring) {
+                        $Forward = '{0}@{1}' -f $Mailbox.PrimarySmtpAddress.Split('@')[0], $ForwardSuffix
+                        try {
+                            $Mailbox | Set-Mailbox -ForwardingSmtpAddress $Forward -erroraction stop
+                            Write-Verbose ("SUCCESS: Mailbox forwarder set {0}" -f $Mailbox.DisplayName)
+                            $AfterSet = Get-Mailbox -Filter $Filterstring
+                            Write-Host "$($AfterSet.DisplayName) New Forwarding Address: $($AfterSet.ForwardingSmtpAddress)" -ForegroundColor Green
+                            [PSCustomObject]@{
+                                Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
+                                Result             = 'SUCCESS'
+                                Action             = 'SETFORWARD'
+                                Object             = $Object.Login
+                                PrimarySmtpAddress = $Mailbox.PrimarySmtpAddress
+                                DisplayName        = $Mailbox.DisplayName
+                                ExchangeGuid       = $Mailbox.ExchangeGuid
+                                ForwardingBefore   = $Mailbox.ForwardingSmtpAddress
+                                FowardingAfter     = $AfterSet.ForwardingSmtpAddress
+                                FullNameError      = 'SUCCESS'
+                                Message            = 'SUCCESS'
+                                ExtendedMessage    = 'SUCCEES'
+                            } | Export-Csv -Path $Log -NoTypeInformation -Append -Encoding UTF8
+                        }
+                        catch {
+                            Write-Verbose ("FAILED: Mailbox forwarder not set {0}" -f $Mailbox.DisplayName)
+                            [PSCustomObject]@{
+                                Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
+                                Result             = 'FAILED'
+                                Action             = 'SETFORWARD'
+                                Object             = $Object.Login
+                                PrimarySmtpAddress = $Mailbox.PrimarySmtpAddress
+                                DisplayName        = $Mailbox.DisplayName
+                                ExchangeGuid       = $Mailbox.ExchangeGuid
+                                ForwardingBefore   = $Mailbox.ForwardingSmtpAddress
+                                FowardingAfter     = 'FAILED'
+                                FullNameError      = $_.Exception.GetType().fullname
+                                Message            = $_.CategoryInfo.Reason
+                                ExtendedMessage    = $_.Exception.Message
+                            } | Export-Csv -Path $Log -NoTypeInformation -Append -Encoding UTF8
+                        }
                     }
-                    catch {
-                        Write-Verbose ("FAILED: Mailbox forwarder not set {0}" -f $Mailbox.DisplayName)
+                    else {
+                        Write-Verbose ("FAILED: Mailbox not found {0}" -f $Object.Login)
                         [PSCustomObject]@{
                             Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                             Result             = 'FAILED'
-                            Action             = 'SETFORWARD'
+                            Action             = 'MAILBOXNOTFOUND'
                             Object             = $Object.Login
-                            PrimarySmtpAddress = $Mailbox.PrimarySmtpAddress
-                            DisplayName        = $Mailbox.DisplayName
-                            ExchangeGuid       = $Mailbox.ExchangeGuid
-                            FullNameError      = $_.Exception.GetType().fullname
-                            Message            = $_.CategoryInfo.Reason
-                            ExtendedMessage    = $_.Exception.Message
+                            PrimarySmtpAddress = 'MAILBOXNOTFOUND'
+                            DisplayName        = 'MAILBOXNOTFOUND'
+                            ExchangeGuid       = 'MAILBOXNOTFOUND'
+                            ForwardingBefore   = 'MAILBOXNOTFOUND'
+                            FowardingAfter     = 'MAILBOXNOTFOUND'
+                            FullNameError      = 'MAILBOXNOTFOUND'
+                            Message            = 'MAILBOXNOTFOUND'
+                            ExtendedMessage    = 'MAILBOXNOTFOUND'
 
                         } | Export-Csv -Path $Log -NoTypeInformation -Append -Encoding UTF8
                     }

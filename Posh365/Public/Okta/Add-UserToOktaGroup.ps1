@@ -16,13 +16,13 @@ function Add-UserToOktaGroup {
     This is used by the script when feeding users via pipeline
 
     .EXAMPLE
-    Import-Csv .\users.csv | Add-UserToOktaGroup -GroupName 'Accounting' -Verbose
+    Import-Csv .\users.csv | Add-UserToOktaGroup -GroupName 'Accounting' -ErrorLog c:\scripts\Add2GroupError.csv -Verbose
 
     .EXAMPLE
-    Add-UserToOktaGroup -GroupName 'Accounting' -UserPrincipalName 'jane@contoso.com' -Verbose
+    Add-UserToOktaGroup -GroupName 'Accounting' -UserPrincipalName 'jane@contoso.com' -ErrorLog c:\scripts\Add2GroupError.csv -Verbose
 
     .EXAMPLE
-    Add-UserToOktaGroup -GroupName 'Accounting' -UserPrincipalName 'jane@contoso.com','joe@contoso.com' -Verbose
+    Add-UserToOktaGroup -GroupName 'Accounting' -UserPrincipalName 'jane@contoso.com','joe@contoso.com' -ErrorLog c:\scripts\Add2GroupError.csv -Verbose
 
     .NOTES
     CSV must have at least one column with header named login
@@ -79,7 +79,7 @@ function Add-UserToOktaGroup {
 
             $PSCmdlet.ThrowTerminatingError($ErrorRecord)
         }
-
+        Add-Content -Path $ErrorLog -Value ("ERROR" + "," + "LOGIN" + "," + "ERRORMESSAGE")
         Write-Information ("Group: {0} ID: {1}" -f $GroupName, $GroupId)
     }
     process {
