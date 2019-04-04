@@ -2,14 +2,11 @@ function Get-OktaMemberGroupIDHash {
     Param (
 
     )
-    $Url = $OKTACredential.GetNetworkCredential().username
-    $Token = $OKTACredential.GetNetworkCredential().Password
-
     $Group = Get-OktaGroupReport
-    $Member2Group = @{}
+    $Member2Group = @{ }
     foreach ($CurGroup in $Group) {
         $GId = $CurGroup.id
-
+        Start-Sleep -Milliseconds 100
         $GrpMember = Get-OktaGroupMembership -GroupId $CurGroup.id
 
         foreach ($CurGrpMember in $GrpMember) {

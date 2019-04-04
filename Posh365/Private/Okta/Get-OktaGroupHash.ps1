@@ -2,11 +2,9 @@ function Get-OktaGroupHash {
     Param (
 
     )
-    $Url = $OKTACredential.GetNetworkCredential().username
-    $Token = $OKTACredential.GetNetworkCredential().Password
 
     $Group = Get-OktaGroupReport
-    $GroupHash = @{}
+    $GroupHash = @{ }
 
     foreach ($CurGroup in $Group) {
         $GId = $CurGroup.Id

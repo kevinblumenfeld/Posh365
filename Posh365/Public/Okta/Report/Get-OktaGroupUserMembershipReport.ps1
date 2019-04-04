@@ -1,8 +1,8 @@
 function Get-OktaGroupUserMembershipReport {
     Param (
-        [Parameter()]
-        [string] $SearchString
+
     )
+
     $GHash = Get-OktaGroupHash
     $M2GIDHash = Get-OktaMemberGroupIDHash
     $GroupID2Member = Get-OktaGroupMemberHash -Member2Group $M2GIDHash

@@ -82,7 +82,7 @@ function Get-OktaGroupMemberReport {
     }
     else {
         if ($GroupName) {
-            $GroupId = (Get-OktaGroupReport | Where-Object {$_.Name -eq $GroupName}).id
+            $GroupId = (Get-OktaGroupReport | Where-Object { $_.Name -eq $GroupName }).id
             foreach ($CurGroupId in $GroupId) {
                 Get-OktaGroupMemberReport -id $CurGroupId
             }
@@ -112,8 +112,13 @@ function Get-OktaGroupMemberReport {
     }
 
     do {
-        if (($Response.Headers.'x-rate-limit-remaining') -and ($Response.Headers.'x-rate-limit-remaining' -lt 50)) {
-            Start-Sleep -Seconds 4
+        [int]$NumberLimit = $Response.Headers.'x-rate-limit-remaining'
+        [long][string]$UnixTime = $Response.Headers.'x-rate-limit-reset'
+
+        if ($NumberLimit -and $NumberLimit -eq 1) {
+            $ApiTime = $Response.Headers.'Date'
+            $SleepTime = Convert-OktaRateLimitToSleep -UnixTime $UnixTime -ApiTime $ApiTime
+            Start-Sleep -Seconds $SleepTime
         }
         $Response = Invoke-WebRequest @RestSplat -Verbose:$false
         $Headers = $Response.Headers
@@ -138,6 +143,7 @@ function Get-OktaGroupMemberReport {
         foreach ($CurGroup in $Group) {
 
             $CurGroupProfile = $CurGroup.Profile
+            Start-Sleep -Milliseconds 100
             $Member = Get-OktaGroupMembership -GroupId $CurGroup.Id
 
             foreach ($CurMember in $Member) {

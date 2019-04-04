@@ -13,18 +13,24 @@ function Get-OktaGroupMembership {
     }
 
     $RestSplat = @{
-        Uri     = 'https://{0}.okta.com/api/v1/groups/{1}/users/?limit=200' -f $Url, $GroupID
+        Uri     = 'https://{0}.okta.com/api/v1/groups/{1}/users?limit=200' -f $Url, $GroupID
         Headers = $Headers
         Method  = 'Get'
     }
 
     do {
-        if (($Response.Headers.'x-rate-limit-remaining') -and ($Response.Headers.'x-rate-limit-remaining' -lt 50)) {
-            Start-Sleep -Seconds 4
+        [int]$NumberLimit = $Response.Headers.'x-rate-limit-remaining'
+        [long][string]$UnixTime = $Response.Headers.'x-rate-limit-reset'
+
+        if ($NumberLimit -and $NumberLimit -eq 1) {
+            $ApiTime = $Response.Headers.'Date'
+            $SleepTime = Convert-OktaRateLimitToSleep -UnixTime $UnixTime -ApiTime $ApiTime
+            Start-Sleep -Seconds $SleepTime
         }
         $Response = Invoke-WebRequest @RestSplat -Verbose:$false
         $Headers = $Response.Headers
         $GroupMember = $Response.Content | ConvertFrom-Json
+
         if ($Response.Headers['link'] -match '<([^>]+?)>;\s*rel="next"') {
             $Next = $matches[1]
         }

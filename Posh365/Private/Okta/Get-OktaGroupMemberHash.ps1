@@ -5,7 +5,7 @@ function Get-OktaGroupMemberHash {
         [hashtable] $Member2Group
 
     )
-    $Group2Member = @{}
+    $Group2Member = @{ }
     foreach ($Entry in $Member2Group.GetEnumerator()) {
         $User = $Entry.Key
         foreach ($Group in $Entry.Value) {

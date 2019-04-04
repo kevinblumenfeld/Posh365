@@ -120,8 +120,13 @@ function Get-OktaUserReport {
     }
 
     do {
-        if (($Response.Headers.'x-rate-limit-remaining') -and ($Response.Headers.'x-rate-limit-remaining' -lt 50)) {
-            Start-Sleep -Seconds 4
+        [int]$NumberLimit = $Response.Headers.'x-rate-limit-remaining'
+        [long][string]$UnixTime = $Response.Headers.'x-rate-limit-reset'
+
+        if ($NumberLimit -and $NumberLimit -eq 1) {
+            $ApiTime = $Response.Headers.'Date'
+            $SleepTime = Convert-OktaRateLimitToSleep -UnixTime $UnixTime -ApiTime $ApiTime
+            Start-Sleep -Seconds $SleepTime
         }
         $Response = Invoke-WebRequest @RestSplat -Verbose:$false
         $Headers = $Response.Headers
