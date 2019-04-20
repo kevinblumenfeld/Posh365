@@ -22,9 +22,6 @@ function Get-ActiveDirectoryUser {
     '{proxyaddresses -like "*contoso.com"}' | Get-ActiveDirectoryUser | Export-Csv c:\scripts\ADUsers.csv -notypeinformation -encoding UTF8
 
     .EXAMPLE
-    '{proxyaddresses -like "*contoso.com"}' | Get-ActiveDirectoryUser -ArchivesOnly | Export-Csv c:\scripts\ADUsers.csv -notypeinformation -encoding UTF8
-
-    .EXAMPLE
     '{proxyaddresses -like "*contoso.com"}' | Get-ActiveDirectoryUser -DetailedReport | Export-Csv c:\scripts\ADUsers_Detailed.csv -notypeinformation -encoding UTF8
 
     #>
@@ -64,29 +61,29 @@ function Get-ActiveDirectoryUser {
             )
 
             $CalculatedProps = @(
-                @{n = "OU" ; e = {$_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'}},
-                @{n = "PrimarySmtpAddress" ; e = {( $_.proxyAddresses | Where-Object {$_ -cmatch "SMTP:"})}},
-                @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join '|' }},
-                @{n = 'InheritanceBroken'; e = {$_.nTSecurityDescriptor.AreAccessRulesProtected}},
-                @{n = "altRecipientBL" ; e = {($_.altRecipientBL | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "AuthenticationPolicy" ; e = {($_.AuthenticationPolicy | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "AuthenticationPolicySilo" ; e = {($_.AuthenticationPolicySilo | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "Certificates" ; e = {($_.Certificates | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "CompoundIdentitySupported" ; e = {($_.CompoundIdentitySupported | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "dSCorePropagationData" ; e = {($_.dSCorePropagationData | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "KerberosEncryptionType" ; e = {($_.KerberosEncryptionType | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "managedObjects" ; e = {($_.managedObjects | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "MemberOf" ; e = {($_.MemberOf | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "msExchADCGlobalNames" ; e = {($_.msExchADCGlobalNames | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "msExchPoliciesExcluded" ; e = {($_.msExchPoliciesExcluded | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "PrincipalsAllowedToDelegateToAccount" ; e = {($_.PrincipalsAllowedToDelegateToAccount | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "protocolSettings" ; e = {($_.protocolSettings | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "publicDelegatesBL" ; e = {($_.publicDelegatesBL | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "securityProtocol" ; e = {($_.securityProtocol | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ServicePrincipalNames" ; e = {($_.ServicePrincipalNames | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "showInAddressBook" ; e = {($_.showInAddressBook | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "SIDHistory" ; e = {($_.SIDHistory | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "userCertificate" ; e = {($_.userCertificate | Where-Object {$_ -ne $null}) -join ";" }}
+                @{n = "OU" ; e = { $_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)' } },
+                @{n = "PrimarySmtpAddress" ; e = { ( $_.proxyAddresses | Where-Object { $_ -cmatch "SMTP:" }) } },
+                @{n = "proxyAddresses" ; e = { ($_.proxyAddresses | Where-Object { $_ -ne $null }) -join '|' } },
+                @{n = 'InheritanceBroken'; e = { $_.nTSecurityDescriptor.AreAccessRulesProtected } },
+                @{n = "altRecipientBL" ; e = { ($_.altRecipientBL | Where-Object { $_ -ne $null }) -join ";" } },
+                @{n = "AuthenticationPolicy" ; e = { ($_.AuthenticationPolicy | Where-Object { $_ -ne $null }) -join ";" } },
+                @{n = "AuthenticationPolicySilo" ; e = { ($_.AuthenticationPolicySilo | Where-Object { $_ -ne $null }) -join ";" } },
+                @{n = "Certificates" ; e = { ($_.Certificates | Where-Object { $_ -ne $null }) -join ";" } },
+                @{n = "CompoundIdentitySupported" ; e = { ($_.CompoundIdentitySupported | Where-Object { $_ -ne $null }) -join ";" } },
+                @{n = "dSCorePropagationData" ; e = { ($_.dSCorePropagationData | Where-Object { $_ -ne $null }) -join ";" } },
+                @{n = "KerberosEncryptionType" ; e = { ($_.KerberosEncryptionType | Where-Object { $_ -ne $null }) -join ";" } },
+                @{n = "managedObjects" ; e = { ($_.managedObjects | Where-Object { $_ -ne $null }) -join ";" } },
+                @{n = "MemberOf" ; e = { ($_.MemberOf | Where-Object { $_ -ne $null }) -join ";" } },
+                @{n = "msExchADCGlobalNames" ; e = { ($_.msExchADCGlobalNames | Where-Object { $_ -ne $null }) -join ";" } },
+                @{n = "msExchPoliciesExcluded" ; e = { ($_.msExchPoliciesExcluded | Where-Object { $_ -ne $null }) -join ";" } },
+                @{n = "PrincipalsAllowedToDelegateToAccount" ; e = { ($_.PrincipalsAllowedToDelegateToAccount | Where-Object { $_ -ne $null }) -join ";" } },
+                @{n = "protocolSettings" ; e = { ($_.protocolSettings | Where-Object { $_ -ne $null }) -join ";" } },
+                @{n = "publicDelegatesBL" ; e = { ($_.publicDelegatesBL | Where-Object { $_ -ne $null }) -join ";" } },
+                @{n = "securityProtocol" ; e = { ($_.securityProtocol | Where-Object { $_ -ne $null }) -join ";" } },
+                @{n = "ServicePrincipalNames" ; e = { ($_.ServicePrincipalNames | Where-Object { $_ -ne $null }) -join ";" } },
+                @{n = "showInAddressBook" ; e = { ($_.showInAddressBook | Where-Object { $_ -ne $null }) -join ";" } },
+                @{n = "SIDHistory" ; e = { ($_.SIDHistory | Where-Object { $_ -ne $null }) -join ";" } },
+                @{n = "userCertificate" ; e = { ($_.userCertificate | Where-Object { $_ -ne $null }) -join ";" } }
             )
             $ExtensionAttribute = @(
                 'extensionAttribute1', 'extensionAttribute2', 'extensionAttribute3', 'extensionAttribute4', 'extensionAttribute5'
@@ -109,11 +106,11 @@ function Get-ActiveDirectoryUser {
             )
 
             $CalculatedProps = @(
-                @{n = "PrimarySmtpAddress" ; e = {( $_.proxyAddresses | Where-Object {$_ -cmatch "SMTP:"})}},
-                @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join '|' }},
-                @{n = "OU" ; e = {$_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'}},
-                @{n = "MemberOf" ; e = {($_.MemberOf | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "msExchPoliciesExcluded" ; e = {($_.msExchPoliciesExcluded | Where-Object {$_ -ne $null}) -join ";" }}
+                @{n = "PrimarySmtpAddress" ; e = { ( $_.proxyAddresses | Where-Object { $_ -cmatch "SMTP:" }) } },
+                @{n = "proxyAddresses" ; e = { ($_.proxyAddresses | Where-Object { $_ -ne $null }) -join '|' } },
+                @{n = "OU" ; e = { $_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)' } },
+                @{n = "MemberOf" ; e = { ($_.MemberOf | Where-Object { $_ -ne $null }) -join ";" } },
+                @{n = "msExchPoliciesExcluded" ; e = { ($_.msExchPoliciesExcluded | Where-Object { $_ -ne $null }) -join ";" } }
             )
         }
     }

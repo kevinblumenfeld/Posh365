@@ -82,12 +82,13 @@ function Add-ForwarderToExoMailbox {
         switch ($PSCmdlet.ParameterSetName) {
             "UPN" {
                 foreach ($Object in $PrimarySmtpAddress) {
-                    Write-Host "Object: $($Object.Login)"
-                    $Filterstring = "PrimarySmtpAddress -eq '{0}'" -f $Object.Login
+                    Write-Host "Object: $Object"
+                    $Filterstring = "PrimarySmtpAddress -eq '{0}'" -f $Object
                     if ($Mailbox = Get-Mailbox -Filter $Filterstring) {
                         $Forward = '{0}@{1}' -f $Mailbox.PrimarySmtpAddress.Split('@')[0], $ForwardSuffix
                         try {
-                            $Mailbox | Set-Mailbox -ForwardingSmtpAddress $Forward -erroraction stop
+                            [string]$Guid = $Mailbox.Guid
+                            Set-Mailbox -Identity $Guid -ForwardingSmtpAddress $Forward -erroraction stop
                             Write-Verbose ("SUCCESS: Mailbox forwarder set {0}" -f $Mailbox.DisplayName)
                             $AfterSet = Get-Mailbox -Filter $Filterstring
                             Write-Host "$($AfterSet.DisplayName) New Forwarding Address: $($AfterSet.ForwardingSmtpAddress)" -ForegroundColor Green
@@ -95,7 +96,7 @@ function Add-ForwarderToExoMailbox {
                                 Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                                 Result             = 'SUCCESS'
                                 Action             = 'SETFORWARD'
-                                Object             = $Object.Login
+                                Object             = $Object
                                 PrimarySmtpAddress = $Mailbox.PrimarySmtpAddress
                                 DisplayName        = $Mailbox.DisplayName
                                 ExchangeGuid       = $Mailbox.ExchangeGuid
@@ -107,12 +108,12 @@ function Add-ForwarderToExoMailbox {
                             } | Export-Csv -Path $Log -NoTypeInformation -Append -Encoding UTF8
                         }
                         catch {
-                            Write-Verbose ("FAILED: Mailbox forwarder not set {0}" -f $Mailbox.DisplayName)
+                            Write-Host ("FAILED: Mailbox forwarder not set {0}" -f $Mailbox.DisplayName) -ForegroundColor Red
                             [PSCustomObject]@{
                                 Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                                 Result             = 'FAILED'
                                 Action             = 'SETFORWARD'
-                                Object             = $Object.Login
+                                Object             = $Object
                                 PrimarySmtpAddress = $Mailbox.PrimarySmtpAddress
                                 DisplayName        = $Mailbox.DisplayName
                                 ExchangeGuid       = $Mailbox.ExchangeGuid
@@ -125,12 +126,12 @@ function Add-ForwarderToExoMailbox {
                         }
                     }
                     else {
-                        Write-Verbose ("FAILED: Mailbox not found {0}" -f $Object.Login)
+                        Write-Host ("FAILED: Mailbox not found {0}" -f $Object) -ForegroundColor Red
                         [PSCustomObject]@{
                             Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                             Result             = 'FAILED'
                             Action             = 'MAILBOXNOTFOUND'
-                            Object             = $Object.Login
+                            Object             = $Object
                             PrimarySmtpAddress = 'MAILBOXNOTFOUND'
                             DisplayName        = 'MAILBOXNOTFOUND'
                             ExchangeGuid       = 'MAILBOXNOTFOUND'
@@ -155,7 +156,8 @@ function Add-ForwarderToExoMailbox {
                     if ($Mailbox = Get-Mailbox -Filter $Filterstring) {
                         $Forward = '{0}@{1}' -f $Mailbox.PrimarySmtpAddress.Split('@')[0], $ForwardSuffix
                         try {
-                            $Mailbox | Set-Mailbox -ForwardingSmtpAddress $Forward -erroraction stop
+                            [string]$Guid = $Mailbox.Guid
+                            Set-Mailbox -Identity $Guid -ForwardingSmtpAddress $Forward -erroraction stop
                             Write-Verbose ("SUCCESS: Mailbox forwarder set {0}" -f $Mailbox.DisplayName)
                             $AfterSet = Get-Mailbox -Filter $Filterstring
                             Write-Host "$($AfterSet.DisplayName) New Forwarding Address: $($AfterSet.ForwardingSmtpAddress)" -ForegroundColor Green
@@ -175,7 +177,7 @@ function Add-ForwarderToExoMailbox {
                             } | Export-Csv -Path $Log -NoTypeInformation -Append -Encoding UTF8
                         }
                         catch {
-                            Write-Verbose ("FAILED: Mailbox forwarder not set {0}" -f $Mailbox.DisplayName)
+                            Write-Host ("FAILED: Mailbox forwarder not set {0}" -f $Mailbox.DisplayName) -ForegroundColor Red
                             [PSCustomObject]@{
                                 Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                                 Result             = 'FAILED'
@@ -193,7 +195,7 @@ function Add-ForwarderToExoMailbox {
                         }
                     }
                     else {
-                        Write-Verbose ("FAILED: Mailbox not found {0}" -f $Object.Login)
+                        Write-Host ("FAILED: Mailbox not found {0}" -f $Object.Login) -ForegroundColor Red
                         [PSCustomObject]@{
                             Time               = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                             Result             = 'FAILED'

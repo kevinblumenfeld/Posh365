@@ -11,6 +11,9 @@ function Import-QADData {
     It uses the Replace method for those three attributes, thus clearing the attribute and adding the one we want
     This is dependant on the ActiveDirectory module
 
+    .PARAMETER DomainSuffix
+    The UPN prefix from the input file is used. To create mail, proxyaddresses and targetaddress, this suffix is used
+
     .PARAMETER OutputPath
     Specify a path without a file name. (for example c:\scripts)
 
@@ -35,21 +38,25 @@ function Import-QADData {
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (
 
-        [Parameter(Mandatory = $true)]
+
+        [Parameter(Mandatory)]
+        [String] $DomainSuffix,
+
+        [Parameter(Mandatory)]
         [String] $OutputPath,
 
         [Parameter()]
         [Switch]$LogOnly,
 
-        [Parameter(ValueFromPipeline = $true, Mandatory = $true)]
+        [Parameter(ValueFromPipeline, Mandatory)]
         $Row
 
     )
     begin {
 
         $LogFileName = $(get-date -Format yyyy-MM-dd_HH-mm-ss)
-        $WhatIfLog = Join-Path $OutputPath ($LogFileName + "-QAD-WHAT-IF.csv")
-        $ErrorLog = Join-Path $OutputPath ($LogFileName + "-QAD-Error_Log.csv")
+        $WhatIfLog = Join-Path $OutputPath ($LogFileName + "-QAD_WHATIF.csv")
+        $Log = Join-Path $OutputPath ($LogFileName + "-QADLog.csv")
         Start-Transcript -Path (Join-Path $OutputPath ($LogFileName + "-PowerShell_Transcript_Import.csv"))
 
     }
@@ -58,11 +65,13 @@ function Import-QADData {
         foreach ($CurRow in $Row) {
 
             $DisplayName = $CurRow.DisplayName
-            $Upn = $CurRow.UserPrincipalName
+            $UPN = $CurRow.UserPrincipalName
             $Mail = $CurRow.Mail
+            $ObjectGuid = $CurRow.ObjectGUID
 
-            $MailNickName = ($Mail -split '@')[0]
-            $TargetAddress = 'SMTP:{0}' -f $Mail
+            $NewMail = ($UPN -split '@')[0] + "@$DomainSuffix"
+            $MailNickName = ($UPN -split '@')[0]
+            $TargetAddress = 'SMTP:{0}' -f $NewMail
             $PrimaryProxy = $TargetAddress
 
             if ($LogOnly) {
@@ -73,11 +82,13 @@ function Import-QADData {
                     Action                = 'REPLACE'
                     Object                = 'ADATTRIBUTES'
                     DisplayName           = $DisplayName
-                    UserPrincipalName     = $Upn
+                    UserPrincipalName     = $UPN
                     Mail                  = $Mail
+                    ProposedMail          = $NewMail
                     ProposedTargetAddress = $TargetAddress
                     ProposedMailNickName  = $MailNickName
                     ProposedProxyAddress  = $PrimaryProxy
+                    ObjectGuid            = $ObjectGuid
 
                 } | Export-Csv -Path $WhatIfLog -NoTypeInformation -Append -Encoding UTF8
 
@@ -86,20 +97,46 @@ function Import-QADData {
             else {
                 try {
 
-                    $User = Get-ADUser -Filter "UserPrincipalName -eq '$Upn'"
+                    $User = Get-ADUser -Filter "UserPrincipalName -eq '$UPN'"
+                    $Guid = $User.ObjectGUID.Guid
+                    if ($Guid) {
 
-                    if ($User) {
-
-                        $User | Set-ADUser -ErrorAction Stop -Replace @{
+                        Set-ADUser -Identity $Guid -ErrorAction Stop -Replace @{
+                            Mail           = $NewMail
                             TargetAddress  = $TargetAddress
                             MailNickName   = $MailNickName
                             ProxyAddresses = $PrimaryProxy
                         }
 
                         Write-Host "$DisplayName" -ForegroundColor White
+                        Write-Host "Success: Mail:`t`t$NewMail" -ForegroundColor Green
                         Write-Host "Success: TargetAddress:`t$TargetAddress" -ForegroundColor Green
                         Write-Host "Success: MailNickName:`t$MailNickName" -ForegroundColor Green
                         Write-Host "Success: PrimarySMTP:`t$PrimaryProxy" -ForegroundColor Green
+
+                        $PostSet = Get-ADUser -Identity $Guid -Properties DisplayName, Mail, TargetAddress, MailNickName, ProxyAddresses
+
+                        [PSCustomObject]@{
+                            Time                  = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
+                            Result                = 'SUCCESS'
+                            Action                = 'SET'
+                            Object                = 'ADUSER'
+                            DisplayName           = $PostSet.DisplayName
+                            UserPrincipalName     = $PostSet.UserPrincipalName
+                            Mail                  = $PostSet.Mail
+                            TargetAddress         = $PostSet.TargetAddress
+                            MailNickName          = $PostSet.MailNickName
+                            ProxyAddresses        = [string]::join('|', [String[]]$PostSet.ProxyAddresses -ne '')
+                            ProposedMail          = $NewMail
+                            ProposedTargetAddress = $TargetAddress
+                            ProposedMailNickName  = $MailNickName
+                            ProposedProxyAddress  = $PrimaryProxy
+                            Guid                  = $Guid
+                            FullNameError         = 'SUCCESS'
+                            Message               = 'SUCCESS'
+                            ExtendedMessage       = 'SUCCESS'
+
+                        } | Export-Csv -Path $Log -NoTypeInformation -Append -Encoding UTF8
                     }
                     else {
                         Write-Host "FAILED TO FIND AD USER:`t$DisplayName" -ForegroundColor Red
@@ -110,16 +147,21 @@ function Import-QADData {
                             Action                = 'GET'
                             Object                = 'ADUSER'
                             DisplayName           = $DisplayName
-                            UserPrincipalName     = $Upn
-                            Mail                  = $Mail
+                            UserPrincipalName     = $UPN
+                            Mail                  = 'USERNOTFOUND'
+                            TargetAddress         = 'USERNOTFOUND'
+                            MailNickName          = 'USERNOTFOUND'
+                            ProxyAddresses        = 'USERNOTFOUND'
+                            ProposedMail          = $NewMail
                             ProposedTargetAddress = $TargetAddress
                             ProposedMailNickName  = $MailNickName
                             ProposedProxyAddress  = $PrimaryProxy
+                            Guid                  = $ObjectGuid
                             FullNameError         = 'USERNOTFOUND'
                             Message               = 'USERNOTFOUND'
                             ExtendedMessage       = 'USERNOTFOUND'
 
-                        } | Export-Csv -Path $ErrorLog -NoTypeInformation -Append -Encoding UTF8
+                        } | Export-Csv -Path $Log -NoTypeInformation -Append -Encoding UTF8
                     }
                 }
                 catch {
@@ -127,20 +169,25 @@ function Import-QADData {
 
                     [PSCustomObject]@{
                         Time                  = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
-                        Result                = 'FAILURE'
+                        Result                = 'FAILED'
                         Action                = 'REPLACE'
                         Object                = 'ADATTRIBUTES'
                         DisplayName           = $DisplayName
-                        UserPrincipalName     = $Upn
-                        Mail                  = $Mail
+                        UserPrincipalName     = $UPN
+                        Mail                  = 'FAILED'
+                        TargetAddress         = 'FAILED'
+                        MailNickName          = 'FAILED'
+                        ProxyAddresses        = 'FAILED'
+                        ProposedMail          = $NewMail
                         ProposedTargetAddress = $TargetAddress
                         ProposedMailNickName  = $MailNickName
                         ProposedProxyAddress  = $PrimaryProxy
+                        Guid                  = $ObjectGuid
                         FullNameError         = $_.Exception.GetType().fullname
                         Message               = $_.CategoryInfo.Reason
                         ExtendedMessage       = $_.Exception.Message
 
-                    } | Export-Csv -Path $ErrorLog -NoTypeInformation -Append -Encoding UTF8
+                    } | Export-Csv -Path $Log -NoTypeInformation -Append -Encoding UTF8
                 }
             }
         }
