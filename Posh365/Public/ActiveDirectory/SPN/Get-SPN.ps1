@@ -1,30 +1,46 @@
 function Get-SPN {
     <#
     .SYNOPSIS
-    Retrieves Server's SPNs
+    Retrieves all SPNs
 
     .DESCRIPTION
-    Retrieves Server's SPNs
+    Retrieves all SPNs
 
     .EXAMPLE
     Get-SPN
 
     .NOTES
-    Will soon add switches for different types of SPN groups
+
     #>
     param ()
 
-    $search = New-Object DirectoryServices.DirectorySearcher([ADSI]"")
-    $search.filter = "(&(objectcategory=computer)(OperatingSystem=*server*))"
+    $search = New-Object DirectoryServices.DirectorySearcher
     $search.filter = "(servicePrincipalName=*)"
-    $results = $search.Findall()
-    foreach ($result in $results) {
-        $userEntry = $result.GetDirectoryEntry()
-        foreach ($SPN in $userEntry.servicePrincipalName) {
+    $null = $search.PropertiesToLoad.Add("Name")
+    $null = $search.PropertiesToLoad.Add("servicePrincipalName")
+    $null = $search.PropertiesToLoad.Add("objectClass")
+    $null = $search.PropertiesToLoad.Add("DistinguishedName")
+    $null = $search.PropertiesToLoad.Add("whencreated")
+    $null = $search.PropertiesToLoad.Add("DNSHostName")
+    $search.PageSize = 1000
+
+    foreach ($result in $search.Findall()) {
+
+        $ObjectClass = [regex]::match($result.Properties['objectClass'], '[^,\s]*$').captures.groups[0]
+        $OrganizationalUnit = ($result.Properties['DistinguishedName'][0] -replace '^.+?,(?=(OU|CN)=)')
+        $Name = $result.Properties['name'][0]
+        $WhenCreated = $result.Properties['whencreated'][0]
+        $DNSHostName = $result.Properties['DNSHostName'][0]
+
+        foreach ($SPN in $result.Properties['servicePrincipalName']) {
             [PSCustomObject]@{
-                Hostname = $userEntry.name
-                SPN      = $SPN
+                Name               = $Name
+                SPN                = $SPN
+                ObjectClass        = $ObjectClass
+                OrganizationalUnit = $OrganizationalUnit
+                WhenCreated        = $WhenCreated
+                DNSHostName        = $DNSHostName
             }
-        } 
+        }
     }
 }
