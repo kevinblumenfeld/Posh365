@@ -46,15 +46,15 @@ function Get-365MsolGroup {
             )
 
             $CalculatedProps = @(
-                @{n = "DirSyncProvisioningErrors" ; e = {($_.DirSyncProvisioningErrors | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "Errors" ; e = {($_.Errors | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "GroupType" ; e = {($_.GroupType | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "IsSystem" ; e = {($_.IsSystem | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "LastDirSyncTime" ; e = {($_.LastDirSyncTime | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "Licenses" ; e = {($_.Licenses | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ObjectId" ; e = {($_.ObjectId | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join '|' }},
-                @{n = "ValidationStatus" ; e = {($_.ValidationStatus | Where-Object {$_ -ne $null}) -join ";" }}
+                @{n = "DirSyncProvisioningErrors" ; e = { [string]::join("|", [String[]]$_.DirSyncProvisioningErrors -ne '') } },
+                @{n = "Errors" ; e = { [string]::join("|", [String[]]$_.Errors -ne '') } },
+                @{n = "GroupType" ; e = { [string]::join("|", [String[]]$_.GroupType -ne '') } },
+                @{n = "IsSystem" ; e = { [string]::join("|", [String[]]$_.IsSystem -ne '') } },
+                @{n = "LastDirSyncTime" ; e = { [string]::join("|", [String[]]$_.LastDirSyncTime -ne '') } },
+                @{n = "Licenses" ; e = { [string]::join("|", [String[]]$_.Licenses -ne '') } },
+                @{n = "ObjectId" ; e = { [string]::join("|", [String[]]$_.ObjectId -ne '') } },
+                @{n = "proxyAddresses" ; e = { [string]::join("|", [String[]]$_.proxyAddresses -ne '') } },
+                @{n = "ValidationStatus" ; e = { [string]::join("|", [String[]]$_.ValidationStatus -ne '') } }
             )
         }
         else {
@@ -63,9 +63,9 @@ function Get-365MsolGroup {
             )
 
             $CalculatedProps = @(
-                @{n = "GroupType" ; e = {($_.GroupType | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "LastDirSyncTime" ; e = {($_.LastDirSyncTime | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join '|' }}
+                @{n = "GroupType" ; e = { [string]::join("|", [String[]]$_.GroupType -ne '') } },
+                @{n = "LastDirSyncTime" ; e = { [string]::join("|", [String[]]$_.LastDirSyncTime -ne '') } },
+                @{n = "proxyAddresses" ; e = { [string]::join("|", [String[]]$_.proxyAddresses -ne '') } }
             )
         }
     }

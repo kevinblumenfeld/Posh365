@@ -8,6 +8,7 @@ function Get-EXOGroup {
 
     .PARAMETER ListofGroups
     Provide a text list of specific groups to report on.  Otherwise, all groups will be reported.
+    It is highly recommend to use a list of primarysmtpaddresses or GUIDs
 
     .EXAMPLE
     Get-EXOGroup | Export-Csv c:\scripts\All365GroupExport.csv -notypeinformation -encoding UTF8
@@ -57,31 +58,31 @@ function Get-EXOGroup {
             )
 
             $CalculatedProps = @(
-                @{n = "AcceptMessagesOnlyFrom" ; e = {($_.AcceptMessagesOnlyFrom | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "AcceptMessagesOnlyFromDLMembers" ; e = {($_.AcceptMessagesOnlyFromDLMembers | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = {($_.AcceptMessagesOnlyFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "AddressListMembership" ; e = {($_.AddressListMembership | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "AdministrativeUnits" ; e = {($_.AdministrativeUnits | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "BypassModerationFromSendersOrMembers" ; e = {($_.BypassModerationFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "GrantSendOnBehalfTo" ; e = {($_.GrantSendOnBehalfTo | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ManagedBy" ; e = {($_.ManagedBy | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ModeratedBy" ; e = {($_.ModeratedBy | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "RejectMessagesFrom" ; e = {($_.RejectMessagesFrom | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "RejectMessagesFromDLMembers" ; e = {($_.RejectMessagesFromDLMembers | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "RejectMessagesFromSendersOrMembers" ; e = {($_.RejectMessagesFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ExtensionCustomAttribute1" ; e = {($_.ExtensionCustomAttribute1 | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ExtensionCustomAttribute2" ; e = {($_.ExtensionCustomAttribute2 | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ExtensionCustomAttribute3" ; e = {($_.ExtensionCustomAttribute3 | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ExtensionCustomAttribute4" ; e = {($_.ExtensionCustomAttribute4 | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ExtensionCustomAttribute5" ; e = {($_.ExtensionCustomAttribute5 | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "MailTipTranslations" ; e = {($_.MailTipTranslations | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ObjectClass" ; e = {($_.ObjectClass | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "PoliciesExcluded" ; e = {($_.PoliciesExcluded | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "PoliciesIncluded" ; e = {($_.PoliciesIncluded | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join '|' }},
-                @{n = "x500" ; e = {"x500:" + $_.LegacyExchangeDN}},
-                @{n = "membersName" ; e = {($Members.name | Where-Object {$_ -ne $null}) -join ";"}}
-                @{n = "membersSMTP" ; e = {($Members.PrimarySmtpAddress | Where-Object {$_ -ne $null}) -join ";"}}
+                @{n = "AcceptMessagesOnlyFrom" ; e = { [string]::join('|', [String[]]$_.AcceptMessagesOnlyFrom -ne '') } },
+                @{n = "AcceptMessagesOnlyFromDLMembers" ; e = { [string]::join('|', [String[]]$_.AcceptMessagesOnlyFromDLMembers -ne '') } },
+                @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = { [string]::join('|', [String[]]$_.AcceptMessagesOnlyFromSendersOrMembers -ne '') } },
+                @{n = "AddressListMembership" ; e = { [string]::join('|', [String[]]$_.AddressListMembership -ne '') } },
+                @{n = "AdministrativeUnits" ; e = { [string]::join('|', [String[]]$_.AdministrativeUnits -ne '') } },
+                @{n = "BypassModerationFromSendersOrMembers" ; e = { [string]::join('|', [String[]]$_.BypassModerationFromSendersOrMembers -ne '') } },
+                @{n = "GrantSendOnBehalfTo" ; e = { [string]::join('|', [String[]]$_.GrantSendOnBehalfTo -ne '') } },
+                @{n = "ManagedBy" ; e = { [string]::join('|', [String[]]$_.ManagedBy -ne '') } },
+                @{n = "ModeratedBy" ; e = { [string]::join('|', [String[]]$_.ModeratedBy -ne '') } },
+                @{n = "RejectMessagesFrom" ; e = { [string]::join('|', [String[]]$_.RejectMessagesFrom -ne '') } },
+                @{n = "RejectMessagesFromDLMembers" ; e = { ($_.RejectMessagesFromDLMembers | Where-Object { $_ -ne $null }) -join ";" } },
+                @{n = "RejectMessagesFromSendersOrMembers" ; e = { [string]::join('|', [String[]]$_.RejectMessagesFromSendersOrMembers -ne '') } },
+                @{n = "ExtensionCustomAttribute1" ; e = { [string]::join('|', [String[]]$_.ExtensionCustomAttribute1 -ne '') } },
+                @{n = "ExtensionCustomAttribute2" ; e = { [string]::join('|', [String[]]$_.ExtensionCustomAttribute2 -ne '') } },
+                @{n = "ExtensionCustomAttribute3" ; e = { [string]::join('|', [String[]]$_.ExtensionCustomAttribute3 -ne '') } },
+                @{n = "ExtensionCustomAttribute4" ; e = { [string]::join('|', [String[]]$_.ExtensionCustomAttribute4 -ne '') } },
+                @{n = "ExtensionCustomAttribute5" ; e = { [string]::join('|', [String[]]$_.ExtensionCustomAttribute5 -ne '') } },
+                @{n = "MailTipTranslations" ; e = { [string]::join('|', [String[]]$_.MailTipTranslations -ne '') } },
+                @{n = "ObjectClass" ; e = { [string]::join('|', [String[]]$_.ObjectClass -ne '') } },
+                @{n = "PoliciesExcluded" ; e = { [string]::join('|', [String[]]$_.PoliciesExcluded -ne '') } },
+                @{n = "PoliciesIncluded" ; e = { [string]::join('|', [String[]]$_.PoliciesIncluded -ne '') } },
+                @{n = "EmailAddresses" ; e = { [string]::join('|', [String[]]$_.EmailAddresses -ne '') } },
+                @{n = "x500" ; e = { "x500:" + $_.LegacyExchangeDN } },
+                @{n = "membersName" ; e = { [string]::join('|', [String[]]$Members.name -ne '') } },
+                @{n = "membersSMTP" ; e = { [string]::join('|', [String[]]$Members.PrimarySmtpAddress -ne '') } }
             )
         }
         else {
@@ -90,12 +91,12 @@ function Get-EXOGroup {
             )
 
             $CalculatedProps = @(
-                @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = {($_.AcceptMessagesOnlyFromSendersOrMembers | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ManagedBy" ; e = {($_.ManagedBy | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join '|' }},
-                @{n = "x500" ; e = {"x500:" + $_.LegacyExchangeDN}},
-                @{n = "membersName" ; e = {($Members.name | Where-Object {$_ -ne $null}) -join ";"}}
-                @{n = "membersSMTP" ; e = {($Members.PrimarySmtpAddress | Where-Object {$_ -ne $null}) -join ";"}}
+                @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = { [string]::join('|', [String[]]$_.AcceptMessagesOnlyFromSendersOrMembers -ne '') } },
+                @{n = "ManagedBy" ; e = { [string]::join('|', [String[]]$_.ManagedBy -ne '') } },
+                @{n = "EmailAddresses" ; e = { [string]::join('|', [String[]]$_.EmailAddresses -ne '') } },
+                @{n = "x500" ; e = { "x500:" + $_.LegacyExchangeDN } },
+                @{n = "membersName" ; e = { [string]::join('|', [String[]]$Members.name -ne '') } },
+                @{n = "membersSMTP" ; e = { [string]::join('|', [String[]]$Members.PrimarySmtpAddress -ne '') } }
             )
         }
     }
@@ -109,8 +110,9 @@ function Get-EXOGroup {
         else {
             $Groups = Get-DistributionGroup -ResultSize unlimited
             foreach ($CurGroup in $Groups) {
-                $Members = Get-DistributionGroupMember -Identity $CurGroup.identity -ResultSize Unlimited | Select-Object name, primarysmtpaddress
-                Get-DistributionGroup -identity $CurGroup.identity -ResultSize Unlimited | Select-Object ($Selectproperties + $CalculatedProps)
+                [string]$Guid = $CurGroup.Guid
+                $Members = Get-DistributionGroupMember -Identity $Guid -ResultSize Unlimited | Select-Object name, primarysmtpaddress
+                Get-DistributionGroup -identity $Guid -ResultSize Unlimited | Select-Object ($Selectproperties + $CalculatedProps)
             }
         }
     }

@@ -46,22 +46,23 @@ function Get-365MsolUser {
             )
 
             $CalculatedProps = @(
-                @{n = "AlternateEmailAddresses" ; e = {($_.AlternateEmailAddresses | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "AlternateMobilePhones" ; e = {($_.AlternateMobilePhones | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "AlternativeSecurityIds" ; e = {($_.AlternativeSecurityIds | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "DirSyncProvisioningErrors" ; e = {($_.DirSyncProvisioningErrors | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "Errors" ; e = {($_.Errors | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "ExtensionData" ; e = {($_.ExtensionData | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "IndirectLicenseErrors" ; e = {($_.IndirectLicenseErrors | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "Licenses" ; e = {($_.Licenses | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "OverallProvisioningStatus" ; e = {($_.OverallProvisioningStatus | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "PortalSettings" ; e = {($_.PortalSettings | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join '|' }},
-                @{n = "ServiceInformation" ; e = {($_.ServiceInformation | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "StrongAuthenticationMethods" ; e = {($_.StrongAuthenticationMethods | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "StrongAuthenticationPhoneAppDetails" ; e = {($_.StrongAuthenticationPhoneAppDetails | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "StrongAuthenticationRequirements" ; e = {($_.StrongAuthenticationRequirements | Where-Object {$_ -ne $null}) -join ";" }},
-                @{n = "StrongAuthenticationUserDetails" ; e = {($_.StrongAuthenticationUserDetails | Where-Object {$_ -ne $null}) -join ";" }}
+                @{n = "AlternateEmailAddresses" ; e = { [string]::join("|", [String[]]$_.AlternateEmailAddresses -ne '') } },
+                @{n = "AlternateMobilePhones" ; e = { [string]::join("|", [String[]]$_.AlternateMobilePhones -ne '') } },
+                @{n = "AlternativeSecurityIds" ; e = { [string]::join("|", [String[]]$_.AlternativeSecurityIds -ne '') } },
+                @{n = "DirSyncProvisioningErrors" ; e = { [string]::join("|", [String[]]$_.DirSyncProvisioningErrors -ne '') } },
+                @{n = "Errors" ; e = { [string]::join("|", [String[]]$_.Errors -ne '') } },
+                @{n = "ExtensionData" ; e = { [string]::join("|", [String[]]$_.ExtensionData -ne '') } },
+                @{n = "IndirectLicenseErrors" ; e = { [string]::join("|", [String[]]$_.IndirectLicenseErrors -ne '') } },
+                @{n = "Licenses" ; e = { [string]::join("|", [String[]]$_.Licenses -ne '') } },
+                @{n = "OverallProvisioningStatus" ; e = { [string]::join("|", [String[]]$_.OverallProvisioningStatus -ne '') } },
+                @{n = "PortalSettings" ; e = { [string]::join("|", [String[]]$_.PortalSettings -ne '') } },
+                @{n = "proxyAddresses" ; e = { [string]::join("|", [String[]]$_.proxyAddresses -ne '') } },
+                @{n = "ServiceInformation" ; e = { [string]::join("|", [String[]]$_.ServiceInformation -ne '') } },
+                @{n = "StrongAuthenticationMethods" ; e = { [string]::join("|", [String[]]$_.StrongAuthenticationMethods -ne '') } },
+                @{n = "StrongAuthenticationPhoneAppDetails" ; e = { [string]::join("|", [String[]]$_.StrongAuthenticationPhoneAppDetails -ne '') } },
+                @{n = "StrongAuthenticationRequirements" ; e = { [string]::join("|", [String[]]$_.StrongAuthenticationRequirements -ne '') } },
+                @{n = "StrongAuthenticationUserDetails" ; e = { [string]::join("|", [String[]]$_.StrongAuthenticationUserDetails -ne '') } }
+
             )
         }
         else {
@@ -72,7 +73,7 @@ function Get-365MsolUser {
             )
 
             $CalculatedProps = @(
-                @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join '|' }}
+                @{n = "proxyAddresses" ; e = { [string]::join("|", [String[]]$_.proxyAddresses -ne '') } }
             )
         }
     }
