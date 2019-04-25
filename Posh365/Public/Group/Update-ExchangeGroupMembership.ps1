@@ -1,12 +1,13 @@
 
-function Remove-ExchangeGroupMember {
+function Update-ExchangeGroupMembership {
 
     <#
     .SYNOPSIS
-    This will remove all members from all groups that are fed via the pipeline. Then add the new members from the same list.
+    This will remove all members from all groups (that are fed via the pipeline).
 
     .DESCRIPTION
-    This will remove all members from all groups that are fed via the pipeline. Then add the new members from the same list.
+    This will remove all members from all groups (that are fed via the pipeline).
+    Then add and updated list of members from the same list.
 
     .PARAMETER LogPath
     Log of all success and failures
@@ -18,7 +19,7 @@ function Remove-ExchangeGroupMember {
     Pipeline input of a list of (new) members and groups to which they will be added
 
     .EXAMPLE
-    Import-Csv .\Groups.csv| Remove-ExchangeGroupMember -LogPath .\MemberLog.csv -NewMemberCSV .\Groups.csv
+    Import-Csv .\Groups.csv | Update-ExchangeGroupMembership -LogPath .\MemberLog.csv -NewMemberCSV .\Groups.csv
 
     .NOTES
     Use with caution as this will remove all the members to all the groups you tell it to!!
@@ -39,147 +40,150 @@ function Remove-ExchangeGroupMember {
         $GroupList
 
     )
-    Begin {
+    begin {
         $NewMemberList = Import-Csv $NewMemberCSV
-        $NewMemberHash = @{ }
-        foreach ($NewMember in $NewMemberList) {
-            if (-not $NewMemberHash.Contains($NewMember.PrimarySMTPAddress)) {
-                $NewMemberHash[$NewMember.PrimarySmtpAddress] = [system.collections.arraylist]::new()
-            }
-            $null = $NewMemberHash[$NewMember.PrimarySmtpAddress].Add($NewMember.MemberEmail)
-        }
-        $NewMemberHash
-    }
-    Process {
 
-        ForEach ($Group in $GroupList) {
+        $NewMemberHash = @{ }
+
+        foreach ($NewMember in $NewMemberList) {
+            if (-not $NewMemberHash.Contains($NewMember.Group)) {
+                $NewMemberHash[$NewMember.Group] = [system.collections.arraylist]::new()
+            }
+            $null = $NewMemberHash[$NewMember.Group].Add($NewMember.Email)
+        }
+    }
+    process {
+        foreach ($Group in $GroupList) {
             try {
-                $MemberList = Get-DistributionGroupMember -identity $Group.PrimarySmtpAddress -erroraction stop
-                Write-Host "Found group: `t $($Group.PrimarySmtpAddress)" -ForegroundColor White
-                # Remote Members
+                $GetSplat = @{
+                    Identity    = $Group.Group
+                    erroraction = "stop"
+                }
+
+                $MemberList = Get-DistributionGroupMember @GetSplat
+
+                Write-Host "`n"
+                Write-Host "Found group: `t`t $($Group.Group)" -ForegroundColor Magenta
+
                 foreach ($Member in $MemberList) {
-                    Write-Host "Found member: `t $($Member.PrimarySmtpAddress)" -ForegroundColor White
+
+                    Write-Host "Found member: `t`t $($Member.DisplayName) `t $($Member.PrimarySmtpAddress)"  -ForegroundColor Magenta
+
                     [PSCustomObject]@{
-                        Group                = $Group.PrimarySmtpAddress
+                        Action               = 'GETGROUPMEMBERSHIP'
+                        Result               = 'SUCCESS'
+                        Group                = $Group.Group
                         Member               = $Member.PrimarySmtpAddress
                         DisplayName          = $Member.DisplayName
                         Identity             = $Member.Identity
-                        EmailAddresses       = [string]::join("|", [String[]]$Member.EmailAddresses -ne '')
-                        Name                 = $Member.Name
                         RecipientTypeDetails = $Member.RecipientTypeDetails
                         Guid                 = $Member.Guid
-                        Action               = 'GETGROUPMEMBERSHIP'
-                        Result               = 'SUCCESS'
                         ExtendedMessage      = 'SUCCESS'
                         Time                 = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
-
                     } | Export-Csv -Path $LogPath -NoTypeInformation -Append
+
                     try {
-                        [string]$Guid = $Member.Guid
-                        Remove-DistributionGroupMember -Identity $Group.PrimarySmtpAddress -Member $Guid -erroraction stop
-                        Write-Host "Removed member: `t $($Member.PrimarySmtpAddress)" -ForegroundColor Green
+                        $RemoveSplat = @{
+                            Identity    = $Group.Group
+                            Member      = [string]$Member.Guid
+                            Confirm     = $false
+                            erroraction = "stop"
+                        }
+
+                        Remove-DistributionGroupMember @RemoveSplat
+                        Write-Host "Removed member: `t $($Member.DisplayName) `t $($Member.PrimarySmtpAddress)" -ForegroundColor Yellow
+
                         [PSCustomObject]@{
-                            Group                = $Group.PrimarySmtpAddress
+                            Action               = 'REMOVEGROUPMEMBER'
+                            Result               = 'SUCCESS'
+                            Group                = $Group.Group
                             Member               = $Member.PrimarySmtpAddress
                             DisplayName          = $Member.DisplayName
                             Identity             = $Member.Identity
-                            EmailAddresses       = [string]::join("|", [String[]]$Member.EmailAddresses -ne '')
-                            Name                 = $Member.Name
                             RecipientTypeDetails = $Member.RecipientTypeDetails
                             Guid                 = $Member.Guid
-                            Action               = 'REMOVEGROUPMEMBER'
-                            Result               = 'SUCCESS'
                             ExtendedMessage      = 'SUCCESS'
                             Time                 = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
-
                         } | Export-Csv -Path $LogPath -NoTypeInformation -Append
                     }
                     catch {
                         Write-Host "Failed to remove member: `t $($Member.PrimarySmtpAddress)" -ForegroundColor Red
                         [PSCustomObject]@{
-                            Group                = $Group.PrimarySmtpAddress
+                            Action               = 'REMOVEGROUPMEMBER'
+                            Result               = 'FAILED'
+                            Group                = $Group.Group
                             Member               = $Member.PrimarySmtpAddress
                             DisplayName          = $Member.DisplayName
                             Identity             = $Member.Identity
-                            EmailAddresses       = [string]::join("|", [String[]]$Member.EmailAddresses -ne '')
-                            Name                 = $Member.Name
                             RecipientTypeDetails = $Member.RecipientTypeDetails
                             Guid                 = $Member.Guid
-                            Action               = 'REMOVEGROUPMEMBER'
-                            Result               = 'FAILED'
                             ExtendedMessage      = $_.Exception.Message
                             Time                 = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
-
                         } | Export-Csv -Path $LogPath -NoTypeInformation -Append
                     }
                 }
-                # Removal complete
-                # Add New Members
                 try {
-                    foreach ($New in $NewMemberHash[$Group.PrimarySmtpAddress]) {
-                        Add-DistributionGroupMember -Identity $Group.PrimarySmtpAddress -Member $New -erroraction stop
+                    foreach ($New in $NewMemberHash[$Group.Group]) {
+
+                        $AddSplat = @{
+                            Identity    = $Group.Group
+                            Member      = $New
+                            erroraction = "stop"
+                        }
+
+                        Add-DistributionGroupMember @AddSplat
                         Write-Host "New member added: `t $New" -ForegroundColor Green
+
                         [PSCustomObject]@{
-                            Group                = $Group.PrimarySmtpAddress
+                            Action               = 'ADDGROUPMEMBER'
+                            Result               = 'SUCCESS'
+                            Group                = $Group.Group
                             Member               = $Member.PrimarySmtpAddress
                             DisplayName          = $Member.DisplayName
                             Identity             = $Member.Identity
-                            EmailAddresses       = [string]::join("|", [String[]]$Member.EmailAddresses -ne '')
-                            Name                 = $Member.Name
                             RecipientTypeDetails = $Member.RecipientTypeDetails
                             Guid                 = $Member.Guid
-                            Action               = 'ADDGROUPMEMBER'
-                            Result               = 'SUCCESS'
                             ExtendedMessage      = 'SUCCESS'
                             Time                 = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
-
                         } | Export-Csv -Path $LogPath -NoTypeInformation -Append
                     }
                 }
                 catch {
                     Write-Host "Failed to add new member: `t $New" -ForegroundColor Red
+
                     [PSCustomObject]@{
-                        Group                = $Group.PrimarySmtpAddress
+                        Action               = 'ADDGROUPMEMBER'
+                        Result               = 'FAILED'
+                        Group                = $Group.Group
                         Member               = $Member.PrimarySmtpAddress
                         DisplayName          = $Member.DisplayName
                         Identity             = $Member.Identity
-                        EmailAddresses       = [string]::join("|", [String[]]$Member.EmailAddresses -ne '')
-                        Name                 = $Member.Name
                         RecipientTypeDetails = $Member.RecipientTypeDetails
                         Guid                 = $Member.Guid
-                        Action               = 'ADDGROUPMEMBER'
-                        Result               = 'FAILED'
                         ExtendedMessage      = $_.Exception.Message
                         Time                 = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
-
                     } | Export-Csv -Path $LogPath -NoTypeInformation -Append
                 }
             }
             catch {
-                Write-Host "Group lookup failed: `t $($Group.PrimarySmtpAddress)" -ForegroundColor Red
+                Write-Host "Group lookup failed: `t $($Group.Group)" -ForegroundColor Red
+
                 [PSCustomObject]@{
-                    Group                = $Group.PrimarySmtpAddress
+                    Action               = 'GETGROUPMEMBERSHIP'
+                    Result               = 'FAILED'
+                    Group                = $Group.Group
                     Member               = "GROUPNOTFOUND"
                     DisplayName          = "GROUPNOTFOUND"
                     Identity             = "GROUPNOTFOUND"
-                    EmailAddresses       = "GROUPNOTFOUND"
-                    Name                 = "GROUPNOTFOUND"
                     RecipientTypeDetails = "GROUPNOTFOUND"
                     Guid                 = "GROUPNOTFOUND"
-                    Action               = 'GETGROUPMEMBERSHIP'
-                    Result               = 'FAILED'
                     ExtendedMessage      = $_.Exception.Message
                     Time                 = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                 } | Export-Csv -Path $LogPath -NoTypeInformation -Append
-                if ($_.Exception.Message -like "*couldn't be found on*") {
-                    # New-DistributionGroup
-                }
             }
-
         }
-
     }
-    End {
+    end {
 
     }
 }
