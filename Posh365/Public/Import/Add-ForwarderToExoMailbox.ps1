@@ -156,8 +156,13 @@ function Add-ForwarderToExoMailbox {
                     if ($Mailbox = Get-Mailbox -Filter $Filterstring) {
                         $Forward = '{0}@{1}' -f $Mailbox.PrimarySmtpAddress.Split('@')[0], $ForwardSuffix
                         try {
-                            [string]$Guid = $Mailbox.Guid
-                            Set-Mailbox -Identity $Guid -ForwardingSmtpAddress $Forward -erroraction stop
+                            $SetSplat = @{
+                                Identity              = [string]$Mailbox.Guid
+                                ForwardingSmtpAddress = $Forward
+                                erroraction           = 'stop'
+                            }
+
+                            Set-Mailbox @SetSplat
                             Write-Verbose ("SUCCESS: Mailbox forwarder set {0}" -f $Mailbox.DisplayName)
                             $AfterSet = Get-Mailbox -Filter $Filterstring
                             Write-Host "$($AfterSet.DisplayName) New Forwarding Address: $($AfterSet.ForwardingSmtpAddress)" -ForegroundColor Green

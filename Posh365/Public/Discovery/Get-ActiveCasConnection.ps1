@@ -12,14 +12,14 @@ function Get-ActiveCasConnection {
     You must verify POP and IMAP service is running on all the CAS servers prior to adding it to the list of servers
 
     For example, if the POP service is not running, add '#' to the POP object below, just like this:
-    # POP    = [math]::Truncate((Get-Counter "\MSExchangePOP3(_total)\Connections Current" -ComputerName $CurServer).CounterSamples[0].Cookedvalue)
+    `# POP    = [math]::Truncate((Get-Counter "\MSExchangePOP3(_total)\Connections Current" -ComputerName $CurServer).CounterSamples[0].Cookedvalue)`
 
     To verify POP3 and/or IMAP4 service is running run these commands (once):
-
+    ```
     $CAS = Get-ClientAccessServer | Select -ExpandProperty name
     $CAS |  % {write-host "`n`nServer: $($_)`nPOP3" -foregroundcolor "Green";Get-service -ComputerName $_ -ServiceName MSExchangePOP3 | Select -expandproperty status }
     $CAS |  % {write-host "`n`nServer: $($_)`nIMAP4" -foregroundcolor "Cyan";Get-service -ComputerName $_ -ServiceName MSExchangeIMAP4 | Select -expandproperty status }
-
+    ```
     .PARAMETER LogPath
     Where the log file will be automatically generated. Example c:\scripts
 

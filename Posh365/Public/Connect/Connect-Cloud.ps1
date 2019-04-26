@@ -4,43 +4,43 @@ function Connect-Cloud {
     Connects to Office 365 services and/or Azure.
 
     .DESCRIPTION
-    Connects to Office 365 services and/or Azure.  
+    Connects to Office 365 services and/or Azure.
 
-    Connects to some or all of the Office 365/Azure services based on switches provided at runtime.  
+    Connects to some or all of the Office 365/Azure services based on switches provided at runtime.
 
-    Office 365 tenant name, for example, either contoso or contoso.onmicrosoft.com must be provided with -Tenant parameter.  
+    Office 365 tenant name, for example, either contoso or contoso.onmicrosoft.com must be provided with -Tenant parameter.
     The -Tenant parameter is mandatory.
 
-    There is a switch to use Multi-Factor Authentication.  
-    For Exchange Online MFA, you are required to download and use the Exchange Online Remote PowerShell Module.  
-    To download the Exchange Online Remote PowerShell Module for multi-factor authentication ONCE, in the EAC (https://outlook.office365.com/ecp/), go to Hybrid \> Setup and click the appropriate Configure button.  
-    When using Multi-Factor Authentication the saving of credentials is not available currently - thus each service will prompt independently for credentials.   
+    There is a switch to use Multi-Factor Authentication.
+    For Exchange Online MFA, you are required to download and use the Exchange Online Remote PowerShell Module.
+    To download the Exchange Online Remote PowerShell Module for multi-factor authentication ONCE, in the EAC (https://outlook.office365.com/ecp/), go to Hybrid \> Setup and click the appropriate Configure button.
+    When using Multi-Factor Authentication the saving of credentials is not available currently - thus each service will prompt independently for credentials.
 
-    Locally saves and encrypts to a file the username and password.  
-    The encrypted file...can only be used on the computer and within the user's profile from which it was created, is the same .txt file for all the Office 365 services and is a separate .json file for Azure.  
-    If a username or password becomes corrupt or is entered incorrectly, it can be deleted using -DeleteCreds.  
-    For example, Connect-Cloud Contoso -DeleteCreds  
+    Locally saves and encrypts to a file the username and password.
+    The encrypted file...can only be used on the computer and within the user's profile from which it was created, is the same .txt file for all the Office 365 services and is a separate .json file for Azure.
+    If a username or password becomes corrupt or is entered incorrectly, it can be deleted using -DeleteCreds.
+    For example, Connect-Cloud Contoso -DeleteCreds
 
     If Azure switch is used for first time :
 
-    1. User will login as normal when prompted by Azure  
-    2. User will be prompted to select which Azure Subscription  
-    3. Select the subscription and click "OK"  
+    1. User will login as normal when prompted by Azure
+    2. User will be prompted to select which Azure Subscription
+    3. Select the subscription and click "OK"
 
     If Azure switch is used after first time:
 
-    1. User will be prompted to pick username used previously  
-    2. If a new username is to be used (e.g.username not found when prompted), click Cancel to be prompted to login.  
-    3. User will be prompted to select which Azure Subscription  
-    4. Select the subscription and click "OK"  
+    1. User will be prompted to pick username used previously
+    2. If a new username is to be used (e.g.username not found when prompted), click Cancel to be prompted to login.
+    3. User will be prompted to select which Azure Subscription
+    4. Select the subscription and click "OK"
 
     Directories used/created during the execution of this script
 
-    1. $env:USERPROFILE\ps\  
-    2. $env:USERPROFILE\ps\creds\   
+    1. $env:USERPROFILE\ps\
+    2. $env:USERPROFILE\ps\creds\
 
-    All saved credentials are saved in $env:USERPROFILE\ps\creds\  
-    Transcript is started and kept in $env:USERPROFILE\ps\<tenantspecified\>  
+    All saved credentials are saved in `$env:USERPROFILE\ps\creds\`
+    Transcript is started and kept in `$env:USERPROFILE\ps\<tenantspecified>`
 
     .PARAMETER Tenant
     Mandatory parameter that specifies which Office 365 and/or Azure Tenant you want to connect to.
@@ -99,7 +99,7 @@ function Connect-Cloud {
     This is to illustrate that any number of individual services can be used to connect.
     Also that the -Tenant parameter is positional
 
-    #> 
+    #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]
     Param
@@ -113,7 +113,7 @@ function Connect-Cloud {
 
         [switch] $All365,
 
-        [switch] $Azure,    
+        [switch] $Azure,
 
         [switch] $Skype,
 
@@ -121,7 +121,7 @@ function Connect-Cloud {
 
         [switch] $Compliance,
 
-        [switch] $AzureADver2,               
+        [switch] $AzureADver2,
 
         [switch] $MFA,
 
@@ -158,10 +158,10 @@ function Connect-Cloud {
             New-Item -ItemType Directory -Force -Path ($RootPath + $Tenant + "\logs\")
         }
         Try {
-            Start-Transcript -ErrorAction Stop -path ($RootPath + $Tenant + "\logs\" + "transcript-" + ($(get-date -Format _yyyy-MM-dd_HH-mm-ss)) + ".txt") 
+            Start-Transcript -ErrorAction Stop -path ($RootPath + $Tenant + "\logs\" + "transcript-" + ($(get-date -Format _yyyy-MM-dd_HH-mm-ss)) + ".txt")
         }
         Catch {
-            Stop-Transcript 
+            Stop-Transcript
             Start-Transcript -path ($RootPath + $Tenant + "\logs\" + "transcript-" + ($(get-date -Format _yyyy-MM-dd_HH-mm-ss)) + ".txt")
         }
         # Create KeyPath Directory
@@ -171,7 +171,7 @@ function Connect-Cloud {
             }
             Catch {
                 throw $_.Exception.Message
-            }           
+            }
         }
         if ($MFA -and ($ExchangeOnline -or $Compliance)) {
             $modules = @(Get-ChildItem -Path "$($env:LOCALAPPDATA)\Apps\2.0" -Filter "Microsoft.Exchange.Management.ExoPowershellModule.manifest" -Recurse )
@@ -203,7 +203,7 @@ function Connect-Cloud {
                 $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).cred") | ConvertTo-SecureString
                 $UsernameString = Get-Content ($KeyPath + "$($Tenant).ucred")
                 $Credential = Try {
-                    New-Object System.Management.Automation.PSCredential -ArgumentList $UsernameString, $PwdSecureString -ErrorAction Stop 
+                    New-Object System.Management.Automation.PSCredential -ArgumentList $UsernameString, $PwdSecureString -ErrorAction Stop
                 }
                 Catch {
                     if ($_.exception.Message -match '"userName" is not valid. Change the value of the "userName" argument and run the operation again') {
@@ -235,7 +235,7 @@ function Connect-Cloud {
         }
         if ($MSOnline -or $All365) {
             if (-not ($null = Get-Module -Name MSOnline -ListAvailable -ErrorAction Stop)) {
-                Install-Module -Name MSOnline -Scope CurrentUser -Force   
+                Install-Module -Name MSOnline -Scope CurrentUser -Force
             }
             Try {
                 $null = Get-MsolAccountSku -ErrorAction Stop
@@ -252,7 +252,7 @@ function Connect-Cloud {
                         Write-Warning "          Please Try your last command again...                     "
                         Write-Warning "...you will be prompted to enter your Office 365 credentials again. "
                         Break
-                    
+
                     }
                     else {
                         Connect-Cloud $Tenant -DeleteCreds
@@ -298,14 +298,14 @@ function Connect-Cloud {
                         Write-Host "         For Example: Get-Mailbox is now Get-CloudMailbox               " -foregroundcolor "magenta" -backgroundcolor "white"
                     }
                 }
-                
+
             }
             else {
                 Import-Module -FullyQualifiedName $moduleName -Force
                 Try {
                     Import-Module (Connect-EXOPSSession) -Global
                     Write-Host "You have successfully connected to Exchange Online (MFA)" -foregroundcolor "magenta" -backgroundcolor "white"
-                } 
+                }
                 Catch [System.Management.Automation.CommandNotFoundException] {
                     Write-Warning "Exchange Online MFA module is required or there was an issue connecting"
                     Write-Warning "To download the Exchange Online Remote PowerShell Module for multi-factor authentication,"
@@ -327,7 +327,7 @@ function Connect-Cloud {
                 Try {
                     Import-Module (Connect-IPPSSession) -Global
                     Write-Host "You have successfully connected to the Security & Compliance Center (MFA)" -foregroundcolor "magenta" -backgroundcolor "white"
-                } 
+                }
                 Catch [System.Management.Automation.CommandNotFoundException] {
                     Write-Warning "Exchange Online MFA module is required or there was an issue connecting"
                     Write-Warning "To download the Exchange Online Remote PowerShell Module for multi-factor authentication,"
@@ -403,7 +403,7 @@ function Connect-Cloud {
         }
         # Azure AD
         If ($AzureADver2 -or $All365) {
-            if (-not $MFA) {  
+            if (-not $MFA) {
                 If (-not ($null = Get-Module -Name AzureAD -ListAvailable)) {
                     Install-Module -Name AzureAD -Scope CurrentUser -Force
                 }
@@ -428,11 +428,11 @@ function Connect-Cloud {
                             Write-Warning "Download PowerShell 5 or PowerShellGet"
                             Write-Warning "https://msdn.microsoft.com/en-us/powershell/wmf/5.1/install-configure"
                             Break
-                        }   
+                        }
                     }
                 }
             }
-            else {  
+            else {
                 If (-not ($null = Get-Module -Name AzureAD -ListAvailable)) {
                     Install-Module -Name AzureAD -Scope CurrentUser -Force
                 }
@@ -457,14 +457,14 @@ function Connect-Cloud {
                             Write-Warning "Download PowerShell 5 or PowerShellGet"
                             Write-Warning "https://msdn.microsoft.com/en-us/powershell/wmf/5.1/install-configure"
                             Break
-                        }      
+                        }
                     }
                 }
             }
         }
     }
     End {
-    } 
+    }
 }
 function Get-LAAzureConnected {
     if (-not ($null = Get-Module -Name AzureRM -ListAvailable)) {
@@ -498,7 +498,7 @@ function Get-LAAzureConnected {
                 Import-AzureRmContext -Path ($KeyPath + $json.name)
             }
             Write-Host "Select Subscription and Click `"OK`" in lower right-hand corner" -foregroundcolor "magenta" -backgroundcolor "white"
-            $subscription = Get-AzureRmSubscription | Out-GridView -PassThru -Title "Choose Azure Subscription"| Select id
+            $subscription = Get-AzureRmSubscription | Out-GridView -PassThru -Title "Choose Azure Subscription" | Select id
             Try {
                 Select-AzureRmSubscription -SubscriptionId $subscription.id -ErrorAction Stop
                 Write-Host "You have successfully connected to Azure" -foregroundcolor "magenta" -backgroundcolor "white"
