@@ -26,7 +26,7 @@ function Import-GoogleToSharedMailbox {
     (
 
         [Parameter(Mandatory)]
-        $LogPath,
+        $CsvLogPath,
 
         [Parameter(Mandatory, ValueFromPipeline)]
         $SharedList
@@ -43,8 +43,6 @@ function Import-GoogleToSharedMailbox {
             $NewSharedSplat = @{
                 Name               = $Shared.DisplayName
                 DisplayName        = $Shared.DisplayName
-                FirstName          = $Shared.FirstName
-                LastName           = $Shared.LastName
                 Alias              = $Alias
                 PrimarySmtpAddress = $Shared.PrimarySmtpAddress
                 Shared             = $True
@@ -68,7 +66,7 @@ function Import-GoogleToSharedMailbox {
                     FullNameError      = 'SUCCESS'
                     Message            = 'SUCCESS'
                     ExtendedMessage    = 'SUCCESS'
-                } | Export-Csv -Path $LogPath -NoTypeInformation -Append
+                } | Export-Csv -Path $CsvLogPath -NoTypeInformation -Append
 
                 Write-HostLog -Message "Creating Mailbox`t$($NewShared.Name)`t$($NewShared.PrimarySmtpAddress)" -Status "Success"
 
@@ -89,7 +87,7 @@ function Import-GoogleToSharedMailbox {
                     FullNameError      = $_.Exception.GetType().fullname
                     Message            = $_.CategoryInfo.Reason
                     ExtendedMessage    = $_.Exception.Message
-                } | Export-Csv -Path $LogPath -NoTypeInformation -Append
+                } | Export-Csv -Path $CsvLogPath -NoTypeInformation -Append
 
                 Write-HostLog -Message "Creating Mailbox`t$($Shared.DisplayName)" -Status "Failed"
             }

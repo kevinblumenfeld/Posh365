@@ -43,31 +43,25 @@ function Add-UserToOktaGroup {
 
     #>
 
-    [CmdletBinding(DefaultParameterSetName = 'UPN')]
     param(
 
         [Parameter(Position = 0, Mandatory)]
         [string]
         $GroupName,
 
-        [Parameter(Position = 1, ParameterSetName = "UPN")]
-        [Alias("UPN")]
-        [string[]]
-        $UserPrincipalName,
-
         [Parameter()]
         [string] $ErrorLog,
 
-        [Parameter(Mandatory, ValueFromPipeline, ParameterSetName = "Pipeline")]
-        [Alias("InputObject")]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
+        [Alias("UserPrincipalName", "Login")]
         [object[]]
         $User
 
     )
     begin {
         $GroupId = Get-OktaGroupReport -Filter 'type eq "OKTA_GROUP"' |
-            Where-Object Name -eq $GroupName |
-            Select-Object -ExpandProperty id
+        Where-Object Name -eq $GroupName |
+        Select-Object -ExpandProperty id
 
         if (-not $GroupId) {
             $ErrorRecord = [System.Management.Automation.ErrorRecord]::new(
@@ -83,12 +77,24 @@ function Add-UserToOktaGroup {
         Write-Information ("Group: {0} ID: {1}" -f $GroupName, $GroupId)
     }
     process {
-        switch ($PSCmdlet.ParameterSetName) {
-            "UPN" {
-                foreach ($Object in $UserPrincipalName) {
-                    $Url = $OKTACredential.GetNetworkCredential().username
-                    $Token = $OKTACredential.GetNetworkCredential().Password
-                    $UserLU = Get-SingleOktaUserReport -Login $Object
+
+        foreach ($Object in $User) {
+            $Url = $OKTACredential.GetNetworkCredential().username
+            $Token = $OKTACredential.GetNetworkCredential().Password
+            try {
+                $UserLU = Get-SingleOktaUserReport -Login $Object -ErrorAction Stop
+                write-host $UserLU.status
+                if ($UserLu.status -eq 'DEPROVISIONED') {
+                    Write-Host "USER DEPROVISIONED: $Object" -ForegroundColor RED
+                    if ($ErrorLog) {
+                        Add-Content -Path $ErrorLog -Value ("USERDEPROVISIONED" + "," + $Object + "," + "USERDEPROVISIONED")
+                    }
+                    continue
+                }
+                else {
+
+                    Write-Host "USER FOUND: $Object" -ForegroundColor Green
+
                     $Headers = @{
                         "Authorization" = "SSWS $Token"
                         "Accept"        = "application/json"
@@ -100,67 +106,28 @@ function Add-UserToOktaGroup {
                         Headers = $Headers
                         Method  = 'Put'
                     }
-                    $null = Invoke-WebRequest @RestSplat -Verbose:$false
-
-                    Write-Verbose ("Adding: {0} ID: {1}" -f $Object, $UserLU.id)
-                }
-            }
-            "Pipeline" {
-                if ($MyInvocation.ExpectingInput) {
-                    $User = , $User
-                }
-
-                foreach ($Object in $User) {
-                    $Url = $OKTACredential.GetNetworkCredential().username
-                    $Token = $OKTACredential.GetNetworkCredential().Password
                     try {
-                        $UserLU = Get-SingleOktaUserReport -Login $Object.Login -ErrorAction Stop
-                        write-host $UserLU.status
-                        if ($UserLu.status -eq 'DEPROVISIONED') {
-                            Write-Host "USER DEPROVISIONED: $($Object.Login)" -ForegroundColor RED
-                            if ($ErrorLog) {
-                                Add-Content -Path $ErrorLog -Value ("USERDEPROVISIONED" + "," + $Object.Login + "," + "USERDEPROVISIONED")
-                            }
-                            continue
-                        }
-                        else {
-
-                            Write-Host "USER FOUND: $($Object.Login)" -ForegroundColor Green
-
-                            $Headers = @{
-                                "Authorization" = "SSWS $Token"
-                                "Accept"        = "application/json"
-                                "Content-Type"  = "application/json"
-                            }
-
-                            $RestSplat = @{
-                                Uri     = 'https://{0}.okta.com/api/v1/groups/{1}/users/{2}' -f $Url, $GroupId, $UserLU.id
-                                Headers = $Headers
-                                Method  = 'Put'
-                            }
-                            try {
-                                Write-Verbose ("Adding: {0} ID: {1}" -f $Object.Login, $UserLU.id)
-                                $null = Invoke-WebRequest @RestSplat -Verbose:$false -ErrorAction Stop
-                                Write-Host "SUCCESS ADD: $($Object.Login)" -ForegroundColor Green
-                            }
-                            catch {
-                                Write-Host "FAILED ADD: $($Object.Login)" -ForegroundColor Red
-                                if ($ErrorLog) {
-                                    Add-Content -Path $ErrorLog -Value ("FAILEDTOADD" + "," + $Object.Login + "," + $($_.Exception.Message))
-                                }
-
-                            }
-                        }
+                        Write-Verbose ("Adding: {0} ID: {1}" -f $Object, $UserLU.id)
+                        $null = Invoke-WebRequest @RestSplat -Verbose:$false -ErrorAction Stop
+                        Write-Host "SUCCESS ADD: $Object" -ForegroundColor Green
                     }
                     catch {
-                        Write-Host "USER NOT FOUND:`t$($Object.Login)" -ForegroundColor Red
+                        Write-Host "FAILED ADD: $Object" -ForegroundColor Red
                         if ($ErrorLog) {
-                            Add-Content -Path $ErrorLog -Value ("USERNOTFOUND" + "," + $Object.Login + "," + $($_.Exception.Message))
+                            Add-Content -Path $ErrorLog -Value ("FAILEDTOADD" + "," + $Object + "," + $($_.Exception.Message))
                         }
+
                     }
+                }
+            }
+            catch {
+                Write-Host "USER NOT FOUND:`t$Object" -ForegroundColor Red
+                if ($ErrorLog) {
+                    Add-Content -Path $ErrorLog -Value ("USERNOTFOUND" + "," + $Object + "," + $($_.Exception.Message))
                 }
             }
         }
+
     }
     end {
 

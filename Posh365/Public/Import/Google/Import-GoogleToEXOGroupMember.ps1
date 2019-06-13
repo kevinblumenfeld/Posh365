@@ -36,7 +36,7 @@ function Import-GoogleToEXOGroupMember {
     Process {
         ForEach ($CurGroup in $Group) {
             if ($CurGroup.Members) {
-                $Member = $CurGroup.Members -split "`r`n"
+                $Member = $CurGroup.Members -split " "
                 foreach ($CurMember in $Member) {
 
                     $MemberSplat = @{

@@ -7,7 +7,7 @@ function Import-GoogleToEXOGroup {
     .DESCRIPTION
     Import CSV of Google Groups into Office 365 as Distribution Groups
 
-    .PARAMETER LogPath
+    .PARAMETER CsvLogPath
     The full path and file name of the log ex. c:\scripts\AddGroupsLog.csv (use csv for best results)
 
     .PARAMETER Group
@@ -35,7 +35,7 @@ function Import-GoogleToEXOGroup {
     Use this parameter to override with either 'Open' or 'Closed'
 
     .EXAMPLE
-    Import-Csv C:\scripts\GoogleGroups.csv | Import-GoogleToEXOGroup -LogPath C:\Scripts\EXOGroupResults.csv
+    Import-Csv C:\scripts\GoogleGroups.csv | Import-GoogleToEXOGroup -CsvLogPath C:\Scripts\EXOGroupResults.csv
 
     .NOTES
     Choosing both -DontAddOwnersToManagedBy & -DontAddManagersToManagedBy results in
@@ -49,7 +49,7 @@ function Import-GoogleToEXOGroup {
     Param
     (
         [Parameter(Mandatory)]
-        $LogPath,
+        $CsvLogPath,
 
         [Parameter(Mandatory, ValueFromPipeline)]
         $Group,
@@ -170,8 +170,8 @@ function Import-GoogleToEXOGroup {
             # messageModerationLevel (A moderator approves messages sent to recipient before delivered)
             switch ($CurGroup.messageModerationLevel) {
 
-                'MODERATE_NONE' {$SetHash['ModerationEnabled'] = $false}
-                'MODERATE_ALL_MESSAGES' {$SetHash['ModerationEnabled'] = $true}
+                'MODERATE_NONE' { $SetHash['ModerationEnabled'] = $false }
+                'MODERATE_ALL_MESSAGES' { $SetHash['ModerationEnabled'] = $true }
                 'MODERATE_NON_MEMBERS' {
                     $SetHash['ModerationEnabled'] = $true
                     $SetHash['BypassModerationFromSendersOrMembers'] = $CurGroup.Email
@@ -179,9 +179,9 @@ function Import-GoogleToEXOGroup {
 
             }
             switch ($CurGroup.sendMessageDenyNotification) {
-                'TRUE' {$SetHash['SendModerationNotifications'] = 'ALWAYS'}
-                'FALSE' {$SetHash['SendModerationNotifications'] = 'NEVER'}
-                Default {$SetHash['SendModerationNotifications'] = 'NEVER'}
+                'TRUE' { $SetHash['SendModerationNotifications'] = 'ALWAYS' }
+                'FALSE' { $SetHash['SendModerationNotifications'] = 'NEVER' }
+                Default { $SetHash['SendModerationNotifications'] = 'NEVER' }
             }
 
             # whoCanPostMessage (who can email the DL)
@@ -201,7 +201,7 @@ function Import-GoogleToEXOGroup {
             }
 
             # Create a splat with only parameters with values for New-DistributionGroup
-            $NewSplat = @{}
+            $NewSplat = @{ }
             ForEach ($Key in $NewHash.keys) {
                 if ($NewHash.item($Key) -ne $null) {
                     $NewSplat.add($Key, $($NewHash.item($Key)))
@@ -209,7 +209,7 @@ function Import-GoogleToEXOGroup {
             }
 
             # Create a splat with only parameters with values for Set-DistributionGroup
-            $SetSplat = @{}
+            $SetSplat = @{ }
             ForEach ($Key in $SetHash.keys) {
                 if ($SetHash.item($Key) -ne $null) {
                     $SetSplat.add($Key, $($SetHash.item($Key)))
@@ -231,7 +231,7 @@ function Import-GoogleToEXOGroup {
                     Message         = 'SUCCESS'
                     ExtendedMessage = 'SUCCESS'
 
-                } | Export-Csv -Path $LogPath -NoTypeInformation -Append
+                } | Export-Csv -Path $CsvLogPath -NoTypeInformation -Append
 
                 Write-HostLog -Message "Creating`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status "Success"
 
@@ -250,7 +250,7 @@ function Import-GoogleToEXOGroup {
                         Message         = 'SUCCESS'
                         ExtendedMessage = 'SUCCESS'
 
-                    } | Export-Csv -Path $LogPath -NoTypeInformation -Append
+                    } | Export-Csv -Path $CsvLogPath -NoTypeInformation -Append
 
                     Write-HostLog -Message "Setting`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status "Success"
 
@@ -268,7 +268,7 @@ function Import-GoogleToEXOGroup {
                         Message         = $Failure
                         ExtendedMessage = $_.Exception.Message
 
-                    } | Export-Csv -Path $LogPath -NoTypeInformation -Append
+                    } | Export-Csv -Path $CsvLogPath -NoTypeInformation -Append
 
                     Write-HostLog -Message "Setting`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status "Failed"
 
@@ -293,7 +293,7 @@ function Import-GoogleToEXOGroup {
                     Message         = $Failure
                     ExtendedMessage = $_.Exception.Message
 
-                } | Export-Csv -Path $LogPath -NoTypeInformation -Append
+                } | Export-Csv -Path $CsvLogPath -NoTypeInformation -Append
 
                 Write-HostLog -Message "Creating`t$($CurGroup.Name)`t$Failure" -Status "Failed"
 

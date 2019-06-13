@@ -1,4 +1,28 @@
 ﻿function Test-PreFlightOnPrem {
+    <#
+    .SYNOPSIS
+    Prior to migrating mailboxes to Exchange Online this outputs the results of a preflight check.
+    This overwrites the original file
+
+    .DESCRIPTION
+    Prior to migrating mailboxes to Exchange Online this outputs the results of a preflight check.
+    This overwrites the original file
+
+    .PARAMETER CsvFileName
+    This is the path to the original CSV file
+    The mandatory headers in the CSV are:
+    UserPrincipalName and Batch (The UPN and Batch of those to be checked - prior to migration)
+
+    .PARAMETER Tenant
+    For example contoso or contoso.onmicrosoft.com would both work.
+
+    .EXAMPLE
+    Test-PreFlightOnPrem -Tenant Contoso -CSVFileName .\UsersAndBatchNames.csv
+
+    .NOTES
+    This will overwrite the original file
+    #>
+
     param (
         [Parameter(Mandatory = $true)]
         [String] $CsvFileName,
@@ -11,64 +35,53 @@
         $Tenant = $Tenant.Split(".")[0]
     }
 
-    $Import = Import-Csv $CsvFileName
+    $ImportList = Import-Csv $CsvFileName
 
-    foreach ($CurImport in $Import) {
-        $WhyFailed = ""
-        $UPN = $CurImport.Check
-        $CurImport.Check = $UPN
-        $CurImport.BatchName = $CurImport.BatchName
-        
-        if ($CurImport.PreFlightComplete -ne "TRUE") {
+    foreach ($Import in $ImportList) {
+        Write-Verbose "Testing:`t$($Import.UserPrincipalName)"
+
+        $UPN = $Import.UserPrincipalName
+        $Import.UserPrincipalName = $UPN
+        $Import.Batch = $Import.Batch
+
+        if ($Import.PreFlightComplete -ne "TRUE") {
 
             try {
                 $Mailbox = Get-Mailbox -Identity $UPN -ErrorAction Stop
 
-                $CurImport.RecipientType = $Mailbox.RecipientTypeDetails
-                $CurImport.SamAccountName = $Mailbox.SamAccountName
-                $CurImport.ForwardingSmtpAddress = $Mailbox.ForwardingSmtpAddress
-                $CurImport.DeliverToMailboxAndForward = $Mailbox.DeliverToMailboxAndForward
-                $CurImport.UserPrincipalName = $Mailbox.UserPrincipalName
+                $Import.RecipientType = $Mailbox.RecipientTypeDetails
+                $Import.SamAccountName = $Mailbox.SamAccountName
+                $Import.ForwardingSmtpAddress = $Mailbox.ForwardingSmtpAddress
+                $Import.DeliverToMailboxAndForward = $Mailbox.DeliverToMailboxAndForward
+                $Import.UserPrincipalName = $Mailbox.UserPrincipalName
+                $Import.PrimarySmtpAddress = $Mailbox.PrimarySmtpAddress.Address
+                $Import.UpnMatchesSmtp = ($Mailbox.PrimarySmtpAddress.Address -eq $Mailbox.UserPrincipalName)
+                if ($Routing = $Mailbox.EmailAddresses.addressstring -match "$tenant.mail.onmicrosoft.com") {
+                    $Import.RoutingAddress = $Routing -join '|'
+                }
+                else {
+                    $Import.RoutingAddress = "ROUTING_MISSING"
+                }
+
+                $WhyFailed = "SUCCESS"
             }
             catch {
                 $WhyFailed = (($_.Exception.Message) -replace ",", ";") -replace "\n", "|**|"
 
                 Write-Verbose "Error executing: Get-Mailbox $UPN"
                 Write-Verbose $WhyFailed
-                $CurImport.ErrorOnPrem = $WhyFailed
+                $Import.ErrorOnPrem = $WhyFailed
 
                 continue
             }
-            if ($Mailbox.ForwardingAddress -ne $null) {
+            if ($null -ne $Mailbox.ForwardingAddress) {
                 $Forward = Get-Recipient $Mailbox.ForwardingAddress
-
-                $CurImport.ForwardingAddress = $Forward.PrimarySmtpAddress
+                $Import.ForwardingAddress = $Forward.PrimarySmtpAddress.Address
             }
             else {
-                $CurImport.ForwardingAddress = "Not Found"
-            }
-            try {
-                $CasMailbox = Get-CASMailbox -Identity $UPN -ErrorAction Stop 
-                if ($CasMailbox.ActiveSyncEnabled -eq $true) {
-                    $CurImport.ActiveSyncEnabled = "TRUE"
-                }
-                else {
-                    $CurImport.ActiveSyncEnabled = "FALSE"
-                }
-            }
-            catch {
-                $WhyFailedCAS = (($_.Exception.Message) -replace ",", ";") -replace "\n", "|**|"
-                $WhyFailed += $WhyFailedCAS
-                Write-Verbose "Error executing: Get-CASMailbox $UPN"
-                Write-Verbose $WhyFailedCAS
-            }
-            if ($WhyFailed -and $WhyFailedCAS) {
-                $CurImport.ErrorOnPrem = $WhyFailed
-            }
-            else {
-                $CurImport.ErrorOnPrem = ""
+                $Import.ForwardingAddress = "Not Found"
             }
         }
-        $Import | Export-Csv $CsvFileName -NoTypeInformation -Encoding UTF8
+        $ImportList | Export-Csv $CsvFileName -NoTypeInformation -Encoding UTF8
     }
 }

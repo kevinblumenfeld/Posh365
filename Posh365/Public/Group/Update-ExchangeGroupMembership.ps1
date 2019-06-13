@@ -7,7 +7,7 @@ function Update-ExchangeGroupMembership {
 
     .DESCRIPTION
     This will remove all members from all groups (that are fed via the pipeline).
-    Then add and updated list of members from the same list.
+    Then add an updated list of members from the same list.
 
     .PARAMETER LogPath
     Log of all success and failures
@@ -19,7 +19,11 @@ function Update-ExchangeGroupMembership {
     Pipeline input of a list of (new) members and groups to which they will be added
 
     .EXAMPLE
-    Import-Csv .\Groups.csv | Update-ExchangeGroupMembership -LogPath .\MemberLog.csv -NewMemberCSV .\Groups.csv
+    $Groups = Import-Csv .\GroupsAndMembers.csv | Sort -Property Group -Unique
+    $Groups | Update-ExchangeGroupMembership -LogPath .\MemberLog.csv -NewMemberCSV .\GroupsAndMembers.csv
+
+    .EXAMPLE
+    Import-Csv .\GroupsUnique.csv | Update-ExchangeGroupMembership -LogPath .\MemberLog.csv -NewMemberCSV .\Groups.csv
 
     .NOTES
     Use with caution as this will remove all the members to all the groups you tell it to!!
@@ -122,9 +126,8 @@ function Update-ExchangeGroupMembership {
                         } | Export-Csv -Path $LogPath -NoTypeInformation -Append
                     }
                 }
-                try {
-                    foreach ($New in $NewMemberHash[$Group.Group]) {
-
+                foreach ($New in $NewMemberHash[$Group.Group]) {
+                    try {
                         $AddSplat = @{
                             Identity    = $Group.Group
                             Member      = $New
@@ -147,22 +150,23 @@ function Update-ExchangeGroupMembership {
                             Time                 = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                         } | Export-Csv -Path $LogPath -NoTypeInformation -Append
                     }
-                }
-                catch {
-                    Write-Host "Failed to add new member: `t $New" -ForegroundColor Red
 
-                    [PSCustomObject]@{
-                        Action               = 'ADDGROUPMEMBER'
-                        Result               = 'FAILED'
-                        Group                = $Group.Group
-                        Member               = $Member.PrimarySmtpAddress
-                        DisplayName          = $Member.DisplayName
-                        Identity             = $Member.Identity
-                        RecipientTypeDetails = $Member.RecipientTypeDetails
-                        Guid                 = $Member.Guid
-                        ExtendedMessage      = $_.Exception.Message
-                        Time                 = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
-                    } | Export-Csv -Path $LogPath -NoTypeInformation -Append
+                    catch {
+                        Write-Host "Failed to add new member: `t $New" -ForegroundColor Red
+
+                        [PSCustomObject]@{
+                            Action               = 'ADDGROUPMEMBER'
+                            Result               = 'FAILED'
+                            Group                = $Group.Group
+                            Member               = $New
+                            DisplayName          = 'FAILED'
+                            Identity             = 'FAILED'
+                            RecipientTypeDetails = 'FAILED'
+                            Guid                 = 'FAILED'
+                            ExtendedMessage      = $_.Exception.Message
+                            Time                 = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
+                        } | Export-Csv -Path $LogPath -NoTypeInformation -Append
+                    }
                 }
             }
             catch {

@@ -2,21 +2,24 @@ function Get-OktaMemberGroupHash {
     Param (
 
     )
-
-    $Group = Get-OktaGroupReport
-    $Member2Group = @{ }
-    foreach ($CurGroup in $Group) {
-        $GName = $CurGroup.name
+    $groupId2NameHash = @{ }
+    $groupList = Get-OktaGroupReport
+    $member2GroupHash = @{ }
+    foreach ($Group in $groupList) {
+        if (-not $groupId2NameHash.Contains($Group.Id)) {
+            $groupId2NameHash[$Group.Id] = $Group.Name
+        }
         Start-Sleep -Milliseconds 100
-        $GrpMember = Get-OktaGroupMembership -GroupId $CurGroup.id
+        $memberList = Get-OktaGroupMembership -GroupId $Group.id
 
-        foreach ($CurGrpMember in $GrpMember) {
-            $Login = $CurGrpMember.login
-            if (-not $Member2Group.Contains($Login)) {
-                $Member2Group[$Login] = [system.collections.arraylist]::new()
+        foreach ($Member in $memberList) {
+
+            if (-not $member2GroupHash.Contains($Member.login)) {
+                $member2GroupHash[$Member.login] = [system.collections.arraylist]::new()
             }
-            $null = $Member2Group[$Login].Add($GName)
+            $null = $member2GroupHash[$Member.login].Add($Group.Id)
         }
     }
-    $Member2Group
+    $Script:groupId2NameHash = $groupId2NameHash
+    $member2GroupHash
 }

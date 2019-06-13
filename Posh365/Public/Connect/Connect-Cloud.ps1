@@ -161,7 +161,7 @@ function Connect-Cloud {
             Start-Transcript -ErrorAction Stop -path ($RootPath + $Tenant + "\logs\" + "transcript-" + ($(get-date -Format _yyyy-MM-dd_HH-mm-ss)) + ".txt")
         }
         Catch {
-            Stop-Transcript
+            Stop-Transcript -ErrorAction SilentlyContinue
             Start-Transcript -path ($RootPath + $Tenant + "\logs\" + "transcript-" + ($(get-date -Format _yyyy-MM-dd_HH-mm-ss)) + ".txt")
         }
         # Create KeyPath Directory

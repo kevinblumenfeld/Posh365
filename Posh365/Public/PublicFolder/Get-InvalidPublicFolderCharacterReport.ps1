@@ -76,7 +76,7 @@ function Get-InvalidPublicFolderCharacterReport {
         $NewFolder = $NewFolder.Replace('_-', '-')
         $NewFolder = $NewFolder -replace '\u2013|\u2014', '-'
 
-        Write-Host "Old Folder Name:`t $($BadNamePF.Name)" -ForegroundColor "Cyan"
+        Write-Host "Old Folder Name:`t$($BadNamePF.Name)" -ForegroundColor "Cyan"
         Write-Host "New Folder Name:`t$NewFolder" -ForegroundColor "Green"
         Write-Host ""
         Write-Host ""

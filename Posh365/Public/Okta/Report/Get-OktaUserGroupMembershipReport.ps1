@@ -1,27 +1,40 @@
 function Get-OktaUserGroupMembershipReport {
     Param (
         [Parameter()]
-        [string] $SearchString
+        [string] $SearchString,
+
+        [Parameter()]
+        [string] $Login,
+
+        [Parameter()]
+        [switch] $RefreshGroupMemberHash
     )
 
-    $M2GHash = Get-OktaMemberGroupHash
+    if ($RefreshGroupMemberHash -or -not $M2GHash -or -not $groupId2NameHash) {
+        $M2GHash = Get-OktaMemberGroupHash
+        $Script:M2GHash = $M2GHash
+    }
 
-    if (-not $SearchString) {
-        $User = Get-OktaUserReport
+    if ($SearchString) {
+        $userList = Get-OktaUserReport -SearchString $SearchString
+    }
+    elseif ($Login) {
+        $userList = Get-OktaUserReport -Login $Login
     }
     else {
-        $User = Get-OktaUserReport -SearchString $SearchString
+        $userList = Get-OktaUserReport
     }
 
-    foreach ($CurUser in $User) {
-        $Group = $M2GHash[$CurUser.Login]
-        foreach ($CurGroup in $Group) {
+    foreach ($User in $userList) {
+        $groupList = $M2GHash[$User.Login]
+        foreach ($Group in $groupList) {
             [PSCustomObject]@{
-                FirstName = $CurUser.FirstName
-                LastName  = $CurUser.LastName
-                Login     = $CurUser.Login
-                Email     = $CurUser.Email
-                GroupName = $CurGroup
+                GroupName = $groupId2NameHash.$Group
+                GroupId   = $Group
+                FirstName = $User.FirstName
+                LastName  = $User.LastName
+                Login     = $User.Login
+                Email     = $User.Email
             }
         }
     }

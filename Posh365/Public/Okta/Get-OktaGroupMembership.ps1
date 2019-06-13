@@ -13,7 +13,7 @@ function Get-OktaGroupMembership {
     }
 
     $RestSplat = @{
-        Uri     = 'https://{0}.okta.com/api/v1/groups/{1}/users?limit=200' -f $Url, $GroupID
+        Uri     = 'https://{0}.okta.com/api/v1/groups/{1}/users?limit=10000' -f $Url, $GroupID
         Headers = $Headers
         Method  = 'Get'
     }

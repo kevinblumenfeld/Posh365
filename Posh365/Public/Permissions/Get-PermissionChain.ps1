@@ -80,6 +80,7 @@
         $AllNames = [System.Collections.Generic.HashSet[string]]::new()
     }
     Process {
+        Write-Verbose "Name:  `t$_"
         $AllNames.add($_) > $null
         $Names | Get-MigrationChain -DataSet $DataSet -swvar $swvar | % { $Output.add($_) > $null }
 

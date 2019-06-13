@@ -25,25 +25,25 @@ function Get-ExchangeMailboxStatistics {
     param (
 
         [Parameter(ValueFromPipeline = $true, Mandatory = $false)]
-        $Mailbox
+        $MailboxList
     )
     Begin {
 
     }
     Process {
-        foreach ($CurMailbox in $Mailbox) {
-            $ArchiveGB = Get-MailboxStatistics -identity $CurMailbox.PrimarySmtpAddress -Archive -ErrorAction SilentlyContinue | ForEach-Object {
+        foreach ($Mailbox in $MailboxList) {
+            $ArchiveGB = Get-MailboxStatistics -identity ($Mailbox.PrimarySmtpAddress).ToString -Archive -ErrorAction SilentlyContinue | ForEach-Object {
                 [Math]::Round([Double]($_.TotalItemSize -replace '^.*\(| .+$|,') / 1GB, 5)
             }
-            Get-MailboxStatistics -identity $CurMailbox.PrimarySmtpAddress | Select-Object @(
+            Get-MailboxStatistics -identity ($Mailbox.PrimarySmtpAddress).ToString() | Select-Object @(
                 'DisplayName'
                 @{
                     Name       = 'PrimarySmtpAddress'
-                    Expression = { $CurMailbox.PrimarySmtpAddress }
+                    Expression = { $Mailbox.PrimarySmtpAddress }
                 }
                 @{
                     Name       = 'UserPrincipalName'
-                    Expression = { $CurMailbox.UserPrincipalName }
+                    Expression = { $Mailbox.UserPrincipalName }
                 }
                 @{
                     Name       = 'MailboxGB'
