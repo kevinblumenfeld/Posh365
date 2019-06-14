@@ -6,17 +6,17 @@ function Get-LegacyPFStatistics {
     param (
 
         [Parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Mandatory = $false)]
-        [Microsoft.Exchange.Data.Mapi.PublicFolder] $PublicFolder
+        [Microsoft.Exchange.Data.Mapi.PublicFolder] $PFList
     )
     Begin {
 
     }
     Process {
-        foreach ($CurPublicFolder in $PublicFolder) {
-            $ParentPath = $CurPublicFolder.ParentPath
-            $FolderType = $CurPublicFolder.FolderType
-            $MailEnabled = $CurPublicFolder.MailEnabled
-            $CurPublicFolder | Get-PublicFolderStatistics | Select-Object @(
+        foreach ($PF in $PFList) {
+            $ParentPath = $PF.ParentPath
+            $FolderType = $PF.FolderType
+            $MailEnabled = $PF.MailEnabled
+            $PF | Get-PublicFolderStatistics | Select-Object @(
                 'Name'
                 @{
                     Name       = 'ParentPath'
