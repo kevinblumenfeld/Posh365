@@ -5,7 +5,6 @@ function Test-Preflight {
         $MailboxCSV,
 
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
         [switch]
         $UpnMatch
     )

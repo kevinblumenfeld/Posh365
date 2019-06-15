@@ -1,4 +1,4 @@
-function Sync-Mailbox {
+function Start-MailboxSync {
     <#
     .SYNOPSIS
     Sync Mailboxes from On-Premises Exchange to Exchange Online
@@ -7,9 +7,7 @@ function Sync-Mailbox {
     Sync Mailboxes from On-Premises Exchange to Exchange Online
 
     .PARAMETER UserList
-    Csv file path with 2 mandatory column headers
-    Batch and UserPrincipalName
-    Passed via pipeline
+    Passed via pipeline from public function
 
     .PARAMETER RemoteHost
     This is the endpoint where the source mailboxes reside ex. cas2010.contoso.com
@@ -18,7 +16,6 @@ function Sync-Mailbox {
     This is the tenant domain ex. if tenant is contoso.mail.onmicrosoft.com use contoso
 
     .EXAMPLE
-    Import-csv .\Users.csv | Sync-Mailbox -RemoteHost cas2010.contoso.com -TargetDomain contoso
 
     .NOTES
     General notes

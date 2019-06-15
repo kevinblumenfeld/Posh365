@@ -10,13 +10,14 @@ function Test-UpnMatch {
     }
     process {
         foreach ($User in $UserList) {
-            $Mailbox = Get-Mailbox -Identity $User.UserPrincipalName
-            If ($Mailbox.PrimarySmtpAddress -ne $Mailbox.PrimarySmtpAddress) {
+            $FilterString = "UserPrincipalName -eq '$($Change.UserPrincipalName)'"
+            $ADUser = Get-ADUser -filter $FilterString
+            If ($ADUser.PrimarySmtpAddress -ne $ADUser.PrimarySmtpAddress) {
                 $Result.Add([PSCustomObject]@{
-                        DisplayName        = $Mailbox.DisplayName
+                        DisplayName        = $ADUser.DisplayName
                         Identity           = $User.UserPrincipalName
-                        UserPrincipalName  = $Mailbox.UserPrincipalName
-                        PrimarySmtpAddress = $Mailbox.PrimarySmtpAddress
+                        UserPrincipalName  = $ADUser.UserPrincipalName
+                        PrimarySmtpAddress = $ADUser.PrimarySmtpAddress
                         BatchName          = $User.Batch
                     })
             }
@@ -31,8 +32,10 @@ function Test-UpnMatch {
 
         $ChangeUPN = $Result | Out-GridView @ChangeGrid
         foreach ($Change in $ChangeUPN) {
-            $FilterString = "UserPrincipalName -eq $Change.UserPrincipalName"
-            Get-ADUser -filter $FilterString | Set-ADUser -UserPrincipalName $ChangeUPN.PrimarySmtpAddress
+            if ($Change.UserPrincipalName) {
+                $FilterString = "UserPrincipalName -eq '$($Change.UserPrincipalName)'"
+                Get-ADUser -filter $FilterString | Set-ADUser -UserPrincipalName $ChangeUPN.PrimarySmtpAddress
+            }
         }
     }
 }

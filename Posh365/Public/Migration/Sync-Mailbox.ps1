@@ -1,4 +1,4 @@
-function Invoke-MailboxSync {
+function Sync-Mailbox {
     <#
     .SYNOPSIS
     Sync Mailboxes from On-Premises Exchange to Exchange Online
@@ -7,7 +7,7 @@ function Invoke-MailboxSync {
     Sync Mailboxes from On-Premises Exchange to Exchange Online
 
     .PARAMETER MailboxCSV
-    Path to csv of mailboxes.  Headers needed are: Batch, UserPrincipalName
+    Path to csv of mailboxes.  Headers needed are minimum: Batch, UserPrincipalName
 
     .PARAMETER RemoteHost
     This is the endpoint where the source mailboxes reside ex. cas2010.contoso.com
@@ -24,7 +24,6 @@ function Invoke-MailboxSync {
     .NOTES
     General notes
     #>
-
 
     param (
 
@@ -54,7 +53,7 @@ function Invoke-MailboxSync {
                 TargetDomain          = $TargetDomain
                 DeleteSavedCredential = $true
             }
-            Sync-Mailbox @DelSaved
+            Start-MailboxSync @DelSaved
             break
         }
 
@@ -90,7 +89,7 @@ function Invoke-MailboxSync {
                 RemoteHost   = $RemoteHost
                 TargetDomain = $TargetDomain
             }
-            $UserChoice | Sync-Mailbox @Sync
+            $UserChoice | Start-MailboxSync @Sync
         }
     }
 }
