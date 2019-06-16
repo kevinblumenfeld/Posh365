@@ -1,4 +1,4 @@
-# Posh365
+<img src="https://raw.githubusercontent.com/adilio/ps-design/master/posh365/posh365-final-shadow.png" height="150" alt="Posh365 logo">
 
 Connect.  Provision.  Maintain.
 Posh365 is a Toolbox for Cloud and Hybrid Environments
