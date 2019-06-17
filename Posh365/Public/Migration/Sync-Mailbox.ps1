@@ -7,7 +7,7 @@ function Sync-Mailbox {
     Sync Mailboxes from On-Premises Exchange to Exchange Online
 
     .PARAMETER MailboxCSV
-    Path to csv of mailboxes.  Headers needed are minimum: Batch, UserPrincipalName
+    Path to csv of mailboxes.  Minimum headers required are: Batch, UserPrincipalName
 
     .PARAMETER RemoteHost
     This is the endpoint where the source mailboxes reside ex. cas2010.contoso.com
@@ -15,11 +15,15 @@ function Sync-Mailbox {
     .PARAMETER TargetDomain
     This is the tenant domain ex. if tenant is contoso.mail.onmicrosoft.com use contoso
 
+    .PARAMETER GroupsToAddUserTo
+    Provide one or more groups to add each user chosen to. -GroupsToAddUserTo "Human Resources", "Accounting"
+    Requires AD Module
+
     .PARAMETER DeleteSavedCredential
     Erases credentials that are saved and encrypted on your computer
 
     .EXAMPLE
-    Invoke-MailboxSync -RemoteHost cas2010.contoso.com -TargetDomain contoso -MailboxCSV c:\scripts\batches.csv
+    Invoke-MailboxSync -RemoteHost cas2010.contoso.com -TargetDomain contoso -MailboxCSV c:\scripts\batches.csv -GroupsToAddUserTo "Office 365 E3"
 
     .NOTES
     General notes
@@ -42,6 +46,11 @@ function Sync-Mailbox {
         $TargetDomain,
 
         [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [string[]]
+        $GroupsToAddUserTo,
+
+        [Parameter()]
         [switch]
         $DeleteSavedCredential
 
@@ -60,36 +69,23 @@ function Sync-Mailbox {
         if ($TargetDomain -notmatch '.mail.onmicrosoft.com') {
             $TargetDomain = "$TargetDomain.mail.onmicrosoft.com"
         }
-        $Mailbox = Import-Csv -Path $MailboxCSV
-
-        $OGVBatch = @{
-            Title      = 'Choose Batch(es)'
-            OutputMode = 'Multiple'
-        }
-
-        $OGVUser = @{
-            Title      = 'Choose User(s)'
-            OutputMode = 'Multiple'
-        }
-
-        $OGVDecision = @{
-            Title      = 'Migrate Users or Quit?'
-            OutputMode = 'Single'
-        }
-
-        $BatchChoice = $Mailbox | Select-Object -ExpandProperty Batch -Unique | Out-GridView @OGVBatch
-        $UserChoice = $Mailbox | Where-Object { $_.Batch -in $BatchChoice } | Out-GridView @OGVUser
-
+        Connect-Cloud -Tenant $TargetDomain -ExchangeOnline
+        $UserChoice = Get-Decision -MailboxCSV $MailboxCSV
         if ($UserChoice) {
-            $Decision = 'Migrate', 'Quit' | Out-GridView @OGVDecision
-        }
-
-        if ($Decision -eq 'Migrate') {
             $Sync = @{
                 RemoteHost   = $RemoteHost
                 TargetDomain = $TargetDomain
             }
             $UserChoice | Start-MailboxSync @Sync
+            foreach ($Group in $GroupsToAddUserTo) {
+                $GuidList = $UserChoice | Get-ADUserGuid
+                $GuidList | Add-UserToADGroup -Group $Group
+            }
+        }
+        $UserChoice | Start-MailboxSync @Sync
+        foreach ($Group in $GroupsToAddUserTo) {
+            $GuidList = $UserChoice | Get-ADUserGuid
+            $GuidList | Add-UserToADGroup -Group $Group
         }
     }
 }
