@@ -21,7 +21,7 @@ function Start-PostMigrationTasks {
 
         Connect-Cloud -Tenant $Tenant -ExchangeOnline
 
-        $UserChoice = Get-Decision -MailboxCSV $MailboxCSV
+        $UserChoice = Get-UserDecision -MailboxCSV $MailboxCSV
 
         if ($UserChoice) {
             if ($AddressBookPolicy) {

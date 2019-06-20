@@ -70,7 +70,7 @@ function Sync-Mailbox {
             $TargetDomain = "$TargetDomain.mail.onmicrosoft.com"
         }
         Connect-Cloud -Tenant $TargetDomain -ExchangeOnline
-        $UserChoice = Get-Decision -MailboxCSV $MailboxCSV
+        $UserChoice = Get-UserDecision -MailboxCSV $MailboxCSV
         if ($UserChoice) {
             $Sync = @{
                 RemoteHost   = $RemoteHost

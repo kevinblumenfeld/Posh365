@@ -2,11 +2,11 @@ Function Get-EXOMoveRequestStatistics {
     <#
     .SYNOPSIS
     Provides each user found in Get-MoveRequest in an Out-GridView.  The user can select one or more users for the report provided by Get-MoveRequestStatistics -Include report
-    
+
     .DESCRIPTION
     Provides each user found in Get-MoveRequest in an Out-GridView.  The user can select one or more users for the report provided by Get-MoveRequestStatistics -Include report.
     Each report will open in a seperate Out-GridView
-    
+
     .EXAMPLE
     Get-EXOMoveRequestStatistics
 
@@ -44,8 +44,9 @@ Function Get-EXOMoveRequestStatistics {
     if ($WantsDetailOnTheseMoveRequests) {
         Foreach ($Wants in $WantsDetailOnTheseMoveRequests) {
             $MoveStats = Get-MoveRequestStatistics -Identity $Wants.Guid -IncludeReport
-            $MoveStats.Report.Entries | Select-Object CreationTime, @{n = 'Move Request Statistics Report'; e = {$_.message}} | Sort-Object CreationTime -Descending |
-                Out-GridView -Title "Name: $($Wants.DisplayName) STATUS: $($Wants.Status) BATCH: $($Wants.BatchName)" 
+            $Size = [regex]::Matches("$($MoveStats.TotalMailboxSize)", "^[^(]*").value
+            $MoveStats.Report.Entries | Select-Object CreationTime, @{n = 'Move Request Statistics Report'; e = { $_.message } } | Sort-Object CreationTime -Descending |
+            Out-GridView -Title "$($Wants.DisplayName) $Size $($MoveStats.StatusDetail.value) $($MoveStats.Message)"
         }
     }
     else {
