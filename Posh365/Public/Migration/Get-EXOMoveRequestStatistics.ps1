@@ -43,10 +43,11 @@ Function Get-EXOMoveRequestStatistics {
     $WantsDetailOnTheseMoveRequests = $MoveRequestDetails | Out-GridView -PassThru -Title "Move Requests - Choose one or more and click OK for details"
     if ($WantsDetailOnTheseMoveRequests) {
         Foreach ($Wants in $WantsDetailOnTheseMoveRequests) {
-            $MoveStats = Get-MoveRequestStatistics -Identity $Wants.Guid -IncludeReport
-            $Size = [regex]::Matches("$($MoveStats.TotalMailboxSize)", "^[^(]*").value
-            $MoveStats.Report.Entries | Select-Object CreationTime, @{n = 'Move Request Statistics Report'; e = { $_.message } } | Sort-Object CreationTime -Descending |
-            Out-GridView -Title "$($Wants.DisplayName) $($MoveStats.PercentComplete)% $Size $($MoveStats.StatusDetail.value) $($MoveStats.Message)"
+            $Stats = Get-MoveRequestStatistics -Identity $Wants.Guid -IncludeReport
+            $Size = [regex]::Matches("$($Stats.TotalMailboxSize)", "^[^(]*").value
+            $FilterString = '{0} {1}% {2} {3} {4} of {5} {6}' -f $Wants.DisplayName, $Stats.PercentComplete, $Size, $Stats.StatusDetail.value, $Stats.ItemsTransferred, $Stats.TotalMailboxItemCount, $Stats.Message
+            $Stats.Report.Entries | Select-Object CreationTime, @{n = 'Move Request Statistics Report'; e = { $_.message } } | Sort-Object CreationTime -Descending |
+            Out-GridView -Title $FilterString
         }
     }
     else {

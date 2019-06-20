@@ -82,10 +82,5 @@ function Sync-Mailbox {
                 $GuidList | Add-UserToADGroup -Group $Group
             }
         }
-        $UserChoice | Start-MailboxSync @Sync
-        foreach ($Group in $GroupsToAddUserTo) {
-            $GuidList = $UserChoice | Get-ADUserGuid
-            $GuidList | Add-UserToADGroup -Group $Group
-        }
     }
 }
