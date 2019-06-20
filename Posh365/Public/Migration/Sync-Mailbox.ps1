@@ -23,7 +23,7 @@ function Sync-Mailbox {
     Erases credentials that are saved and encrypted on your computer
 
     .EXAMPLE
-    Invoke-MailboxSync -RemoteHost cas2010.contoso.com -TargetDomain contoso -MailboxCSV c:\scripts\batches.csv -GroupsToAddUserTo "Office 365 E3"
+    Sync-Mailbox -RemoteHost cas2010.contoso.com -TargetDomain contoso -MailboxCSV c:\scripts\batches.csv -GroupsToAddUserTo "Office 365 E3"
 
     .NOTES
     General notes

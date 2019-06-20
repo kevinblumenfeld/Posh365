@@ -32,7 +32,7 @@ function Get-ExchangeMailboxStatistics {
     }
     Process {
         foreach ($Mailbox in $MailboxList) {
-            $ArchiveGB = Get-MailboxStatistics -identity ($Mailbox.PrimarySmtpAddress).ToString -Archive -ErrorAction SilentlyContinue | ForEach-Object {
+            $ArchiveGB = Get-MailboxStatistics -identity ($Mailbox.PrimarySmtpAddress).ToString() -Archive -ErrorAction SilentlyContinue | ForEach-Object {
                 [Math]::Round([Double]($_.TotalItemSize -replace '^.*\(| .+$|,') / 1GB, 5)
             }
             Get-MailboxStatistics -identity ($Mailbox.PrimarySmtpAddress).ToString() | Select-Object @(
