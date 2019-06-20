@@ -46,7 +46,7 @@ Function Get-EXOMoveRequestStatistics {
             $MoveStats = Get-MoveRequestStatistics -Identity $Wants.Guid -IncludeReport
             $Size = [regex]::Matches("$($MoveStats.TotalMailboxSize)", "^[^(]*").value
             $MoveStats.Report.Entries | Select-Object CreationTime, @{n = 'Move Request Statistics Report'; e = { $_.message } } | Sort-Object CreationTime -Descending |
-            Out-GridView -Title "$($Wants.DisplayName) $Size $($MoveStats.StatusDetail.value) $($MoveStats.Message)"
+            Out-GridView -Title "$($Wants.DisplayName) $($MoveStats.PercentComplete)% $Size $($MoveStats.StatusDetail.value) $($MoveStats.Message)"
         }
     }
     else {
