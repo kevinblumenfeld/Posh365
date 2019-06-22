@@ -1,11 +1,12 @@
 
-Function New-MessageTrack {
+Function Trace-ExchangeMessage {
     <#
     .SYNOPSIS
     On-Premises Exchange Message Tracking Log made easy!
+    You may see an error if you have Edge servers in your org. It is fine to ignore those.
 
     .DESCRIPTION
-    Searches all Hub Transport and Mailbox Servers for messages. Once found, you can select one or more messages via Out-GridView to search by those MessageID's.  
+    Searches all Hub Transport and Mailbox Servers for messages. Once found, you can select one or more messages via Out-GridView to search by those MessageID's.
 
     .PARAMETER Sender
     Parameter description
@@ -32,12 +33,13 @@ Function New-MessageTrack {
     Parameter description
 
     .EXAMPLE
-    New-MessageTrack -StartSearchHoursAgo 48 -EndSearchHoursAgo 24 -Recipients "joe@contoso.com" -Subject "Forklift incident"
+    Trace-ExchangeMessage -StartSearchHoursAgo 48 -EndSearchHoursAgo 24 -Recipients "joe@contoso.com" -Subject "Forklift incident"
 
     .NOTES
     General notes
     #>
     [CmdletBinding()]
+    [Alias('New-MessageTrack')]
     param
     (
         [Parameter()]
@@ -64,7 +66,7 @@ Function New-MessageTrack {
         [Parameter()]
         [string] $Status
     )
-    $Servers = Get-TransportServer -WarningAction SilentlyContinue 
+    $Servers = Get-TransportServer -WarningAction SilentlyContinue
     $currentErrorActionPrefs = $ErrorActionPreference
     $ErrorActionPreference = 'Stop'
 
@@ -80,7 +82,7 @@ Function New-MessageTrack {
 
     $cmdletParams = (Get-Command $PSCmdlet.MyInvocation.InvocationName).Parameters.Keys
 
-    $params = @{}
+    $params = @{ }
     $NotArray = 'StartSearchHoursAgo', 'EndSearchHoursAgo', 'Subject', 'ResultSize', 'Debug', 'Verbose', 'ErrorAction', 'WarningAction', 'InformationAction', 'ErrorVariable', 'WarningVariable', 'InformationVariable', 'OutVariable', 'OutBuffer', 'PipelineVariable'
     foreach ($cmdletParam in $cmdletParams) {
         if ($cmdletParam -notin $NotArray) {
@@ -114,11 +116,11 @@ Function New-MessageTrack {
                     ClientIP         = $_.ClientIP
                     OriginalClientIP = $_.OriginalClientIP
                     ClientHostName   = $_.ClientHostName
-                    TotalBytes       = $_.TotalBytes                                      
+                    TotalBytes       = $_.TotalBytes
                     MessageId        = $_.MessageId
                 }
                 $allMessageTrackResults.Add($messageTrackResults)
-            }        
+            }
             else {
                 Write-Verbose "`tNo results found"
             }
@@ -154,11 +156,11 @@ Function New-MessageTrack {
                                 ClientIP         = $_.ClientIP
                                 OriginalClientIP = $_.OriginalClientIP
                                 ClientHostName   = $_.ClientHostName
-                                TotalBytes       = $_.TotalBytes                                      
+                                TotalBytes       = $_.TotalBytes
                                 MessageId        = $_.MessageId
                             }
                             $allMessageTrackResults.Add($messageTrackResults)
-                        }        
+                        }
                         else {
                             Write-Verbose "`tNo results found"
                         }

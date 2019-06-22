@@ -1,4 +1,4 @@
-Function New-EXOMessageTrace {
+Function Trace-Message {
     <#
     .SYNOPSIS
     Search message trace logs in Exchange Online by hour or partial hour start and end times
@@ -42,21 +42,22 @@ Function New-EXOMessageTrace {
     Expanded: There was no message delivery because the message was addressed to a distribution group, and the membership of the distribution was expanded.
 
     .EXAMPLE
-    New-EXOMessageTrace
+    Trace-Message
 
     .EXAMPLE
-    New-EXOMessageTrace -StartSearchHoursAgo 10 -EndSearchHoursAgo 5 -Subject "arizona"
+    Trace-Message -StartSearchHoursAgo 10 -EndSearchHoursAgo 5 -Subject "arizona"
 
     This will find all messages with the word "arizona" somewhere in the subject, that were sent or received anywhere from 10 hours ago till 5 hours ago
 
     .EXAMPLE
-    New-EXOMessageTrace -StartSearchHoursAgo 10 -EndSearchHoursAgo 5 -Subject "Letter from the CEO"
+    Trace-Message -StartSearchHoursAgo 10 -EndSearchHoursAgo 5 -Subject "Letter from the CEO"
 
     .EXAMPLE
-    New-EXOMessageTrace -SenderAddress "User@domain.com" -RecipientAddress "recipient@domain.com" -StartSearchHoursAgo 15 -FromIP "xx.xx.xx.xx"
+    Trace-Message -SenderAddress "User@domain.com" -RecipientAddress "recipient@domain.com" -StartSearchHoursAgo 15 -FromIP "xx.xx.xx.xx"
 
     #>
     [CmdletBinding()]
+    [Alias('New-EXOMessageTrace')]
     param
     (
         [Parameter()]
@@ -99,7 +100,7 @@ Function New-EXOMessageTrace {
 
     $cmdletParams = (Get-Command $PSCmdlet.MyInvocation.InvocationName).Parameters.Keys
 
-    $params = @{}
+    $params = @{ }
     $NotArray = 'StartSearchHoursAgo', 'EndSearchHoursAgo', 'Subject', 'Debug', 'Verbose', 'ErrorAction', 'WarningAction', 'InformationAction', 'ErrorVariable', 'WarningVariable', 'InformationVariable', 'OutVariable', 'OutBuffer', 'PipelineVariable'
     foreach ($cmdletParam in $cmdletParams) {
         if ($cmdletParam -notin $NotArray) {
@@ -147,7 +148,7 @@ Function New-EXOMessageTrace {
             else {
                 $messageTrace = Get-MessageTrace @params -Page $counter
                 $messageTracewithSubject = ""
-                $messageTracewithSubject = $messageTrace | Where-Object {$_.Subject -like "*$Subject*"}
+                $messageTracewithSubject = $messageTrace | Where-Object { $_.Subject -like "*$Subject*" }
 
                 if ($messageTracewithSubject) {
                     $messageTracewithSubject | ForEach-Object {
@@ -195,8 +196,8 @@ Function New-EXOMessageTrace {
                 }
                 $TraceDetail = Get-MessageTraceDetail @Splat
                 $TraceDetail |
-                    Select-Object Date, Event, Action, Detail, Data, MessageTraceID, MessageID |
-                    Out-GridView -Title "DATE: $($Wants.Received) STATUS: $($Wants.Status) FROM: $($Wants.SenderAddress) TO: $($Wants.RecipientAddress) TRACEID: $($Wants.MessageTraceId)"
+                Select-Object Date, Event, Action, Detail, Data, MessageTraceID, MessageID |
+                Out-GridView -Title "DATE: $($Wants.Received) STATUS: $($Wants.Status) FROM: $($Wants.SenderAddress) TO: $($Wants.RecipientAddress) TRACEID: $($Wants.MessageTraceId)"
             }
         }
     }
