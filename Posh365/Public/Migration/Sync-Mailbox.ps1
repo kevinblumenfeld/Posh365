@@ -2,9 +2,18 @@ function Sync-Mailbox {
     <#
     .SYNOPSIS
     Sync Mailboxes from On-Premises Exchange to Exchange Online
+    Either CSV or Excel file from SharePoint can be used
 
     .DESCRIPTION
     Sync Mailboxes from On-Premises Exchange to Exchange Online
+    Either CSV or Excel file from SharePoint can be used
+
+    .PARAMETER SharePointURL
+    Sharepoint url ex. https://contoso.sharepoint.com/sites/fabrikam/
+
+    .PARAMETER ExcelFile
+    Excel file found in "Shared Documents" of SharePoint site specified in SharePointURL
+    ex. "Batchex.xlsx"
 
     .PARAMETER MailboxCSV
     Path to csv of mailboxes.  Minimum headers required are: Batch, UserPrincipalName
@@ -23,16 +32,28 @@ function Sync-Mailbox {
     Erases credentials that are saved and encrypted on your computer
 
     .EXAMPLE
-    Sync-Mailbox -RemoteHost cas2010.contoso.com -TargetDomain contoso -MailboxCSV c:\scripts\batches.csv -GroupsToAddUserTo "Office 365 E3"
+    Sync-Mailbox -RemoteHost cas2010.contoso.com -Tenant contoso -MailboxCSV c:\scripts\batches.csv -GroupsToAddUserTo "Office 365 E3"
 
     .NOTES
     General notes
     #>
 
+    [CmdletBinding(DefaultParameterSetName = 'SharePoint')]
     param (
 
-        [Parameter()]
+        [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
         [ValidateNotNullOrEmpty()]
+        [string]
+        $SharePointURL,
+
+        [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $ExcelFile,
+
+        [Parameter(Mandatory, ParameterSetName = 'CSV')]
+        [ValidateNotNullOrEmpty()]
+        [string]
         $MailboxCSV,
 
         [Parameter(Mandatory)]
@@ -43,7 +64,7 @@ function Sync-Mailbox {
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string]
-        $TargetDomain,
+        $Tenant,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -56,25 +77,34 @@ function Sync-Mailbox {
 
     )
     end {
+
+        if ($Tenant -notmatch '.mail.onmicrosoft.com') {
+            $Tenant = '{0}.mail.onmicrosoft.com' -f $Tenant
+        }
         if ($DeleteSavedCredential) {
             $DelSaved = @{
                 RemoteHost            = $RemoteHost
-                TargetDomain          = $TargetDomain
+                TargetDomain          = $Tenant
                 DeleteSavedCredential = $true
             }
             Start-MailboxSync @DelSaved
             break
         }
+        switch ($PSCmdlet.ParameterSetName) {
+            'SharePoint' {
+                $UserChoice = Import-SharePointExcelDecision -SharePointURL $SharePointURL -ExcelFile $ExcelFile
 
-        if ($TargetDomain -notmatch '.mail.onmicrosoft.com') {
-            $TargetDomain = "$TargetDomain.mail.onmicrosoft.com"
+            }
+            'CSV' {
+                $UserChoice = Import-MailboxCsvDecision -MailboxCSV $MailboxCSV
+            }
         }
-        Connect-Cloud -Tenant $TargetDomain -ExchangeOnline
-        $UserChoice = Get-UserDecision -MailboxCSV $MailboxCSV
-        if ($UserChoice) {
+
+        if ($UserChoice -ne 'Quit' ) {
+            Connect-Cloud -Tenant $Tenant -ExchangeOnline
             $Sync = @{
                 RemoteHost   = $RemoteHost
-                TargetDomain = $TargetDomain
+                TargetDomain = $Tenant
             }
             $UserChoice | Start-MailboxSync @Sync
             foreach ($Group in $GroupsToAddUserTo) {
@@ -84,3 +114,4 @@ function Sync-Mailbox {
         }
     }
 }
+

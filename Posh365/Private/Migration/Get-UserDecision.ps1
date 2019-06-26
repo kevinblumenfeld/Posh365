@@ -1,14 +1,13 @@
 function Get-UserDecision {
-
+    [CmdletBinding()]
     param (
 
-        [Parameter()]
+        [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        $MailboxCSV
+        $DecisionObject
 
     )
     end {
-        $Mailbox = Import-Csv -Path $MailboxCSV
 
         $OGVBatch = @{
             Title      = 'Choose Batch(es)'
@@ -25,14 +24,18 @@ function Get-UserDecision {
             OutputMode = 'Single'
         }
 
-        $BatchChoice = $Mailbox | Select-Object -ExpandProperty Batch -Unique | Out-GridView @OGVBatch
-        $UserChoice = $Mailbox | Where-Object { $_.Batch -in $BatchChoice } | Out-GridView @OGVUser
+        $BatchChoice = $DecisionObject | Select-Object -ExpandProperty Batch -Unique | Out-GridView @OGVBatch
+        $UserChoice = $DecisionObject | Where-Object { $_.Batch -in $BatchChoice } | Out-GridView @OGVUser
 
         if ($UserChoice) {
             $Decision = 'Yes, I want to continue', 'Quit' | Out-GridView @OGVDecision
         }
 
         if ($Decision -eq 'Yes, I want to continue') {
+            $UserChoice
+        }
+        else {
+            $UserChoice = 'Quit'
             $UserChoice
         }
     }

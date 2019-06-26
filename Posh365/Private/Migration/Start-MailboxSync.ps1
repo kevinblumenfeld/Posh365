@@ -12,7 +12,7 @@ function Start-MailboxSync {
     .PARAMETER RemoteHost
     This is the endpoint where the source mailboxes reside ex. cas2010.contoso.com
 
-    .PARAMETER TargetDomain
+    .PARAMETER Tenant
     This is the tenant domain ex. if tenant is contoso.mail.onmicrosoft.com use contoso
 
     .EXAMPLE
@@ -35,7 +35,7 @@ function Start-MailboxSync {
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string]
-        $TargetDomain,
+        $Tenant,
 
         [Parameter()]
         [switch]
@@ -43,11 +43,8 @@ function Start-MailboxSync {
 
     )
     begin {
-        if ($TargetDomain -notmatch '.mail.onmicrosoft.com') {
-            $TargetDomain = "$TargetDomain.mail.onmicrosoft.com"
-        }
 
-        $CredentialPath = "${env:\userprofile}\$TargetDomain.Migrations.Cred"
+        $CredentialPath = "${env:\userprofile}\$Tenant.Migrations.Cred"
 
         if ($DeleteSavedCredential) {
             Remove-Item $CredentialPath
@@ -68,13 +65,13 @@ function Start-MailboxSync {
                 Remote                     = $true
                 RemoteHostName             = $RemoteHost
                 BatchName                  = $User.Batch
-                TargetDeliveryDomain       = $TargetDomain
+                TargetDeliveryDomain       = $Tenant
                 SuspendWhenReadyToComplete = $true
                 LargeItemLimit             = "20"
                 BadItemLimit               = "20"
                 AcceptLargeDataLoss        = $true
             }
-            New-MoveRequest @Param -verbose
+            New-MoveRequest @Param -warningaction silentlycontinue
         }
     }
 }

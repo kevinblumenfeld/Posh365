@@ -1,10 +1,21 @@
 function Start-PostMigrationTasks {
 
-
+    [CmdletBinding(DefaultParameterSetName = 'SharePoint')]
     param (
 
-        [Parameter()]
+        [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
         [ValidateNotNullOrEmpty()]
+        [string]
+        $SharePointURL,
+
+        [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $ExcelFile,
+
+        [Parameter(Mandatory, ParameterSetName = 'CSV')]
+        [ValidateNotNullOrEmpty()]
+        [string]
         $MailboxCSV,
 
         [Parameter(Mandatory)]
@@ -18,14 +29,24 @@ function Start-PostMigrationTasks {
 
     )
     end {
+        if ($Tenant -notmatch '.mail.onmicrosoft.com') {
+            $Tenant = '{0}.mail.onmicrosoft.com' -f $Tenant
+        }
+        switch ($PSCmdlet.ParameterSetName) {
+            'SharePoint' {
+                $UserChoice = Import-SharePointExcelDecision -SharePointURL $SharePointURL -ExcelFile $ExcelFile -Tenant $Tenant
+            }
+            'CSV' {
+                $UserChoice = Import-MailboxCsvDecision -MailboxCSV $MailboxCSV
+            }
+        }
 
-        Connect-Cloud -Tenant $Tenant -ExchangeOnline
-
-        $UserChoice = Get-UserDecision -MailboxCSV $MailboxCSV
-
-        if ($UserChoice) {
-            if ($AddressBookPolicy) {
-                $UserChoice | Sync-AddressBookPolicy
+        if ($UserChoice -ne 'Quit' ) {
+            Connect-Cloud -Tenant $Tenant -ExchangeOnline
+            if ($UserChoice) {
+                if ($AddressBookPolicy) {
+                    $UserChoice | Sync-AddressBookPolicy
+                }
             }
         }
     }
