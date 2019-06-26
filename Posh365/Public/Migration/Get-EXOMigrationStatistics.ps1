@@ -2,11 +2,11 @@ Function Get-EXOMigrationStatistics {
     <#
     .SYNOPSIS
     Provides each user found in Get-MigrationUser in an Out-GridView.  The user can select one or more users for the report provided by Get-MigrationUserStatistics -Include report
-    
+
     .DESCRIPTION
     Provides each user found in Get-MigrationUser in an Out-GridView.  The user can select one or more users for the report provided by Get-MigrationUserStatistics -Include report.
     Each report will open in a seperate Out-GridView
-    
+
     .EXAMPLE
     Get-EXOMigrationStatistics
 
@@ -16,9 +16,6 @@ Function Get-EXOMigrationStatistics {
     (
 
     )
-
-    $currentErrorActionPrefs = $ErrorActionPreference
-    $ErrorActionPreference = 'Stop'
 
     $MigrationUser = Get-MigrationUser -ResultSize Unlimited
     $MigrationUserDetails = foreach ($User in $MigrationUser) {
@@ -42,12 +39,11 @@ Function Get-EXOMigrationStatistics {
     if ($WantsDetailOnTheseMigrationUsers) {
         Foreach ($Wants in $WantsDetailOnTheseMigrationUsers) {
             $UserStats = Get-MigrationUserStatistics -Identity $Wants.Guid -IncludeReport
-            $UserStats.Report.Entries | Select-Object CreationTime, @{n = 'Migration User Statistics Report'; e = {$_.message}} | Sort-Object CreationTime -Descending |
-                Out-GridView -Title "ID: $($Wants.Identity) EMAIL: $($Wants.MailboxEmailAddress) STATUS: $($Wants.Status) SYNCED: $($Wants.SyncedItemCount) SKIPPED: $($Wants.SkippedItemCount)" 
+            $UserStats.Report.Entries | Select-Object CreationTime, @{n = 'Migration User Statistics Report'; e = { $_.message } } | Sort-Object CreationTime -Descending |
+            Out-GridView -Title "ID: $($Wants.Identity) EMAIL: $($Wants.MailboxEmailAddress) STATUS: $($Wants.Status) SYNCED: $($Wants.SyncedItemCount) SKIPPED: $($Wants.SkippedItemCount)"
         }
     }
     else {
         Write-Verbose "`nNo Results found."
     }
-    $ErrorActionPreference = $currentErrorActionPrefs
 }
