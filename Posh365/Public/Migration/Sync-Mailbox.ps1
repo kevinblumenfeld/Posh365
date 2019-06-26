@@ -92,7 +92,7 @@ function Sync-Mailbox {
         }
         switch ($PSCmdlet.ParameterSetName) {
             'SharePoint' {
-                $UserChoice = Import-SharePointExcelDecision -SharePointURL $SharePointURL -ExcelFile $ExcelFile
+                $UserChoice = Import-SharePointExcelDecision -SharePointURL $SharePointURL -ExcelFile $ExcelFile -Tenant $Tenant
 
             }
             'CSV' {
