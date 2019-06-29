@@ -1,8 +1,27 @@
-Function Get-EXOMoveRequest {
+Function Get-MailboxSync {
     <#
+    .SYNOPSIS
+    Get mailbox moves/syncs
 
+    .DESCRIPTION
+    Get mailbox moves/syncs
 
+    .PARAMETER NotCompleted
+    Use this switch to view all moves/syncs that are not completed
+
+    .EXAMPLE
+    Get-MailboxSync
+
+    .EXAMPLE
+    Get-MailboxSync -NotCompleted
+
+    .EXAMPLE
+    Get-MailboxSync -NotCompleted | Out-Gridview
+
+    .NOTES
+    General notes
     #>
+
     [CmdletBinding()]
     param
     (

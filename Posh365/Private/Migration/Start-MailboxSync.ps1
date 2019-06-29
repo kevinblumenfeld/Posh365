@@ -38,6 +38,16 @@ function Start-MailboxSync {
         $Tenant,
 
         [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [int]
+        $BadItemLimit,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [int]
+        $LargeItemLimit,
+
+        [Parameter()]
         [switch]
         $DeleteSavedCredential
 
@@ -67,8 +77,8 @@ function Start-MailboxSync {
                 BatchName                  = $User.Batch
                 TargetDeliveryDomain       = $Tenant
                 SuspendWhenReadyToComplete = $true
-                LargeItemLimit             = "20"
-                BadItemLimit               = "20"
+                BadItemLimit               = $BadItemLimit
+                LargeItemLimit             = $LargeItemLimit
                 AcceptLargeDataLoss        = $true
             }
             New-MoveRequest @Param -warningaction silentlycontinue

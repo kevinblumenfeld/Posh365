@@ -1,4 +1,4 @@
-function Start-PostMigrationTasks {
+function Start-PostMailboxSyncTask {
 
     [CmdletBinding(DefaultParameterSetName = 'SharePoint')]
     param (
@@ -42,7 +42,6 @@ function Start-PostMigrationTasks {
         }
 
         if ($UserChoice -ne 'Quit' ) {
-            Connect-Cloud -Tenant $Tenant -ExchangeOnline
             if ($UserChoice) {
                 if ($AddressBookPolicy) {
                     $UserChoice | Sync-AddressBookPolicy

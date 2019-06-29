@@ -1,4 +1,4 @@
-function Sync-Mailbox {
+function New-MailboxSync {
     <#
     .SYNOPSIS
     Sync Mailboxes from On-Premises Exchange to Exchange Online
@@ -19,26 +19,27 @@ function Sync-Mailbox {
     Path to csv of mailboxes.  Minimum headers required are: Batch, UserPrincipalName
 
     .PARAMETER RemoteHost
-    This is the endpoint where the source mailboxes reside ex. cas2010.contoso.com
+    This is the on-premises endpoint where the source mailboxes reside ex. cas2010.contoso.com
 
-    .PARAMETER TargetDomain
+    .PARAMETER Tenant
     This is the tenant domain ex. if tenant is contoso.mail.onmicrosoft.com use contoso
 
     .PARAMETER GroupsToAddUserTo
-    Provide one or more groups to add each user chosen to. -GroupsToAddUserTo "Human Resources", "Accounting"
+    Provide one or more Active Directory Groups to add each user chosen to. -GroupsToAddUserTo "Human Resources", "Accounting"
     Requires AD Module
 
     .PARAMETER DeleteSavedCredential
     Erases credentials that are saved and encrypted on your computer
 
     .EXAMPLE
-    Sync-Mailbox -RemoteHost cas2010.contoso.com -Tenant contoso -MailboxCSV c:\scripts\batches.csv -GroupsToAddUserTo "Office 365 E3"
+    New-MailboxSync -RemoteHost cas2010.contoso.com -Tenant contoso -MailboxCSV c:\scripts\batches.csv -GroupsToAddUserTo "Office 365 E3"
 
     .NOTES
     General notes
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'SharePoint')]
+    [Alias('New-MailboxSync')]
     param (
 
         [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
@@ -65,6 +66,16 @@ function Sync-Mailbox {
         [ValidateNotNullOrEmpty()]
         [string]
         $Tenant,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [int]
+        $BadItemLimit = 20,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [int]
+        $LargeItemLimit = 20,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -101,10 +112,15 @@ function Sync-Mailbox {
         }
 
         if ($UserChoice -ne 'Quit' ) {
-            Connect-Cloud -Tenant $Tenant -ExchangeOnline
             $Sync = @{
                 RemoteHost   = $RemoteHost
                 TargetDomain = $Tenant
+            }
+            if ($BadItemLimit) {
+                $Sync.Add('BadItemLimit', $BadItemLimit)
+            }
+            if ($LargeItemLimit) {
+                $Sync.Add('LargeItemLimit', $LargeItemLimit)
             }
             $UserChoice | Start-MailboxSync @Sync
             foreach ($Group in $GroupsToAddUserTo) {

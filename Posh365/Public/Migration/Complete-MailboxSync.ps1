@@ -1,42 +1,24 @@
 function Complete-MailboxSync {
     <#
     .SYNOPSIS
-    Sync Mailboxes from On-Premises Exchange to Exchange Online
-    Either CSV or Excel file from SharePoint can be used
+    Allows the completion or the scheduling of the completion of moves/syncs
 
     .DESCRIPTION
-    Sync Mailboxes from On-Premises Exchange to Exchange Online
-    Either CSV or Excel file from SharePoint can be used
+    Allows the completion or the scheduling of the completion of move requests
 
-    .PARAMETER SharePointURL
-    Sharepoint url ex. https://contoso.sharepoint.com/sites/fabrikam/
-
-    .PARAMETER ExcelFile
-    Excel file found in "Shared Documents" of SharePoint site specified in SharePointURL
-    ex. "Batchex.xlsx"
-
-    .PARAMETER MailboxCSV
-    Path to csv of mailboxes.  Minimum headers required are: Batch, UserPrincipalName
-
-    .PARAMETER RemoteHost
-    This is the endpoint where the source mailboxes reside ex. cas2010.contoso.com
-
-    .PARAMETER TargetDomain
+    .PARAMETER Tenant
     This is the tenant domain ex. if tenant is contoso.mail.onmicrosoft.com use contoso
 
-    .PARAMETER GroupsToAddUserTo
-    Provide one or more groups to add each user chosen to. -GroupsToAddUserTo "Human Resources", "Accounting"
-    Requires AD Module
-
-    .PARAMETER DeleteSavedCredential
-    Erases credentials that are saved and encrypted on your computer
+    .PARAMETER Schedule
+    A switch that allows you to choose a date and time at which to complete the mailbox moves/syncs
 
     .EXAMPLE
-    Sync-Mailbox -RemoteHost cas2010.contoso.com -Tenant contoso -MailboxCSV c:\scripts\batches.csv -GroupsToAddUserTo "Office 365 E3"
+    An example
 
     .NOTES
     General notes
     #>
+
 
     [CmdletBinding()]
     param (
@@ -60,7 +42,7 @@ function Complete-MailboxSync {
             OutputMode = 'Multiple'
         }
 
-        $UserChoice = Get-EXOMoveRequest | Sort-Object @(
+        $UserChoice = Get-MailboxSync | Sort-Object @(
             @{
                 Expression = "BatchName"
                 Descending = $true
@@ -72,7 +54,6 @@ function Complete-MailboxSync {
         ) | Out-GridView @OGVMR
 
         if ($UserChoice) {
-            Connect-Cloud -Tenant $Tenant -ExchangeOnline
             if ($Schedule) {
                 $UTCTimeandDate = Get-ScheduleDecision
                 $UserChoice | Resume-MailboxSync -Tenant $Tenant -CompleteAfter $UTCTimeandDate

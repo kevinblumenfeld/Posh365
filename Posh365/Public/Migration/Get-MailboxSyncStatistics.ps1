@@ -1,4 +1,4 @@
-Function Get-EXOMoveRequestStatistics {
+Function Get-MailboxSyncStatistics {
     <#
     .SYNOPSIS
     Provides each user found in Get-MoveRequest in an Out-GridView.  The user can select one or more users for the report provided by Get-MoveRequestStatistics -Include report
@@ -8,10 +8,11 @@ Function Get-EXOMoveRequestStatistics {
     Each report will open in a seperate Out-GridView
 
     .EXAMPLE
-    Get-EXOMoveRequestStatistics
+    Get-MailboxSyncStatistics
 
     #>
     [CmdletBinding()]
+    [Alias('Get-MailboxSyncStatistics')]
     param
     (
 
