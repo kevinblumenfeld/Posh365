@@ -1,25 +1,26 @@
 Function Get-MailboxSyncStatistics {
     <#
     .SYNOPSIS
-    Provides each user found in Get-MoveRequest in an Out-GridView.  The user can select one or more users for the report provided by Get-MoveRequestStatistics -Include report
+    Provides each user found in Get-MoveRequest in an Out-GridView.
+    The user can select one or more users for the report provided by Get-MoveRequestStatistics -Includereport
 
     .DESCRIPTION
-    Provides each user found in Get-MoveRequest in an Out-GridView.  The user can select one or more users for the report provided by Get-MoveRequestStatistics -Include report.
+    Provides each user found in Get-MoveRequest in an Out-GridView.
+    The user can select one or more users for the report provided by Get-MoveRequestStatistics -Includereport.
     Each report will open in a seperate Out-GridView
+    The title bar contains important bits of information as well as the report beneath it.
+    Uses Out-GridView automatically
 
     .EXAMPLE
     Get-MailboxSyncStatistics
 
     #>
     [CmdletBinding()]
-    [Alias('Get-MailboxSyncStatistics')]
+    [Alias('Get-EXOMoveRequestStatistics')]
     param
     (
 
     )
-
-    $currentErrorActionPrefs = $ErrorActionPreference
-    $ErrorActionPreference = 'Stop'
 
     $MoveRequest = Get-MoveRequest -ResultSize Unlimited
     $MoveRequestDetails = foreach ($Move in $MoveRequest) {
@@ -41,7 +42,11 @@ Function Get-MailboxSyncStatistics {
             Name                       = $Move.Name
         }
     }
-    $WantsDetailOnTheseMoveRequests = $MoveRequestDetails | Out-GridView -PassThru -Title "Move Requests - Choose one or more and click OK for details"
+    $StatSplat = @{
+        Title      = "Move Requests - Choose one or more and click OK for details"
+        OutputMode = 'Multiple'
+    }
+    $WantsDetailOnTheseMoveRequests = $MoveRequestDetails | Out-GridView @StatSplat
     if ($WantsDetailOnTheseMoveRequests) {
         Foreach ($Wants in $WantsDetailOnTheseMoveRequests) {
             $Stats = Get-MoveRequestStatistics -Identity $Wants.Guid -IncludeReport
@@ -54,5 +59,4 @@ Function Get-MailboxSyncStatistics {
     else {
         Write-Verbose "`nNo Results found."
     }
-    $ErrorActionPreference = $currentErrorActionPrefs
 }

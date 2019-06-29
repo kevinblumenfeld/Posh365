@@ -18,7 +18,7 @@ function Test-UpnMatch {
                         Identity           = $User.UserPrincipalName
                         UserPrincipalName  = $ADUser.UserPrincipalName
                         PrimarySmtpAddress = $ADUser.PrimarySmtpAddress
-                        BatchName          = $User.Batch
+                        BatchName          = $User.BatchName
                     })
             }
         }

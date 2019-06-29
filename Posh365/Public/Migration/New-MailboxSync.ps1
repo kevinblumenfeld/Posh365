@@ -16,7 +16,7 @@ function New-MailboxSync {
     ex. "Batchex.xlsx"
 
     .PARAMETER MailboxCSV
-    Path to csv of mailboxes.  Minimum headers required are: Batch, UserPrincipalName
+    Path to csv of mailboxes.  Minimum headers required are: BatchName, UserPrincipalName
 
     .PARAMETER RemoteHost
     This is the on-premises endpoint where the source mailboxes reside ex. cas2010.contoso.com
@@ -41,7 +41,6 @@ function New-MailboxSync {
     [CmdletBinding(DefaultParameterSetName = 'SharePoint')]
     [Alias('New-MailboxSync')]
     param (
-
         [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
         [ValidateNotNullOrEmpty()]
         [string]
@@ -85,10 +84,8 @@ function New-MailboxSync {
         [Parameter()]
         [switch]
         $DeleteSavedCredential
-
     )
     end {
-
         if ($Tenant -notmatch '.mail.onmicrosoft.com') {
             $Tenant = '{0}.mail.onmicrosoft.com' -f $Tenant
         }
@@ -103,14 +100,17 @@ function New-MailboxSync {
         }
         switch ($PSCmdlet.ParameterSetName) {
             'SharePoint' {
-                $UserChoice = Import-SharePointExcelDecision -SharePointURL $SharePointURL -ExcelFile $ExcelFile -Tenant $Tenant
-
+                $SharePointSplat = @{
+                    SharePointURL = $SharePointURL
+                    ExcelFile     = $ExcelFile
+                    Tenant        = $Tenant
+                }
+                $UserChoice = Import-SharePointExcelDecision @SharePointSplat
             }
             'CSV' {
                 $UserChoice = Import-MailboxCsvDecision -MailboxCSV $MailboxCSV
             }
         }
-
         if ($UserChoice -ne 'Quit' ) {
             $Sync = @{
                 RemoteHost   = $RemoteHost
@@ -130,4 +130,3 @@ function New-MailboxSync {
         }
     }
 }
-

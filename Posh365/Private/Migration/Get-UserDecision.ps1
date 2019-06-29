@@ -20,12 +20,12 @@ function Get-UserDecision {
         }
 
         $OGVDecision = @{
-            Title      = 'Migrate Users or Quit?'
+            Title      = 'Do You Want To Continue Or Quit?'
             OutputMode = 'Single'
         }
 
-        $BatchChoice = $DecisionObject | Select-Object -ExpandProperty Batch -Unique | Out-GridView @OGVBatch
-        $UserChoice = $DecisionObject | Where-Object { $_.Batch -in $BatchChoice } | Out-GridView @OGVUser
+        $BatchChoice = $DecisionObject | Select-Object -ExpandProperty BatchName -Unique | Out-GridView @OGVBatch
+        $UserChoice = $DecisionObject | Where-Object { $_.BatchName -in $BatchChoice } | Out-GridView @OGVUser
 
         if ($UserChoice) {
             $Decision = 'Yes, I want to continue', 'Quit' | Out-GridView @OGVDecision

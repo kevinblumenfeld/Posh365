@@ -34,7 +34,12 @@ function Start-PostMailboxSyncTask {
         }
         switch ($PSCmdlet.ParameterSetName) {
             'SharePoint' {
-                $UserChoice = Import-SharePointExcelDecision -SharePointURL $SharePointURL -ExcelFile $ExcelFile -Tenant $Tenant
+                $SharePointSplat = @{
+                    SharePointURL = $SharePointURL
+                    ExcelFile     = $ExcelFile
+                    Tenant        = $Tenant
+                }
+                $UserChoice = Import-SharePointExcelDecision @SharePointSplat
             }
             'CSV' {
                 $UserChoice = Import-MailboxCsvDecision -MailboxCSV $MailboxCSV

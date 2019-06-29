@@ -37,32 +37,16 @@ function Complete-MailboxSync {
         if ($Tenant -notmatch '.mail.onmicrosoft.com') {
             $Tenant = "$Tenant.mail.onmicrosoft.com"
         }
-        $OGVMR = @{
-            Title      = 'Choose Mailboxes to Complete'
-            OutputMode = 'Multiple'
-        }
+        $UserChoice = Import-MailboxSyncNotCompleted
 
-        $UserChoice = Get-MailboxSync | Sort-Object @(
-            @{
-                Expression = "BatchName"
-                Descending = $true
-            }
-            @{
-                Expression = "DisplayName"
-                Descending = $false
-            }
-        ) | Out-GridView @OGVMR
-
-        if ($UserChoice) {
+        if ($UserChoice -ne 'Quit' ) {
             if ($Schedule) {
                 $UTCTimeandDate = Get-ScheduleDecision
-                $UserChoice | Resume-MailboxSync -Tenant $Tenant -CompleteAfter $UTCTimeandDate
+                $UserChoice | Submit-MailboxSyncCompletion -Tenant $Tenant -CompleteAfter $UTCTimeandDate
             }
             else {
-                $UserChoice | Resume-MailboxSync -Tenant $Tenant
+                $UserChoice | Submit-MailboxSyncCompletion -Tenant $Tenant
             }
-
         }
     }
 }
-

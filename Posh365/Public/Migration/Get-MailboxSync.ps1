@@ -13,6 +13,9 @@ Function Get-MailboxSync {
     Get-MailboxSync
 
     .EXAMPLE
+    Get-MailboxSync | Out-GridView
+
+    .EXAMPLE
     Get-MailboxSync -NotCompleted
 
     .EXAMPLE
@@ -31,13 +34,13 @@ Function Get-MailboxSync {
     )
 
     if ($NotCompleted) {
-        $MoveRequest = Get-MoveRequest -ResultSize 'Unlimited' | Where-Object { $_.Status -ne 'Completed' -and $_.Status -ne 'CompletedWithWarning' }
+        $MoveRequest = Get-MoveRequest -ResultSize 'Unlimited' | Where-Object {
+            $_.Status -ne 'Completed' -and $_.Status -ne 'CompletedWithWarning'
+        }
     }
     else {
         $MoveRequest = Get-MoveRequest -ResultSize 'Unlimited'
     }
-
-
     foreach ($Move in $MoveRequest) {
         [PSCustomObject]@{
             Identity                   = $Move.Identity

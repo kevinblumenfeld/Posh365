@@ -1,4 +1,4 @@
-function Resume-MailboxSync {
+function Submit-MailboxSyncCompletion {
 
     param (
 
@@ -38,7 +38,7 @@ function Resume-MailboxSync {
         foreach ($User in $UserList) {
             $Param = @{
                 Identity                   = $User.UserPrincipalName
-                BatchName                  = $User.Batch
+                BatchName                  = $User.BatchName
                 SuspendWhenReadyToComplete = $False
                 Confirm                    = $False
                 CompleteAfter              = $when

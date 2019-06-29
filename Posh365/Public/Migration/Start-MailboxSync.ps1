@@ -74,7 +74,7 @@ function Start-MailboxSync {
                 RemoteCredential           = $RemoteCred
                 Remote                     = $true
                 RemoteHostName             = $RemoteHost
-                BatchName                  = $User.Batch
+                BatchName                  = $User.BatchName
                 TargetDeliveryDomain       = $Tenant
                 SuspendWhenReadyToComplete = $true
                 BadItemLimit               = $BadItemLimit
