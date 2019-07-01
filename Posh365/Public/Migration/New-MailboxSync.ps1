@@ -113,8 +113,8 @@ function New-MailboxSync {
         }
         if ($UserChoice -ne 'Quit' ) {
             $Sync = @{
-                RemoteHost   = $RemoteHost
-                TargetDomain = $Tenant
+                RemoteHost = $RemoteHost
+                Tenant     = $Tenant
             }
             if ($BadItemLimit) {
                 $Sync.Add('BadItemLimit', $BadItemLimit)
