@@ -18,7 +18,7 @@ Function Resume-MailboxSync {
 
     )
 
-    $UserChoice = Import-MailboxSyncNotCompleted
+    $UserChoice = Import-MailboxSyncDecision -NotCompleted
     if ($UserChoice -ne 'Quit' ) {
         foreach ($User in $UserChoice) {
             Resume-MoveRequest -Identity $User.Guid -Confirm:$false

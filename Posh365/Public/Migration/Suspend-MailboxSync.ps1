@@ -18,7 +18,7 @@ Function Suspend-MailboxSync {
 
     )
 
-    $UserChoice = Import-MailboxSyncNotCompleted
+    $UserChoice = Import-MailboxSyncDecision -NotCompleted
     if ($UserChoice -ne 'Quit' ) {
         foreach ($User in $UserChoice) {
             Suspend-MoveRequest -Identity $User.Guid -Confirm:$false

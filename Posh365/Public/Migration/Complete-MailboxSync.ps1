@@ -23,11 +23,6 @@ function Complete-MailboxSync {
     [CmdletBinding()]
     param (
 
-        [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $Tenant,
-
         [Parameter()]
         [switch]
         $Schedule
@@ -37,15 +32,15 @@ function Complete-MailboxSync {
         if ($Tenant -notmatch '.mail.onmicrosoft.com') {
             $Tenant = "$Tenant.mail.onmicrosoft.com"
         }
-        $UserChoice = Import-MailboxSyncNotCompleted
+        $UserChoice = Import-MailboxSyncDecision -NotCompleted
 
         if ($UserChoice -ne 'Quit' ) {
             if ($Schedule) {
                 $UTCTimeandDate = Get-ScheduleDecision
-                $UserChoice | Submit-MailboxSyncCompletion -Tenant $Tenant -CompleteAfter $UTCTimeandDate
+                $UserChoice | Submit-MailboxSyncCompletion -CompleteAfter $UTCTimeandDate
             }
             else {
-                $UserChoice | Submit-MailboxSyncCompletion -Tenant $Tenant
+                $UserChoice | Submit-MailboxSyncCompletion
             }
         }
     }

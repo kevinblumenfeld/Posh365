@@ -6,11 +6,6 @@ function Submit-MailboxSyncCompletion {
         [ValidateNotNullOrEmpty()]
         $UserList,
 
-        [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $Tenant,
-
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         $CompleteAfter
@@ -18,15 +13,6 @@ function Submit-MailboxSyncCompletion {
     )
     begin {
 
-        $CredentialPath = "${env:\userprofile}\$Tenant.Migrations.Cred"
-
-        if (Test-Path $CredentialPath) {
-            $RemoteCred = Import-CliXml -Path $CredentialPath
-        }
-        else {
-            $RemoteCred = Get-Credential
-            $RemoteCred | Export-CliXml -Path $CredentialPath
-        }
         if ($CompleteAfter) {
             $when = $CompleteAfter
         }
@@ -37,14 +23,14 @@ function Submit-MailboxSyncCompletion {
     process {
         foreach ($User in $UserList) {
             $Param = @{
-                Identity                   = $User.UserPrincipalName
+                Identity                   = $User.Guid
                 BatchName                  = $User.BatchName
                 SuspendWhenReadyToComplete = $False
                 Confirm                    = $False
                 CompleteAfter              = $when
             }
             Set-MoveRequest @Param
-            Resume-MoveRequest $User.UserPrincipalName
+            Resume-MoveRequest $User.Guid
         }
     }
 }
