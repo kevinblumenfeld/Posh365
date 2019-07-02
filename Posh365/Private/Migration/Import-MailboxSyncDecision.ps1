@@ -21,6 +21,20 @@ function Import-MailboxSyncDecision {
             $UserChoice = Get-UserDecision -DecisionObject $DecisionObject
             $UserChoice
         }
+        else {
+            $DecisionObject = Get-MailboxSync | Sort-Object @(
+                @{
+                    Expression = "BatchName"
+                    Descending = $true
+                }
+                @{
+                    Expression = "DisplayName"
+                    Descending = $false
+                }
+            )
+            $UserChoice = Get-UserDecision -DecisionObject $DecisionObject
+            $UserChoice
+        }
     }
 }
 
