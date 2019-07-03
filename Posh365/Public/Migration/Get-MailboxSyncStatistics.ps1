@@ -14,7 +14,7 @@ Function Get-MailboxSyncStatistics {
     Get-MailboxSyncStatistics
 
     .EXAMPLE
-    Get-MailboxSyncStatistics -NotCompleted
+    Get-MailboxSyncStatistics -IncludeCompleted
 
     .NOTES
     Connect to Exchange Online prior to using
@@ -25,27 +25,27 @@ Function Get-MailboxSyncStatistics {
     (
         [Parameter()]
         [switch]
-        $NotCompleted
+        $IncludeCompleted
     )
 
-    if ($NotCompleted) {
-        $NotCompletedSplat = @{
-            Title      = "Move Requests Statistics - Not Completed. Click OK to Refresh"
-            OutputMode = 'Multiple'
-        }
-        $RefreshNotCompleted = Import-MailboxSyncStatistics -NotCompleted | Out-GridView @NotCompletedSplat
-    }
-    else {
+    if ($IncludeCompleted) {
         $AllSplat = @{
             Title      = "Move Requests Statistics - All. Click OK to Refresh"
             OutputMode = 'Multiple'
         }
         $RefreshAll = Import-MailboxSyncStatistics | Out-GridView @AllSplat
     }
+    else {
+        $NotCompletedSplat = @{
+            Title      = "Move Requests Statistics - Not Completed. Click OK to Refresh"
+            OutputMode = 'Multiple'
+        }
+        $RefreshNotCompleted = Import-MailboxSyncStatistics -NotCompleted | Out-GridView @NotCompletedSplat
+    }
     if ($RefreshNotCompleted) {
-        Get-MailboxSyncStatistics -NotCompleted
+        Get-MailboxSyncStatistics
     }
     elseif ($RefreshAll) {
-        Get-MailboxSyncStatistics
+        Get-MailboxSyncStatistics -IncludeCompleted
     }
 }

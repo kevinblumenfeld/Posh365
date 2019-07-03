@@ -1,7 +1,4 @@
-# Posh365
-
-Connect.  Provision.  Maintain.
-Posh365 is a Toolbox for Cloud and Hybrid Environments
+# About Posh365*
 
 
 ## Add-365RecipientEmailAddresses
@@ -93,6 +90,11 @@ The process to move from On-Premises Skype to Skype for Business Online (where t
 
 
 
+## Complete-MailboxSync
+
+Allows the completion or the scheduling of the completion of move requests
+
+
 ## Connect-Cloud
 
 Connects to Office 365 services and/or Azure.
@@ -146,6 +148,11 @@ For example, Get-OnPremMailbox. Use the NoPrefix parameter to prevent this.
 
 
 ## Connect-OktaSecure
+
+
+
+
+## Connect-SharePointPNP
 
 
 
@@ -210,6 +217,11 @@ Long description
 
 Google's GAM tool exports aliases
 This transforms that data and exports it into an importable format in the Microsoft world
+
+
+## Export-GoogleForward
+
+
 
 
 ## Export-GoogleInitialandPhone
@@ -487,6 +499,11 @@ Item Count does not include archive mailbox.
 Export on-premises Receive Connectors
 
 
+## Get-ExchangeSendConnector
+
+Export on-premises Send Connectors
+
+
 ## Get-EXODGPerms
 
 By default, creates permissions reports for all Distribution Groups with SendAs, SendOnBehalf and FullAccess delegates.
@@ -548,12 +565,6 @@ Export Office 365 Mail Contacts
 ## Get-EXOMigrationStatistics
 
 Provides each user found in Get-MigrationUser in an Out-GridView.  The user can select one or more users for the report provided by Get-MigrationUserStatistics -Include report.
-Each report will open in a seperate Out-GridView
-
-
-## Get-EXOMoveRequestStatistics
-
-Provides each user found in Get-MoveRequest in an Out-GridView.  The user can select one or more users for the report provided by Get-MoveRequestStatistics -Include report.
 Each report will open in a seperate Out-GridView
 
 
@@ -632,6 +643,21 @@ Long description
 
 
 
+## Get-GSGraphDeltaUser
+
+
+
+
+## Get-GSGraphExchangeUser
+
+
+
+
+## Get-GSGraphUserAll
+
+
+
+
 ## Get-InvalidMailPublicFolderAliasReport
 
 Export Report of Mail-Enabled Public Folders with Spaces
@@ -654,9 +680,29 @@ Export Report of Public Folders with Invalid Characters
 
 
 
+## Get-MailboxSync
+
+Get mailbox moves/syncs
+
+
+## Get-MailboxSyncReport
+
+Provides each user found in Get-MoveRequest in an Out-GridView.
+The user can select one or more users for the report provided by Get-MoveRequestStatistics -Includereport.
+Each report will open in a seperate Out-GridView
+The title bar contains important bits of information as well as the report beneath it.
+Uses Out-GridView automatically
+
+
+## Get-MailboxSyncStatistics
+
+Get Move Request Statistics and refresh by clicking OK
+Uses Out-GridView to display and allows user to click OK to refresh
+
+
 ## Get-MfaStats
 
-{{Fill in the Description}}
+
 
 
 ## Get-ModifiedMailboxItem
@@ -746,7 +792,7 @@ Searches for specific or all Okta Users.  Use no parameters to return all users.
 
 ## Get-RetentionLinks
 
-{{Fill in the Description}}
+
 
 
 ## Get-SendAsPerms
@@ -776,7 +822,7 @@ Retrieves all SPNs
 
 ## Get-VirtualDirectoryInfo
 
-This script will create an HTML-report which will gather the URL-information from different virtual directories over different Exchange Servers (currently only Exchange 2010/Exchange 2013)
+This script will create an HTML-report which will gather the URL-information from different virtual directories over different Exchange Servers
 
 
 ## Grant-FullAccessToMailbox
@@ -891,6 +937,12 @@ Convert User Mailbox to Room or Equipment Mailbox and add specific settings
 Imports Aliases (Google calls secondary email addresses Aliases) to existing Cloud-Only Mailboxes
 
 
+## Import-GoogleCalendarPermissionToEXO
+
+Assign Groups Permissions to Calendar Folders of 365 mailboxes
+This is specific to Groups but can be tweaked for users specifically.
+
+
 ## Import-GoogleTo365Group
 
 Import CSV of Google Groups into Office 365 as Office 365 Groups (Unified Groups)
@@ -925,11 +977,6 @@ Import CSV of Google Resource Mailboxes into Exchange Online as Resource Mailbox
 ## Import-GoogleToSharedMailbox
 
 Import CSV of Google Shared Mailboxes into Exchange Online as Shared Mailboxes
-
-
-## Import-MoveRequest
-
-
 
 
 ## Import-MsolProperty
@@ -969,15 +1016,6 @@ Create New Active Directory Users - Mainly for Shared and Resource Mailbox as ob
 ## New-EXOMailTransportRuleReport
 
 View the details of messages that matched the conditions defined by any transport rules
-
-
-## New-EXOMessageTrace
-
-Search message trace logs in Exchange Online by hour or partial hour start and end times
-If desired, one or more messages can be selected from the results for more detail
-Just click OK once you have selected the message(s)
-
-Many thanks to Matt Marchese for the initial framework of this function
 
 
 ## New-GroupManagementRoleWithECPAccess
@@ -1020,14 +1058,10 @@ If -SpecifyRetentionPolicy is used, the script will prompt for which Retention P
 **                           See examples below                                          **
 
 
-## New-MessageTrack
+## New-MailboxSync
 
-Searches all Hub Transport and Mailbox Servers for messages. Once found, you can select one or more messages via Out-GridView to search by those MessageID's.
-
-
-## New-PreFlightTemplate
-
-
+Sync Mailboxes from On-Premises Exchange to Exchange Online
+Either CSV or Excel file from SharePoint can be used
 
 
 ## Remove-365Domain
@@ -1040,9 +1074,9 @@ Searches all Hub Transport and Mailbox Servers for messages. Once found, you can
 
 
 
-## Remove-GoogleCalendarACL
+## Remove-MailboxSync
 
-
+Remove Mailbox Sync
 
 
 ## Remove-OfficeLicense
@@ -1081,29 +1115,34 @@ Searches for specific Okta Users and removes (and deprovisions them) from a spec
 
 
 
+## Resume-MailboxSync
+
+Resume Mailbox Sync
+
+
 ## Select-ADConnectServer
 
-{{Fill in the Description}}
+
 
 
 ## Select-DisplayNameFormat
 
-{{Fill in the Description}}
+
 
 
 ## Select-DomainController
 
-{{Fill in the Description}}
+
 
 
 ## Select-ExchangeServer
 
-{{Fill in the Description}}
+
 
 
 ## Select-Options
 
-{{Fill in the Description}}
+
 
 
 ## Select-SamAccountNameOptions
@@ -1113,7 +1152,7 @@ Searches for specific Okta Users and removes (and deprovisions them) from a spec
 
 ## Select-TargetAddressSuffix
 
-{{Fill in the Description}}
+
 
 
 ## Set-CloudLicense
@@ -1129,6 +1168,16 @@ For example, the person running the script could choose to remove a Sku, add a d
 It is more simple to use "Add Options" anyway.
 No matter which switch is used, the person running the script will be presented with a GUI(s) for any selections that need to be made.
  Further explanations of the switches are demonstrated in the EXAMPLES below.
+
+
+## Start-PostMailboxSyncTask
+
+
+
+
+## Suspend-MailboxSync
+
+Suspend Mailbox Sync
 
 
 ## Switch-AddressDomain
@@ -1147,33 +1196,42 @@ The existing primary smtp address will automatically become a secondary stmp add
 
 ## Sync-AD
 
-{{Fill in the Description}}
+
 
 
 ## Sync-ADConnect
 
-{{Fill in the Description}}
-
-
-## Test-PreCheck
 
 
 
-
-## Test-PreFlightCloud
+## Test-Preflight
 
 
 
 
-## Test-PreFlightOnPrem
+## Trace-ExchangeMessage
+
+Searches all Hub Transport and Mailbox Servers for messages. Once found, you can select one or more messages via Out-GridView to search by those MessageID's.
 
 
+## Trace-Message
+
+Search message trace logs in Exchange Online by hour or partial hour start and end times
+If desired, one or more messages can be selected from the results for more detail
+Just click OK once you have selected the message(s)
+
+Many thanks to Matt Marchese for the initial framework of this function
 
 
 ## Update-ExchangeGroupMembership
 
 This will remove all members from all groups (that are fed via the pipeline).
-Then add and updated list of members from the same list.
+Then add an updated list of members from the same list.
+
+
+## Update-GoogleCalendarACL
+
+Report on Calendar ACLs from a list of Calendar IDs.
 
 
 ## Update-GroupManagementRole
