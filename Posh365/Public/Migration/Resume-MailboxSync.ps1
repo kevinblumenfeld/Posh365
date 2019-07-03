@@ -5,8 +5,12 @@ Function Resume-MailboxSync {
 
     .DESCRIPTION
     Resume Mailbox Sync
+
     .EXAMPLE
     Resume-MailboxSync
+
+    .EXAMPLE
+    Resume-MailboxSync -DontAutoComplete
 
     .NOTES
     General notes
