@@ -19,7 +19,11 @@ function Get-UserLicense {
     # Begin Block
     Begin {
 
-        $u2fSku = @{ 
+        $u2fSku = @{
+            "ATA"                                = "Azure Advanced Threat Protection for Users"
+            "ADALLOM_STANDALONE"                 = "Microsoft Cloud App Security"
+            "RIGHTSMANAGEMENT"                   = "AZURE INFORMATION PROTECTION PLAN 1"
+            "THREAT_INTELLIGENCE"                = "OFFICE 365 ADVANCED THREAT PROTECTION (PLAN 2)"
             "AX_ENTERPRISE_USER"                 = "AX ENTERPRISE USER";
             "AX_SELF-SERVE_USER"                 = "AX SELF-SERVE USER";
             "AX_SANDBOX_INSTANCE_TIER2"          = "AX_SANDBOX_INSTANCE_TIER2";
@@ -93,7 +97,8 @@ function Get-UserLicense {
             "PROJECTONLINE_PLAN_1"               = "Project Online with Project for Office 365";
             "PROJECTCLIENT"                      = "Project Pro for Office 365";
             "PROJECT_MADEIRA_PREVIEW_IW_SKU"     = "PROJECT_MADEIRA_PREVIEW_IW";
-            "SPE_E3"                             = "Secure Productive Enterprise E3";
+            "SPE_E3"                             = "MICROSOFT 365 E3";
+            "SPE_E5"                             = "MICROSOFT 365 E5";
             "SHAREPOINTLITE"                     = "SharePoint Online (Plan 1) Lite";
             "SHAREPOINTENTERPRISE_MIDMARKET"     = "SharePoint Online (Plan 1) MidMarket";
             "SHAREPOINTENTERPRISE"               = "SharePoint Online (Plan 2)";
@@ -103,8 +108,11 @@ function Get-UserLicense {
             "VISIOCLIENT"                        = "Visio Pro for Office 365";
             "YAMMER_ENTERPRISE"                  = "Yammer Enterprise";
             "YAMMER_MIDSIZE"                     = "Yammer Midsize"
-        } 
+        }
         $u2fOpt = @{
+            "FLOW_P2_VIRAL"                  = "Flow Free"
+            "DYN365_CDS_VIRAL"               = "Common Data Service"
+            "ATA"                            = "Azure Advanced Threat Protection"
             "AAD_PREMIUM"                    = "Azure Active Directory Premium Plan 1";
             "AAD_PREMIUM_P2"                 = "Azure Active Directory Premium P2";
             "IT_ACADEMY_AD"                  = "Microsoft Imagine Academy";
@@ -217,11 +225,11 @@ function Get-UserLicense {
     }
 
     Process {
-        $resultArray = @() 
+        $resultArray = @()
         $userLicense = Get-AzureADUserLicenseDetail -ObjectId $usr
         if ($notDisabled) {
             foreach ($ul in $userLicense) {
-                $uLicHash = [ordered]@{}
+                $uLicHash = [ordered]@{ }
                 if ($u2fSku.($ul.skupartnumber)) {
                     $uLicHash['Sku'] = $u2fSku.($ul.skupartnumber)
                 }
@@ -237,14 +245,14 @@ function Get-UserLicense {
                             $uLicHash['Option'] = $u.Serviceplanname
                         }
                         $uLicHash['Status'] = $u.ProvisioningStatus
-                        $resultArray += [pscustomobject]$uLicHash   
+                        $resultArray += [pscustomobject]$uLicHash
                     }
                 }
-            }  
+            }
         }
         if ($onlyDisabled) {
             foreach ($ul in $userLicense) {
-                $uLicHash = [ordered]@{}
+                $uLicHash = [ordered]@{ }
                 if ($u2fSku.($ul.skupartnumber)) {
                     $uLicHash['Sku'] = $u2fSku.($ul.skupartnumber)
                 }
@@ -260,14 +268,14 @@ function Get-UserLicense {
                             $uLicHash['Option'] = $u.Serviceplanname
                         }
                         $uLicHash['Status'] = $u.ProvisioningStatus
-                        $resultArray += [pscustomobject]$uLicHash   
+                        $resultArray += [pscustomobject]$uLicHash
                     }
                 }
-            }  
+            }
         }
         if ($allLicenses) {
             foreach ($ul in $userLicense) {
-                $uLicHash = [ordered]@{}
+                $uLicHash = [ordered]@{ }
                 if ($u2fSku.($ul.skupartnumber)) {
                     $uLicHash['Sku'] = $u2fSku.($ul.skupartnumber)
                 }
@@ -284,10 +292,10 @@ function Get-UserLicense {
                     $uLicHash['Status'] = $u.ProvisioningStatus
                     $resultArray += [pscustomobject]$uLicHash
                 }
-            }  
+            }
         }
-    } 
+    }
     End {
-        $resultArray 
+        $resultArray
     }
 }

@@ -10,7 +10,11 @@
         [switch] $both
     )
 
-    $u2fSku = @{ 
+    $u2fSku = @{
+        "ATA"                                = "Azure Advanced Threat Protection for Users"
+        "ADALLOM_STANDALONE"                 = "Microsoft Cloud App Security"
+        "RIGHTSMANAGEMENT"                   = "AZURE INFORMATION PROTECTION PLAN 1"
+        "THREAT_INTELLIGENCE"                = "OFFICE 365 ADVANCED THREAT PROTECTION (PLAN 2)"
         "AX_ENTERPRISE_USER"                 = "AX ENTERPRISE USER";
         "AX_SELF-SERVE_USER"                 = "AX SELF-SERVE USER";
         "AX_SANDBOX_INSTANCE_TIER2"          = "AX_SANDBOX_INSTANCE_TIER2";
@@ -84,7 +88,8 @@
         "PROJECTONLINE_PLAN_1"               = "Project Online with Project for Office 365";
         "PROJECTCLIENT"                      = "Project Pro for Office 365";
         "PROJECT_MADEIRA_PREVIEW_IW_SKU"     = "PROJECT_MADEIRA_PREVIEW_IW";
-        "SPE_E3"                             = "Secure Productive Enterprise E3";
+        "SPE_E3"                             = "MICROSOFT 365 E3";
+        "SPE_E5"                             = "MICROSOFT 365 E5";
         "SHAREPOINTLITE"                     = "SharePoint Online (Plan 1) Lite";
         "SHAREPOINTENTERPRISE_MIDMARKET"     = "SharePoint Online (Plan 1) MidMarket";
         "SHAREPOINTENTERPRISE"               = "SharePoint Online (Plan 2)";
@@ -94,8 +99,11 @@
         "VISIOCLIENT"                        = "Visio Pro for Office 365";
         "YAMMER_ENTERPRISE"                  = "Yammer Enterprise";
         "YAMMER_MIDSIZE"                     = "Yammer Midsize"
-    } 
+    }
     $u2fOpt = @{
+        "FLOW_P2_VIRAL"                  = "Flow Free"
+        "DYN365_CDS_VIRAL"               = "Common Data Service"
+        "ATA"                            = "Azure Advanced Threat Protection"
         "AAD_PREMIUM"                    = "Azure Active Directory Premium Plan 1";
         "AAD_PREMIUM_P2"                 = "Azure Active Directory Premium P2";
         "IT_ACADEMY_AD"                  = "Microsoft Imagine Academy";
@@ -209,7 +217,7 @@
     $skus = (Get-AzureADSubscribedSku)
     if ($friendly) {
         foreach ($sku in $skus) {
-            $sku2service = [ordered]@{}
+            $sku2service = [ordered]@{ }
             foreach ($plan in $sku.serviceplans.serviceplanname) {
                 if ($u2fSku.($sku.SkuPartNumber)) {
                     $sku2service['Sku'] = ($u2fSku.($sku.SkuPartNumber))
@@ -226,12 +234,12 @@
                 $sku2service['Remaining'] = ($sku.prepaidunits.enabled - $sku.consumedunits)
                 $sku2service['Total'] = ($sku.prepaidunits.enabled)
                 $resultArray += [psCustomObject]$sku2service
-            }   
+            }
         }
     }
     if ($both) {
         foreach ($sku in $skus) {
-            $sku2service = [ordered]@{}
+            $sku2service = [ordered]@{ }
             foreach ($plan in $sku.serviceplans.serviceplanname) {
                 if ($u2fSku.($sku.SkuPartNumber)) {
                     $sku2service['FriendlySku'] = ($u2fSku.($sku.SkuPartNumber))
@@ -250,19 +258,19 @@
                 $sku2service['Remaining'] = ($sku.prepaidunits.enabled - $sku.consumedunits)
                 $sku2service['Total'] = ($sku.prepaidunits.enabled)
                 $resultArray += [psCustomObject]$sku2service
-            }   
+            }
         }
     }
     If ($ugly) {
         foreach ($sku in $skus) {
-            $sku2service = [ordered]@{}
+            $sku2service = [ordered]@{ }
             foreach ($plan in $sku.serviceplans.serviceplanname) {
                 $sku2service['Sku'] = $sku.SkuPartNumber
                 $sku2service['Service'] = $plan
                 $sku2service['Remaining'] = ($sku.prepaidunits.enabled - $sku.consumedunits)
                 $sku2service['Total'] = ($sku.prepaidunits.enabled)
                 $resultArray += [psCustomObject]$sku2service
-            }   
+            }
         }
     }
     $resultArray

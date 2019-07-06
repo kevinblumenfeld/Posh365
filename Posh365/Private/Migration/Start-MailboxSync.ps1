@@ -10,7 +10,7 @@ function Start-MailboxSync {
     Passed via pipeline from public function
 
     .PARAMETER RemoteHost
-    This is the endpoint where the source mailboxes reside ex. cas2010.contoso.com
+    This is the on-premises endpoint where the source mailboxes reside ex. cas2010.contoso.com
 
     .PARAMETER Tenant
     This is the tenant domain ex. if tenant is contoso.mail.onmicrosoft.com use contoso
@@ -22,7 +22,6 @@ function Start-MailboxSync {
     #>
 
     param (
-
         [Parameter(ValueFromPipeline, Mandatory)]
         [ValidateNotNullOrEmpty()]
         $UserList,
@@ -45,20 +44,11 @@ function Start-MailboxSync {
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [int]
-        $LargeItemLimit,
-
-        [Parameter()]
-        [switch]
-        $DeleteSavedCredential
-
+        $LargeItemLimit
     )
     begin {
-
         $CredentialPath = "${env:\userprofile}\$Tenant.Migrations.Cred"
 
-        if ($DeleteSavedCredential) {
-            Remove-Item $CredentialPath
-        }
         if (Test-Path $CredentialPath) {
             $RemoteCred = Import-CliXml -Path $CredentialPath
         }

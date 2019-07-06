@@ -1,4 +1,4 @@
-function Get-CloudSku { 
+function Get-CloudSku {
     <#
 .Synopsis
    Short description
@@ -13,8 +13,12 @@ function Get-CloudSku {
         $resultArray = @()
     }
     Process {
-        # Define Hashtables for lookup 
-        $u2fSku = @{ 
+        # Define Hashtables for lookup
+        $u2fSku = @{
+            "ATA"                                = "Azure Advanced Threat Protection for Users"
+            "ADALLOM_STANDALONE"                 = "Microsoft Cloud App Security"
+            "RIGHTSMANAGEMENT"                   = "AZURE INFORMATION PROTECTION PLAN 1"
+            "THREAT_INTELLIGENCE"                = "OFFICE 365 ADVANCED THREAT PROTECTION (PLAN 2)"
             "AX_ENTERPRISE_USER"                 = "AX ENTERPRISE USER";
             "AX_SELF-SERVE_USER"                 = "AX SELF-SERVE USER";
             "AX_SANDBOX_INSTANCE_TIER2"          = "AX_SANDBOX_INSTANCE_TIER2";
@@ -88,7 +92,8 @@ function Get-CloudSku {
             "PROJECTONLINE_PLAN_1"               = "Project Online with Project for Office 365";
             "PROJECTCLIENT"                      = "Project Pro for Office 365";
             "PROJECT_MADEIRA_PREVIEW_IW_SKU"     = "PROJECT_MADEIRA_PREVIEW_IW";
-            "SPE_E3"                             = "Secure Productive Enterprise E3";
+            "SPE_E3"                             = "MICROSOFT 365 E3";
+            "SPE_E5"                             = "MICROSOFT 365 E5";
             "SHAREPOINTLITE"                     = "SharePoint Online (Plan 1) Lite";
             "SHAREPOINTENTERPRISE_MIDMARKET"     = "SharePoint Online (Plan 1) MidMarket";
             "SHAREPOINTENTERPRISE"               = "SharePoint Online (Plan 2)";
@@ -98,24 +103,24 @@ function Get-CloudSku {
             "VISIOCLIENT"                        = "Visio Pro for Office 365";
             "YAMMER_ENTERPRISE"                  = "Yammer Enterprise";
             "YAMMER_MIDSIZE"                     = "Yammer Midsize"
-        } 
-        
-        # Get a list of all Licenses that exist in the tenant 
+        }
+
+        # Get a list of all Licenses that exist in the tenant
         $licenses = (Get-AzureADSubscribedSku).SkuPartNumber
- 
-        # Loop through all License types found in the tenant 
-        $table = [ordered]@{}
+
+        # Loop through all License types found in the tenant
+        $table = [ordered]@{ }
         foreach ($license in $licenses) {
             if ($u2fSku[$license]) {
                 $table['License'] = $u2fSku[$license]
                 $resultArray += [psCustomObject]$table
-            }     
+            }
             else {
                 $table['License'] = $license
                 $resultArray += [psCustomObject]$table
             }
         }
-    } 
+    }
     End {
         $array = $resultArray | ForEach-Object { '{0}' -f $_.License }
         $array

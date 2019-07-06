@@ -1,12 +1,16 @@
-function New-MailboxSync {
+function Get-MailboxSyncLicense {
     <#
     .SYNOPSIS
-    Sync Mailboxes from On-Premises Exchange to Exchange Online
+    Gets Office 365 licenses during a migration project
     Either CSV or Excel file from SharePoint can be used
+    Out-GridView is used for each user.
+    Helpful for a maximum of 10-20 users as each user opens in their own window
 
     .DESCRIPTION
-    Sync Mailboxes from On-Premises Exchange to Exchange Online
+    Gets Office 365 licenses during a migration project
     Either CSV or Excel file from SharePoint can be used
+    Out-GridView is used for each user.
+    Helpful for a maximum of 10-20 users as each user opens in their own window
 
     .PARAMETER SharePointURL
     Sharepoint url ex. https://fabrikam.sharepoint.com/sites/Contoso
@@ -19,28 +23,21 @@ function New-MailboxSync {
     .PARAMETER MailboxCSV
     Path to csv of mailboxes. Minimum headers required are: BatchName, UserPrincipalName
 
-    .PARAMETER RemoteHost
-    This is the on-premises endpoint where the source mailboxes reside ex. mail.contoso.com
-
     .PARAMETER Tenant
-    This is the tenant domain - where you are migrating to. Ex. if tenant is contoso.mail.onmicrosoft.com use contoso
-
-    .PARAMETER GroupsToAddUserTo
-    Provide one or more Active Directory Groups to add each user chosen to. -GroupsToAddUserTo "Human Resources", "Accounting"
-    Requires AD Module. This is optional
+    This is the tenant domain - where you are migrating to.
+    Example if tenant is contoso.mail.onmicrosoft.com use contoso
 
     .EXAMPLE
-    New-MailboxSync -RemoteHost mail.contoso.com -Tenant Contoso -MailboxCSV c:\scripts\batches.csv -GroupsToAddUserTo "Office 365 E3"
+    Get-MailboxSyncLicense -Tenant Contoso -MailboxCSV c:\scripts\batches.csv -GroupsToAddUserTo "Office 365 E3"
 
     .EXAMPLE
-    New-MailboxSync -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -RemoteHost mail.contoso.com -Tenant Contoso
+    Get-MailboxSyncLicense -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -Tenant Contoso
 
     .NOTES
     General notes
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'SharePoint')]
-    [Alias('Sync-Mailbox')]
     param (
         [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
         [ValidateNotNullOrEmpty()]
@@ -60,27 +57,7 @@ function New-MailboxSync {
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string]
-        $RemoteHost,
-
-        [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $Tenant,
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [int]
-        $BadItemLimit = 20,
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [int]
-        $LargeItemLimit = 20,
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [string[]]
-        $GroupsToAddUserTo
+        $Tenant
     )
     end {
         if ($Tenant -notmatch '.mail.onmicrosoft.com') {
@@ -100,21 +77,7 @@ function New-MailboxSync {
             }
         }
         if ($UserChoice -ne 'Quit' ) {
-            $Sync = @{
-                RemoteHost = $RemoteHost
-                Tenant     = $Tenant
-            }
-            if ($BadItemLimit) {
-                $Sync.Add('BadItemLimit', $BadItemLimit)
-            }
-            if ($LargeItemLimit) {
-                $Sync.Add('LargeItemLimit', $LargeItemLimit)
-            }
-            $UserChoice | Start-MailboxSync @Sync
-            foreach ($Group in $GroupsToAddUserTo) {
-                $GuidList = $UserChoice | Get-ADUserGuid
-                $GuidList | Add-UserToADGroup -Group $Group
-            }
+            ($UserChoice).UserPrincipalName | Set-CloudLicense -ReportUserLicensesEnabled
         }
     }
 }
