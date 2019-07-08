@@ -1,22 +1,8 @@
 function Get-SendOnBehalfPerms {
-    <#
-    .SYNOPSIS
-    Outputs SendOnBehalf permissions for each mailbox that has permissions assigned.
-    This is for On-Premises Exchange 2010, 2013, 2016+
-
-    .EXAMPLE
-
-	(Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-SendOnBehalfPerms | Export-csv .\SOB.csv -NoTypeInformation
-
-    If not running from Exchange Management Shell (EMS), run this first:
-
-    Connect-Exchange -NoPrefix
-
-    #>
     [CmdletBinding()]
     Param (
         [parameter(ValueFromPipeline = $true)]
-        $DistinguishedName,
+        $MailboxList,
 
         [parameter()]
         [hashtable] $ADHashDN,
@@ -28,27 +14,23 @@ function Get-SendOnBehalfPerms {
 
     }
     process {
-        foreach ($curDN in $DistinguishedName) {
-            $mailbox = $curDN
+        foreach ($Mailbox in $MailboxList) {
             Write-Verbose "Inspecting: `t $Mailbox"
-            # Pass the entire mailbox object here so you dont have to query again!
-            (Get-Mailbox $curDN -erroraction silentlycontinue).GrantSendOnBehalfTo |
-            where-object { $_ -ne $null } | ForEach-Object {
-                $CN = $_
-                $DisplayName = $ADHashCN["$CN"].DisplayName
+            foreach ($Granted in $Mailbox.GrantSendOnBehalfTo) {
+                $DisplayName = $ADHashCN["$Granted"].DisplayName
                 Write-Verbose "Has Send On Behalf DN: `t $DisplayName"
-                Write-Verbose "                   CN: `t $CN"
+                Write-Verbose "                   CN: `t $Granted"
                 try {
                     Get-ADGroupMember "$DisplayName" -Recursive -ErrorAction stop |
                     ForEach-Object {
                         New-Object -TypeName psobject -property @{
-                            Object             = $ADHashDN["$mailbox"].DisplayName
-                            UserPrincipalName  = $ADHashDN["$mailbox"].UserPrincipalName
-                            PrimarySMTPAddress = $ADHashDN["$mailbox"].PrimarySMTPAddress
+                            Object             = $Mailbox.DisplayName
+                            UserPrincipalName  = $Mailbox.UserPrincipalName
+                            PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
                             Granted            = $ADHashDN["$($_.distinguishedname)"].DisplayName
                             GrantedUPN         = $ADHashDN["$($_.distinguishedname)"].UserPrincipalName
                             GrantedSMTP        = $ADHashDN["$($_.distinguishedname)"].PrimarySMTPAddress
-                            Checking           = $CN
+                            Checking           = $Granted
                             GroupMember        = $($_.distinguishedname)
                             Type               = "GroupMember"
                             Permission         = "SendOnBehalf"
@@ -57,13 +39,13 @@ function Get-SendOnBehalfPerms {
                 }
                 Catch {
                     New-Object -TypeName psobject -property @{
-                        Object             = $ADHashDN["$mailbox"].DisplayName
-                        UserPrincipalName  = $ADHashDN["$mailbox"].UserPrincipalName
-                        PrimarySMTPAddress = $ADHashDN["$mailbox"].PrimarySMTPAddress
-                        Granted            = $ADHashCN["$CN"].DisplayName
-                        GrantedUPN         = $ADHashCN["$CN"].UserPrincipalName
-                        GrantedSMTP        = $ADHashCN["$CN"].PrimarySMTPAddress
-                        Checking           = $CN
+                        Object             = $Mailbox.DisplayName
+                        UserPrincipalName  = $Mailbox.UserPrincipalName
+                        PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
+                        Granted            = $ADHashCN["$Granted"].DisplayName
+                        GrantedUPN         = $ADHashCN["$Granted"].UserPrincipalName
+                        GrantedSMTP        = $ADHashCN["$Granted"].PrimarySMTPAddress
+                        Checking           = $Granted
                         GroupMember        = ""
                         Type               = "User"
                         Permission         = "SendOnBehalf"

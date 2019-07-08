@@ -11,12 +11,11 @@
         [switch] $SkipFullAccess,
 
         [Parameter(Mandatory = $true)]
-        $MailboxList
-    )
-    $DomainNameHash = Get-DomainNameHash
+        $MailboxList,
 
-    Write-Verbose "Importing Active Directory Users and Groups that have at least one proxy address"
-    $ADUserList = Get-ADUsersandGroupsWithProxyAddress -DomainNameHash $DomainNameHash
+        [Parameter(Mandatory = $true)]
+        $ADUserList
+    )
 
     Write-Verbose "Caching hashtable. LogonName as Key and Values of DisplayName & UPN"
     $ADHash = $ADUserList | Get-ADHash
@@ -40,7 +39,7 @@
     }
     if (-not $SkipSendOnBehalf) {
         Write-Verbose "Getting SendOnBehalf permissions for each mailbox and writing to file"
-        $MailboxDN | Get-SendOnBehalfPerms -ADHashCN $ADHashCN -ADHashDN $ADHashDN |
+        $MailboxList | Where-Object { $null -ne $_.GrantSendOnBehalf } | Get-SendOnBehalfPerms -ADHashCN $ADHashCN -ADHashDN $ADHashDN |
         Select-Object $PermSelect
     }
     if (-not $SkipFullAccess) {

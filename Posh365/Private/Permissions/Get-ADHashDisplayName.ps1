@@ -1,10 +1,5 @@
 ﻿Function Get-ADHashDisplayName {
-    <#
-    .SYNOPSIS
 
-    .EXAMPLE
-
-    #>
     param (
         [parameter(ValueFromPipeline = $true)]
         $ADUserList

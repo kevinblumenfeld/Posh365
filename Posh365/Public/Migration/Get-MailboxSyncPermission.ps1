@@ -19,12 +19,12 @@
     end {
         New-Item -ItemType Directory -Path $ReportPath -ErrorAction SilentlyContinue
 
-        $Param = @{
+        $DelegateSplat = @{
             SkipFullAccess   = $SkipFullAccess
             SkipSendOnBehalf = $SkipSendOnBehalf
             SkipSendAs       = $SkipSendAs
         }
-        if ($Param.Values -contains $true) {
+        if ($DelegateSplat.Values -contains $true) {
             try {
                 import-module activedirectory -ErrorAction Stop -Verbose:$false
             }
@@ -35,14 +35,23 @@
                 throw
             }
         }
-        if ($Param.Values -contains $true -or -not $SkipFolderPerms) {
+        if ($DelegateSplat.Values -contains $true -or -not $SkipFolderPerms) {
+            $DomainNameHash = Get-DomainNameHash
+
+            Write-Verbose "Importing Active Directory Users and Groups that have at least one proxy address"
+            $ADUserList = Get-ADUsersandGroupsWithProxyAddress -DomainNameHash $DomainNameHash
             Write-Verbose "Retrieving all Exchange Mailboxes"
             $MailboxList = Get-Mailbox -ResultSize unlimited
-            $Param.Add('MailboxList', $MailboxList)
-            Get-MailboxSyncDelegate @Param | Export-Csv (Join-Path $ReportPath 'MailboxPermissions.csv') -NoTypeInformation -Encoding UTF8
+            $DelegateSplat.Add('MailboxList', $MailboxList)
+            $DelegateSplat.Add('ADUserList', $ADUserList)
+            Get-MailboxSyncDelegate @DelegateSplat | Export-Csv (Join-Path $ReportPath 'MailboxPermissions.csv') -NoTypeInformation -Encoding UTF8
         }
         if (-not $SkipFolderPerms) {
-            Get-MailboxSyncFolderPermission -MailboxList $MailboxList | Export-Csv (Join-Path $ReportPath 'FolderPermissions.csv') -NoTypeInformation -Encoding UTF8
+            $FolderPermSplat = @{
+                MailboxList = $MailboxList
+                ADUserList  = $ADUserList
+            }
+            Get-MailboxSyncFolderPermission @FolderPermSplat | Export-Csv (Join-Path $ReportPath 'FolderPermissions.csv') -NoTypeInformation -Encoding UTF8
         }
     }
 }
