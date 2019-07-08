@@ -36,6 +36,7 @@ function Get-MailboxFolderPerms {
             $CalAccessList = Get-MailboxFolderPermission $Calendar | Where-Object {
                 $_.User -notmatch 'Default' -and
                 $_.User -notmatch 'Anonymous' -and
+                $_.User -notlike 'NT User:*' -and
                 $_.AccessRights -notmatch 'None'
             }
             If ($CalAccessList) {
@@ -52,21 +53,11 @@ function Get-MailboxFolderPerms {
                     }
                 }
             }
-            else {
-                New-Object -TypeName psobject -property @{
-                    Object             = $Mailbox.DisplayName
-                    UserPrincipalName  = $Mailbox.UserPrincipalName
-                    PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
-                    Folder             = 'CALENDAR'
-                    AccessRights       = 'None'
-                    Granted            = 'None'
-                    GrantedUPN         = 'None'
-                    GrantedSMTP        = 'None'
-                }
-            }
+
             $InboxAccessList = Get-MailboxFolderPermission $Inbox | Where-Object {
                 $_.User -notmatch 'Default' -and
                 $_.User -notmatch 'Anonymous' -and
+                $_.User -notlike 'NT User:*' -and
                 $_.AccessRights -notmatch 'None'
             }
             If ($InboxAccessList) {
@@ -83,21 +74,10 @@ function Get-MailboxFolderPerms {
                     }
                 }
             }
-            else {
-                New-Object -TypeName psobject -property @{
-                    Object             = $Mailbox.DisplayName
-                    UserPrincipalName  = $Mailbox.UserPrincipalName
-                    PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
-                    Folder             = 'INBOX'
-                    AccessRights       = 'None'
-                    Granted            = 'None'
-                    GrantedUPN         = 'None'
-                    GrantedSMTP        = 'None'
-                }
-            }
             $SentAccessList = Get-MailboxFolderPermission $SentItems | Where-Object {
                 $_.User -notmatch 'Default' -and
                 $_.User -notmatch 'Anonymous' -and
+                $_.User -notlike 'NT User:*' -and
                 $_.AccessRights -notmatch 'None'
             }
             If ($SentAccessList) {
@@ -112,18 +92,6 @@ function Get-MailboxFolderPerms {
                         GrantedUPN         = $ADHashDisplayName.($CalAccess.User).UserPrincipalName
                         GrantedSMTP        = $ADHashDisplayName.($CalAccess.User).PrimarySMTPAddress
                     }
-                }
-            }
-            else {
-                New-Object -TypeName psobject -property @{
-                    Object             = $Mailbox.DisplayName
-                    UserPrincipalName  = $Mailbox.UserPrincipalName
-                    PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
-                    Folder             = 'SENTITEMS'
-                    AccessRights       = 'None'
-                    Granted            = 'None'
-                    GrantedUPN         = 'None'
-                    GrantedSMTP        = 'None'
                 }
             }
         }

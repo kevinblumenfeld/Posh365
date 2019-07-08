@@ -1,57 +1,80 @@
-﻿Function Get-MailboxSyncPermission {
-    [CmdletBinding(SupportsShouldProcess = $true)]
+function Get-MailboxSyncPermission {
+    <#
+    .SYNOPSIS
+    Get permissions for on-premises mailboxes.
+    The permissions that that mailbox has and those with permission to that mailbox
+
+    .DESCRIPTION
+    Get permissions for on-premises mailboxes.
+    The permissions that that mailbox has and those with permission to that mailbox
+
+    .PARAMETER SharePointURL
+    Sharepoint url ex. https://fabrikam.sharepoint.com/sites/Contoso
+
+    .PARAMETER ExcelFile
+    Excel file found in "Shared Documents" of SharePoint site specified in SharePointURL
+    ex. "Batchex.xlsx"
+    Minimum headers required are: BatchName, UserPrincipalName
+
+    .PARAMETER MailboxCSV
+    Path to csv of mailboxes. Minimum headers required are: BatchName, UserPrincipalName
+
+    .PARAMETER Tenant
+    This is the tenant domain - where you are migrating to. Ex. if tenant is contoso.mail.onmicrosoft.com use contoso
+
+    .EXAMPLE
+    Get-MailboxSyncPermission -RemoteHost mail.contoso.com -Tenant Contoso -MailboxCSV c:\scripts\batches.csv
+
+    .EXAMPLE
+    Get-MailboxSyncPermission -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -Tenant Contoso
+
+    .NOTES
+    General notes
+    #>
+
+    [CmdletBinding(DefaultParameterSetName = 'SharePoint')]
     param (
-        [Parameter(Mandatory = $true)]
-        [string] $ReportPath,
+        [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $SharePointURL,
 
-        [Parameter()]
-        [switch] $SkipSendAs,
+        [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $ExcelFile,
 
-        [Parameter()]
-        [switch] $SkipSendOnBehalf,
+        [Parameter(Mandatory, ParameterSetName = 'CSV')]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $MailboxCSV,
 
-        [Parameter()]
-        [switch] $SkipFullAccess,
-
-        [Parameter()]
-        [switch] $SkipFolderPerms
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $Tenant
     )
     end {
-        New-Item -ItemType Directory -Path $ReportPath -ErrorAction SilentlyContinue
-
-        $DelegateSplat = @{
-            SkipFullAccess   = $SkipFullAccess
-            SkipSendOnBehalf = $SkipSendOnBehalf
-            SkipSendAs       = $SkipSendAs
+        if ($Tenant -notmatch '.mail.onmicrosoft.com') {
+            $Tenant = '{0}.mail.onmicrosoft.com' -f $Tenant
         }
-        if ($DelegateSplat.Values -contains $true) {
-            try {
-                import-module activedirectory -ErrorAction Stop -Verbose:$false
+        switch ($PSCmdlet.ParameterSetName) {
+            'SharePoint' {
+                $SharePointSplat = @{
+                    SharePointURL  = $SharePointURL
+                    ExcelFile      = $ExcelFile
+                    Tenant         = $Tenant
+                    NoBatch        = $true
+                    NoConfirmation = $true
+                }
+                $UserChoice = Import-SharePointExcelDecision @SharePointSplat
             }
-            catch {
-                Write-Host "This module depends on the ActiveDirectory module."
-                Write-Host "Please download and install from https://www.microsoft.com/en-us/download/details.aspx?id=45520"
-                Write-Host "or run Connect-Exchange from a server with the Active Directory Module installed"
-                throw
+            'CSV' {
+                $UserChoice = Import-MailboxCsvDecision -MailboxCSV $MailboxCSV
             }
         }
-        if ($DelegateSplat.Values -contains $true -or -not $SkipFolderPerms) {
-            $DomainNameHash = Get-DomainNameHash
-
-            Write-Verbose "Importing Active Directory Users and Groups that have at least one proxy address"
-            $ADUserList = Get-ADUsersandGroupsWithProxyAddress -DomainNameHash $DomainNameHash
-            Write-Verbose "Retrieving all Exchange Mailboxes"
-            $MailboxList = Get-Mailbox -ResultSize unlimited
-            $DelegateSplat.Add('MailboxList', $MailboxList)
-            $DelegateSplat.Add('ADUserList', $ADUserList)
-            Get-MailboxSyncDelegate @DelegateSplat | Export-Csv (Join-Path $ReportPath 'MailboxPermissions.csv') -NoTypeInformation -Encoding UTF8
-        }
-        if (-not $SkipFolderPerms) {
-            $FolderPermSplat = @{
-                MailboxList = $MailboxList
-                ADUserList  = $ADUserList
-            }
-            Get-MailboxSyncFolderPermission @FolderPermSplat | Export-Csv (Join-Path $ReportPath 'FolderPermissions.csv') -NoTypeInformation -Encoding UTF8
-        }
+        $PermissionDirectionChoice = Get-PermissionDecision
+        $PermissionChoice = Get-PermissionDirectionDecision
+        $UserChoice
     }
 }

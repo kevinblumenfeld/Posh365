@@ -9,11 +9,9 @@ function Import-MailboxCsvDecision {
         $MailboxCsv
     )
     end {
-
         $Mailbox = Import-Csv -Path $MailboxCSV
         $UserChoice = Get-UserDecision -DecisionObject $Mailbox
         $UserChoice
-
     }
 }
 

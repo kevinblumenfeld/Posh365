@@ -2,7 +2,10 @@
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        $MailboxList
+        $MailboxList,
+
+        [Parameter(Mandatory = $true)]
+        $ADUserList
     )
 
     $FolderSelect = @(
@@ -11,7 +14,7 @@
     )
 
     Write-Verbose "Caching hashtable. DisplayName as Key and Values of UPN, PrimarySMTP, msExchRecipientTypeDetails & msExchRecipientDisplayType"
-    $ADHashDisplayName = $MailboxList | Get-ADHashDisplayName
+    $ADHashDisplayName = $ADUserList | Get-ADHashDisplayName
 
     Write-Verbose "Getting Folder Permissions for each mailbox and writing to file"
     $MailboxList | Get-MailboxFolderPerms -ADHashDisplayName $ADHashDisplayName | Select-Object $FolderSelect

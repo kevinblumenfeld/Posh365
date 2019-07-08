@@ -1,8 +1,6 @@
 function Import-SharePointExcelDecision {
-
     [CmdletBinding()]
     param (
-
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string]
@@ -16,8 +14,13 @@ function Import-SharePointExcelDecision {
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string]
-        $Tenant
+        $Tenant,
 
+        [Parameter()]
+        [switch] $NoBatch,
+
+        [Parameter()]
+        [switch] $NoConfirmation
     )
     end {
 
@@ -33,7 +36,12 @@ function Import-SharePointExcelDecision {
             Install-Module ImportExcel -Force -SkipPublisherCheck
         }
         $ExcelObject = Import-Excel $TempExcelPath
-        $UserChoice = Get-UserDecision -DecisionObject $ExcelObject
+        $UserDecisionSplat = @{
+            DecisionObject = $ExcelObject
+            NoBatch        = $NoBatch
+            NoConfirmation = $NoConfirmation
+        }
+        $UserChoice = Get-UserDecision @UserDecisionSplat
         $UserChoice
     }
 }

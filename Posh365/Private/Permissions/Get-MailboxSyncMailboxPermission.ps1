@@ -1,4 +1,4 @@
-﻿Function Get-MailboxSyncDelegate {
+﻿Function Get-MailboxSyncMailboxPermission {
     [CmdletBinding()]
     param (
         [Parameter()]
@@ -39,7 +39,7 @@
     }
     if (-not $SkipSendOnBehalf) {
         Write-Verbose "Getting SendOnBehalf permissions for each mailbox and writing to file"
-        $MailboxList | Where-Object { $null -ne $_.GrantSendOnBehalf } | Get-SendOnBehalfPerms -ADHashCN $ADHashCN -ADHashDN $ADHashDN |
+        ($MailboxList | Where-Object { $_.GrantSendOnBehalfTo -ne $null }) | Get-SendOnBehalfPerms -ADHashCN $ADHashCN -ADHashDN $ADHashDN |
         Select-Object $PermSelect
     }
     if (-not $SkipFullAccess) {

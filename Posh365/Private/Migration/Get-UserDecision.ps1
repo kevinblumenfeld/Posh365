@@ -4,38 +4,55 @@ function Get-UserDecision {
 
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        $DecisionObject
+        $DecisionObject,
+
+        [Parameter()]
+        [switch] $NoBatch,
+
+        [Parameter()]
+        [switch] $NoConfirmation
 
     )
     end {
 
-        $OGVBatch = @{
-            Title      = 'Choose Batch(es)'
-            OutputMode = 'Multiple'
+        if (-not $NoBatch) {
+            $OGVBatch = @{
+                Title      = 'Choose Batch(es)'
+                OutputMode = 'Multiple'
+            }
+            $BatchChoice = $DecisionObject | Select-Object -ExpandProperty BatchName -Unique | Out-GridView @OGVBatch
         }
-
-        $OGVUser = @{
-            Title      = 'Choose User(s)'
-            OutputMode = 'Multiple'
-        }
-
-        $OGVDecision = @{
-            Title      = 'Do You Want To Continue Or Quit?'
-            OutputMode = 'Single'
-        }
-
-        $BatchChoice = $DecisionObject | Select-Object -ExpandProperty BatchName -Unique | Out-GridView @OGVBatch
-        $UserChoice = $DecisionObject | Where-Object { $_.BatchName -in $BatchChoice } | Out-GridView @OGVUser
-
-        if ($UserChoice) {
-            $Decision = 'Yes, I want to continue', 'Quit' | Out-GridView @OGVDecision
-        }
-
-        if ($Decision -eq 'Yes, I want to continue') {
-            $UserChoice
+        if ($NoBatch) {
+            $OGVUser = @{
+                Title      = 'Choose User(s)'
+                OutputMode = 'Multiple'
+            }
+            $UserChoice = $DecisionObject | Out-GridView @OGVUser
         }
         else {
-            $UserChoice = 'Quit'
+            $OGVUser = @{
+                Title      = 'Choose User(s)'
+                OutputMode = 'Multiple'
+            }
+            $UserChoice = $DecisionObject | Where-Object { $_.BatchName -in $BatchChoice } | Out-GridView @OGVUser
+        }
+        if (-not $NoConfirmation) {
+            $OGVDecision = @{
+                Title      = 'Do You Want To Continue Or Quit?'
+                OutputMode = 'Single'
+            }
+            if ($UserChoice) {
+                $Decision = 'Yes, I want to continue', 'Quit' | Out-GridView @OGVDecision
+            }
+            if ($Decision -eq 'Yes, I want to continue') {
+                $UserChoice
+            }
+            else {
+                $UserChoice = 'Quit'
+                $UserChoice
+            }
+        }
+        else {
             $UserChoice
         }
     }
