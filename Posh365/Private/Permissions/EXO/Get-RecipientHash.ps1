@@ -1,20 +1,20 @@
 ﻿Function Get-RecipientHash {
     <#
     .SYNOPSIS
-    
+
     .EXAMPLE
-    
+
     #>
-    param (        
+    param (
 
     )
     Begin {
-        $RecipientHash = @{}
+        $RecipientHash = @{ }
     }
 
     Process {
         $RecipientHash[$_.Name] = @{
-            PrimarySMTPAddress = $_.PrimarySMTPAddress
+            PrimarySMTPAddress   = $_.PrimarySMTPAddress
             RecipientTypeDetails = $_.RecipientTypeDetails
         }
     }

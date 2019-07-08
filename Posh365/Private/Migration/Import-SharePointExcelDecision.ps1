@@ -35,7 +35,6 @@ function Import-SharePointExcelDecision {
         $ExcelObject = Import-Excel $TempExcelPath
         $UserChoice = Get-UserDecision -DecisionObject $ExcelObject
         $UserChoice
-
     }
 }
 

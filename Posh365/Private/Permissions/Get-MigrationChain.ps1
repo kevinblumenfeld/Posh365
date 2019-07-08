@@ -10,7 +10,7 @@
         [string] $swvar = $swvar,
 
         [Parameter()]
-        [Hashtable] $LoopDetection = @{}
+        [Hashtable] $LoopDetection = @{ }
     )
 
     if ($swvar -notmatch "FullAccess|SendAs|SendOnBehalf") {
@@ -18,16 +18,16 @@
     }
     $nameAndDependencies = @()
     foreach ($Name in $Names) {
-        $DataSet | Where-Object {$_.UPN -eq $Name -and $_.Permission -notmatch $swvar} | ForEach-Object {
+        $DataSet | Where-Object { $_.UserPrincipalName -eq $Name -and $_.Permission -notmatch $swvar } | ForEach-Object {
             if ($_.GrantedUPN -and !$LoopDetection.Contains($_.GrantedUPN)) {
                 $LoopDetection.Add($_.GrantedUPN, $null)
                 $nameAndDependencies += Get-MigrationChain -Name $_.GrantedUPN -DataSet $DataSet -LoopDetection $LoopDetection -swvar $swvar
             }
         }
-        $DataSet | Where-Object {$_.GrantedUPN -eq $Name -and $_.Permission -notmatch $swvar} | ForEach-Object {
-            if ($_.UPN -and !$LoopDetection.Contains($_.UPN)) {
-                $LoopDetection.Add($_.UPN, $null)
-                $nameAndDependencies += Get-MigrationChain -Name $_.UPN -DataSet $DataSet -LoopDetection $LoopDetection -swvar $swvar
+        $DataSet | Where-Object { $_.GrantedUPN -eq $Name -and $_.Permission -notmatch $swvar } | ForEach-Object {
+            if ($_.UserPrincipalName -and !$LoopDetection.Contains($_.UserPrincipalName)) {
+                $LoopDetection.Add($_.UserPrincipalName, $null)
+                $nameAndDependencies += Get-MigrationChain -Name $_.UserPrincipalName -DataSet $DataSet -LoopDetection $LoopDetection -swvar $swvar
             }
         }
     }

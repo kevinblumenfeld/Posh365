@@ -3,15 +3,15 @@
     .SYNOPSIS
     Outputs Send As permissions for each mailbox that has permissions assigned.
     This is for On-Premises Exchange 2010, 2013, 2016+
-    
-    .EXAMPLE 
-    
+
+    .EXAMPLE
+
     (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-SendAsPerms | Export-csv .\SA.csv -NoTypeInformation
 
     If not running from Exchange Management Shell (EMS), run this first:
 
     Connect-Exchange -NoPrefix
-    
+
     #>
     [CmdletBinding()]
     Param (
@@ -20,7 +20,7 @@
 
         [parameter()]
         [hashtable] $ADHashDGDN,
-        
+
         [parameter()]
         [hashtable] $ADHashDG
     )
@@ -39,25 +39,25 @@
             $DG = $curDN
             Write-Verbose "Inspecting Group: `t $DG"
             Get-ADPermission $curDN | Where-Object {
-                $_.ExtendedRights -like "*Send-As*" -and 
-                ($_.IsInherited -eq $false) -and 
-                !($_.User -like "NT AUTHORITY\SELF") -and 
+                $_.ExtendedRights -like "*Send-As*" -and
+                ($_.IsInherited -eq $false) -and
+                !($_.User -like "NT AUTHORITY\SELF") -and
                 !($_.User.tostring().startswith('S-1-5-21-'))
             } | ForEach-Object {
                 $User = $_.User
                 Write-Verbose "Has Send As: `t $User"
                 New-Object -TypeName PSObject -property @{
-                    Object      = $ADHashDGDN["$DG"].DisplayName
-                    PrimarySMTP = $ADHashDGDN["$DG"].PrimarySMTPAddress
-                    Granted     = $ADHashDG["$User"].DisplayName
-                    GrantedUPN  = $ADHashDG["$User"].UserPrincipalName
-                    GrantedSMTP = $ADHashDG["$User"].PrimarySMTPAddress
-                    Permission  = "SendAs"  
+                    Object             = $ADHashDGDN["$DG"].DisplayName
+                    PrimarySMTPAddress = $ADHashDGDN["$DG"].PrimarySMTPAddress
+                    Granted            = $ADHashDG["$User"].DisplayName
+                    GrantedUPN         = $ADHashDG["$User"].UserPrincipalName
+                    GrantedSMTP        = $ADHashDG["$User"].PrimarySMTPAddress
+                    Permission         = "SendAs"
                 }
-            } 
+            }
         }
     }
     END {
-        
+
     }
 }

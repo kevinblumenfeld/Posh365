@@ -10,7 +10,7 @@
     If same Report Path is chosen, existing files will be overwritten.
 
     CSVs headers:
-    "Object","UPN","Granted","GrantedUPN","Permission"
+    "Object","UserPrincipalName","Granted","GrantedUPN","Permission"
 
     .EXAMPLE
     Get-PFMailboxPerms -ReportPath C:\PermsReports -Verbose
@@ -119,14 +119,14 @@
     if (! $SkipSendAs) {
         Write-Verbose "Getting SendAs permissions for each mailbox and writing to file"
         $AllMailPF | Get-PFSendAsPerms -ADHashDN $ADHashDN -ADHash $ADHash  |
-            Select Object, UPN, PrimarySMTPAddress, Granted, GrantedUPN, GrantedSMTP, Checking, GroupMember, Type, Permission |
+            Select Object, UserPrincipalName, PrimarySMTPAddress, Granted, GrantedUPN, GrantedSMTP, Checking, GroupMember, Type, Permission |
             Export-csv (Join-Path $ReportPath "PFSendAsPerms.csv") -NoTypeInformation
     }
 
     if (! $SkipSendOnBehalf) {
         Write-Verbose "Getting SendOnBehalf permissions for each mailbox and writing to file"
         $AllMailPF | Get-PFSendOnBehalfPerms -ADHashCN $ADHashCN -ADHashDN $ADHashDN|
-            Select Object, UPN, PrimarySMTPAddress, Granted, GrantedUPN, GrantedSMTP, Checking, GroupMember, Type, Permission |
+            Select Object, UserPrincipalName, PrimarySMTPAddress, Granted, GrantedUPN, GrantedSMTP, Checking, GroupMember, Type, Permission |
             Export-csv (Join-Path $ReportPath "PFSendOnBehalfPerms.csv") -NoTypeInformation
     }
 

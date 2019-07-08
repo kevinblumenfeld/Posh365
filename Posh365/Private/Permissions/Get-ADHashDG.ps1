@@ -2,16 +2,16 @@
     <#
     .SYNOPSIS
     .EXAMPLE
-    
+
     #>
     param (
         [parameter(ValueFromPipeline = $true)]
         $DistinguishedName
     )
-    Begin {
-        $ADHashDG = @{}
+    begin {
+        $ADHashDG = @{ }
     }
-    Process {
+    process {
         foreach ($CurDN in $DistinguishedName) {
             $ADHashDG[$CurDN.logon] = @{
                 DisplayName        = $CurDN.DisplayName
@@ -20,7 +20,7 @@
             }
         }
     }
-    End {
+    end {
         $ADHashDG
     }
 }

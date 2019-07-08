@@ -1,4 +1,4 @@
-function Start-PostMailboxSyncTask {
+function Start-MailboxSyncTask {
 
     [CmdletBinding(DefaultParameterSetName = 'SharePoint')]
     param (

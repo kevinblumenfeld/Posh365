@@ -1,15 +1,15 @@
 ﻿Function Get-RecipientLiveIDHash {
     <#
     .SYNOPSIS
-    
+
     .EXAMPLE
-    
+
     #>
-    param (        
+    param (
 
     )
     Begin {
-        $RecipientLiveIDHash = @{}
+        $RecipientLiveIDHash = @{ }
     }
 
     Process {

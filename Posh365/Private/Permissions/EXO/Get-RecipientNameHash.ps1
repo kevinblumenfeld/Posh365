@@ -1,15 +1,15 @@
 ﻿Function Get-RecipientNameHash {
     <#
     .SYNOPSIS
-    
+
     .EXAMPLE
-    
+
     #>
-    param (        
+    param (
 
     )
     Begin {
-        $RecipientNameHash = @{}
+        $RecipientNameHash = @{ }
     }
 
     Process {

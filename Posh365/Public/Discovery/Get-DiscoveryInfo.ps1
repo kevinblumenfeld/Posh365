@@ -219,7 +219,7 @@
     Write-Verbose "Combined all Mailbox Delegate Permission CSV's into a single file named, AllPermissions.csv"
 
     Write-Verbose "Exporting Distribution Group Send-as Delegate Permission to file DGSendAsPerms.csv"
-    $allGroupsDN | Get-DGSendAsPerms -ADHashDGDN $ADHashDGDN -ADHashDG $ADHashDG  | Select Object, PrimarySMTP, Granted, GrantedUPN, GrantedSMTP, Permission |
+    $allGroupsDN | Get-DGSendAsPerms -ADHashDGDN $ADHashDGDN -ADHashDG $ADHashDG  | Select Object, PrimarySMTPAddress, Granted, GrantedUPN, GrantedSMTP, Permission |
         Export-csv (Join-Path $ExchangePath -ChildPath "DGSendAsPerms.csv") -NoTypeInformation
 
 }

@@ -1,15 +1,15 @@
 ﻿Function Get-MailboxLegacyExchangeDNHash {
     <#
     .SYNOPSIS
-    
+
     .EXAMPLE
-    
+
     #>
-    param (        
+    param (
 
     )
     Begin {
-        $MailboxLegacyExchangeDNHash = @{}
+        $MailboxLegacyExchangeDNHash = @{ }
     }
 
     Process {

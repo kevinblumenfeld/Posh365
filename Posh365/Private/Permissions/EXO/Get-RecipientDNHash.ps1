@@ -1,15 +1,15 @@
 ﻿Function Get-RecipientDNHash {
     <#
     .SYNOPSIS
-    
+
     .EXAMPLE
-    
+
     #>
-    param (        
+    param (
 
     )
     Begin {
-        $RecipientDNHash = @{}
+        $RecipientDNHash = @{ }
     }
 
     Process {

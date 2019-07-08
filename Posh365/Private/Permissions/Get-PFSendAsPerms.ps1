@@ -1,28 +1,28 @@
-function Get-SendOnBehalfPerms {
+﻿function Get-PFSendAsPerms {
     <#
     .SYNOPSIS
-    Outputs SendOnBehalf permissions for each mailbox that has permissions assigned.
+    Outputs Send As permissions for each mailbox that has permissions assigned.
     This is for On-Premises Exchange 2010, 2013, 2016+
-    
-    .EXAMPLE 
-    
-	(Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-SendOnBehalfPerms | Export-csv .\SOB.csv -NoTypeInformation
+
+    .EXAMPLE
+
+    (Get-MailPublicFolder -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-PFSendAsPerms | Export-csv .\PFSA.csv -NoTypeInformation
 
     If not running from Exchange Management Shell (EMS), run this first:
 
     Connect-Exchange -NoPrefix
-    
+
     #>
     [CmdletBinding()]
     Param (
-        [parameter(ValueFromPipeline = $true)]
+        [parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         $DistinguishedName,
-        
+
         [parameter()]
         [hashtable] $ADHashDN,
 
         [parameter()]
-        [hashtable] $ADHashCN
+        [hashtable] $ADHash
     )
     Begin {
         Try {
@@ -37,48 +37,51 @@ function Get-SendOnBehalfPerms {
     Process {
         ForEach ($curDN in $DistinguishedName) {
             $mailbox = $curDN
-            Write-Verbose "Inspecting: `t $Mailbox"
-            (Get-Mailbox $curDN -erroraction silentlycontinue).GrantSendOnBehalfTo |
-                where-object {$_ -ne $null}  | ForEach-Object {
-                $CN = $_
-                $DisplayName = $ADHashCN["$CN"].DisplayName
-                Write-Verbose "Has Send On Behalf DN: `t $DisplayName"
-                Write-Verbose "                   CN: `t $CN"
+            Write-Verbose "Inspecting: `t $mailbox"
+            Get-ADPermission $curDN | Where-Object {
+                $_.ExtendedRights -like "*Send-As*" -and
+                ($_.IsInherited -eq $false) -and
+                !($_.User -like "NT AUTHORITY\SELF") -and
+                !($_.User.tostring().startswith('S-1-5-21-')) -and
+                !$_.Deny
+            } | ForEach-Object {
+                $User = $_.User
+                Write-Verbose "Has Send As: `t $User"
                 try {
-                    Get-ADGroupMember "$DisplayName" -Recursive -ErrorAction stop | 
+                    Get-ADGroupMember ($_.user -split "\\")[1] -Recursive -ErrorAction stop |
                         ForEach-Object {
                         New-Object -TypeName psobject -property @{
                             Object             = $ADHashDN["$mailbox"].DisplayName
-                            UPN                = $ADHashDN["$mailbox"].UPN
+                            UserPrincipalName                = $ADHashDN["$mailbox"].UserPrincipalName
                             PrimarySMTPAddress = $ADHashDN["$mailbox"].PrimarySMTPAddress
                             Granted            = $ADHashDN["$($_.distinguishedname)"].DisplayName
-                            GrantedUPN         = $ADHashDN["$($_.distinguishedname)"].UPN
+                            GrantedUPN         = $ADHashDN["$($_.distinguishedname)"].UserPrincipalName
                             GrantedSMTP        = $ADHashDN["$($_.distinguishedname)"].PrimarySMTPAddress
-                            Checking           = $CN
+                            Checking           = $User
                             GroupMember        = $($_.distinguishedname)
                             Type               = "GroupMember"
-                            Permission         = "SendOnBehalf"
+                            Permission         = "SendAs"
                         }
                     }
-                } 
+                }
                 Catch {
                     New-Object -TypeName psobject -property @{
                         Object             = $ADHashDN["$mailbox"].DisplayName
-                        UPN                = $ADHashDN["$mailbox"].UPN
+                        UserPrincipalName                = $ADHashDN["$mailbox"].UserPrincipalName
                         PrimarySMTPAddress = $ADHashDN["$mailbox"].PrimarySMTPAddress
-                        Granted            = $ADHashCN["$CN"].DisplayName
-                        GrantedUPN         = $ADHashCN["$CN"].UPN
-                        GrantedSMTP        = $ADHashCN["$CN"].PrimarySMTPAddress
-                        Checking           = $CN
+                        Granted            = $ADHash["$User"].DisplayName
+                        GrantedUPN         = $ADHash["$User"].UserPrincipalName
+                        GrantedSMTP        = $ADHash["$User"].PrimarySMTPAddress
+                        Checking           = $User
                         GroupMember        = ""
                         Type               = "User"
-                        Permission         = "SendOnBehalf"
-                    }  
+                        Permission         = "SendAs"
+                    }
                 }
             }
         }
     }
     END {
-        
+
     }
 }

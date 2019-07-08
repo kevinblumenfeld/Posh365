@@ -1,5 +1,5 @@
 ﻿Function Get-DGPerms {
-    
+
     <#
     .SYNOPSIS
     By default, creates permissions reports for all DGs with SendAs Permissions.
@@ -8,19 +8,19 @@
     If same Report Path is chosen, existing files will be overwritten.
 
     CSVs headers:
-    "Object","UPN","Granted","GrantedUPN","Permission"
+    "Object","UserPrincipalName","Granted","GrantedUPN","Permission"
 
     .EXAMPLE
     Get-DGPerms -ReportPath C:\PermsReports -Verbose
-    
+
     .EXAMPLE
     Get-DGPerms -ReportPath C:\PermsReports -PowerShell2 -ExchangeServer "ExServer01" -Verbose
     ***ONLY PS2: When running from PowerShell 2 (Exchange 2010 Server)***
 
     ***FIRST***: Be sure to dot-source the function with the below command (change the path):
     Get-ChildItem -Path "C:\scripts\Posh365\" -filter *.ps1 -Recurse | % { . $_.fullname }
-    It is normal to see errors when running the above command, as some of the functions (that aren't needed here) do not support PS2                 
-    
+    It is normal to see errors when running the above command, as some of the functions (that aren't needed here) do not support PS2
+
     #>
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (
@@ -29,7 +29,7 @@
 
         [Parameter()]
         [switch] $PowerShell2,
-        
+
         [Parameter()]
         [string] $ExchangeServer
     )
@@ -47,9 +47,9 @@
     $User = $env:USERNAME
 
     Get-PSSession -ErrorAction SilentlyContinue | Where-Object {
-        ($_.name -eq "OnPremExchage" -or $_.name -like "Session for implicit remoting module at*") -and ($_.availability -ne "Available" -and $_.State -ne "Opened")} | 
+        ($_.name -eq "OnPremExchage" -or $_.name -like "Session for implicit remoting module at*") -and ($_.availability -ne "Available" -and $_.State -ne "Opened")} |
         ForEach-Object {Remove-PSSession $_.id}
-    
+
     if ($PowerShell2) {
         Write-Warning "**************************************************************************************************"
         Write-Warning "    You have selected -PowerShell2 which indicates that you are running this from PowerShell 2    "
@@ -94,19 +94,19 @@
     $ADHashDGDN = $AllADObjects | Get-ADHashDGDN
 
     Write-Verbose "Retrieving distinguishedname's of all Exchange Distribution Groups"
-    $AllDGDNs = Get-Recipient -ResultSize Unlimited -RecipientTypeDetails 'MailUniversalDistributionGroup', 'MailUniversalSecurityGroup' | Select -ExpandProperty distinguishedname 
+    $AllDGDNs = Get-Recipient -ResultSize Unlimited -RecipientTypeDetails 'MailUniversalDistributionGroup', 'MailUniversalSecurityGroup' | Select -ExpandProperty distinguishedname
 
     Write-Verbose "Getting SendAs permissions for each mailbox and writing to file"
-    $AllDGDNs | Get-DGSendAsPerms -ADHashDGDN $ADHashDGDN -ADHashDG $ADHashDG  | Select Object, PrimarySMTP, Granted, GrantedUPN, GrantedSMTP, Permission |
+    $AllDGDNs | Get-DGSendAsPerms -ADHashDGDN $ADHashDGDN -ADHashDG $ADHashDG  | Select Object, PrimarySMTPAddress, Granted, GrantedUPN, GrantedSMTP, Permission |
         Export-csv (Join-Path $ReportPath "DGSendAsPerms.csv") -NoTypeInformation
-    
+
     $AllPermissions = $null
     $Report = $ReportPath.ToString()
     $Report = $Report.TrimEnd('\') + "\*"
     $AllPermissions = Get-ChildItem -Path $Report -Include "DGSendAsPerms.csv" -Exclude "DGAllPermissions.csv" | % {
         Import-Csv $_
     }
-    
+
     $AllPermissions | Export-Csv (Join-Path $ReportPath "DGAllPermissions.csv") -NoTypeInformation
     Write-Verbose "Combined all CSV's into a single file named, DGAllPermissions.csv"
 }

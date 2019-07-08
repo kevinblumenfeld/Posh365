@@ -3,20 +3,20 @@
     .SYNOPSIS
 
     .EXAMPLE
-    
+
     #>
     param (
         [parameter(ValueFromPipeline = $true)]
         $DistinguishedName
     )
     Begin {
-        $ADHashDGDN = @{}
+        $ADHashDGDN = @{ }
     }
     Process {
         foreach ($CurDN in $DistinguishedName) {
             $ADHashDGDN[$CurDN.DistinguishedName] = @{
                 DisplayName        = $CurDN.DisplayName
-                UPN                = $CurDN.UserPrincipalName
+                UserPrincipalName  = $CurDN.UserPrincipalName
                 PrimarySmtpAddress = $CurDN.PrimarySmtpAddress
                 Logon              = $CurDN.logon
             }
@@ -24,5 +24,5 @@
     }
     End {
         $ADHashDGDN
-    }     
+    }
 }

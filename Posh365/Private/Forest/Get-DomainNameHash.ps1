@@ -1,23 +1,15 @@
 Function Get-DomainNameHash {
-    <#
-    .SYNOPSIS
 
-    .EXAMPLE
-    
-    #>
     param (
 
     )
-    Begin {
-        $DomainNameHash = @{}
-    }
-    Process {
-        $Domains = ([System.DirectoryServices.ActiveDirectory.Forest]::GetCurrentForest().domains) | Select -expand name
-        foreach ($Domain in $Domains) {
+    end {
+        $DomainNameHash = @{ }
+
+        $DomainList = ([System.DirectoryServices.ActiveDirectory.Forest]::GetCurrentForest().domains) | Select -ExpandProperty Name
+        foreach ($Domain in $DomainList) {
             $DomainNameHash[$Domain] = (ConvertTo-NetBios -domain $Domain)
         }
-    }
-    End {
         $DomainNameHash
-    }     
+    }
 }

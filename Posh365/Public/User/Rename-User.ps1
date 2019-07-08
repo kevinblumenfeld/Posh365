@@ -3,20 +3,20 @@ Function Rename-User {
     .SYNOPSIS
     Test
     .EXAMPLE
-    
+
     #>
     [CmdletBinding()]
     Param (
         [parameter(Position = 0, Mandatory = $true)]
         [string] $UsersSamAccount,
-        
+
         [parameter(Position = 1, Mandatory = $true)]
         [string] $FutureFirstName,
 
         [parameter(Position = 2, Mandatory = $true)]
         [string] $FutureLastName
     )
-    
+
     Begin {
         Try {
             import-module activedirectory -ErrorAction Stop -Verbose:$false
@@ -34,12 +34,12 @@ Function Rename-User {
             }
             catch {
                 throw $_.Exception.Message
-            }           
-        }        
+            }
+        }
         While (!(Get-Content ($RootPath + "$($user).ADConnectServer") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-ADConnectServer
         }
-        
+
         While (!(Get-Content ($RootPath + "$($user).EXCHServer") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-ExchangeServer
         }
@@ -53,12 +53,12 @@ Function Rename-User {
         While (!(Get-Content ($RootPath + "$($user).DomainController") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-DomainController
         }
-        $DomainController = Get-Content ($RootPath + "$($user).DomainController")   
-        
+        $DomainController = Get-Content ($RootPath + "$($user).DomainController")
+
         While (!(Get-Content ($RootPath + "$($user).DisplayNameFormat") -ErrorAction SilentlyContinue | ? {$_.count -gt 0})) {
             Select-DisplayNameFormat
         }
-        $DisplayNameFormat = Get-Content ($RootPath + "$($user).DisplayNameFormat")     
+        $DisplayNameFormat = Get-Content ($RootPath + "$($user).DisplayNameFormat")
 
         #######################################
         #   Connect to On Premises Exchange   #
@@ -81,13 +81,13 @@ Function Rename-User {
                 Try {
                     Connect-Cloud $targetAddressSuffix -MSOnline -AzureADver2 -erroraction stop
 
-                } 
+                }
                 Catch {
                     Write-Output "Failed to Connect to Cloud.  Please try again."
                     Break
                 }
             }
-    
+
         }
 
         Set-OnPremRemoteMailbox -Identity $UsersSamAccount -EmailAddressPolicyEnabled:$false
@@ -112,19 +112,19 @@ Function Rename-User {
                 $params.add($key, $($hash.item($key)))
             }
         }
-        
+
         #########################################
         #          Create New ADUser            #
         #########################################
 
         Set-ADUser -Identity $UsersSamAccount @params -Server $domainController
-        
+
         # Purge old jobs
         Get-Job | where {$_.State -ne 'Running'}| Remove-Job
 
         Set-OnPremRemoteMailbox -Identity $UsersSamAccount -EmailAddressPolicyEnabled:$true
-            
-        # After Email Address Policy, Set UPN to same as PrimarySMTP
+
+        # After Email Address Policy, Set UPN to same as PrimarySMTPAddress
         $CurrentUser = Get-OnPremRemoteMailbox $UsersSamAccount | select DistinguishedName,primarysmtpaddress
         Set-ADUser -Identity $UsersSamAccount -Server $domainController -userprincipalname $CurrentUser.primarysmtpaddress
         Rename-ADObject $CurrentUser.DistinguishedName -NewName $DisplayName
@@ -163,7 +163,7 @@ Function Rename-User {
             @{n = "smtp" ; e = {( $_.proxyAddresses | ? {$_ -cmatch "smtp:*"}).Substring(5) -join ";" }},
             @{n = "x500" ; e = {( $_.proxyAddresses | ? {$_ -match "x500:*"}).Substring(0) -join ";" }},
             @{n = "SIP" ; e = {( $_.proxyAddresses | ? {$_ -match "SIP:*"}).Substring(4) -join ";" }}
-        )   
+        )
 
         Get-ADUser -Server $domainController -LDAPfilter "(samaccountname=$UsersSamAccount)" -Properties $Properties -searchBase (Get-ADDomain -Server $domainController).distinguishedname -SearchScope SubTree |
             select ($Selectproperties + $CalculatedProps) | FL
@@ -174,6 +174,6 @@ Function Rename-User {
     }
 
     End {
-    
+
     }
-}    
+}
