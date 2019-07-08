@@ -6,8 +6,8 @@
     )
 
     $FolderSelect = @(
-        'DisplayName', 'PrimarySMTPAddress', 'UserPrincipalName'
-        'Folder', 'AccessRights', 'User'
+        'Object', 'UserPrincipalName', 'PrimarySMTPAddress', 'Folder'
+        'AccessRights', 'Granted', 'GrantedUPN', 'GrantedSMTP'
     )
 
     Write-Verbose "Caching hashtable. DisplayName as Key and Values of UPN, PrimarySMTP, msExchRecipientTypeDetails & msExchRecipientDisplayType"

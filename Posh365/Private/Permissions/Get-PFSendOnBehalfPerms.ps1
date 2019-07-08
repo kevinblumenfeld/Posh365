@@ -39,17 +39,17 @@ function Get-PFSendOnBehalfPerms {
             $mailbox = $curDN
             Write-Verbose "Inspecting: `t $Mailbox"
             (Get-MailPublicFolder $curDN -erroraction silentlycontinue).GrantSendOnBehalfTo |
-                where-object {$_ -ne $null}  | ForEach-Object {
+            where-object { $_ -ne $null } | ForEach-Object {
                 $CN = $_
                 $DisplayName = $ADHashCN["$CN"].DisplayName
                 Write-Verbose "Has Send On Behalf DN: `t $DisplayName"
                 Write-Verbose "                   CN: `t $CN"
                 try {
                     Get-ADGroupMember "$DisplayName" -Recursive -ErrorAction stop |
-                        ForEach-Object {
+                    ForEach-Object {
                         New-Object -TypeName psobject -property @{
                             Object             = $ADHashDN["$mailbox"].DisplayName
-                            UserPrincipalName                = $ADHashDN["$mailbox"].UserPrincipalName
+                            UserPrincipalName  = $ADHashDN["$mailbox"].UserPrincipalName
                             PrimarySMTPAddress = $ADHashDN["$mailbox"].PrimarySMTPAddress
                             Granted            = $ADHashDN["$($_.distinguishedname)"].DisplayName
                             GrantedUPN         = $ADHashDN["$($_.distinguishedname)"].UserPrincipalName
@@ -64,7 +64,7 @@ function Get-PFSendOnBehalfPerms {
                 Catch {
                     New-Object -TypeName psobject -property @{
                         Object             = $ADHashDN["$mailbox"].DisplayName
-                        UserPrincipalName                = $ADHash.UserPrincipalName$mailbox"].UserPrincipalName
+                        UserPrincipalName  = $ADHashDN["$mailbox"].UserPrincipalName
                         PrimarySMTPAddress = $ADHashDN["$mailbox"].PrimarySMTPAddress
                         Granted            = $ADHashCN["$CN"].DisplayName
                         GrantedUPN         = $ADHashCN["$CN"].UserPrincipalName

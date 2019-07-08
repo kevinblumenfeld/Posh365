@@ -24,7 +24,7 @@
         [parameter()]
         [hashtable] $ADHash
     )
-    Begin {
+    begin {
         Try {
             import-module activedirectory -ErrorAction Stop -Verbose:$false
         }
@@ -34,8 +34,8 @@
             throw
         }
     }
-    Process {
-        ForEach ($curDN in $DistinguishedName) {
+    process {
+        foreach ($curDN in $DistinguishedName) {
             $mailbox = $curDN
             Write-Verbose "Inspecting: `t $mailbox"
             Get-ADPermission $curDN | Where-Object {
@@ -49,10 +49,10 @@
                 Write-Verbose "Has Send As: `t $User"
                 try {
                     Get-ADGroupMember ($_.user -split "\\")[1] -Recursive -ErrorAction stop |
-                        ForEach-Object {
+                    ForEach-Object {
                         New-Object -TypeName psobject -property @{
                             Object             = $ADHashDN["$mailbox"].DisplayName
-                            UserPrincipalName                = $ADHashDN["$mailbox"].UserPrincipalName
+                            UserPrincipalName  = $ADHashDN["$mailbox"].UserPrincipalName
                             PrimarySMTPAddress = $ADHashDN["$mailbox"].PrimarySMTPAddress
                             Granted            = $ADHashDN["$($_.distinguishedname)"].DisplayName
                             GrantedUPN         = $ADHashDN["$($_.distinguishedname)"].UserPrincipalName
@@ -64,10 +64,10 @@
                         }
                     }
                 }
-                Catch {
+                catch {
                     New-Object -TypeName psobject -property @{
                         Object             = $ADHashDN["$mailbox"].DisplayName
-                        UserPrincipalName                = $ADHashDN["$mailbox"].UserPrincipalName
+                        UserPrincipalName  = $ADHashDN["$mailbox"].UserPrincipalName
                         PrimarySMTPAddress = $ADHashDN["$mailbox"].PrimarySMTPAddress
                         Granted            = $ADHash["$User"].DisplayName
                         GrantedUPN         = $ADHash["$User"].UserPrincipalName
@@ -81,7 +81,7 @@
             }
         }
     }
-    END {
+    end {
 
     }
 }

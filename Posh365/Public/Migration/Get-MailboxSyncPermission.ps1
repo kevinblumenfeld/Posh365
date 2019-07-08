@@ -39,6 +39,7 @@
         $MailboxList = Get-Mailbox -ResultSize unlimited
         $Param.Add('MailboxList', $MailboxList)
         Get-MailboxSyncDelegate @Param | Export-Csv (Join-Path $ReportPath 'MailboxPermissions.csv') -NoTypeInformation -Encoding UTF8
+
         if (-not $SkipFolderPerms) {
             Get-MailboxSyncFolderPermission -MailboxList $MailboxList | Export-Csv (Join-Path $ReportPath 'FolderPermissions.csv') -NoTypeInformation -Encoding UTF8
         }

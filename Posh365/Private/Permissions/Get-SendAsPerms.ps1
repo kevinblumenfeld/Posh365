@@ -55,7 +55,7 @@
                         }
                     }
                 }
-                Catch {
+                catch {
                     New-Object -TypeName psobject -property @{
                         Object             = $ADHashDN["$mailbox"].DisplayName
                         UserPrincipalName  = $ADHashDN["$mailbox"].UserPrincipalName
