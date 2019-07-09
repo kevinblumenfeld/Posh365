@@ -1,4 +1,4 @@
-function Import-SharePointExcelDecision {
+function Import-SharePointExcel {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -48,14 +48,7 @@ function Import-SharePointExcelDecision {
         if ($WorksheetName) {
             $ExcelSplat.Add('WorksheetName' , $WorksheetName)
         }
-        $ExcelObject = Import-Excel @ExcelSplat
-        $UserDecisionSplat = @{
-            DecisionObject = $ExcelObject
-            NoBatch        = $NoBatch
-            NoConfirmation = $NoConfirmation
-        }
-        $UserChoice = Get-UserDecision @UserDecisionSplat
-        $UserChoice
+        Import-Excel @ExcelSplat
     }
 }
 

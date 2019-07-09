@@ -53,7 +53,6 @@ function Get-MailboxFolderPerms {
                     }
                 }
             }
-
             $InboxAccessList = Get-MailboxFolderPermission $Inbox | Where-Object {
                 $_.User -notmatch 'Default' -and
                 $_.User -notmatch 'Anonymous' -and

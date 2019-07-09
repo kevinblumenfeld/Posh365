@@ -1,38 +1,5 @@
 
-function Get-MailboxSyncPermission {
-    <#
-    .SYNOPSIS
-    Get permissions for on-premises mailboxes.
-    The permissions that that mailbox has and those with permission to that mailbox
-
-    .DESCRIPTION
-    Get permissions for on-premises mailboxes.
-    The permissions that that mailbox has and those with permission to that mailbox
-
-    .PARAMETER SharePointURL
-    Sharepoint url ex. https://fabrikam.sharepoint.com/sites/Contoso
-
-    .PARAMETER ExcelFile
-    Excel file found in "Shared Documents" of SharePoint site specified in SharePointURL
-    ex. "Batchex.xlsx"
-    Minimum headers required are: BatchName, UserPrincipalName
-
-    .PARAMETER MailboxCSV
-    Path to csv of mailboxes. Minimum headers required are: BatchName, UserPrincipalName
-
-    .PARAMETER Tenant
-    This is the tenant domain - where you are migrating to. Ex. if tenant is contoso.mail.onmicrosoft.com use contoso
-
-    .EXAMPLE
-    Get-MailboxSyncPermission -RemoteHost mail.contoso.com -Tenant Contoso -MailboxCSV c:\scripts\batches.csv
-
-    .EXAMPLE
-    Get-MailboxSyncPermission -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Permissions.xlsx' -Tenant Contoso
-
-    .NOTES
-    General notes
-    #>
-
+function Get-MailboxSyncPermissionResult {
     [CmdletBinding(DefaultParameterSetName = 'SharePoint')]
     param (
         [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
