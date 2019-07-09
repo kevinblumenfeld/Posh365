@@ -20,31 +20,21 @@ function Get-MailboxSyncPermissionResult {
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string]
-        $Tenant
+        $Tenant,
+
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        $UserChoiceRegex,
+
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        $PermissionChoice,
+
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        $DirectionChoice
     )
     end {
-        if ($Tenant -notmatch '.mail.onmicrosoft.com') {
-            $Tenant = '{0}.mail.onmicrosoft.com' -f $Tenant
-        }
-        switch ($PSCmdlet.ParameterSetName) {
-            'SharePoint' {
-                $SharePointSplat = @{
-                    SharePointURL  = $SharePointURL
-                    ExcelFile      = $ExcelFile
-                    Tenant         = $Tenant
-                    NoBatch        = $true
-                    NoConfirmation = $true
-                }
-                $UserChoice = Import-SharePointExcelDecision @SharePointSplat
-            }
-            'CSV' {
-                $UserChoice = Import-MailboxCsvDecision -MailboxCSV $MailboxCSV
-            }
-        }
-        $UserChoiceRegex = ($UserChoice.UserPrincipalName | ForEach-Object { [Regex]::Escape($_) }) -join '|'
-        $PermissionChoice = Get-PermissionDecision
-        $DirectionChoice = Get-PermissionDirectionDecision
-
         if ($PermissionChoice -match "FullAccess|SendAs|SendOnBehalf") {
             $SPPermMailbox = @{
                 SharePointURL  = $SharePointURL
@@ -75,7 +65,6 @@ function Get-MailboxSyncPermissionResult {
                 }
             )
         }
-        ####
         if ($PermissionChoice -match "Folder") {
             $SPPermMailbox = @{
                 SharePointURL  = $SharePointURL

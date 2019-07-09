@@ -78,65 +78,14 @@ function Get-MailboxSyncPermission {
         $PermissionChoice = Get-PermissionDecision
         $DirectionChoice = Get-PermissionDirectionDecision
 
-        if ($PermissionChoice -match "FullAccess|SendAs|SendOnBehalf") {
-            $SPPermMailbox = @{
-                SharePointURL  = $SharePointURL
-                ExcelFile      = 'Permissions.xlsx'
-                WorksheetName  = 'Mailbox'
-                Tenant         = $Tenant
-                NoBatch        = $true
-                NoConfirmation = $true
-            }
-            $MailboxPermission = Import-SharePointExcel @SPPermMailbox
-            $DelegateResult = @{
-                PermissionChoice  = $PermissionChoice
-                DirectionChoice   = $DirectionChoice
-                MailboxPermission = $MailboxPermission
-            }
-            Get-MailboxSyncDelegateResult @DelegateResult | Select-Object @(
-                @{
-                    Name       = 'Location'
-                    Expression = { 'Mailbox' }
-                }
-                'Object'
-                'UserPrincipalName'
-                'Granted'
-                'GrantedUPN'
-                @{
-                    Name       = 'Permission'
-                    Expression = { $_.Permission }
-                }
-            )
+        $PermissionResult = @{
+            SharePointURL    = $SharePointURL
+            ExcelFile        = $ExcelFile
+            Tenant           = $Tenant
+            UserChoiceRegex  = $UserChoiceRegex
+            PermissionChoice = $PermissionChoice
+            DirectionChoice  = $DirectionChoice
         }
-        ####
-        if ($PermissionChoice -match "Folder") {
-            $SPPermMailbox = @{
-                SharePointURL  = $SharePointURL
-                ExcelFile      = 'Permissions.xlsx'
-                WorksheetName  = 'Folder'
-                Tenant         = $Tenant
-                NoBatch        = $true
-                NoConfirmation = $true
-            }
-            $FolderPermission = Import-SharePointExcel @SPPermMailbox
-            $FolderResult = @{
-                DirectionChoice  = $DirectionChoice
-                FolderPermission = $FolderPermission
-            }
-            Get-MailboxSyncFolderResult @FolderResult | Select-Object @(
-                @{
-                    Name       = 'Location'
-                    Expression = { $_.Folder }
-                }
-                'Object'
-                'UserPrincipalName'
-                'Granted'
-                'GrantedUPN'
-                @{
-                    Name       = 'Permission'
-                    Expression = { $_.AccessRights }
-                }
-            )
-        }
+        Get-MailboxSyncPermissionResult @PermissionResult | Out-GridView -Title "Permission Results"
     }
 }
