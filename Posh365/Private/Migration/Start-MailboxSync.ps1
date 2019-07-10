@@ -71,7 +71,28 @@ function Start-MailboxSync {
                 LargeItemLimit             = $LargeItemLimit
                 AcceptLargeDataLoss        = $true
             }
-            New-MoveRequest @Param -warningaction silentlycontinue
+            try {
+                $Result = New-MoveRequest @Param -WarningAction SilentlyContinue -ErrorAction Stop
+                [PSCustomObject]@{
+                    'DisplayName'       = $User.DisplayName
+                    'UserPrincipalName' = $User.UserPrincipalName
+                    'MailboxSize'       = [regex]::Matches("$($Result.TotalMailboxSize)", "^[^(]*").value
+                    'ArchiveSize'       = [regex]::Matches("$($Result.TotalArchiveSize)", "^[^(]*").value
+                    'StatusDetail'      = $Result.StatusDetail
+                    'Action'            = 'NEW'
+                }
+            }
+            catch {
+                [PSCustomObject]@{
+                    'DisplayName'       = $User.DisplayName
+                    'UserPrincipalName' = $User.UserPrincipalName
+                    'MailboxSize'       = 'FAILED'
+                    'ArchiveSize'       = 'FAILED'
+                    'StatusDetail'      = $_.Exception.Message
+                    'Action'            = 'NEW'
+                }
+            }
+
         }
     }
 }

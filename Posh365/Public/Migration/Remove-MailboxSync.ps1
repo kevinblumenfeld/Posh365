@@ -21,6 +21,10 @@ Function Remove-MailboxSync {
     $UserChoice = Import-MailboxSyncDecision
     if ($UserChoice -ne 'Quit' ) {
         foreach ($User in $UserChoice) {
+            [PSCustomObject]@{
+                DisplayName = $User.DisplayName
+                Action      = "REMOVE"
+            }
             Remove-MoveRequest -Identity $User.Guid -Confirm:$false
         }
     }

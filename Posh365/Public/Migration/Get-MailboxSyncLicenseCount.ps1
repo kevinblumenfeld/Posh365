@@ -10,7 +10,7 @@ function Get-MailboxSyncLicenseCount {
     Get-MailboxSyncLicenseCount
 
     .NOTES
-    negative numbers represent when a sku is assigned/consumed but there are none available.
+    Negative numbers represent when a sku is assigned/consumed but there are none available.
     Usually after a trial or if a company decided not to renew that sku
     #>
 

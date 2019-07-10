@@ -14,10 +14,10 @@ function Submit-MailboxSyncCompletion {
     begin {
 
         if ($CompleteAfter) {
-            $when = $CompleteAfter
+            $When = $CompleteAfter
         }
         else {
-            $when = (Get-Date).AddDays(-1)
+            $When = (Get-Date).AddDays(-1)
         }
     }
     process {
@@ -27,9 +27,19 @@ function Submit-MailboxSyncCompletion {
                 BatchName                  = $User.BatchName
                 SuspendWhenReadyToComplete = $False
                 Confirm                    = $False
-                CompleteAfter              = $when
+                CompleteAfter              = $When
+            }
+            [PSCustomObject]@{
+                DisplayName   = $User.DisplayName
+                CompleteAfter = $When
+                Action        = "SET"
             }
             Set-MoveRequest @Param
+            [PSCustomObject]@{
+                DisplayName   = $User.DisplayName
+                CompleteAfter = "N/A"
+                Action        = "RESUME"
+            }
             Resume-MoveRequest $User.Guid
         }
     }

@@ -21,7 +21,7 @@ function Get-MailboxSyncFolderResult {
             }
         }
         $AndElements = '$_.AccessRights -ne "AvailabilityOnly"'
-        $Filter = [ScriptBlock]::Create((($OrElements -join ' -or '), $AndElements -join " -and "))
+        $Filter = [ScriptBlock]::Create((($OrElements -join ' -or '), $AndElements -join ' -and '))
         foreach ($Permission in $FolderPermission) {
             $Permission | Where-Object $Filter
         }

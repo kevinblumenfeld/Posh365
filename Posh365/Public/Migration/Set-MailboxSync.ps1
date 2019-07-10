@@ -23,6 +23,10 @@ Function Set-MailboxSync {
     param
     (
         [Parameter()]
+        [switch]
+        $SuspendWhenReadyToComplete,
+
+        [Parameter()]
         [int]
         $LargeItemLimit,
 
@@ -44,7 +48,18 @@ Function Set-MailboxSync {
         if ($BadItemLimit) {
             $SetSplat.Add('BadItemLimit', $BadItemLimit)
         }
+        if ($SuspendWhenReadyToComplete) {
+            $SetSplat.Add('SuspendWhenReadyToComplete', $true)
+        }
         foreach ($User in $UserChoice) {
+            [PSCustomObject]@{
+                DisplayName                = $User.DisplayName
+                SuspendWhenReadyToComplete = $SetSplat.SuspendWhenReadyToComplete
+                LargeItemLimit             = $SetSplat.LargeItemLimit
+                BadItemLimit               = $SetSplat.BadItemLimit
+                AcceptLargeDataLoss        = "TRUE"
+                Action                     = "SET"
+            }
             Set-MoveRequest -Identity $User.Guid @SetSplat
         }
     }
