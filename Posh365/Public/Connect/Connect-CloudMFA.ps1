@@ -46,20 +46,16 @@ function Connect-CloudMFA {
             $null = New-Item $LogPath @ItemSplat
         }
         if ($null = Test-Path $CredFile) {
-            [System.Management.Automation.PSCredential]$Cred = Import-CliXml -Path $CredFile
+            [System.Management.Automation.PSCredential]$Credential = Import-CliXml -Path $CredFile
         }
         else {
-            [System.Management.Automation.PSCredential]$Cred = Get-Credential -Message "Enter Office 365 username and password"
-            [System.Management.Automation.PSCredential]$Cred | Export-CliXml -Path $CredFile
+            [System.Management.Automation.PSCredential]$Credential = Get-Credential -Message "Enter Office 365 username and password"
+            [System.Management.Automation.PSCredential]$Credential | Export-CliXml -Path $CredFile
         }
-        $Cred.UserName | Set-Clipboard
+        $Credential.UserName | Set-Clipboard
         switch ($true) {
             $ExchangeOnline {
-                Start-Job {
-                    Microsoft.PowerShell.Utility\Add-Type -As System.Windows.Forms
-                    [System.Windows.Forms.MessageBox]::Show("Click OK to copy password to clipboard")
-                    $args[0] | Clip
-                } -ArgumentList $Cred.GetNetworkCredential().Password
+                Start-Job { Connect-CloudMFAClip -CredFile $args[0] } -ArgumentList $CredFile
                 Connect-CloudMFADLL
                 Import-Module (Connect-EXOPSSession) -Global
             }

@@ -2,14 +2,11 @@ function Connect-CloudMFADLL {
     [CmdletBinding()]
     Param
     (
-        [Parameter()]
-        $Credential
     )
     end {
         $Modules = @(Get-ChildItem -Path "$($env:LOCALAPPDATA)\Apps\2.0" -Filter "Microsoft.Exchange.Management.ExoPowershellModule.manifest" -Recurse )
         try {
             $ModuleName = Join-Path $modules[0].Directory.FullName "Microsoft.Exchange.Management.ExoPowershellModule.dll"
-            write-host "PRE NAME"
             Import-Module -FullyQualifiedName $ModuleName -Force
         }
         catch {

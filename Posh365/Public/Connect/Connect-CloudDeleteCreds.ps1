@@ -11,16 +11,16 @@ function Connect-CloudDeleteCreds {
         $CredFile
     )
     end {
-        Try {
+        try {
             Remove-Item $CredFile -ErrorAction Stop
         }
-        Catch {
+        catch {
             Write-Warning "While the attempt to delete credentials failed, this may be normal. Please try to connect again."
         }
-        Try {
+        try {
             Remove-Item $CredFile -ErrorAction Stop
         }
-        Catch {
+        catch {
             $_.Exception.Message
         }
     }
