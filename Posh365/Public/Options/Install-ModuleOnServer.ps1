@@ -23,6 +23,16 @@ function Install-ModuleOnServer {
             try {
                 Save-Module @SaveSplat
                 Write-Host "Successfully installed $Module module" -BackgroundColor Blue -ForegroundColor White
+                if ($Module = 'Posh365') {
+                    $SaveExcel = @{
+                        Name        = 'ImportExcel'
+                        Path        = $Path
+                        Force       = $true
+                        ErrorAction = 'Stop'
+                    }
+                    Save-Module @SaveExcel
+                    Write-Host "Successfully installed $Module module dependency" -BackgroundColor Blue -ForegroundColor White
+                }
                 Write-Host "Please restart PowerShell on $Server" -BackgroundColor Blue -ForegroundColor White
                 Write-Host "When starting PowerShell, make sure to Run As Administrator" -BackgroundColor Blue -ForegroundColor White
                 $Here = @'
