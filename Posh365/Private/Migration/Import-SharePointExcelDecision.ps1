@@ -39,9 +39,6 @@ function Import-SharePointExcelDecision {
 
         Get-PnPFile -Url $ExcelURL -Path $Env:TEMP -Filename $TempExcel -AsFile -Force
 
-        if (-not (Get-Module -Name 'ImportExcel' -ListAvailable)) {
-            Install-Module ImportExcel -Force -SkipPublisherCheck
-        }
         $ExcelSplat = @{
             Path = $TempExcelPath
         }

@@ -52,7 +52,6 @@ function Connect-CloudMFA {
             [System.Management.Automation.PSCredential]$Credential = Get-Credential -Message "Enter Office 365 username and password"
             [System.Management.Automation.PSCredential]$Credential | Export-CliXml -Path $CredFile
         }
-        $Credential.UserName | Set-Clipboard
         switch ($true) {
             $ExchangeOnline {
                 Start-Job { Connect-CloudMFAClip -CredFile $args[0] } -ArgumentList $CredFile

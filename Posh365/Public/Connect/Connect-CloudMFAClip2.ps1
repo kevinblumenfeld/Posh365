@@ -70,5 +70,40 @@ function Connect-CloudMFAClip2 {
         $form1.add_Load($OnLoadForm_StateCorrection)
         $form1.ShowDialog() | Out-Null
 
+        <# This form was created using POSHGUI.com  a free online gui designer for PowerShell
+.NAME
+    connectcloud
+#>
+
+        Add-Type -AssemblyName System.Windows.Forms
+
+        $Posh365 = New-Object system.Windows.Forms.Form
+        $Posh365.ClientSize = '400,400'
+        $Posh365.text = "Posh365"
+        $Posh365.BackColor = "#4a90e2"
+        $Posh365.TopMost = $false
+
+        $Username = New-Object system.Windows.Forms.Button
+        $Username.BackColor = "#ffffff"
+        $Username.text = "Username"
+        $Username.width = 377
+        $Username.height = 68
+        $Username.location = New-Object System.Drawing.Point(8, 25)
+        $Username.Font = 'Microsoft Sans Serif,40'
+        $Username.ForeColor = "#000000"
+
+        $Password = New-Object system.Windows.Forms.Button
+        $Password.BackColor = "#ffffff"
+        $Password.text = "Password"
+        $Password.width = 377
+        $Password.height = 68
+        $Password.location = New-Object System.Drawing.Point(8, 100)
+        $Password.Font = 'Microsoft Sans Serif,40'
+        $Password.ForeColor = "#000000"
+
+        $Posh365.controls.AddRange(@($Username, $Password))
+        $Username.Add_Click(($Credential.UserName))
+
+        [void]$Posh365.ShowDialog()
     }
 }

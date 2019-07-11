@@ -33,6 +33,16 @@ function Install-ModuleOnServer {
                     Save-Module @SaveExcel
                     Write-Host "Successfully installed $Module module dependency" -BackgroundColor Blue -ForegroundColor White
                 }
+                if ($Module = 'Posh365') {
+                    $SaveShowUI = @{
+                        Name        = 'ShowUI'
+                        Path        = $Path
+                        Force       = $true
+                        ErrorAction = 'Stop'
+                    }
+                    Save-Module @SaveShowUI
+                    Write-Host "Successfully installed $Module module dependency" -BackgroundColor Blue -ForegroundColor White
+                }
                 Write-Host "Please restart PowerShell on $Server" -BackgroundColor Blue -ForegroundColor White
                 Write-Host "When starting PowerShell, make sure to Run As Administrator" -BackgroundColor Blue -ForegroundColor White
                 $Here = @'

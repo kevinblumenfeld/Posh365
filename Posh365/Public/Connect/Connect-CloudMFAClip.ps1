@@ -1,14 +1,20 @@
 function Connect-CloudMFAClip {
-    [CmdletBinding(SupportsShouldProcess = $true)]
+    [CmdletBinding()]
     Param
     (
         [Parameter(Mandatory, Position = 0)]
         $CredFile
     )
     end {
-        Microsoft.PowerShell.Utility\Add-Type -As System.Windows.Forms
-        [System.Windows.Forms.MessageBox]::Show("Click OK to copy password to clipboard")
         [System.Management.Automation.PSCredential]$Credential = Import-CliXml -Path $CredFile
-        $Credential.GetNetworkCredential().Password | CLIP
+        StackPanel {
+            Button "Copy UserName" -on_click {
+                "TEST" | CLIP
+            } -Margin 10 -FontSize 40
+            Button "Copy Password" -on_click {
+                "TEST" | CLIP
+                $window.Close()
+            } -Margin 10 -FontSize 40
+        } -Show
     }
 }
