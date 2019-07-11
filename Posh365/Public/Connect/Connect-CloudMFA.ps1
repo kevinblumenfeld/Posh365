@@ -46,6 +46,7 @@ function Connect-CloudMFA {
             $null = New-Item $LogPath @ItemSplat
         }
         if ($null = Test-Path $CredFile) {
+            # Perhaps remove if not needed for any modules
             [System.Management.Automation.PSCredential]$Credential = Import-CliXml -Path $CredFile
         }
         else {
@@ -54,7 +55,7 @@ function Connect-CloudMFA {
         }
         switch ($true) {
             $ExchangeOnline {
-                Start-Job { Connect-CloudMFAClip -CredFile $args[0] } -ArgumentList $CredFile
+                Connect-CloudMFAClip -CredFile $CredFile
                 Connect-CloudMFADLL
                 Import-Module (Connect-EXOPSSession) -Global
             }

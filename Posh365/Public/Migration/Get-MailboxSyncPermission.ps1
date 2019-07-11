@@ -27,7 +27,7 @@ function Get-MailboxSyncPermission {
     Get-MailboxSyncPermission -RemoteHost mail.contoso.com -Tenant Contoso -MailboxCSV c:\scripts\batches.csv
 
     .EXAMPLE
-    Get-MailboxSyncPermission -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Permissions.xlsx' -Tenant Contoso
+    Get-MailboxSyncPermission -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -Tenant Contoso
 
     .NOTES
     General notes

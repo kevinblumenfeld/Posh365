@@ -1,7 +1,24 @@
 function Install-ModuleOnServer {
     <#
+    .SYNOPSIS
+    Installs
 
+    .DESCRIPTION
+    Long description
+
+    .PARAMETER Server
+    Parameter description
+
+    .PARAMETER Module
+    Parameter description
+
+    .EXAMPLE
+    An example
+
+    .NOTES
+    General notes
     #>
+
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -32,15 +49,13 @@ function Install-ModuleOnServer {
                     }
                     Save-Module @SaveExcel
                     Write-Host "Successfully installed $Module module dependency" -BackgroundColor Blue -ForegroundColor White
-                }
-                if ($Module = 'Posh365') {
-                    $SaveShowUI = @{
-                        Name        = 'ShowUI'
+                    $SavePoshRS = @{
+                        Name        = 'PoshRSJob'
                         Path        = $Path
                         Force       = $true
                         ErrorAction = 'Stop'
                     }
-                    Save-Module @SaveShowUI
+                    Save-Module @SavePoshRS
                     Write-Host "Successfully installed $Module module dependency" -BackgroundColor Blue -ForegroundColor White
                 }
                 Write-Host "Please restart PowerShell on $Server" -BackgroundColor Blue -ForegroundColor White
