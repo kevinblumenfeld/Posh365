@@ -1,10 +1,10 @@
 Function Set-MailboxMove {
     <#
     .SYNOPSIS
-    Set Mailbox Sync
+    Set Mailbox Move
 
     .DESCRIPTION
-    Set Mailbox Sync
+    Set Mailbox Move
 
     .EXAMPLE
     Set-MailboxMove
@@ -34,7 +34,6 @@ Function Set-MailboxMove {
         [int]
         $BadItemLimit
     )
-
     end {
         $SetSplat = @{
             SuspendWhenReadyToComplete = $SuspendWhenReadyToComplete
@@ -45,6 +44,6 @@ Function Set-MailboxMove {
         if ($BadItemLimit) {
             $SetSplat.Add('BadItemLimit', $BadItemLimit)
         }
-        Invoke-SetMailboxMove @SetSplat | Out-GridView -Title "Results of Set Mailbox Sync"
+        Invoke-SetMailboxMove @SetSplat | Out-GridView -Title "Results of Set Mailbox Move"
     }
 }

@@ -1,13 +1,13 @@
 function Get-MailboxMoveLicense {
     <#
     .SYNOPSIS
-    Gets Office 365 licenses during a migration project
+    Reports on a user or users Office 365 enabled licenses
     Either CSV or Excel file from SharePoint can be used
     Out-GridView is used for each user.
     Helpful for a maximum of 10-20 users as each user opens in their own window
 
     .DESCRIPTION
-    Gets Office 365 licenses during a migration project
+    Reports on a user or users Office 365 enabled licenses
     Either CSV or Excel file from SharePoint can be used
     Out-GridView is used for each user.
     Helpful for a maximum of 10-20 users as each user opens in their own window
@@ -28,7 +28,7 @@ function Get-MailboxMoveLicense {
     Example if tenant is contoso.mail.onmicrosoft.com use contoso
 
     .EXAMPLE
-    Get-MailboxMoveLicense -Tenant Contoso -MailboxCSV c:\scripts\batches.csv -GroupsToAddUserTo "Office 365 E3"
+    Get-MailboxMoveLicense -Tenant Contoso -MailboxCSV c:\scripts\batches.csv
 
     .EXAMPLE
     Get-MailboxMoveLicense -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -Tenant Contoso

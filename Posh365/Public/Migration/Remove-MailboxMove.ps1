@@ -1,21 +1,20 @@
 Function Remove-MailboxMove {
     <#
     .SYNOPSIS
-    Remove Mailbox Sync
+    Remove Mailbox Move
 
     .DESCRIPTION
-    Remove Mailbox Sync
+    Remove Mailbox Move
+
     .EXAMPLE
     Remove-MailboxMove
 
     .NOTES
     General notes
     #>
-
     [CmdletBinding()]
     param
     (
-
     )
-    Invoke-RemoveMailboxMove | Out-GridView -Title "Results of Remove Mailbox Sync"
+    Invoke-RemoveMailboxMove | Out-GridView -Title "Results of Remove Mailbox Move"
 }

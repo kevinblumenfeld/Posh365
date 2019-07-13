@@ -110,7 +110,7 @@ function New-MailboxMove {
             if ($LargeItemLimit) {
                 $Sync.Add('LargeItemLimit', $LargeItemLimit)
             }
-            $UserChoice | Invoke-NewMailboxMove @Sync | Out-GridView -Title "Results of New Mailbox Sync"
+            $UserChoice | Invoke-NewMailboxMove @Sync | Out-GridView -Title "Results of New Mailbox Move"
             foreach ($Group in $GroupsToAddUserTo) {
                 $GuidList = $UserChoice | Get-ADUserGuid
                 $GuidList | Add-UserToADGroup -Group $Group

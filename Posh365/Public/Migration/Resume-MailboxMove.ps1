@@ -1,10 +1,10 @@
 Function Resume-MailboxMove {
     <#
     .SYNOPSIS
-    Resume Mailbox Sync
+    Resume Mailbox Move
 
     .DESCRIPTION
-    Resume Mailbox Sync
+    Resume Mailbox Move
 
     .EXAMPLE
     Resume-MailboxMove
@@ -15,7 +15,6 @@ Function Resume-MailboxMove {
     .NOTES
     General notes
     #>
-
     [CmdletBinding()]
     param
     (

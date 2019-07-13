@@ -2,11 +2,11 @@ function Remove-MailboxMoveCredential {
     <#
     .SYNOPSIS
     Erases credentials that are saved and encrypted on your computer
-    These are the on premises Exchange endpoint credentials.
+    These are the on-premises Exchange endpoint credentials.
 
     .DESCRIPTION
     Erases credentials that are saved and encrypted on your computer
-    These are the on premises Exchange endpoint credentials.
+    These are the on-premises Exchange endpoint credentials.
 
     .PARAMETER Tenant
     This is the tenant domain - where you are/were migrating to

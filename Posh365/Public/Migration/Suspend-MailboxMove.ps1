@@ -1,23 +1,21 @@
 Function Suspend-MailboxMove {
     <#
     .SYNOPSIS
-    Suspend Mailbox Sync
+    Suspend Mailbox Move
 
     .DESCRIPTION
-    Suspend Mailbox Sync
+    Suspend Mailbox Move
+
     .EXAMPLE
     Suspend-MailboxMove
 
     .NOTES
-    General notes
+    Connect to Exchange Online
     #>
-
     [CmdletBinding()]
     param
     (
-
     )
-
     $UserChoice = Import-MailboxMoveDecision -NotCompleted
     if ($UserChoice -ne 'Quit' ) {
         foreach ($User in $UserChoice) {

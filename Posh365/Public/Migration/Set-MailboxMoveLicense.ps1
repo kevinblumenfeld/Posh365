@@ -24,7 +24,7 @@ function Set-MailboxMoveLicense {
     Example if tenant is contoso.mail.onmicrosoft.com use contoso
 
     .EXAMPLE
-    Set-MailboxMoveLicense -Tenant Contoso -MailboxCSV c:\scripts\batches.csv -GroupsToAddUserTo "Office 365 E3"
+    Set-MailboxMoveLicense -Tenant Contoso -MailboxCSV c:\scripts\batches.csv
 
     .EXAMPLE
     Set-MailboxMoveLicense -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -Tenant Contoso

@@ -1,13 +1,13 @@
 Function Get-MailboxMove {
     <#
     .SYNOPSIS
-    Get mailbox moves/syncs
+    Get Mailbox Moves
 
     .DESCRIPTION
-    Get mailbox moves/syncs
+    Get Mailbox Moves
 
     .PARAMETER NotCompleted
-    Use this switch to view all moves/syncs that are not completed
+    Use this switch to view only Mailbox Moves that have yet to be completed
 
     .EXAMPLE
     Get-MailboxMove
@@ -22,7 +22,7 @@ Function Get-MailboxMove {
     Get-MailboxMove -NotCompleted | Out-Gridview
 
     .NOTES
-    General notes
+    Connect to Exchange Online
     #>
 
     [CmdletBinding()]
