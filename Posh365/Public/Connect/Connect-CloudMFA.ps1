@@ -61,21 +61,20 @@ function Connect-CloudMFA {
                 }
             }
             $ExchangeOnline {
-                Write-Host "Connecting to`tExchange Online" Write-Host -ForegroundColor Green
                 Connect-CloudModuleImport -ExchangeOnline
-                Import-Module (Connect-EXOPSSession) -Global -WarningAction SilentlyContinue
+                Import-Module (Connect-EXOPSSession) -Global -WarningAction SilentlyContinue -DisableNameChecking
+                Write-Host "Connected to Exchange Online" -ForegroundColor Green
             }
             $MSOnline {
-                Write-Host "Connecting to`tMicrosoft Online" Write-Host -ForegroundColor Green
                 Connect-CloudModuleImport -MSOnline
                 Connect-MsolService
+                Write-Host "Connected to Microsoft Online" -ForegroundColor Green
             }
             $AzureAD {
-                Write-Host "Connecting to`Azure AD" Write-Host -ForegroundColor Green
                 Connect-CloudModuleImport -AzureAD
                 Connect-AzureAD
+                Write-Host "Connected to Azure AD" -ForegroundColor Green
             }
-
             default {
 
             }

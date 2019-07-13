@@ -20,7 +20,7 @@ function Connect-CloudModuleImport {
                 $Modules = @(Get-ChildItem -Path "$($env:LOCALAPPDATA)\Apps\2.0" -Filter "Microsoft.Exchange.Management.ExoPowershellModule.manifest" -Recurse )
                 try {
                     $ModuleName = Join-Path $modules[0].Directory.FullName "Microsoft.Exchange.Management.ExoPowershellModule.dll"
-                    Import-Module -FullyQualifiedName $ModuleName -Force
+                    Import-Module -FullyQualifiedName $ModuleName -Force -WarningAction SilentlyContinue -DisableNameChecking
                 }
                 catch {
                     Write-Host "The PowerShell module which supports MFA must be installed."  -foregroundcolor "Black" -backgroundcolor "white"

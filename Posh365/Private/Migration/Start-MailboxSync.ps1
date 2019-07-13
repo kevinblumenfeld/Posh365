@@ -76,9 +76,10 @@ function Start-MailboxSync {
                 [PSCustomObject]@{
                     'DisplayName'       = $User.DisplayName
                     'UserPrincipalName' = $User.UserPrincipalName
+                    'Result'            = 'SUCCESS'
                     'MailboxSize'       = [regex]::Matches("$($Result.TotalMailboxSize)", "^[^(]*").value
                     'ArchiveSize'       = [regex]::Matches("$($Result.TotalArchiveSize)", "^[^(]*").value
-                    'StatusDetail'      = $Result.StatusDetail
+                    'Log'               = $Result.StatusDetail
                     'Action'            = 'NEW'
                 }
             }
@@ -86,13 +87,13 @@ function Start-MailboxSync {
                 [PSCustomObject]@{
                     'DisplayName'       = $User.DisplayName
                     'UserPrincipalName' = $User.UserPrincipalName
-                    'MailboxSize'       = 'FAILED'
-                    'ArchiveSize'       = 'FAILED'
-                    'StatusDetail'      = $_.Exception.Message
+                    'Result'            = 'FAILED'
+                    'MailboxSize'       = ''
+                    'ArchiveSize'       = ''
+                    'Log'               = $_.Exception.Message
                     'Action'            = 'NEW'
                 }
             }
-
         }
     }
 }

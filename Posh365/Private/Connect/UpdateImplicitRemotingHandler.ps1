@@ -1,4 +1,4 @@
-function global:UpdateImplicitRemotingHandler() {
+function global:Get-RemotingHandler() {
     <#
     .SYNOPSIS Override Get-PSImplicitRemotingSession function for reconnection
     #>
@@ -50,7 +50,7 @@ function global:UpdateImplicitRemotingHandler() {
                     }
 
                     return [Management.Automation.Runspaces.PSSession]$script:PSSession
-                }}
+                } }
         }
     }
 }

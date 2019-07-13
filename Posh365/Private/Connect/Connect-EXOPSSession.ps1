@@ -4,7 +4,7 @@ function Connect-EXOPSSession {
             To connect in other Office 365 offerings, use the following settings:
             - Office 365 operated by 21Vianet: -ConnectionURI https://partner.outlook.cn/PowerShell-LiveID -AzureADAuthorizationEndpointUri https://login.chinacloudapi.cn/common
             - Office 365 Germany: -ConnectionURI https://outlook.office.de/PowerShell-LiveID -AzureADAuthorizationEndpointUri https://login.microsoftonline.de/common
-        
+
             - PSSessionOption accept object created using New-PSSessionOption
         .DESCRIPTION
             This PowerShell module allows you to connect to Exchange Online service
@@ -49,12 +49,20 @@ function Connect-EXOPSSession {
         $global:PSSessionOption = $PSSessionOption;
         $global:Credential = $Credential;
 
-        Import-Module $ModulePath;
-        $PSSession = New-ExoPSSession -UserPrincipalName $UserPrincipalName -ConnectionUri $ConnectionUri -AzureADAuthorizationEndpointUri $AzureADAuthorizationEndpointUri -PSSessionOption $PSSessionOption -Credential $Credential
-    
+        Import-Module $ModulePath -DisableNameChecking
+        $PSSplat = @{
+            UserPrincipalName               = $UserPrincipalName
+            ConnectionUri                   = $ConnectionUri
+            AzureADAuthorizationEndpointUri = $AzureADAuthorizationEndpointUri
+            PSSessionOption                 = $PSSessionOption
+            Credential                      = $Credential
+            WarningAction                   = 'SilentlyContinue'
+        }
+        $PSSession = New-ExoPSSession @PSSplat
+
         if ($PSSession -ne $null) {
-            Import-PSSession $PSSession -AllowClobber
-            UpdateImplicitRemotingHandler
+            Import-PSSession $PSSession -AllowClobber -DisableNameChecking
+            Get-RemotingHandler
         }
     }
     catch {

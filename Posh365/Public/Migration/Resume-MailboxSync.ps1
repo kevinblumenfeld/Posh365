@@ -19,12 +19,10 @@ Function Resume-MailboxSync {
     [CmdletBinding()]
     param
     (
-
         [Parameter()]
         [switch]
         $DontAutoComplete
     )
-
     $UserChoice = Import-MailboxSyncDecision -NotCompleted
     if ($UserChoice -ne 'Quit' ) {
         $ResumeSplat = @{

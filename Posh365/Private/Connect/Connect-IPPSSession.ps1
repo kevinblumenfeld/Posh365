@@ -46,6 +46,13 @@ function Connect-IPPSSession {
     else {
         $newUri = $ConnectionUri;
     }
-
-    Connect-EXOPSSession -ConnectionUri $newUri -AzureADAuthorizationEndpointUri $AzureADAuthorizationEndpointUri -UserPrincipalName $UserPrincipalName -PSSessionOption $PSSessionOption -Credential $Credential
+    $EXOPSSplat = @{
+        ConnectionUri                   = $newUri
+        AzureADAuthorizationEndpointUri = $AzureADAuthorizationEndpointUri
+        UserPrincipalName               = $UserPrincipalName
+        PSSessionOption                 = $PSSessionOption
+        Credential                      = $Credential
+        WarningAction                   = 'SilentlyContinue'
+    }
+    Connect-EXOPSSession @EXOPSSplat
 }

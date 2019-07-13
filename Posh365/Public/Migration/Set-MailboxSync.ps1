@@ -13,7 +13,7 @@ Function Set-MailboxSync {
     Set-MailboxSync -LargeItemLimit 400
 
     .EXAMPLE
-    Set-MailboxSync -LargeItemLimit 400 -BadItemLimit 200
+    Set-MailboxSync -LargeItemLimit 400 -BadItemLimit 200 -SuspendWhenReadyToComplete
 
     .NOTES
     General notes
@@ -35,12 +35,9 @@ Function Set-MailboxSync {
         $BadItemLimit
     )
 
-    $UserChoice = Import-MailboxSyncDecision -NotCompleted
-    if ($UserChoice -ne 'Quit' ) {
+    end {
         $SetSplat = @{
-            AcceptLargeDataLoss = $true
-            Confirm             = $false
-            warningaction       = 'silentlycontinue'
+            SuspendWhenReadyToComplete = $SuspendWhenReadyToComplete
         }
         if ($LargeItemLimit) {
             $SetSplat.Add('LargeItemLimit', $LargeItemLimit)
@@ -48,19 +45,6 @@ Function Set-MailboxSync {
         if ($BadItemLimit) {
             $SetSplat.Add('BadItemLimit', $BadItemLimit)
         }
-        if ($SuspendWhenReadyToComplete) {
-            $SetSplat.Add('SuspendWhenReadyToComplete', $true)
-        }
-        foreach ($User in $UserChoice) {
-            [PSCustomObject]@{
-                DisplayName                = $User.DisplayName
-                SuspendWhenReadyToComplete = $SetSplat.SuspendWhenReadyToComplete
-                LargeItemLimit             = $SetSplat.LargeItemLimit
-                BadItemLimit               = $SetSplat.BadItemLimit
-                AcceptLargeDataLoss        = "TRUE"
-                Action                     = "SET"
-            }
-            Set-MoveRequest -Identity $User.Guid @SetSplat
-        }
+        Invoke-SetMailboxSync @SetSplat | Out-GridView -Title "Results of Set Mailbox Sync"
     }
 }
