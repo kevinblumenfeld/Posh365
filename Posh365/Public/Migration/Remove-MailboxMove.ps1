@@ -1,4 +1,4 @@
-Function Remove-MailboxSync {
+Function Remove-MailboxMove {
     <#
     .SYNOPSIS
     Remove Mailbox Sync
@@ -6,7 +6,7 @@ Function Remove-MailboxSync {
     .DESCRIPTION
     Remove Mailbox Sync
     .EXAMPLE
-    Remove-MailboxSync
+    Remove-MailboxMove
 
     .NOTES
     General notes
@@ -17,5 +17,5 @@ Function Remove-MailboxSync {
     (
 
     )
-    Invoke-RemoveMailboxSync | Out-GridView -Title "Results of Remove Mailbox Sync"
+    Invoke-RemoveMailboxMove | Out-GridView -Title "Results of Remove Mailbox Sync"
 }

@@ -1,4 +1,4 @@
-Function Resume-MailboxSync {
+Function Resume-MailboxMove {
     <#
     .SYNOPSIS
     Resume Mailbox Sync
@@ -7,10 +7,10 @@ Function Resume-MailboxSync {
     Resume Mailbox Sync
 
     .EXAMPLE
-    Resume-MailboxSync
+    Resume-MailboxMove
 
     .EXAMPLE
-    Resume-MailboxSync -DontAutoComplete
+    Resume-MailboxMove -DontAutoComplete
 
     .NOTES
     General notes
@@ -23,7 +23,7 @@ Function Resume-MailboxSync {
         [switch]
         $DontAutoComplete
     )
-    $UserChoice = Import-MailboxSyncDecision -NotCompleted
+    $UserChoice = Import-MailboxMoveDecision -NotCompleted
     if ($UserChoice -ne 'Quit' ) {
         $ResumeSplat = @{
             Confirm = $false

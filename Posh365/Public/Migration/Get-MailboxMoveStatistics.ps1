@@ -1,4 +1,4 @@
-Function Get-MailboxSyncStatistics {
+Function Get-MailboxMoveStatistics {
     <#
     .SYNOPSIS
     Get Move Request Statistics and refresh by clicking OK
@@ -11,10 +11,10 @@ Function Get-MailboxSyncStatistics {
     To only see the move requests that have yet to be completed
 
     .EXAMPLE
-    Get-MailboxSyncStatistics
+    Get-MailboxMoveStatistics
 
     .EXAMPLE
-    Get-MailboxSyncStatistics -IncludeCompleted
+    Get-MailboxMoveStatistics -IncludeCompleted
 
     .NOTES
     Connect to Exchange Online prior to using
@@ -33,19 +33,19 @@ Function Get-MailboxSyncStatistics {
             Title      = "Move Requests Statistics - All. Click OK to Refresh"
             OutputMode = 'Multiple'
         }
-        $RefreshAll = Import-MailboxSyncStatistics | Out-GridView @AllSplat
+        $RefreshAll = Invoke-GetMailboxMoveStatistics | Out-GridView @AllSplat
     }
     else {
         $NotCompletedSplat = @{
             Title      = "Move Requests Statistics - Not Completed. Click OK to Refresh"
             OutputMode = 'Multiple'
         }
-        $RefreshNotCompleted = Import-MailboxSyncStatistics -NotCompleted | Out-GridView @NotCompletedSplat
+        $RefreshNotCompleted = Invoke-GetMailboxMoveStatistics -NotCompleted | Out-GridView @NotCompletedSplat
     }
     if ($RefreshNotCompleted) {
-        Get-MailboxSyncStatistics
+        Get-MailboxMoveStatistics
     }
     elseif ($RefreshAll) {
-        Get-MailboxSyncStatistics -IncludeCompleted
+        Get-MailboxMoveStatistics -IncludeCompleted
     }
 }

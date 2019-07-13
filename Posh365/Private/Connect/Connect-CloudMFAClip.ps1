@@ -54,19 +54,9 @@ function Connect-CloudMFAClip {
             $Panel1.BackColor = "#007acc"
             $Panel1.location = New-Object System.Drawing.Point(8, 187)
 
-            $Delete = New-Object system.Windows.Forms.Button
-            $Delete.BackColor = "#252526"
-            $Delete.text = "Delete Username and Password"
-            $Delete.width = 500
-            $Delete.height = 93
-            $Delete.location = New-Object System.Drawing.Point(8, 119)
-            $Delete.Font = 'Microsoft Sans Serif,20,style=Bold'
-            $Delete.ForeColor = "#ffffff"
-            $Delete.Add_Click( { Connect-CloudDeleteCredential -CredFile $Using:CredFile })
-
             $Close = New-Object system.Windows.Forms.Button
             $Close.BackColor = "#252526"
-            $Close.text = "Close Window"
+            $Close.text = "Close"
             $Close.width = 500
             $Close.height = 93
             $Close.location = New-Object System.Drawing.Point(8, 18)
@@ -76,7 +66,7 @@ function Connect-CloudMFAClip {
 
             $Posh365.controls.AddRange(@($Panel2, $Panel1))
             $Panel2.controls.AddRange(@($Username, $Password))
-            $Panel1.controls.AddRange(@($Delete, $Close))
+            $Panel1.controls.AddRange(@($Close))
 
             [void]$Posh365.ShowDialog()
         }

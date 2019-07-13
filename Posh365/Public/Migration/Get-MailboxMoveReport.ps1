@@ -1,4 +1,4 @@
-Function Get-MailboxSyncReport {
+Function Get-MailboxMoveReport {
     <#
     .SYNOPSIS
     Provides each user found in Get-MoveRequest in an Out-GridView.
@@ -12,7 +12,7 @@ Function Get-MailboxSyncReport {
     Uses Out-GridView automatically
 
     .EXAMPLE
-    Get-MailboxSyncReport
+    Get-MailboxMoveReport
 
     #>
     [CmdletBinding()]

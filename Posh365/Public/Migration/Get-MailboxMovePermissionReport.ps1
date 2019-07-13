@@ -1,20 +1,25 @@
-﻿Function Get-MailboxSyncPermissionReport {
-    [CmdletBinding(SupportsShouldProcess = $true)]
+﻿Function Get-MailboxMovePermissionReport {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [string] $ReportPath,
+        [string]
+        $ReportPath,
 
         [Parameter()]
-        [switch] $SkipSendAs,
+        [switch]
+        $SkipSendAs,
 
         [Parameter()]
-        [switch] $SkipSendOnBehalf,
+        [switch]
+        $SkipSendOnBehalf,
 
         [Parameter()]
-        [switch] $SkipFullAccess,
+        [switch]
+        $SkipFullAccess,
 
         [Parameter()]
-        [switch] $SkipFolderPerms
+        [switch]
+        $SkipFolderPerms
     )
     end {
         New-Item -ItemType Directory -Path $ReportPath -ErrorAction SilentlyContinue
@@ -26,7 +31,7 @@
         }
         if ($DelegateSplat.Values -contains $true) {
             try {
-                import-module activedirectory -ErrorAction Stop -Verbose:$false
+                Import-Module ActiveDirectory -ErrorAction Stop -Verbose:$false
             }
             catch {
                 Write-Host "This module depends on the ActiveDirectory module."
@@ -43,14 +48,14 @@
         if ($DelegateSplat.Values -contains $true) {
             $DelegateSplat.Add('MailboxList', $MailboxList)
             $DelegateSplat.Add('ADUserList', $ADUserList)
-            Get-MailboxSyncMailboxPermission @DelegateSplat | Export-Csv (Join-Path $ReportPath 'MailboxPermissions.csv') -NoTypeInformation -Encoding UTF8
+            Get-MailboxMoveMailboxPermission @DelegateSplat | Export-Csv (Join-Path $ReportPath 'MailboxPermissions.csv') -NoTypeInformation -Encoding UTF8
         }
         if (-not $SkipFolderPerms) {
             $FolderPermSplat = @{
                 MailboxList = $MailboxList
                 ADUserList  = $ADUserList
             }
-            Get-MailboxSyncFolderPermission @FolderPermSplat | Export-Csv (Join-Path $ReportPath 'FolderPermissions.csv') -NoTypeInformation -Encoding UTF8
+            Get-MailboxMoveFolderPermission @FolderPermSplat | Export-Csv (Join-Path $ReportPath 'FolderPermissions.csv') -NoTypeInformation -Encoding UTF8
         }
     }
 }

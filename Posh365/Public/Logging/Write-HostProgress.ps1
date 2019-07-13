@@ -1,19 +1,21 @@
 function Write-HostProgress {
     param (
-
         [Parameter()]
-        [String]$Message,
+        [String]
+        $Message,
 
         [Parameter()]
         [ValidateSet("Success", "Failed", "Neutral", "Information")]
-        [String]$Status = "Information",
+        [String]
+        $Status = "Information",
 
         [Parameter()]
-        [int] $Total,
+        [int]
+        $Total,
 
         [Parameter()]
-        [int] $Count
-
+        [int]
+        $Count
     )
     $_ESC = "$([char]27)"
     $_FG = "$_ESC[38;5"

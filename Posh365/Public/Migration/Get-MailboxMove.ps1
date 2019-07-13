@@ -1,4 +1,4 @@
-Function Get-MailboxSync {
+Function Get-MailboxMove {
     <#
     .SYNOPSIS
     Get mailbox moves/syncs
@@ -10,16 +10,16 @@ Function Get-MailboxSync {
     Use this switch to view all moves/syncs that are not completed
 
     .EXAMPLE
-    Get-MailboxSync
+    Get-MailboxMove
 
     .EXAMPLE
-    Get-MailboxSync | Out-GridView
+    Get-MailboxMove | Out-GridView
 
     .EXAMPLE
-    Get-MailboxSync -NotCompleted
+    Get-MailboxMove -NotCompleted
 
     .EXAMPLE
-    Get-MailboxSync -NotCompleted | Out-Gridview
+    Get-MailboxMove -NotCompleted | Out-Gridview
 
     .NOTES
     General notes

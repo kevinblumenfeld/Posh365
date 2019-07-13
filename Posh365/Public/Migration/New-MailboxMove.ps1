@@ -1,4 +1,4 @@
-function New-MailboxSync {
+function New-MailboxMove {
     <#
     .SYNOPSIS
     Sync Mailboxes from On-Premises Exchange to Exchange Online
@@ -30,10 +30,10 @@ function New-MailboxSync {
     Requires AD Module. This is optional
 
     .EXAMPLE
-    New-MailboxSync -RemoteHost mail.contoso.com -Tenant Contoso -MailboxCSV c:\scripts\batches.csv -GroupsToAddUserTo "Office 365 E3"
+    New-MailboxMove -RemoteHost mail.contoso.com -Tenant Contoso -MailboxCSV c:\scripts\batches.csv -GroupsToAddUserTo "Office 365 E3"
 
     .EXAMPLE
-    New-MailboxSync -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -RemoteHost mail.contoso.com -Tenant Contoso
+    New-MailboxMove -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -RemoteHost mail.contoso.com -Tenant Contoso
 
     .NOTES
     General notes
@@ -110,7 +110,7 @@ function New-MailboxSync {
             if ($LargeItemLimit) {
                 $Sync.Add('LargeItemLimit', $LargeItemLimit)
             }
-            $UserChoice | Start-MailboxSync @Sync | Out-GridView -Title "Results of New Mailbox Sync"
+            $UserChoice | Invoke-NewMailboxMove @Sync | Out-GridView -Title "Results of New Mailbox Sync"
             foreach ($Group in $GroupsToAddUserTo) {
                 $GuidList = $UserChoice | Get-ADUserGuid
                 $GuidList | Add-UserToADGroup -Group $Group

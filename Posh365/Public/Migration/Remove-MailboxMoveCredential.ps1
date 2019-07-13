@@ -1,4 +1,4 @@
-function Remove-MailboxSyncCredential {
+function Remove-MailboxMoveCredential {
     <#
     .SYNOPSIS
     Erases credentials that are saved and encrypted on your computer
@@ -13,7 +13,7 @@ function Remove-MailboxSyncCredential {
     Example: If target tenant is contoso.mail.onmicrosoft.com use contoso
 
     .EXAMPLE
-    Remove-MailboxSyncCredentials -Tenant Contoso
+    Remove-MailboxMoveCredentials -Tenant Contoso
 
     .NOTES
     General notes

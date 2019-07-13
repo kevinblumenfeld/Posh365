@@ -1,17 +1,17 @@
 function Get-UserDecision {
     [CmdletBinding()]
     param (
-
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         $DecisionObject,
 
         [Parameter()]
-        [switch] $NoBatch,
+        [switch]
+        $NoBatch,
 
         [Parameter()]
-        [switch] $NoConfirmation
-
+        [switch]
+        $NoConfirmation
     )
     end {
 

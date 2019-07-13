@@ -1,13 +1,16 @@
-
-function Get-MailboxSyncPermission {
+function Get-MailboxMoveLicense {
     <#
     .SYNOPSIS
-    Get permissions for on-premises mailboxes.
-    The permissions that that mailbox has and those with permission to that mailbox
+    Gets Office 365 licenses during a migration project
+    Either CSV or Excel file from SharePoint can be used
+    Out-GridView is used for each user.
+    Helpful for a maximum of 10-20 users as each user opens in their own window
 
     .DESCRIPTION
-    Get permissions for on-premises mailboxes.
-    The permissions that that mailbox has and those with permission to that mailbox
+    Gets Office 365 licenses during a migration project
+    Either CSV or Excel file from SharePoint can be used
+    Out-GridView is used for each user.
+    Helpful for a maximum of 10-20 users as each user opens in their own window
 
     .PARAMETER SharePointURL
     Sharepoint url ex. https://fabrikam.sharepoint.com/sites/Contoso
@@ -21,13 +24,14 @@ function Get-MailboxSyncPermission {
     Path to csv of mailboxes. Minimum headers required are: BatchName, UserPrincipalName
 
     .PARAMETER Tenant
-    This is the tenant domain - where you are migrating to. Ex. if tenant is contoso.mail.onmicrosoft.com use contoso
+    This is the tenant domain - where you are migrating to.
+    Example if tenant is contoso.mail.onmicrosoft.com use contoso
 
     .EXAMPLE
-    Get-MailboxSyncPermission -RemoteHost mail.contoso.com -Tenant Contoso -MailboxCSV c:\scripts\batches.csv
+    Get-MailboxMoveLicense -Tenant Contoso -MailboxCSV c:\scripts\batches.csv -GroupsToAddUserTo "Office 365 E3"
 
     .EXAMPLE
-    Get-MailboxSyncPermission -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -Tenant Contoso
+    Get-MailboxMoveLicense -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -Tenant Contoso
 
     .NOTES
     General notes
@@ -62,11 +66,9 @@ function Get-MailboxSyncPermission {
         switch ($PSCmdlet.ParameterSetName) {
             'SharePoint' {
                 $SharePointSplat = @{
-                    SharePointURL  = $SharePointURL
-                    ExcelFile      = $ExcelFile
-                    Tenant         = $Tenant
-                    NoBatch        = $true
-                    NoConfirmation = $true
+                    SharePointURL = $SharePointURL
+                    ExcelFile     = $ExcelFile
+                    Tenant        = $Tenant
                 }
                 $UserChoice = Import-SharePointExcelDecision @SharePointSplat
             }
@@ -74,18 +76,8 @@ function Get-MailboxSyncPermission {
                 $UserChoice = Import-MailboxCsvDecision -MailboxCSV $MailboxCSV
             }
         }
-        $UserChoiceRegex = ($UserChoice.UserPrincipalName | ForEach-Object { [Regex]::Escape($_) }) -join '|'
-        $PermissionChoice = Get-PermissionDecision
-        $DirectionChoice = Get-PermissionDirectionDecision
-
-        $PermissionResult = @{
-            SharePointURL    = $SharePointURL
-            ExcelFile        = $ExcelFile
-            Tenant           = $Tenant
-            UserChoiceRegex  = $UserChoiceRegex
-            PermissionChoice = $PermissionChoice
-            DirectionChoice  = $DirectionChoice
+        if ($UserChoice -ne 'Quit' ) {
+            ($UserChoice).UserPrincipalName | Set-CloudLicense -ReportUserLicensesEnabled
         }
-        Get-MailboxSyncPermissionResult @PermissionResult | Out-GridView -Title "Permission Results"
     }
 }

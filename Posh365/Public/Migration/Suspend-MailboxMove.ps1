@@ -1,4 +1,4 @@
-Function Suspend-MailboxSync {
+Function Suspend-MailboxMove {
     <#
     .SYNOPSIS
     Suspend Mailbox Sync
@@ -6,7 +6,7 @@ Function Suspend-MailboxSync {
     .DESCRIPTION
     Suspend Mailbox Sync
     .EXAMPLE
-    Suspend-MailboxSync
+    Suspend-MailboxMove
 
     .NOTES
     General notes
@@ -18,7 +18,7 @@ Function Suspend-MailboxSync {
 
     )
 
-    $UserChoice = Import-MailboxSyncDecision -NotCompleted
+    $UserChoice = Import-MailboxMoveDecision -NotCompleted
     if ($UserChoice -ne 'Quit' ) {
         foreach ($User in $UserChoice) {
             Suspend-MoveRequest -Identity $User.Guid -Confirm:$false

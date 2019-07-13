@@ -1,4 +1,4 @@
-﻿Function Get-MailboxSyncMailboxPermission {
+﻿Function Get-MailboxMoveMailboxPermission {
     [CmdletBinding()]
     param (
         [Parameter()]

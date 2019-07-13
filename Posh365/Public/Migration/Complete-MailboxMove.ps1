@@ -1,4 +1,4 @@
-function Complete-MailboxSync {
+function Complete-MailboxMove {
     <#
     .SYNOPSIS
     Allows the completion or the scheduling of the completion of moves/syncs
@@ -32,15 +32,15 @@ function Complete-MailboxSync {
         if ($Tenant -notmatch '.mail.onmicrosoft.com') {
             $Tenant = "$Tenant.mail.onmicrosoft.com"
         }
-        $UserChoice = Import-MailboxSyncDecision -NotCompleted
+        $UserChoice = Import-MailboxMoveDecision -NotCompleted
 
         if ($UserChoice -ne 'Quit' ) {
             if ($Schedule) {
                 $UTCTimeandDate = Get-ScheduleDecision
-                $UserChoice | Submit-MailboxSyncCompletion -CompleteAfter $UTCTimeandDate
+                $UserChoice | Invoke-CompleteMailboxMove -CompleteAfter $UTCTimeandDate
             }
             else {
-                $UserChoice | Submit-MailboxSyncCompletion
+                $UserChoice | Invoke-CompleteMailboxMove
             }
         }
     }

@@ -1,4 +1,4 @@
-function Get-MailboxSyncLicenseCount {
+function Get-MailboxMoveLicenseCount {
     <#
     .SYNOPSIS
     Get a quick look at how many Office 365 skus are available and assigned
@@ -7,7 +7,7 @@ function Get-MailboxSyncLicenseCount {
     Get a quick look at how many Office 365 skus are available and assigned
 
     .EXAMPLE
-    Get-MailboxSyncLicenseCount
+    Get-MailboxMoveLicenseCount
 
     .NOTES
     Negative numbers represent when a sku is assigned/consumed but there are none available.

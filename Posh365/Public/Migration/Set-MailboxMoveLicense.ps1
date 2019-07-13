@@ -1,16 +1,12 @@
-function Get-MailboxSyncLicense {
+function Set-MailboxMoveLicense {
     <#
     .SYNOPSIS
-    Gets Office 365 licenses during a migration project
+    Sets Office 365 licenses during a migration project
     Either CSV or Excel file from SharePoint can be used
-    Out-GridView is used for each user.
-    Helpful for a maximum of 10-20 users as each user opens in their own window
 
     .DESCRIPTION
-    Gets Office 365 licenses during a migration project
+    Sets Office 365 licenses during a migration project
     Either CSV or Excel file from SharePoint can be used
-    Out-GridView is used for each user.
-    Helpful for a maximum of 10-20 users as each user opens in their own window
 
     .PARAMETER SharePointURL
     Sharepoint url ex. https://fabrikam.sharepoint.com/sites/Contoso
@@ -28,10 +24,10 @@ function Get-MailboxSyncLicense {
     Example if tenant is contoso.mail.onmicrosoft.com use contoso
 
     .EXAMPLE
-    Get-MailboxSyncLicense -Tenant Contoso -MailboxCSV c:\scripts\batches.csv -GroupsToAddUserTo "Office 365 E3"
+    Set-MailboxMoveLicense -Tenant Contoso -MailboxCSV c:\scripts\batches.csv -GroupsToAddUserTo "Office 365 E3"
 
     .EXAMPLE
-    Get-MailboxSyncLicense -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -Tenant Contoso
+    Set-MailboxMoveLicense -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -Tenant Contoso
 
     .NOTES
     General notes
@@ -77,7 +73,12 @@ function Get-MailboxSyncLicense {
             }
         }
         if ($UserChoice -ne 'Quit' ) {
-            ($UserChoice).UserPrincipalName | Set-CloudLicense -ReportUserLicensesEnabled
+            $LicenseDecision = Get-LicenseDecision
+            $LicenseOptions = @{ }
+            foreach ($License in $LicenseDecision.Options) {
+                $LicenseOptions.Add($License, $true)
+            }
+            ($UserChoice).UserPrincipalName | Set-CloudLicense @LicenseOptions
         }
     }
 }

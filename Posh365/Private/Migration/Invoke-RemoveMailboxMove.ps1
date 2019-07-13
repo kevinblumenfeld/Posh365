@@ -1,11 +1,11 @@
-Function Invoke-RemoveMailboxSync {
+Function Invoke-RemoveMailboxMove {
     [CmdletBinding()]
     param
     (
 
     )
     end {
-        $UserChoice = Import-MailboxSyncDecision
+        $UserChoice = Import-MailboxMoveDecision
         if ($UserChoice -ne 'Quit' ) {
             foreach ($User in $UserChoice) {
                 try {

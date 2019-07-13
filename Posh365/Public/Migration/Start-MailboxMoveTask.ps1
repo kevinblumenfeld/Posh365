@@ -1,8 +1,6 @@
-function Start-MailboxSyncTask {
-
+function Start-MailboxMoveTask {
     [CmdletBinding(DefaultParameterSetName = 'SharePoint')]
     param (
-
         [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
         [ValidateNotNullOrEmpty()]
         [string]
@@ -26,7 +24,6 @@ function Start-MailboxSyncTask {
         [Parameter()]
         [switch]
         $AddressBookPolicy
-
     )
     end {
         if ($Tenant -notmatch '.mail.onmicrosoft.com') {

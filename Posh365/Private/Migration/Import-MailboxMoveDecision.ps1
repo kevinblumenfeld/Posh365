@@ -1,4 +1,4 @@
-function Import-MailboxSyncDecision {
+function Import-MailboxMoveDecision {
 
     [CmdletBinding()]
     param (
@@ -8,7 +8,7 @@ function Import-MailboxSyncDecision {
     )
     end {
         if ($NotCompleted) {
-            $DecisionObject = Get-MailboxSync -NotCompleted | Sort-Object @(
+            $DecisionObject = Get-MailboxMove -NotCompleted | Sort-Object @(
                 @{
                     Expression = "BatchName"
                     Descending = $true
@@ -22,7 +22,7 @@ function Import-MailboxSyncDecision {
             $UserChoice
         }
         else {
-            $DecisionObject = Get-MailboxSync | Sort-Object @(
+            $DecisionObject = Get-MailboxMove | Sort-Object @(
                 @{
                     Expression = "BatchName"
                     Descending = $true

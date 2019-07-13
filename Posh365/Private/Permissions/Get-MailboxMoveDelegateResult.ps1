@@ -1,5 +1,5 @@
 
-function Get-MailboxSyncDelegateResult {
+function Get-MailboxMoveDelegateResult {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]

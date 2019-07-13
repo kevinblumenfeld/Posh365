@@ -1,35 +1,44 @@
 ﻿function Remove-365Domain {
-
     param (
         [Parameter()]
-        [switch] $ExportOnly,
+        [switch]
+        $ExportOnly,
 
         [Parameter()]
-        [switch] $FlipMailbox,
+        [switch]
+        $FlipMailbox,
 
         [Parameter()]
-        [switch] $FlipMailUser,
+        [switch]
+        $FlipMailUser,
 
         [Parameter()]
-        [switch] $FlipUPN,
+        [switch]
+        $FlipUPN,
 
         [Parameter()]
-        [switch] $FlipDLPrimary,
+        [switch]
+        $FlipDLPrimary,
 
         [Parameter()]
-        [switch] $FlipUGPrimary,
+        [switch]
+        $FlipUGPrimary,
 
         [Parameter()]
-        [switch] $RemoveMailUserProxy,
+        [switch]
+        $RemoveMailUserProxy,
 
         [Parameter()]
-        [switch] $RemoveMbxProxy,
+        [switch]
+        $RemoveMbxProxy,
 
         [Parameter()]
-        [switch] $RemoveUGProxy,
+        [switch]
+        $RemoveUGProxy,
 
         [Parameter()]
-        [switch] $RemoveDLProxy
+        [switch]
+        $RemoveDLProxy
     )
 
     $RoutingDomain = "*@contoso.onmicrosoft.com"
@@ -51,7 +60,7 @@
         )
 
         $MsolCalcProps = @(
-            @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join '|' }}
+            @{n = "proxyAddresses" ; e = { ($_.proxyAddresses | Where-Object { $_ -ne $null }) -join '|' } }
         )
 
         $MailProps = @(
@@ -60,7 +69,7 @@
         )
 
         $MailCalcProps = @(
-            @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join '|' }}
+            @{n = "EmailAddresses" ; e = { ($_.EmailAddresses | Where-Object { $_ -ne $null }) -join '|' } }
         )
 
         $MsolUser | Select-Object ($MsolProps + $MsolCalcProps) | Export-Csv ".\MsolUsers.csv" -NoTypeInformation -Encoding UTF8
@@ -80,10 +89,10 @@
         )
 
         $GroupCalcProps = @(
-            @{n = "EmailAddresses" ; e = {($_.EmailAddresses | Where-Object {$_ -ne $null}) -join '|' }}
+            @{n = "EmailAddresses" ; e = { ($_.EmailAddresses | Where-Object { $_ -ne $null }) -join '|' } }
         )
 
-        $DistributionGroup |  Select-Object ($GroupProps + $GroupCalcProps)  | Export-Csv ".\DistributionGroups.csv" -NoTypeInformation
+        $DistributionGroup | Select-Object ($GroupProps + $GroupCalcProps) | Export-Csv ".\DistributionGroups.csv" -NoTypeInformation
         $UnifiedGroup | Select-Object ($GroupProps + $GroupCalcProps) | Export-Csv ".\O365Groups.csv" -NoTypeInformation
         Write-HostLog -Message "Exported Distribution Groups & O365 Groups details in CSV`n"
     }
@@ -254,11 +263,11 @@
 
                 ForEach ($CurMailbox in $Mailbox) {
                     if ($CurMailbox.PrimarySmtpAddress -like $RoutingDomain) {
-                        $ProxyAddress = $CurMailbox.EmailAddresses | Where-Object {$_ -notlike $WildCardDomain -and $_ -like "smtp*"}
+                        $ProxyAddress = $CurMailbox.EmailAddresses | Where-Object { $_ -notlike $WildCardDomain -and $_ -like "smtp*" }
                         Write-HostLog -Message "`tAddresses Found for user $($CurMailbox.PrimarySmtpAddress): $($ProxyAddress.count)" -Status "Success"
                         ForEach ($CurProxyAddress in $ProxyAddress) {
                             try {
-                                Set-Mailbox -Identity $CurMailbox.PrimarySmtpAddress -EmailAddresses @{Remove = $CurProxyAddress} -ErrorAction Stop
+                                Set-Mailbox -Identity $CurMailbox.PrimarySmtpAddress -EmailAddresses @{Remove = $CurProxyAddress } -ErrorAction Stop
                                 Write-HostProgress -Message "`t`tRemoving $CurProxyAddress " -Status "Success" -Total $Total -Count $i
                             }
                             catch {
@@ -274,7 +283,7 @@
         }
 
         if ($RemoveMailUserProxy) {
-            $MailUser = Get-MailUser -ResultSize unlimited | Where-Object {$_.RecipientTypeDetails -ne "GuestMailUser"} | Sort-Object -Property UserPrincipalName
+            $MailUser = Get-MailUser -ResultSize unlimited | Where-Object { $_.RecipientTypeDetails -ne "GuestMailUser" } | Sort-Object -Property UserPrincipalName
             Write-HostLog -Message "`nTotal MailUsers Found: $($MailUser.count)" -Status "Success"
 
             $ConfirmCount = Read-Host "Do you want to split the count?:(y/n)"
@@ -303,11 +312,11 @@
 
                 ForEach ($CurMailUser in $MailUser) {
                     if ($CurMailUser.PrimarySmtpAddress -like $RoutingDomain) {
-                        $MailUserProxy = $CurMailUser.EmailAddresses | Where-Object {$_ -notlike $WildCardDomain -and $_ -like "smtp*"}
+                        $MailUserProxy = $CurMailUser.EmailAddresses | Where-Object { $_ -notlike $WildCardDomain -and $_ -like "smtp*" }
                         Write-HostLog -Message "`tDomains Found for user: $($MailUserProxy.count)" -Status "Success"
                         ForEach ($CurMailProxy in $MailUserProxy) {
                             try {
-                                Set-MailUser -Identity $CurMailUser.PrimarySmtpAddress -EmailAddresses @{Remove = $CurMailProxy} -ErrorAction Stop
+                                Set-MailUser -Identity $CurMailUser.PrimarySmtpAddress -EmailAddresses @{Remove = $CurMailProxy } -ErrorAction Stop
                                 Write-HostProgress -Message "`t`tRemoving $CurMailProxy" -Status "Success" -Total $Total -Count $i
                             }
                             catch {
@@ -392,7 +401,7 @@
 
                     ForEach ($CurProxyUGAddress in $ProxyUGAddress) {
                         try {
-                            Set-UnifiedGroup -Identity $CurUnifiedGroup.PrimarySmtpAddress -EmailAddresses @{Remove = $CurProxyUGAddress} -ErrorAction Stop
+                            Set-UnifiedGroup -Identity $CurUnifiedGroup.PrimarySmtpAddress -EmailAddresses @{Remove = $CurProxyUGAddress } -ErrorAction Stop
                             Write-HostProgress -Message "t`tRemoving $CurProxyUGAddress" -Status "Success" -Total $Total -Count $i
                         }
                         catch {
@@ -418,7 +427,7 @@
 
                     ForEach ($CurProxyDLAddress in $ProxyDLAddress) {
                         try {
-                            Set-DistributionGroup -Identity $CurDistributionGroup.PrimarySmtpAddress -EmailAddresses @{Remove = $CurProxyDLAddress} -ErrorAction Stop
+                            Set-DistributionGroup -Identity $CurDistributionGroup.PrimarySmtpAddress -EmailAddresses @{Remove = $CurProxyDLAddress } -ErrorAction Stop
                             Write-HostProgress -Message "t`tRemoving $CurProxyDLAddress" -Status "Success" -Total $Total -Count $i
                         }
                         catch {

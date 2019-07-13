@@ -1,5 +1,5 @@
 
-function Get-MailboxSyncFolderResult {
+function Get-MailboxMoveFolderResult {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]

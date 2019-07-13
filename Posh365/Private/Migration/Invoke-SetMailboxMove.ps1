@@ -1,4 +1,4 @@
-Function Invoke-SetMailboxSync {
+Function Invoke-SetMailboxMove {
     [CmdletBinding()]
     param
     (
@@ -15,7 +15,7 @@ Function Invoke-SetMailboxSync {
         $BadItemLimit
     )
 
-    $UserChoice = Import-MailboxSyncDecision -NotCompleted
+    $UserChoice = Import-MailboxMoveDecision -NotCompleted
     if ($UserChoice -ne 'Quit' ) {
         $SetSplat = @{
             AcceptLargeDataLoss = $true

@@ -1,4 +1,4 @@
-function Start-MailboxSync {
+function Invoke-NewMailboxMove {
     <#
     .SYNOPSIS
     Sync Mailboxes from On-Premises Exchange to Exchange Online

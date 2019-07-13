@@ -1,5 +1,5 @@
 
-function Get-MailboxSyncPermissionResult {
+function Get-MailboxMovePermissionResult {
     [CmdletBinding(DefaultParameterSetName = 'SharePoint')]
     param (
         [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
@@ -50,7 +50,7 @@ function Get-MailboxSyncPermissionResult {
                 DirectionChoice   = $DirectionChoice
                 MailboxPermission = $MailboxPermission
             }
-            Get-MailboxSyncDelegateResult @DelegateResult | Select-Object @(
+            Get-MailboxMoveDelegateResult @DelegateResult | Select-Object @(
                 @{
                     Name       = 'Location'
                     Expression = { 'Mailbox' }
@@ -79,7 +79,7 @@ function Get-MailboxSyncPermissionResult {
                 DirectionChoice  = $DirectionChoice
                 FolderPermission = $FolderPermission
             }
-            Get-MailboxSyncFolderResult @FolderResult | Select-Object @(
+            Get-MailboxMoveFolderResult @FolderResult | Select-Object @(
                 @{
                     Name       = 'Location'
                     Expression = { $_.Folder }

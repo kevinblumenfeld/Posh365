@@ -1,4 +1,4 @@
-Function Import-MailboxSyncStatistics {
+Function Invoke-GetMailboxMoveStatistics {
     <#
 
     #>

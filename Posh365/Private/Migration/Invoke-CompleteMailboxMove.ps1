@@ -1,4 +1,4 @@
-function Submit-MailboxSyncCompletion {
+function Invoke-CompleteMailboxMove {
 
     param (
 
