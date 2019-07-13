@@ -3,12 +3,13 @@ function Connect-CloudMFAClip {
     Param
     (
         [Parameter(Mandatory, Position = 0)]
-        $Username,
-
-        [Parameter(Mandatory, Position = 1)]
-        $Password
+        $CredFile
     )
     end {
+        [System.Management.Automation.PSCredential]$Credential = Import-CliXml -Path $CredFile
+        $Username = $Credential.Username
+        $Password = $Credential.GetNetworkCredential().Password
+
         $null = Start-RSJob -ArgumentList $Username, $Password -ScriptBlock {
             param($Username, $Password)
             Add-Type -AssemblyName System.Windows.Forms

@@ -51,17 +51,14 @@ function Connect-CloudMFA {
             }
             { $ExchangeOnline -or $MSOnline -or $AzureAD } {
                 if ($null = Test-Path $CredFile) {
-                    # Perhaps remove if not needed for any modules
-                    [System.Management.Automation.PSCredential]$Credential = Import-CliXml -Path $CredFile
+                    Connect-CloudMFAClip -CredFile $CredFile
                 }
                 else {
                     [System.Management.Automation.PSCredential]$Credential = Get-Credential -Message 'Enter Office 365 username and password'
                     [System.Management.Automation.PSCredential]$Credential | Export-CliXml -Path $CredFile
                     [System.Management.Automation.PSCredential]$Credential = Import-CliXml -Path $CredFile
+                    Connect-CloudMFAClip -CredFile $CredFile
                 }
-                $Username = $Credential.Username
-                $Password = $Credential.GetNetworkCredential().Password
-
             }
             $ExchangeOnline {
                 Write-Host "Connecting to`tExchange Online" Write-Host -ForegroundColor Green
