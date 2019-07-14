@@ -13,15 +13,20 @@
         $DistinguishedName,
 
         [parameter()]
-        [hashtable] $ADHashDN,
+        [hashtable]
+        $ADHashDN,
 
         [parameter()]
-        [hashtable] $ADHash
-    )
+        [hashtable]
+        $ADHash,
 
+        [parameter()]
+        [hashtable]
+        $ADHashType
+    )
     process {
         foreach ($DN in $DistinguishedName) {
-            Write-Verbose "Inspecting: `t $DN"
+            Write-Verbose "Inspecting:`t $DN"
             Get-ADPermission $DN | Where-Object {
                 $_.ExtendedRights -like "*Send-As*" -and
                 ($_.IsInherited -eq $false) -and
@@ -30,20 +35,16 @@
                 !$_.Deny
             } | ForEach-Object {
                 Write-Verbose "Has Send As:`t $($_.User)"
-                Get-ADGroupMember ($_.user -split "\\")[1] -Recursive -ErrorAction stop |
-                ForEach-Object {
-                    New-Object -TypeName psobject -property @{
-                        Object             = $ADHashDN["$DN"].DisplayName
-                        UserPrincipalName  = $ADHashDN["$DN"].UserPrincipalName
-                        PrimarySMTPAddress = $ADHashDN["$DN"].PrimarySMTPAddress
-                        Granted            = $ADHashDN["$($_.distinguishedname)"].DisplayName
-                        GrantedUPN         = $ADHashDN["$($_.distinguishedname)"].UserPrincipalName
-                        GrantedSMTP        = $ADHashDN["$($_.distinguishedname)"].PrimarySMTPAddress
-                        Checking           = $($_.User)
-                        GroupMember        = $($_.distinguishedname)
-                        Type               = "GroupMember"
-                        Permission         = "SendAs"
-                    }
+                New-Object -TypeName psobject -property @{
+                    Object             = $ADHashDN["$DN"].DisplayName
+                    UserPrincipalName  = $ADHashDN["$DN"].UserPrincipalName
+                    PrimarySMTPAddress = $ADHashDN["$DN"].PrimarySMTPAddress
+                    Granted            = $ADHash["$_.User"].DisplayName
+                    GrantedUPN         = $ADHash["$_.User"].UserPrincipalName
+                    GrantedSMTP        = $ADHash["$_.User"].PrimarySMTPAddress
+                    Checking           = $_.User
+                    Type               = $ADHash["$_.User"].msExchRecipientTypeDetails
+                    Permission         = "SendAs"
                 }
             }
         }

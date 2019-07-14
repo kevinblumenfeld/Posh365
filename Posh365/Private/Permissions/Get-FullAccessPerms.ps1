@@ -10,21 +10,23 @@ function Get-FullAccessPerms {
     [CmdletBinding()]
     Param (
         [parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-        $DistinguishedName,
+        $ADUserList,
 
         [parameter()]
-        [hashtable] $ADHashDN,
+        [hashtable]
+        $ADHashDN,
 
         [parameter()]
-        [hashtable] $ADHash
+        [hashtable]
+        $ADHash
     )
     begin {
 
     }
     process {
-        foreach ($DN in $DistinguishedName) {
-            Write-Verbose "Inspecting:`t $DN"
-            Get-MailboxPermission $DN |
+        foreach ($ADUser in $ADUserList) {
+            Write-Verbose "Inspecting:`t $ADUser"
+            Get-MailboxPermission $ADUser |
             Where-Object {
                 $_.AccessRights -like "*FullAccess*" -and
                 !$_.IsInherited -and !$_.user.tostring().startswith('S-1-5-21-') -and
@@ -33,13 +35,14 @@ function Get-FullAccessPerms {
             } | ForEach-Object {
                 Write-Verbose "Has Full Access:`t$($_.User)"
                 New-Object -TypeName psobject -property @{
-                    Object             = $ADHashDN["$DN"].DisplayName
-                    UserPrincipalName  = $ADHashDN["$DN"].UserPrincipalName
-                    PrimarySMTPAddress = $ADHashDN["$DN"].PrimarySMTPAddress
+                    Object             = $ADHashDN["$ADUser"].DisplayName
+                    UserPrincipalName  = $ADHashDN["$ADUser"].UserPrincipalName
+                    PrimarySMTPAddress = $ADHashDN["$ADUser"].PrimarySMTPAddress
                     Granted            = $ADHash["$($_.User)"].DisplayName
                     GrantedUPN         = $ADHash["$($_.User)"].UserPrincipalName
                     GrantedSMTP        = $ADHash["$($_.User)"].PrimarySMTPAddress
-                    Checking           = $($_.User)
+                    Checking           = $_.User
+                    Type               = $ADHash["$_.User"].msExchRecipientTypeDetails
                     Permission         = "FullAccess"
                 }
             }

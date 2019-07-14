@@ -1,10 +1,4 @@
 ﻿Function Get-ADHashCN {
-    <#
-    .SYNOPSIS
-
-    .EXAMPLE
-
-    #>
     param (
         [parameter(ValueFromPipeline = $true)]
         $ADUserList

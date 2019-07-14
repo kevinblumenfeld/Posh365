@@ -1,27 +1,23 @@
 ﻿Function Get-ADHash {
-    <#
-    .SYNOPSIS
-    .EXAMPLE
-
-    #>
     param (
         [parameter(ValueFromPipeline = $true)]
-        $DistinguishedName
+        $ADUserList
     )
-    Begin {
+    begin {
         $ADHash = @{ }
     }
-
-    Process {
-        foreach ($CurDN in $DistinguishedName) {
-            $ADHash[$CurDN.logon] = @{
-                DisplayName        = $CurDN.DisplayName
-                UserPrincipalName  = $CurDN.UserPrincipalName
-                PrimarySMTPAddress = $CurDN.PrimarySMTPAddress
+    process {
+        foreach ($ADUser in $ADUserList) {
+            $ADHash[$ADUser.logon] = @{
+                DisplayName                = $ADUser.DisplayName
+                UserPrincipalName          = $ADUser.UserPrincipalName
+                PrimarySMTPAddress         = $ADUser.PrimarySMTPAddress
+                msExchRecipientTypeDetails = $ADUser.msExchRecipientTypeDetails
+                msExchRecipientDisplayType = $ADUser.msExchRecipientDisplayType
             }
         }
     }
-    End {
+    end {
         $ADHash
     }
 }

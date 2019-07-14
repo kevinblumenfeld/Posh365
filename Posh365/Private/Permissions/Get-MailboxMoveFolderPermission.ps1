@@ -7,16 +7,16 @@
         [Parameter(Mandatory = $true)]
         $ADUserList
     )
+    end {
+        $FolderSelect = @(
+            'Object', 'UserPrincipalName', 'PrimarySMTPAddress', 'Folder'
+            'AccessRights', 'Granted', 'GrantedUPN', 'GrantedSMTP'
+        )
 
-    $FolderSelect = @(
-        'Object', 'UserPrincipalName', 'PrimarySMTPAddress', 'Folder'
-        'AccessRights', 'Granted', 'GrantedUPN', 'GrantedSMTP'
-    )
+        Write-Verbose "Caching hashtable. DisplayName as Key and Values of UPN, PrimarySMTP, msExchRecipientTypeDetails & msExchRecipientDisplayType"
+        $ADHashDisplayName = $ADUserList | Get-ADHashDisplayName -erroraction silentlycontinue
 
-    Write-Verbose "Caching hashtable. DisplayName as Key and Values of UPN, PrimarySMTP, msExchRecipientTypeDetails & msExchRecipientDisplayType"
-    $ADHashDisplayName = $ADUserList | Get-ADHashDisplayName
-
-    Write-Verbose "Getting Folder Permissions for each mailbox and writing to file"
-    $MailboxList | Get-MailboxFolderPerms -ADHashDisplayName $ADHashDisplayName | Select-Object $FolderSelect
-
+        Write-Verbose "Getting Folder Permissions for each mailbox and writing to file"
+        $MailboxList | Get-MailboxFolderPerms -ADHashDisplayName $ADHashDisplayName | Select-Object $FolderSelect
+    }
 }

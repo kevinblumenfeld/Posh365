@@ -1,23 +1,17 @@
 ﻿Function Get-ADHashMailToGuid {
-    <#
-    .SYNOPSIS
-
-    .EXAMPLE
-    
-    #>
     param (
         [parameter(ValueFromPipeline = $true)]
         $row
     )
-    Begin {
-        $ADHashMailToGuid = @{}
+    begin {
+        $ADHashMailToGuid = @{ }
     }
-    Process {
+    process {
         foreach ($curRow in $row) {
             $ADHashMailToGuid[$curRow.mail] = $curRow.ObjectGuid
         }
     }
-    End {
+    end {
         $ADHashMailToGuid
-    }     
+    }
 }

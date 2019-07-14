@@ -1,28 +1,22 @@
 ﻿Function Get-ADHashDN {
-    <#
-    .SYNOPSIS
-
-    .EXAMPLE
-
-    #>
     param (
         [parameter(ValueFromPipeline = $true)]
-        $DistinguishedName
+        $MailboxList
     )
-    Begin {
+    begin {
         $ADHashDN = @{ }
     }
-    Process {
-        foreach ($DN in $DistinguishedName) {
-            $ADHashDN[$DN.DistinguishedName] = @{
-                DisplayName        = $DN.DisplayName
-                UserPrincipalName  = $DN.UserPrincipalName
-                Logon              = $DN.logon
-                PrimarySMTPAddress = $DN.PrimarySMTPAddress
+    process {
+        foreach ($Mailbox in $MailboxList) {
+            $ADHashDN[$Mailbox.DistinguishedName] = @{
+                DisplayName        = $Mailbox.DisplayName
+                UserPrincipalName  = $Mailbox.UserPrincipalName
+                Logon              = $Mailbox.logon
+                PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
             }
         }
     }
-    End {
+    end {
         $ADHashDN
     }
 }

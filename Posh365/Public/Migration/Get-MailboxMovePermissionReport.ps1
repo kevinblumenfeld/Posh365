@@ -28,15 +28,17 @@
             SkipFullAccess   = $SkipFullAccess
             SkipSendOnBehalf = $SkipSendOnBehalf
             SkipSendAs       = $SkipSendAs
+            ErrorAction      = 'SilentlyContinue'
         }
-        if ($DelegateSplat.Values -contains $true) {
+        if ($DelegateSplat.Values -contains $false) {
+            "TEST"
             try {
                 Import-Module ActiveDirectory -ErrorAction Stop -Verbose:$false
             }
             catch {
                 Write-Host "This module depends on the ActiveDirectory module."
                 Write-Host "Please download and install from https://www.microsoft.com/en-us/download/details.aspx?id=45520"
-                Write-Host "or run Connect-Exchange2 from a server with the Active Directory Module installed"
+                Write-Host "or run Connect-Exchange from a server with the Active Directory Module installed"
                 throw
             }
         }
@@ -44,8 +46,9 @@
         Write-Verbose "Importing Active Directory Users and Groups that have at least one proxy address"
         $ADUserList = Get-ADUsersandGroupsWithProxyAddress -DomainNameHash $DomainNameHash
         Write-Verbose "Retrieving all Exchange Mailboxes"
+
         $MailboxList = Get-Mailbox -ResultSize unlimited
-        if ($DelegateSplat.Values -contains $true) {
+        if ($DelegateSplat.Values -contains $false) {
             $DelegateSplat.Add('MailboxList', $MailboxList)
             $DelegateSplat.Add('ADUserList', $ADUserList)
             Get-MailboxMoveMailboxPermission @DelegateSplat | Export-Csv (Join-Path $ReportPath 'MailboxPermissions.csv') -NoTypeInformation -Encoding UTF8
@@ -54,6 +57,7 @@
             $FolderPermSplat = @{
                 MailboxList = $MailboxList
                 ADUserList  = $ADUserList
+                ErrorAction = 'SilentlyContinue'
             }
             Get-MailboxMoveFolderPermission @FolderPermSplat | Export-Csv (Join-Path $ReportPath 'FolderPermissions.csv') -NoTypeInformation -Encoding UTF8
         }

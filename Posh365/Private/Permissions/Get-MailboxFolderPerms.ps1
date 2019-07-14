@@ -28,11 +28,13 @@ function Get-MailboxFolderPerms {
     process {
         foreach ($Mailbox in $MailboxList) {
             Write-Verbose "Inspecting: `t $Mailbox"
-
-            $Calendar = (($Mailbox.SamAccountName) + ":\" + (Get-MailboxFolderStatistics -Identity $Mailbox.UserPrincipalName -FolderScope Calendar | Select-Object -First 1).Name)
-            $Inbox = (($Mailbox.SamAccountName) + ":\" + (Get-MailboxFolderStatistics -Identity $Mailbox.UserPrincipalName -FolderScope Inbox | Select-Object -First 1).Name)
-            $SentItems = (($Mailbox.SamAccountName) + ":\" + (Get-MailboxFolderStatistics -Identity $Mailbox.UserPrincipalName -FolderScope SentItems | Select-Object -First 1).Name)
-
+            $StatSplat = @{
+                Identity    = $Mailbox.UserPrincipalName
+                ErrorAction = 'SilentlyContinue'
+            }
+            $Calendar = (($Mailbox.SamAccountName) + ":\" + (Get-MailboxFolderStatistics @StatSplat -FolderScope Calendar | Select-Object -First 1).Name)
+            $Inbox = (($Mailbox.SamAccountName) + ":\" + (Get-MailboxFolderStatistics @StatSplat -FolderScope Inbox | Select-Object -First 1).Name)
+            $SentItems = (($Mailbox.SamAccountName) + ":\" + (Get-MailboxFolderStatistics @StatSplat -FolderScope SentItems | Select-Object -First 1).Name)
             $CalAccessList = Get-MailboxFolderPermission $Calendar | Where-Object {
                 $_.User -notmatch 'Default' -and
                 $_.User -notmatch 'Anonymous' -and
