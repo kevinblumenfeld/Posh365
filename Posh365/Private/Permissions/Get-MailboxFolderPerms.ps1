@@ -11,7 +11,7 @@ function Get-MailboxFolderPerms {
 
     If not running from Exchange Management Shell (EMS), run this first:
 
-    Connect-Exchange -NoPrefix
+    Connect-Exchange2 -NoPrefix
 
     #>
     [CmdletBinding()]

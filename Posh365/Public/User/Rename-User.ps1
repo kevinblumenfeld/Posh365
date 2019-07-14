@@ -67,7 +67,7 @@ Function Rename-User {
             (Get-OnPremExchangeServer -erroraction stop)[0] | Out-Null
         }
         catch {
-            Connect-Exchange -ExchangeServer $ExchangeServer -ViewEntireForest
+            Connect-Exchange2 -ExchangeServer $ExchangeServer -ViewEntireForest
         }
 
         ########################################

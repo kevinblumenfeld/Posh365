@@ -20,34 +20,18 @@ function Get-SendOnBehalfPerms {
                 $DisplayName = $ADHashCN["$Granted"].DisplayName
                 Write-Verbose "Has Send On Behalf DN: `t $DisplayName"
                 Write-Verbose "                   CN: `t $Granted"
-                try {
-                    Get-ADGroupMember "$DisplayName" -Recursive -ErrorAction stop |
-                    ForEach-Object {
-                        New-Object -TypeName psobject -property @{
-                            Object             = $Mailbox.DisplayName
-                            UserPrincipalName  = $Mailbox.UserPrincipalName
-                            PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
-                            Granted            = $ADHashDN["$($_.distinguishedname)"].DisplayName
-                            GrantedUPN         = $ADHashDN["$($_.distinguishedname)"].UserPrincipalName
-                            GrantedSMTP        = $ADHashDN["$($_.distinguishedname)"].PrimarySMTPAddress
-                            Checking           = $Granted
-                            GroupMember        = $($_.distinguishedname)
-                            Type               = "GroupMember"
-                            Permission         = "SendOnBehalf"
-                        }
-                    }
-                }
-                Catch {
+                Get-ADGroupMember "$DisplayName" -Recursive -ErrorAction stop |
+                ForEach-Object {
                     New-Object -TypeName psobject -property @{
                         Object             = $Mailbox.DisplayName
                         UserPrincipalName  = $Mailbox.UserPrincipalName
                         PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
-                        Granted            = $ADHashCN["$Granted"].DisplayName
-                        GrantedUPN         = $ADHashCN["$Granted"].UserPrincipalName
-                        GrantedSMTP        = $ADHashCN["$Granted"].PrimarySMTPAddress
+                        Granted            = $ADHashDN["$($_.distinguishedname)"].DisplayName
+                        GrantedUPN         = $ADHashDN["$($_.distinguishedname)"].UserPrincipalName
+                        GrantedSMTP        = $ADHashDN["$($_.distinguishedname)"].PrimarySMTPAddress
                         Checking           = $Granted
-                        GroupMember        = ""
-                        Type               = "User"
+                        GroupMember        = $($_.distinguishedname)
+                        Type               = "GroupMember"
                         Permission         = "SendOnBehalf"
                     }
                 }

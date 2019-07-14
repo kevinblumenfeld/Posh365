@@ -255,7 +255,7 @@ Function ConvertTo-Shared {
             (Get-OnPremExchangeServer -erroraction stop)[0] | Out-Null
         }
         catch {
-            Connect-Exchange -ExchangeServer $ExchangeServer -ViewEntireForest
+            Connect-Exchange2 -ExchangeServer $ExchangeServer -ViewEntireForest
         }
         try {
             Get-AzureADTenantDetail -erroraction stop | Out-Null

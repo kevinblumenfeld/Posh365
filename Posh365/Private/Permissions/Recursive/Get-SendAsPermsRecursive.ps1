@@ -1,18 +1,5 @@
-﻿function Get-PFSendAsPerms {
-    <#
-    .SYNOPSIS
-    Outputs Send As permissions for each mailbox that has permissions assigned.
-    This is for On-Premises Exchange 2010, 2013, 2016+
+﻿function Get-SendAsPermsRecursive {
 
-    .EXAMPLE
-
-    (Get-MailPublicFolder -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-PFSendAsPerms | Export-csv .\PFSA.csv -NoTypeInformation
-
-    If not running from Exchange Management Shell (EMS), run this first:
-
-    Connect-Exchange2 -NoPrefix
-
-    #>
     [CmdletBinding()]
     Param (
         [parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
@@ -24,16 +11,7 @@
         [parameter()]
         [hashtable] $ADHash
     )
-    begin {
-        Try {
-            import-module activedirectory -ErrorAction Stop -Verbose:$false
-        }
-        Catch {
-            Write-Host "This module depends on the ActiveDirectory module."
-            Write-Host "Please download and install from https://www.microsoft.com/en-us/download/details.aspx?id=45520"
-            throw
-        }
-    }
+
     process {
         foreach ($curDN in $DistinguishedName) {
             $mailbox = $curDN

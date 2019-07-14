@@ -13,12 +13,12 @@
         $ADHashDN = @{ }
     }
     Process {
-        foreach ($CurDN in $DistinguishedName) {
-            $ADHashDN[$CurDN.DistinguishedName] = @{
-                DisplayName        = $CurDN.DisplayName
-                UserPrincipalName  = $CurDN.UserPrincipalName
-                Logon              = $CurDN.logon
-                PrimarySMTPAddress = $CurDN.PrimarySMTPAddress
+        foreach ($DN in $DistinguishedName) {
+            $ADHashDN[$DN.DistinguishedName] = @{
+                DisplayName        = $DN.DisplayName
+                UserPrincipalName  = $DN.UserPrincipalName
+                Logon              = $DN.logon
+                PrimarySMTPAddress = $DN.PrimarySMTPAddress
             }
         }
     }

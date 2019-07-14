@@ -69,7 +69,7 @@
         }
         if (Get-PSSession -ErrorAction SilentlyContinue | Where-Object {
                 ($_.name -eq "OnPremExchage" -or $_.name -like "Session for implicit remoting module at*") -and ($_.availability -ne "Available" -and $_.State -ne "Opened")}) {
-            Connect-Exchange -ExchangeServer $ExchangeServer -ViewEntireForest -NoPrefix -NoMessageForPS2
+            Connect-Exchange2 -ExchangeServer $ExchangeServer -ViewEntireForest -NoPrefix -NoMessageForPS2
         }
     }
     elseif ($EstablishRemoteSessionToExchange) {
@@ -79,7 +79,7 @@
         $ExchangeServer = Get-Content ($RootPath + "$($user).EXCHServer")
         if (Get-PSSession -ErrorAction SilentlyContinue | Where-Object {
                 ($_.name -eq "OnPremExchage" -or $_.name -like "Session for implicit remoting module at*") -and ($_.availability -ne "Available" -and $_.State -ne "Opened")}) {
-            Connect-Exchange -ExchangeServer $ExchangeServer -ViewEntireForest -NoPrefix
+            Connect-Exchange2 -ExchangeServer $ExchangeServer -ViewEntireForest -NoPrefix
         }
     }
     New-Item -ItemType Directory -Path $ReportPath -ErrorAction SilentlyContinue

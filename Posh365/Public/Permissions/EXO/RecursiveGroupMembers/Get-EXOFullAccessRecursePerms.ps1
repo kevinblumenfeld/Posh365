@@ -3,15 +3,15 @@ function Get-EXOFullAccessRecursePerms {
     .SYNOPSIS
     Outputs Full Access permissions for each mailbox that has permissions assigned.
     This is for On-Premises Exchange 2010, 2013, 2016+
-    
+
     .EXAMPLE
-    
+
     (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-EXOFullAccessRecursePerms | Export-csv .\FA.csv -NoTypeInformation
 
     If not running from Exchange Management Shell (EMS), run this first:
 
-    Connect-Exchange -NoPrefix
-    
+    Connect-Exchange2 -NoPrefix
+
     #>
     [CmdletBinding()]
     Param (
@@ -23,22 +23,22 @@ function Get-EXOFullAccessRecursePerms {
 
         [parameter()]
         [hashtable] $RecipientHash,
-        
+
         [parameter()]
         [hashtable] $RecipientDNHash,
-        
+
         [parameter()]
         [hashtable] $GroupMemberHash
     )
     Begin {
-        
+
     }
     Process {
         $listGroupMembers = [System.Collections.Generic.HashSet[string]]::new()
         Get-MailboxPermission $_ |
             Where-Object {
-            $_.AccessRights -like "*FullAccess*" -and 
-            !$_.IsInherited -and !$_.user.tostring().startswith('S-1-5-21-') -and 
+            $_.AccessRights -like "*FullAccess*" -and
+            !$_.IsInherited -and !$_.user.tostring().startswith('S-1-5-21-') -and
             !$_.user.tostring().startswith('NT AUTHORITY\SELF')
         } | ForEach-Object {
             $Identity = $_.Identity
@@ -63,9 +63,9 @@ function Get-EXOFullAccessRecursePerms {
                     MailboxPrimarySMTP   = $RecipientHash["$($_.Identity)"].PrimarySMTPAddress
                     Granted              = $User
                     GrantedPrimarySMTP   = $Email
-                    RecipientTypeDetails = $Type          
+                    RecipientTypeDetails = $Type
                     Permission           = "FullAccess"
-                }  
+                }
             }
         }
         if ($listGroupMembers.Count -gt 0) {
@@ -75,13 +75,13 @@ function Get-EXOFullAccessRecursePerms {
                     MailboxPrimarySMTP   = $RecipientHash["$Identity"].PrimarySMTPAddress
                     Granted              = $RecipientDNHash["$CurlistGroupMember"].Name
                     GrantedPrimarySMTP   = $RecipientDNHash["$CurlistGroupMember"].PrimarySMTPAddress
-                    RecipientTypeDetails = $Type          
+                    RecipientTypeDetails = $Type
                     Permission           = "FullAccess"
-                }  
+                }
             }
         }
     }
     END {
-        
+
     }
 }
