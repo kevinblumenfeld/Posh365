@@ -39,7 +39,6 @@
             ErrorAction      = 'SilentlyContinue'
         }
         if ($DelegateSplat.Values -contains $false) {
-            "TEST"
             try {
                 Import-Module ActiveDirectory -ErrorAction Stop -Verbose:$false
             }
