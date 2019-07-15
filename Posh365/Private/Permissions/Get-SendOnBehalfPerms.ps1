@@ -10,7 +10,15 @@ function Get-SendOnBehalfPerms {
 
         [parameter()]
         [hashtable]
-        $ADHashCN
+        $ADHashCN,
+
+        [parameter()]
+        [hashtable]
+        $ADHashType,
+
+        [parameter()]
+        [hashtable]
+        $ADHashDisplay
     )
     begin {
 
@@ -30,7 +38,8 @@ function Get-SendOnBehalfPerms {
                     GrantedUPN         = $ADHashCN["$GrantedSOB"].UserPrincipalName
                     GrantedSMTP        = $ADHashCN["$GrantedSOB"].PrimarySMTPAddress
                     Checking           = $GrantedSOB
-                    Type               = $ADHashCN["$GrantedSOB"].msExchRecipientTypeDetails
+                    TypeDetails        = $ADHashType."$($ADHashCN["$GrantedSOB"].msExchRecipientTypeDetails)"
+                    DisplayType        = $ADHashDisplay."$($ADHashCN["$GrantedSOB"].msExchRecipientDisplayType)"
                     Permission         = "SendOnBehalf"
                 }
             }

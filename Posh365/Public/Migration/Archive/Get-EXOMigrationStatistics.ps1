@@ -44,6 +44,6 @@ Function Get-EXOMigrationStatistics {
         }
     }
     else {
-        Write-Verbose "`nNo Results found."
+        Write-Verbose "No Results found."
     }
 }

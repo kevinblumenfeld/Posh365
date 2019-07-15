@@ -1,26 +1,20 @@
 function Get-MailboxFolderPerms {
-    <#
-    .SYNOPSIS
-    Outputs Mailbox Folder Permissions for each object that has permissions assigned.
-    This is for On-Premises Exchange 2010, 2013, 2016+
-    It needs to be run on the version for the mailbox where we seek permissions.
-
-    .EXAMPLE
-
-    Get-Mailbox -ResultSize unlimited | Get-MailboxFolderPerms | Export-csv .\MailboxFolderPerms.csv -NoTypeInformation
-
-    If not running from Exchange Management Shell (EMS), run this first:
-
-    Connect-Exchange2 -NoPrefix
-
-    #>
     [CmdletBinding()]
     Param (
         [parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         $MailboxList,
 
         [parameter()]
-        [hashtable] $ADHashDisplayName
+        [hashtable]
+        $ADHashDisplayName,
+
+        [parameter()]
+        [hashtable]
+        $ADHashType,
+
+        [parameter()]
+        [hashtable]
+        $ADHashDisplay
     )
     begin {
 
@@ -50,8 +44,10 @@ function Get-MailboxFolderPerms {
                         Folder             = 'CALENDAR'
                         AccessRights       = ($CalAccess.AccessRights) -join '|'
                         Granted            = $CalAccess.User
-                        GrantedUPN         = $ADHashDisplayName.($CalAccess.User).UserPrincipalName
-                        GrantedSMTP        = $ADHashDisplayName.($CalAccess.User).PrimarySMTPAddress
+                        GrantedUPN         = $ADHashDisplayName."$($CalAccess.User)".UserPrincipalName
+                        GrantedSMTP        = $ADHashDisplayName."$($CalAccess.User)".PrimarySMTPAddress
+                        TypeDetails        = $ADHashType."$($ADHashDisplayName."$($CalAccess.User)".msExchRecipientTypeDetails)"
+                        DisplayType        = $ADHashDisplay."$($ADHashDisplayName."$($CalAccess.User)".msExchRecipientDisplayType)"
                     }
                 }
             }
@@ -69,9 +65,11 @@ function Get-MailboxFolderPerms {
                         PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
                         Folder             = 'INBOX'
                         AccessRights       = ($InboxAccess.AccessRights) -join '|'
-                        Granted            = $CalAccess.User
-                        GrantedUPN         = $ADHashDisplayName.($CalAccess.User).UserPrincipalName
-                        GrantedSMTP        = $ADHashDisplayName.($CalAccess.User).PrimarySMTPAddress
+                        Granted            = $InboxAccess.User
+                        GrantedUPN         = $ADHashDisplayName."$($InboxAccess.User)".UserPrincipalName
+                        GrantedSMTP        = $ADHashDisplayName."$($InboxAccess.User)".PrimarySMTPAddress
+                        TypeDetails        = $ADHashType."$($ADHashDisplayName."$($InboxAccess.User)".msExchRecipientTypeDetails)"
+                        DisplayType        = $ADHashDisplay."$($ADHashDisplayName."$($InboxAccess.User)".msExchRecipientDisplayType)"
                     }
                 }
             }
@@ -89,9 +87,11 @@ function Get-MailboxFolderPerms {
                         PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
                         Folder             = 'SENTITEMS'
                         AccessRights       = ($SentAccess.AccessRights) -join '|'
-                        Granted            = $CalAccess.User
-                        GrantedUPN         = $ADHashDisplayName.($CalAccess.User).UserPrincipalName
-                        GrantedSMTP        = $ADHashDisplayName.($CalAccess.User).PrimarySMTPAddress
+                        Granted            = $SentAccess.User
+                        GrantedUPN         = $ADHashDisplayName."$($SentAccess.User)".UserPrincipalName
+                        GrantedSMTP        = $ADHashDisplayName."$($SentAccess.User)".PrimarySMTPAddress
+                        TypeDetails        = $ADHashType."$($ADHashDisplayName."$($SentAccess.User)".msExchRecipientTypeDetails)"
+                        DisplayType        = $ADHashDisplay."$($ADHashDisplayName."$($SentAccess.User)".msExchRecipientDisplayType)"
                     }
                 }
             }

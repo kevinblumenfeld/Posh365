@@ -24,10 +24,18 @@
     end {
         New-Item -ItemType Directory -Path $ReportPath -ErrorAction SilentlyContinue
 
+        Write-Verbose "Caching hashtable. msExchRecipientTypeDetails numerical value as Key and Value of human readable"
+        $ADHashType = Get-ADHashType
+
+        Write-Verbose "Caching hashtable. msExchRecipientDisplayType numerical value as Key and Value of human readable"
+        $ADHashDisplay = Get-ADHashDisplay
+
         $DelegateSplat = @{
             SkipFullAccess   = $SkipFullAccess
             SkipSendOnBehalf = $SkipSendOnBehalf
             SkipSendAs       = $SkipSendAs
+            ADHashType       = $ADHashType
+            ADHashDisplay    = $ADHashDisplay
             ErrorAction      = 'SilentlyContinue'
         }
         if ($DelegateSplat.Values -contains $false) {
@@ -44,6 +52,7 @@
         }
         $DomainNameHash = Get-DomainNameHash
         Write-Verbose "Importing Active Directory Users and Groups that have at least one proxy address"
+
         $ADUserList = Get-ADUsersandGroupsWithProxyAddress -DomainNameHash $DomainNameHash
         Write-Verbose "Retrieving all Exchange Mailboxes"
 
@@ -55,9 +64,11 @@
         }
         if (-not $SkipFolderPerms) {
             $FolderPermSplat = @{
-                MailboxList = $MailboxList
-                ADUserList  = $ADUserList
-                ErrorAction = 'SilentlyContinue'
+                MailboxList   = $MailboxList
+                ADUserList    = $ADUserList
+                ADHashType    = $ADHashType
+                ADHashDisplay = $ADHashDisplay
+                ErrorAction   = 'SilentlyContinue'
             }
             Get-MailboxMoveFolderPermission @FolderPermSplat | Export-Csv (Join-Path $ReportPath 'FolderPermissions.csv') -NoTypeInformation -Encoding UTF8
         }

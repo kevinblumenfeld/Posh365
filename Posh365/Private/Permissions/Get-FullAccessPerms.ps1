@@ -18,7 +18,15 @@ function Get-FullAccessPerms {
 
         [parameter()]
         [hashtable]
-        $ADHash
+        $ADHash,
+
+        [parameter()]
+        [hashtable]
+        $ADHashType,
+
+        [parameter()]
+        [hashtable]
+        $ADHashDisplay
     )
     begin {
 
@@ -42,7 +50,8 @@ function Get-FullAccessPerms {
                     GrantedUPN         = $ADHash["$($_.User)"].UserPrincipalName
                     GrantedSMTP        = $ADHash["$($_.User)"].PrimarySMTPAddress
                     Checking           = $_.User
-                    Type               = $ADHash["$_.User"].msExchRecipientTypeDetails
+                    TypeDetails        = $ADHashType."$($ADHash["$($_.User)"].msExchRecipientTypeDetails)"
+                    DisplayType        = $ADHashDisplay."$($ADHash["$($_.User)"].msExchRecipientDisplayType)"
                     Permission         = "FullAccess"
                 }
             }

@@ -57,6 +57,6 @@ Function Get-MailboxMoveReport {
         }
     }
     else {
-        Write-Verbose "`nNo Results found."
+        Write-Verbose "No Results found."
     }
 }
