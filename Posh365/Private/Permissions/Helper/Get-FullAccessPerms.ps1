@@ -1,12 +1,5 @@
 function Get-FullAccessPerms {
-    <#
-    .SYNOPSIS
-    Outputs Full Access permissions for each object that has permissions assigned.
-    This is for On-Premises Exchange 2010, 2013, 2016+
 
-    .EXAMPLE
-
-    #>
     [CmdletBinding()]
     Param (
         [parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]

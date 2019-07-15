@@ -20,7 +20,7 @@ function Get-UserDecision {
                 Title      = 'Choose Batch(es)'
                 OutputMode = 'Multiple'
             }
-            $BatchChoice = $DecisionObject | Select-Object -ExpandProperty BatchName -Unique | Out-GridView @OGVBatch
+            $BatchChoice = $DecisionObject | Select-Object -ExpandProperty BatchName -Unique | Sort-Object | Out-GridView @OGVBatch
         }
         if ($NoBatch) {
             $OGVUser = @{

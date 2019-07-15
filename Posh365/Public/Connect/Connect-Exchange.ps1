@@ -62,4 +62,5 @@ function Connect-Exchange {
     if (-not $DontViewEntireForest) {
         Set-ADServerSettings -ViewEntireForest:$True
     }
+    Write-Host "Connected to Exchange Server: $Server" -ForegroundColor Green
 }

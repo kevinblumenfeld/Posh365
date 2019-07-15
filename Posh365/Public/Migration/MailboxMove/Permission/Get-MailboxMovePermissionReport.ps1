@@ -54,12 +54,12 @@
 
         $ADUserList = Get-ADUsersandGroupsWithProxyAddress -DomainNameHash $DomainNameHash
         Write-Verbose "Retrieving all Exchange Mailboxes"
-
         $MailboxList = Get-Mailbox -ResultSize unlimited
         if ($DelegateSplat.Values -contains $false) {
             $DelegateSplat.Add('MailboxList', $MailboxList)
             $DelegateSplat.Add('ADUserList', $ADUserList)
             Get-MailboxMoveMailboxPermission @DelegateSplat | Export-Csv (Join-Path $ReportPath 'MailboxPermissions.csv') -NoTypeInformation -Encoding UTF8
+            $MailboxFile = Join-Path $ReportPath 'MailboxPermissions.csv'
         }
         if (-not $SkipFolderPerms) {
             $FolderPermSplat = @{
@@ -70,6 +70,17 @@
                 ErrorAction   = 'SilentlyContinue'
             }
             Get-MailboxMoveFolderPermission @FolderPermSplat | Export-Csv (Join-Path $ReportPath 'FolderPermissions.csv') -NoTypeInformation -Encoding UTF8
+            $FolderFile = Join-Path $ReportPath 'FolderPermissions.csv'
         }
+        $ExcelSplat = @{
+            Path                    = (Join-Path $ReportPath 'Permissions.xlsx')
+            TableStyle              = 'Medium16'
+            FreezeTopRowFirstColumn = $true
+            NoLegend                = $true
+            AutoSize                = $true
+            BoldTopRow              = $true
+            AutoNameRange           = $true
+        }
+        $MailboxFile, $FolderFile | Where-Object { $_ } | ForEach-Object { Import-Csv $_ | Export-Excel @ExcelSplat -WorksheetName ($_ -replace '.+\\|permissions\.csv') }
     }
 }
