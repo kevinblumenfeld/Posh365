@@ -1,4 +1,4 @@
-﻿Function Get-MailboxMovePermissionReport {
+﻿Function Get-MailboxMoveOnPremisesPermissionReport {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
@@ -80,6 +80,8 @@
             AutoSize                = $true
             BoldTopRow              = $true
             AutoNameRange           = $true
+            ClearSheet              = $true
+            ErrorAction             = 'SilentlyContinue'
         }
         $MailboxFile, $FolderFile | Where-Object { $_ } | ForEach-Object { Import-Csv $_ | Export-Excel @ExcelSplat -WorksheetName ($_ -replace '.+\\|permissions\.csv') }
     }

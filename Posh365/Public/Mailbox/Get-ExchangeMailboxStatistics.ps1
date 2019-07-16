@@ -24,7 +24,9 @@ function Get-ExchangeMailboxStatistics {
     [CmdletBinding()]
     param (
 
-        [Parameter(ValueFromPipeline = $true, Mandatory = $false)]
+        [Parameter(ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true,
+            Mandatory = $false)]
         $MailboxList
     )
     Begin {
