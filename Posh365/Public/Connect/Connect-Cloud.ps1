@@ -127,10 +127,16 @@ function Connect-Cloud {
 
         [switch] $DeleteCreds,
 
-        [switch] $EXOPrefix
+        [switch] $EXOPrefix,
+
+        [switch] $MailboxMove
     )
 
     Begin {
+        if ($MailboxMove) {
+            Connect-CloudMFA -Tenant $Tenant -ExchangeOnline -AzureAD
+            break
+        }
         if ($Tenant -match 'onmicrosoft') {
             $Tenant = $Tenant.Split(".")[0]
         }
