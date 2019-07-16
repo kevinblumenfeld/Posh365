@@ -56,6 +56,12 @@ function Get-ExchangeMailboxStatistics {
                     Expression = { $ArchiveGB }
                 }
                 @{
+                    Name       = 'DeletedGB'
+                    Expression = {
+                        [Math]::Round([Double]($_.TotalDeletedItemSize -replace '^.*\(| .+$|,') / 1GB, 5)
+                    }
+                }
+                @{
                     Name       = 'TotalGB'
                     Expression = {
                         [Math]::Round([Double]($_.TotalItemSize -replace '^.*\(| .+$|,') / 1GB, 5) + $ArchiveGB
