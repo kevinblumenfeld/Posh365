@@ -22,16 +22,12 @@ Function Resume-MailboxMove {
         [switch]
         $DontAutoComplete
     )
-    $UserChoice = Import-MailboxMoveDecision -NotCompleted
-    if ($UserChoice -ne 'Quit' ) {
-        $ResumeSplat = @{
-            Confirm = $false
-        }
+    end {
         if ($DontAutoComplete) {
-            $ResumeSplat.Add('SuspendWhenReadyToComplete', $True)
+            Invoke-ResumeMailboxMove -DontAutoComplete | Out-GridView -Title "Results of Resume Mailbox Move (SuspendWhenReadyToComplete=True)"
         }
-        foreach ($User in $UserChoice) {
-            Resume-MoveRequest -Identity $User.Guid @ResumeSplat
+        else {
+            Invoke-ResumeMailboxMove | Out-Gridview -Title "Results of Resume Mailbox Move"
         }
     }
 }

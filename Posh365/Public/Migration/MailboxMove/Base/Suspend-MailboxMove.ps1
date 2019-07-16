@@ -1,4 +1,4 @@
-Function Suspend-MailboxMove {
+function Suspend-MailboxMove {
     <#
     .SYNOPSIS
     Suspend Mailbox Move
@@ -16,10 +16,7 @@ Function Suspend-MailboxMove {
     param
     (
     )
-    $UserChoice = Import-MailboxMoveDecision -NotCompleted
-    if ($UserChoice -ne 'Quit' ) {
-        foreach ($User in $UserChoice) {
-            Suspend-MoveRequest -Identity $User.Guid -Confirm:$false
-        }
+    end {
+        Invoke-SuspendMailboxMove | Out-Gridview -Title "Results of Suspend Mailbox Move"
     }
 }

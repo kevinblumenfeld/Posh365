@@ -36,10 +36,10 @@ Function Invoke-GetMailboxMove {
     if ($NotCompleted) {
         $MoveRequest = Get-MoveRequest -ResultSize 'Unlimited' | Where-Object {
             $_.Status -ne 'Completed' -and $_.Status -ne 'CompletedWithWarning'
-        }
+        } | Sort-Object -Property Identity
     }
     else {
-        $MoveRequest = Get-MoveRequest -ResultSize 'Unlimited'
+        $MoveRequest = Get-MoveRequest -ResultSize 'Unlimited' | Sort-Object -Property Identity
     }
     foreach ($Move in $MoveRequest) {
         [PSCustomObject]@{
