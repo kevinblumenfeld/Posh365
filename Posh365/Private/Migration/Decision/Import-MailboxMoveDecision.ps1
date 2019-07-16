@@ -8,7 +8,7 @@ function Import-MailboxMoveDecision {
     )
     end {
         if ($NotCompleted) {
-            $DecisionObject = Get-MailboxMove -NotCompleted | Sort-Object @(
+            $DecisionObject = Invoke-GetMailboxMove -NotCompleted | Sort-Object @(
                 @{
                     Expression = "BatchName"
                     Descending = $true
@@ -22,7 +22,7 @@ function Import-MailboxMoveDecision {
             $UserChoice
         }
         else {
-            $DecisionObject = Get-MailboxMove | Sort-Object @(
+            $DecisionObject = Invoke-GetMailboxMove | Sort-Object @(
                 @{
                     Expression = "BatchName"
                     Descending = $true

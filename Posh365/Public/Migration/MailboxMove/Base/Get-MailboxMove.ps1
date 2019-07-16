@@ -6,58 +6,31 @@ Function Get-MailboxMove {
     .DESCRIPTION
     Get Mailbox Moves
 
-    .PARAMETER NotCompleted
-    Use this switch to view only Mailbox Moves that have yet to be completed
+    .PARAMETER IncludeCompleted
+    Use this switch to view All mailbox moves that are not yet complete
 
     .EXAMPLE
     Get-MailboxMove
 
     .EXAMPLE
-    Get-MailboxMove | Out-GridView
-
-    .EXAMPLE
-    Get-MailboxMove -NotCompleted
-
-    .EXAMPLE
-    Get-MailboxMove -NotCompleted | Out-Gridview
+    Get-MailboxMove -IncludeCompleted
 
     .NOTES
-    Connect to Exchange Online
+    Connect to Exchange Online first.
+    Connect-CloudMFA -Tenant Contoso -ExchangeOnline
     #>
-
     [CmdletBinding()]
     param
     (
         [Parameter()]
         [switch]
-        $NotCompleted
+        $IncludeCompleted
     )
 
-    if ($NotCompleted) {
-        $MoveRequest = Get-MoveRequest -ResultSize 'Unlimited' | Where-Object {
-            $_.Status -ne 'Completed' -and $_.Status -ne 'CompletedWithWarning'
-        }
+    if ($IncludeCompleted) {
+        Invoke-GetMailboxMove | Out-GridView -Title "All mailbox moves"
     }
     else {
-        $MoveRequest = Get-MoveRequest -ResultSize 'Unlimited'
-    }
-    foreach ($Move in $MoveRequest) {
-        [PSCustomObject]@{
-            Identity                   = $Move.Identity
-            Status                     = $Move.Status
-            DisplayName                = $Move.DisplayName
-            Alias                      = $Move.Alias
-            BatchName                  = $Move.BatchName
-            Suspend                    = $Move.Suspend
-            SuspendWhenReadyToComplete = $Move.SuspendWhenReadyToComplete
-            RecipientType              = $Move.RecipientType
-            RecipientTypeDetails       = $Move.RecipientTypeDetails
-            RemoteHostName             = $Move.RemoteHostName
-            RequestStyle               = $Move.RequestStyle
-            TargetDatabase             = $Move.TargetDatabase
-            ExchangeGuid               = $Move.ExchangeGuid
-            Guid                       = $Move.Guid
-            Name                       = $Move.Name
-        }
+        Invoke-GetMailboxMove -NotCompleted | Out-GridView -Title "All mailbox moves that are not yet complete"
     }
 }

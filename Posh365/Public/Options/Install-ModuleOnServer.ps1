@@ -93,6 +93,7 @@ Get-ChildItem @gci | % {try{. $_.fullname}catch{}}
             catch {
                 Write-Host "Failed to install $Module module." -BackgroundColor Yellow -ForegroundColor Black
                 $_.Exception.Message
+                Write-Host "Please close PowerShell on $Server Server and try again." -BackgroundColor Yellow -ForegroundColor Black
             }
         }
         else {

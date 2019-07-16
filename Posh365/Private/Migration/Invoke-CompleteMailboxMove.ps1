@@ -22,25 +22,54 @@ function Invoke-CompleteMailboxMove {
     }
     process {
         foreach ($User in $UserList) {
-            $Param = @{
-                Identity                   = $User.Guid
-                BatchName                  = $User.BatchName
-                SuspendWhenReadyToComplete = $False
-                Confirm                    = $False
-                CompleteAfter              = $When
+            try {
+
+                $Param = @{
+                    Identity                   = $User.Guid
+                    BatchName                  = $User.BatchName
+                    SuspendWhenReadyToComplete = $False
+                    Confirm                    = $False
+                    CompleteAfter              = $When
+                    ErrorAction                = 'Stop'
+                }
+
+                Set-MoveRequest @Param
+                [PSCustomObject]@{
+                    DisplayName   = $User.DisplayName
+                    CompleteAfter = $When
+                    Action        = "SET"
+                    Result        = "Success"
+                    Message       = ""
+                }
             }
-            [PSCustomObject]@{
-                DisplayName   = $User.DisplayName
-                CompleteAfter = $When
-                Action        = "SET"
+            catch {
+                [PSCustomObject]@{
+                    DisplayName   = $User.DisplayName
+                    CompleteAfter = $When
+                    Action        = "SET"
+                    Result        = "Failed"
+                    Message       = $_.Exception.Message
+                }
             }
-            Set-MoveRequest @Param
-            [PSCustomObject]@{
-                DisplayName   = $User.DisplayName
-                CompleteAfter = "N/A"
-                Action        = "RESUME"
+            try {
+                Resume-MoveRequest $User.Guid
+                [PSCustomObject]@{
+                    DisplayName   = $User.DisplayName
+                    CompleteAfter = ""
+                    Action        = "RESUME"
+                    Result        = "Success"
+                    Message       = ""
+                }
             }
-            Resume-MoveRequest $User.Guid
+            catch {
+                [PSCustomObject]@{
+                    DisplayName   = $User.DisplayName
+                    CompleteAfter = ""
+                    Action        = "RESUME"
+                    Result        = "Failed"
+                    Message       = $_.Exception.Message
+                }
+            }
         }
     }
 }

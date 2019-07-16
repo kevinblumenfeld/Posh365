@@ -29,18 +29,15 @@ function Complete-MailboxMove {
 
     )
     end {
-        if ($Tenant -notmatch '.mail.onmicrosoft.com') {
-            $Tenant = "$Tenant.mail.onmicrosoft.com"
-        }
         $UserChoice = Import-MailboxMoveDecision -NotCompleted
 
         if ($UserChoice -ne 'Quit' ) {
             if ($Schedule) {
                 $UTCTimeandDate = Get-ScheduleDecision
-                $UserChoice | Invoke-CompleteMailboxMove -CompleteAfter $UTCTimeandDate
+                $UserChoice | Invoke-CompleteMailboxMove -CompleteAfter $UTCTimeandDate | Out-GridView -Title "Scheduling of complete mailbox move results"
             }
             else {
-                $UserChoice | Invoke-CompleteMailboxMove
+                $UserChoice | Invoke-CompleteMailboxMove | Out-GridView -Title "Completion of mailbox move results"
             }
         }
     }

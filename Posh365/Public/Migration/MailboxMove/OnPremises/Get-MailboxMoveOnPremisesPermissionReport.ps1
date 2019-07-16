@@ -76,10 +76,8 @@
             Path                    = (Join-Path $ReportPath 'Permissions.xlsx')
             TableStyle              = 'Medium16'
             FreezeTopRowFirstColumn = $true
-            NoLegend                = $true
             AutoSize                = $true
             BoldTopRow              = $true
-            AutoNameRange           = $true
             ClearSheet              = $true
             ErrorAction             = 'SilentlyContinue'
         }

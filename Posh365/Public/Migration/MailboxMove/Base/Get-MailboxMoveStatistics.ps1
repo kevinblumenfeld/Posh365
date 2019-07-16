@@ -29,23 +29,9 @@ Function Get-MailboxMoveStatistics {
     )
 
     if ($IncludeCompleted) {
-        $AllSplat = @{
-            Title      = "Move Requests Statistics - All. Click OK to Refresh"
-            OutputMode = 'Multiple'
-        }
-        $RefreshAll = Invoke-GetMailboxMoveStatistics | Out-GridView @AllSplat
+        Invoke-GetMailboxMoveStatisticsHelper -IncludeCompleted
     }
     else {
-        $NotCompletedSplat = @{
-            Title      = "Move Requests Statistics - Not Completed. Click OK to Refresh"
-            OutputMode = 'Multiple'
-        }
-        $RefreshNotCompleted = Invoke-GetMailboxMoveStatistics -NotCompleted | Out-GridView @NotCompletedSplat
-    }
-    if ($RefreshNotCompleted) {
-        Get-MailboxMoveStatistics
-    }
-    elseif ($RefreshAll) {
-        Get-MailboxMoveStatistics -IncludeCompleted
+        Invoke-GetMailboxMoveStatisticsHelper
     }
 }

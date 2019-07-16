@@ -22,10 +22,8 @@
             Path                    = (Join-Path $ReportPath 'Batches.xlsx')
             TableStyle              = 'Medium16'
             FreezeTopRowFirstColumn = $true
-            NoLegend                = $true
             AutoSize                = $true
             BoldTopRow              = $true
-            AutoNameRange           = $true
             ClearSheet              = $true
             WorksheetName           = 'Batches'
             ErrorAction             = 'SilentlyContinue'
