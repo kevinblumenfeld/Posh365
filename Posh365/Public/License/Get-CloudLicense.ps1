@@ -82,9 +82,11 @@
     #>
 
     Param (
-        [Parameter(ValueFromPipeline = $true, Mandatory = $false)]
-        [string] $DomainFilter
+        [Parameter()]
+        [string] $Path,
 
+        [Parameter(ValueFromPipeline = $true)]
+        [string] $DomainFilter
     )
 
     Begin {
@@ -186,10 +188,10 @@
 
         # The Output will be written to this file in the current working directory
         if ($DomainFilter) {
-            $LogFile = ($(get-date -Format yyyy-MM-dd_HH-mm-ss) + "-" + $DomainFilter + "-licenses.csv")
+            $LogFile = (Join-Path $Path ($(get-date -Format yyyy-MM-dd_HH-mm-ss) + "-" + $DomainFilter + "-licenses.csv"))
         }
         else {
-            $LogFile = ($(get-date -Format yyyy-MM-dd_HH-mm-ss) + "-licenses.csv")
+            $LogFile = (Join-Path $Path '356_Licenses.csv')
         }
 
         # Get a list of all Licenses that exist within the tenant

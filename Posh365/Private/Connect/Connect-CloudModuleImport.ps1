@@ -43,7 +43,7 @@ function Connect-CloudModuleImport {
                 }
             }
             $MSOnline {
-                if (-not ($null = Get-Module -Name MSOnline -ListAvailable -ErrorAction Stop)) {
+                if (-not ($null = Get-Module -Name MSOnline -ListAvailable)) {
                     Install-Module -Name MSOnline -Scope CurrentUser -Force
                 }
             }

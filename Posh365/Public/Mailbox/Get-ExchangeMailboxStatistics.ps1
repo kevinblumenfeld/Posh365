@@ -34,10 +34,10 @@ function Get-ExchangeMailboxStatistics {
     }
     Process {
         foreach ($Mailbox in $MailboxList) {
-            $ArchiveGB = Get-MailboxStatistics -identity ($Mailbox.PrimarySmtpAddress).ToString() -Archive -ErrorAction SilentlyContinue | ForEach-Object {
-                [Math]::Round([Double]($_.TotalItemSize -replace '^.*\(| .+$|,') / 1GB, 5)
+            $ArchiveGB = Get-MailboxStatistics -identity ($Mailbox.PrimarySmtpAddress).ToString() -Archive -ErrorAction SilentlyContinue -WarningAction SilentlyContinue | ForEach-Object {
+                [Math]::Round([Double]($_.TotalItemSize -replace '^.*\(| .+$|,') / 1GB, 4)
             }
-            Get-MailboxStatistics -identity ($Mailbox.PrimarySmtpAddress).ToString() | Select-Object @(
+            Get-MailboxStatistics -identity ($Mailbox.PrimarySmtpAddress).ToString() -WarningAction SilentlyContinue | Select-Object @(
                 'DisplayName'
                 @{
                     Name       = 'PrimarySmtpAddress'
@@ -50,7 +50,7 @@ function Get-ExchangeMailboxStatistics {
                 @{
                     Name       = 'MailboxGB'
                     Expression = {
-                        [Math]::Round([Double]($_.TotalItemSize -replace '^.*\(| .+$|,') / 1GB, 5)
+                        [Math]::Round([Double]($_.TotalItemSize -replace '^.*\(| .+$|,') / 1GB, 4)
                     }
                 }
                 @{
@@ -60,13 +60,13 @@ function Get-ExchangeMailboxStatistics {
                 @{
                     Name       = 'DeletedGB'
                     Expression = {
-                        [Math]::Round([Double]($_.TotalDeletedItemSize -replace '^.*\(| .+$|,') / 1GB, 5)
+                        [Math]::Round([Double]($_.TotalDeletedItemSize -replace '^.*\(| .+$|,') / 1GB, 4)
                     }
                 }
                 @{
                     Name       = 'TotalGB'
                     Expression = {
-                        [Math]::Round([Double]($_.TotalItemSize -replace '^.*\(| .+$|,') / 1GB, 5) + $ArchiveGB
+                        [Math]::Round([Double]($_.TotalItemSize -replace '^.*\(| .+$|,') / 1GB, 4) + $ArchiveGB
                     }
                 }
                 'LastLogonTime'

@@ -63,6 +63,10 @@ function Get-MailboxMovePermissionResult {
                     Name       = 'Permission'
                     Expression = { $_.Permission }
                 }
+                @{
+                    Name       = 'Type'
+                    Expression = { $_.DisplayType }
+                }
             )
         }
         if ($PermissionChoice -match "Folder") {
@@ -91,6 +95,10 @@ function Get-MailboxMovePermissionResult {
                 @{
                     Name       = 'Permission'
                     Expression = { $_.AccessRights }
+                }
+                @{
+                    Name       = 'Type'
+                    Expression = { $_.DisplayType }
                 }
             )
         }

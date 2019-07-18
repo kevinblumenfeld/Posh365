@@ -74,7 +74,7 @@
         }
         $ExcelSplat = @{
             Path                    = (Join-Path $ReportPath 'Permissions.xlsx')
-            TableStyle              = 'Medium16'
+            TableStyle              = 'Medium2'
             FreezeTopRowFirstColumn = $true
             AutoSize                = $true
             BoldTopRow              = $true

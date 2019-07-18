@@ -20,6 +20,10 @@ function Connect-CloudMFA {
 
         [Parameter()]
         [switch]
+        $Compliance,
+
+        [Parameter()]
+        [switch]
         $DeleteCredential
     )
     end {
@@ -49,7 +53,7 @@ function Connect-CloudMFA {
                 Connect-CloudDeleteCredential -CredFile $CredFile
                 break
             }
-            { $ExchangeOnline -or $MSOnline -or $AzureAD } {
+            { $ExchangeOnline -or $MSOnline -or $AzureAD -or $Compliance } {
                 if ($null = Test-Path $CredFile) {
                     Connect-CloudMFAClip -CredFile $CredFile
                 }
@@ -60,10 +64,16 @@ function Connect-CloudMFA {
                     Connect-CloudMFAClip -CredFile $CredFile
                 }
             }
-            $ExchangeOnline {
+            { $ExchangeOnline -or $Compliance } {
                 Connect-CloudModuleImport -ExchangeOnline
+            }
+            $ExchangeOnline {
                 Import-Module (Connect-EXOPSSession) -Global -WarningAction SilentlyContinue -DisableNameChecking
                 Write-Host "Connected to Exchange Online" -ForegroundColor Green
+            }
+            $Compliance {
+                Import-Module (Connect-IPPSSession) -Global -NoClobber
+                Write-Host "Connected to Security & Compliance" -ForegroundColor Green
             }
             $MSOnline {
                 Connect-CloudModuleImport -MSOnline

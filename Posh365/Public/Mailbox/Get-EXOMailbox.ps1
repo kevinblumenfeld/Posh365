@@ -30,17 +30,33 @@ function Get-EXOMailbox {
     #>
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)]
-        [switch] $DetailedReport,
+        [Parameter()]
+        [switch]
+        $DetailedReport,
 
-        [Parameter(Mandatory = $false)]
-        [switch] $ArchivesOnly,
+        [Parameter()]
+        [switch]
+        $ArchivesOnly,
 
-        [Parameter(ValueFromPipeline = $true, Mandatory = $false)]
-        [string[]] $MailboxFilter
+        [Parameter(ValueFromPipeline)]
+        [string[]]
+        $MailboxFilter
     )
-    Begin {
+    begin {
         if ($DetailedReport) {
+            $CasHash = @{ }
+            $CasList = Get-CASMailbox -ResultSize Unlimited
+            foreach ($Cas in $CasList) {
+                $CasHash[$Cas.PrimarySmtpAddress] = @{
+                    ActiveSyncEnabled = $Cas.ActiveSyncEnabled
+                    OWAEnabled        = $Cas.OWAEnabled
+                    ECPEnabled        = $Cas.ECPEnabled
+                    PopEnabled        = $Cas.PopEnabled
+                    ImapEnabled       = $Cas.ImapEnabled
+                    MAPIEnabled       = $Cas.MAPIEnabled
+                    EwsEnabled        = $Cas.EwsEnabled
+                }
+            }
             $Selectproperties = @(
                 'Name', 'RecipientTypeDetails', 'DisplayName', 'UserPrincipalName', 'Identity', 'PrimarySmtpAddress'
                 'AddressBookPolicy', 'ArbitrationMailbox', 'ArchiveDatabase', 'ArchiveDomain', 'DataEncryptionPolicy', 'DefaultPublicFolderMailbox'
@@ -71,8 +87,20 @@ function Get-EXOMailbox {
                 'SendModerationNotifications', 'ServerLegacyDN', 'ServerName', 'SharingPolicy', 'SimpleDisplayName', 'SourceAnchor', 'UsageLocation'
                 'WindowsEmailAddress', 'WindowsLiveID'
             )
-
             $CalculatedProps = @(
+                @{n = "MailboxGB" ; e = { $StatsHash.($_.PrimarySmtpAddress).MailboxGB } }
+                @{n = "ArchiveGB" ; e = { $StatsHash.($_.PrimarySmtpAddress).ArchiveGB } }
+                @{n = "DeletedGB" ; e = { $StatsHash.($_.PrimarySmtpAddress).DeletedGB } }
+                @{n = "TotalGB" ; e = { $StatsHash.($_.PrimarySmtpAddress).TotalGB } }
+                @{n = "LastLogonTime" ; e = { $StatsHash.($_.PrimarySmtpAddress).LastLogonTime } }
+                @{n = "ItemCount" ; e = { $StatsHash.($_.PrimarySmtpAddress).ItemCount } }
+                @{n = "ActiveSyncEnabled" ; e = { $CasHash.($_.PrimarySmtpAddress).ActiveSyncEnabled } }
+                @{n = "OWAEnabled" ; e = { $CasHash.($_.PrimarySmtpAddress).OWAEnabled } }
+                @{n = "ECPEnabled" ; e = { $CasHash.($_.PrimarySmtpAddress).ECPEnabled } }
+                @{n = "PopEnabled" ; e = { $CasHash.($_.PrimarySmtpAddress).PopEnabled } }
+                @{n = "ImapEnabled" ; e = { $CasHash.($_.PrimarySmtpAddress).ImapEnabled } }
+                @{n = "MAPIEnabled" ; e = { $CasHash.($_.PrimarySmtpAddress).MAPIEnabled } }
+                @{n = "EwsEnabled" ; e = { $CasHash.($_.PrimarySmtpAddress).EwsEnabled } }
                 @{n = "AcceptMessagesOnlyFrom" ; e = { [string]::join("|", [String[]]$_.AcceptMessagesOnlyFrom -ne '') } },
                 @{n = "AcceptMessagesOnlyFromDLMembers" ; e = { [string]::join("|", [String[]]$_.AcceptMessagesOnlyFromDLMembers -ne '') } },
                 @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = { [string]::join("|", [String[]]$_.AcceptMessagesOnlyFromSendersOrMembers -ne '') } },
@@ -121,7 +149,6 @@ function Get-EXOMailbox {
                 'HiddenFromAddressListsEnabled', 'IsDirSynced', 'LitigationHoldEnabled', 'LitigationHoldDuration'
                 'LitigationHoldOwner', 'Office', 'RetentionPolicy', 'WindowsEmailAddress'
             )
-
             $CalculatedProps = @(
                 @{n = "ArchiveName" ; e = { ($_.ArchiveName | Where-Object { $_ -ne $null }) -join ";" } },
                 @{n = "AcceptMessagesOnlyFrom" ; e = { ($_.AcceptMessagesOnlyFrom | Where-Object { $_ -ne $null }) -join ";" } },
@@ -136,10 +163,10 @@ function Get-EXOMailbox {
             )
         }
     }
-    Process {
+    process {
         if ($MailboxFilter) {
             foreach ($CurMailboxFilter in $MailboxFilter) {
-                if (! $ArchivesOnly) {
+                if (-not $ArchivesOnly) {
                     Get-Mailbox -Filter $CurMailboxFilter -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
                 }
                 else {
@@ -148,15 +175,33 @@ function Get-EXOMailbox {
             }
         }
         else {
-            if (! $ArchivesOnly) {
-                Get-Mailbox -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
+            if (-not $ArchivesOnly) {
+                $MailboxList = Get-Mailbox -ResultSize unlimited
+                $StatsHash = @{ }
+                foreach ($Mailbox in $MailboxList) {
+                    $Stat = $Mailbox | Get-ExchangeMailboxStatistics
+                    if ($Stat) {
+                        $StatsHash.Add(($Stat.PrimarySmtpAddress), @{
+                                DisplayName       = $Stat.DisplayName
+                                UserPrincipalName = $Stat.UserPrincipalName
+                                MailboxGB         = $Stat.MailboxGB
+                                ArchiveGB         = $Stat.ArchiveGB
+                                DeletedGB         = $Stat.DeletedGB
+                                TotalGB           = $Stat.TotalGB
+                                LastLogonTime     = $Stat.LastLogonTime
+                                ItemCount         = $Stat.ItemCount
+                            })
+                    }
+                }
+                $MailboxList | Select-Object ($Selectproperties + $CalculatedProps)
             }
             else {
                 Get-Mailbox -Archive -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
             }
         }
     }
-    End {
+    end {
 
     }
 }
+

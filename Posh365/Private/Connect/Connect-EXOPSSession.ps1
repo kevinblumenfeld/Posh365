@@ -49,7 +49,7 @@ function Connect-EXOPSSession {
         $global:PSSessionOption = $PSSessionOption;
         $global:Credential = $Credential;
 
-        Import-Module $ModulePath -DisableNameChecking
+        Import-Module $ModulePath -DisableNameChecking -WarningAction SilentlyContinue
         $PSSplat = @{
             UserPrincipalName               = $UserPrincipalName
             ConnectionUri                   = $ConnectionUri
@@ -61,7 +61,7 @@ function Connect-EXOPSSession {
         $PSSession = New-ExoPSSession @PSSplat
 
         if ($PSSession -ne $null) {
-            Import-PSSession $PSSession -AllowClobber -DisableNameChecking
+            Import-PSSession $PSSession -AllowClobber -DisableNameChecking -WarningAction SilentlyContinue
             Get-RemotingHandler
         }
     }
