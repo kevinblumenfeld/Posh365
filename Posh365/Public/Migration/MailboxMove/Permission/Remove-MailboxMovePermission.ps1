@@ -25,7 +25,10 @@ function Remove-MailboxMovePermission {
         if ($Tenant -notmatch '.mail.onmicrosoft.com') {
             $Tenant = '{0}.mail.onmicrosoft.com' -f $Tenant
         }
-        $SetPermSplat = @{'PassThru' = $true }
+        $SetPermSplat = @{
+            'PassThru' = $true
+            'Remove'   = $true
+        }
         switch ($PSBoundParameters.Keys) {
             'SharePointURL' { $SetPermSplat.Add('SharePointURL', $SharePointURL) }
             'ExcelFile' { $SetPermSplat.Add('ExcelFile', $ExcelFile) }

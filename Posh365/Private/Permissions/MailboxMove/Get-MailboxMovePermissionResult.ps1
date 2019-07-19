@@ -31,7 +31,12 @@ function Get-MailboxMovePermissionResult {
 
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        $DirectionChoice
+        $DirectionChoice,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [switch]
+        $Remove
     )
     end {
         if ($PermissionChoice -match "FullAccess|SendAs|SendOnBehalf") {
@@ -58,13 +63,10 @@ function Get-MailboxMovePermissionResult {
                 'PrimarySmtpAddress'
                 'Granted'
                 'GrantedSMTP'
-                @{
-                    Name       = 'Permission'
-                    Expression = { $_.Permission }
-                }
+                'Permission'
                 @{
                     Name       = 'Type'
-                    Expression = { $_.DisplayType }
+                    Expression = 'DisplayType'
                 }
             )
         }
@@ -82,10 +84,16 @@ function Get-MailboxMovePermissionResult {
                 DirectionChoice  = $DirectionChoice
                 FolderPermission = $FolderPermission
             }
+            if ($Remove) {
+                $FolderOrRights = 'Folder'
+            }
+            else {
+                $FolderOrRights = 'AccessRights'
+            }
             Get-MailboxMoveFolderResult @FolderResult | Select-Object @(
                 @{
                     Name       = 'Location'
-                    Expression = { $_.Folder }
+                    Expression = 'Folder'
                 }
                 'Object'
                 'PrimarySmtpAddress'
@@ -93,11 +101,11 @@ function Get-MailboxMovePermissionResult {
                 'GrantedSMTP'
                 @{
                     Name       = 'Permission'
-                    Expression = { $_.AccessRights }
+                    Expression = $FolderOrRights
                 }
                 @{
                     Name       = 'Type'
-                    Expression = { $_.DisplayType }
+                    Expression = 'DisplayType'
                 }
             )
         }

@@ -26,22 +26,28 @@ function Get-SendOnBehalfPerms {
     process {
         foreach ($Mailbox in $MailboxList) {
             Write-Verbose "Inspecting: `t $Mailbox"
+            $Display = New-Object System.Collections.Generic.List[string]
+            $UPN = New-Object System.Collections.Generic.List[string]
+            $SMTP = New-Object System.Collections.Generic.List[string]
             foreach ($GrantedSOB in $Mailbox.GrantSendOnBehalfTo) {
                 $DisplayName = $ADHashCN["$GrantedSOB"].DisplayName
+                $Display.Add($ADHashCN["$GrantedSOB"].DisplayName)
+                $UPN.Add($ADHashCN["$GrantedSOB"].UserPrincipalName)
+                $SMTP.Add($ADHashCN["$GrantedSOB"].PrimarySMTPAddress)
                 Write-Verbose "Has Send On Behalf DN: `t $DisplayName"
                 Write-Verbose "                   CN: `t $GrantedSOB"
-                New-Object -TypeName psobject -property @{
-                    Object             = $Mailbox.DisplayName
-                    UserPrincipalName  = $Mailbox.UserPrincipalName
-                    PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
-                    Granted            = $ADHashCN["$GrantedSOB"].DisplayName
-                    GrantedUPN         = $ADHashCN["$GrantedSOB"].UserPrincipalName
-                    GrantedSMTP        = $ADHashCN["$GrantedSOB"].PrimarySMTPAddress
-                    Checking           = $GrantedSOB
-                    TypeDetails        = $ADHashType."$($ADHashCN["$GrantedSOB"].msExchRecipientTypeDetails)"
-                    DisplayType        = $ADHashDisplay."$($ADHashCN["$GrantedSOB"].msExchRecipientDisplayType)"
-                    Permission         = "SendOnBehalf"
-                }
+            }
+            New-Object -TypeName psobject -property @{
+                Object             = $Mailbox.DisplayName
+                UserPrincipalName  = $Mailbox.UserPrincipalName
+                PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
+                Granted            = $Display -join '|'
+                GrantedUPN         = $UPN -join '|'
+                GrantedSMTP        = $SMTP -join '|'
+                Checking           = $GrantedSOB
+                TypeDetails        = $ADHashType."$($ADHashCN["$GrantedSOB"].msExchRecipientTypeDetails)"
+                DisplayType        = $ADHashDisplay."$($ADHashCN["$GrantedSOB"].msExchRecipientDisplayType)"
+                Permission         = "SendOnBehalf"
             }
         }
     }

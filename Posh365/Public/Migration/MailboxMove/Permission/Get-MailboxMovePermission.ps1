@@ -56,6 +56,10 @@ function Get-MailboxMovePermission {
 
         [Parameter()]
         [switch]
+        $Remove,
+
+        [Parameter()]
+        [switch]
         $PassThru
     )
     end {
@@ -88,6 +92,9 @@ function Get-MailboxMovePermission {
             UserChoiceRegex  = $UserChoiceRegex
             PermissionChoice = $PermissionChoice
             DirectionChoice  = $DirectionChoice
+        }
+        if ($Remove) {
+            $PermissionResult.Add('Remove', $true)
         }
         if ($PassThru) {
             Get-MailboxMovePermissionResult @PermissionResult | Out-GridView -Title "Permission Results" -OutputMode Multiple

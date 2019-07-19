@@ -62,7 +62,7 @@
         }
         if (-not $SkipSendOnBehalf) {
             Write-Verbose "Getting SendOnBehalf permissions for each mailbox and writing to file"
-            ($MailboxList | Where-Object { $_.GrantSendOnBehalfTo -ne $null }) | Get-SendOnBehalfPerms @ParamSOBSplat |
+            ($MailboxList | Where-Object { $_.GrantSendOnBehalfTo }) | Get-SendOnBehalfPerms @ParamSOBSplat |
             Select-Object $PermSelect
         }
         if (-not $SkipFullAccess) {

@@ -9,7 +9,6 @@ function Invoke-AddMailboxMovePermission {
         foreach ($Permission in $PermissionList) {
             switch ($Permission.Location) {
                 { $_ -in @('Calendar', 'Inbox', 'SentItems', 'Contacts') } {
-                    write-host 'TEST'
                     $StatSplat = @{
                         Identity    = $Mailbox.PrimarySMTPAddress
                         ErrorAction = 'SilentlyContinue'
@@ -47,14 +46,14 @@ function Invoke-AddMailboxMovePermission {
                             Type               = $Permission.Type
                             Action             = 'ADD'
                             Result             = 'FAILED'
-                            Message            = $_.Exception.Message
+                            Message            = ($_.Exception.Message -replace 'The running command stopped because the preference variable "WarningPreference" or common parameter is set to Stop: ', '')
                         }
                     }
                 }
                 'Mailbox' {
                     switch ($Permission.Permission) {
                         'FullAccess' {
-                            $FolderPermSplat = @{
+                            $FullAccessSplat = @{
                                 Identity      = $Permission.PrimarySMTPAddress
                                 User          = $Permission.GrantedSMTP
                                 AccessRights  = 'FullAccess'
@@ -62,7 +61,7 @@ function Invoke-AddMailboxMovePermission {
                                 WarningAction = 'Stop'
                             }
                             try {
-                                $null = Add-MailboxPermission @FolderPermSplat
+                                $null = Add-MailboxPermission @FullAccessSplat
                                 [PSCustomObject]@{
                                     Mailbox            = $Permission.Object
                                     PrimarySMTPAddress = $Permission.PrimarySMTPAddress
@@ -85,12 +84,82 @@ function Invoke-AddMailboxMovePermission {
                                     Type               = $Permission.Type
                                     Action             = 'ADD'
                                     Result             = 'FAILED'
-                                    Message            = $_.Exception.Message
+                                    Message            = ($_.Exception.Message -replace 'The running command stopped because the preference variable "WarningPreference" or common parameter is set to Stop: ', '')
                                 }
                             }
                         }
-                        'SendAs' { }
-                        'SendOnBehalf' { }
+                        'SendAs' {
+                            $SendAsSplat = @{
+                                Identity      = $Permission.PrimarySMTPAddress
+                                Trustee       = $Permission.GrantedSMTP
+                                AccessRights  = 'SendAs'
+                                Confirm       = $false
+                                ErrorAction   = 'Stop'
+                                WarningAction = 'Stop'
+                            }
+                            try {
+                                $null = Add-RecipientPermission @SendAsSplat
+                                [PSCustomObject]@{
+                                    Mailbox            = $Permission.Object
+                                    PrimarySMTPAddress = $Permission.PrimarySMTPAddress
+                                    Permission         = $Permission.Permission
+                                    Granted            = $Permission.Granted
+                                    GrantedSMTP        = $Permission.GrantedSMTP
+                                    Type               = $Permission.Type
+                                    Action             = 'ADD'
+                                    Result             = 'SUCCESS'
+                                    Message            = 'SUCCESS'
+                                }
+                            }
+                            catch {
+                                [PSCustomObject]@{
+                                    Mailbox            = $Permission.Object
+                                    PrimarySMTPAddress = $Permission.PrimarySMTPAddress
+                                    Permission         = $Permission.Permission
+                                    Granted            = $Permission.Granted
+                                    GrantedSMTP        = $Permission.GrantedSMTP
+                                    Type               = $Permission.Type
+                                    Action             = 'ADD'
+                                    Result             = 'FAILED'
+                                    Message            = ($_.Exception.Message -replace 'The running command stopped because the preference variable "WarningPreference" or common parameter is set to Stop: ', '')
+                                }
+                            }
+                        }
+                        'SendOnBehalf' {
+                            $SOBSplat = @{
+                                Identity            = $Permission.PrimarySMTPAddress
+                                GrantSendOnBehalfTo = ($Permission.GrantedSMTP).split('|')
+                                ErrorAction         = 'Stop'
+                                WarningAction       = 'Stop'
+                            }
+                            try {
+                                $null = Set-Mailbox @SOBSplat
+                                [PSCustomObject]@{
+                                    Mailbox            = $Permission.Object
+                                    PrimarySMTPAddress = $Permission.PrimarySMTPAddress
+                                    Permission         = $Permission.Permission
+                                    Granted            = $Permission.Granted
+                                    GrantedSMTP        = $Permission.GrantedSMTP
+                                    Type               = $Permission.Type
+                                    Action             = 'REPLACE'
+                                    Result             = 'SUCCESS'
+                                    Message            = 'SUCCESS'
+                                }
+                            }
+                            catch {
+                                [PSCustomObject]@{
+                                    Mailbox            = $Permission.Object
+                                    PrimarySMTPAddress = $Permission.PrimarySMTPAddress
+                                    Permission         = $Permission.Permission
+                                    Granted            = $Permission.Granted
+                                    GrantedSMTP        = $Permission.GrantedSMTP
+                                    Type               = $Permission.Type
+                                    Action             = 'REPLACE'
+                                    Result             = 'FAILED'
+                                    Message            = ($_.Exception.Message -replace 'The running command stopped because the preference variable "WarningPreference" or common parameter is set to Stop: ', '')
+                                }
+                            }
+                        }
                     }
                 }
             }
