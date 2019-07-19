@@ -42,7 +42,7 @@ function Get-365MsolGroup {
     Begin {
         if ($DetailedReport) {
             $Selectproperties = @(
-                'CommonName', 'Description', 'DisplayName', 'EmailAddress', 'ManagedBy'
+                'CommonName', 'Description', 'DisplayName', 'EmailAddress', 'ManagedBy', 'LastDirSyncTime'
             )
 
             $CalculatedProps = @(
@@ -50,7 +50,6 @@ function Get-365MsolGroup {
                 @{n = "Errors" ; e = { [string]::join("|", [String[]]$_.Errors -ne '') } },
                 @{n = "GroupType" ; e = { [string]::join("|", [String[]]$_.GroupType -ne '') } },
                 @{n = "IsSystem" ; e = { [string]::join("|", [String[]]$_.IsSystem -ne '') } },
-                @{n = "LastDirSyncTime" ; e = { [string]::join("|", [String[]]$_.LastDirSyncTime -ne '') } },
                 @{n = "Licenses" ; e = { [string]::join("|", [String[]]$_.Licenses -ne '') } },
                 @{n = "ObjectId" ; e = { [string]::join("|", [String[]]$_.ObjectId -ne '') } },
                 @{n = "proxyAddresses" ; e = { [string]::join("|", [String[]]$_.proxyAddresses -ne '') } },
@@ -59,12 +58,11 @@ function Get-365MsolGroup {
         }
         else {
             $Selectproperties = @(
-                'CommonName', 'Description', 'DisplayName', 'EmailAddress', 'ManagedBy'
+                'CommonName', 'Description', 'DisplayName', 'EmailAddress', 'ManagedBy', 'LastDirSyncTime'
             )
 
             $CalculatedProps = @(
                 @{n = "GroupType" ; e = { [string]::join("|", [String[]]$_.GroupType -ne '') } },
-                @{n = "LastDirSyncTime" ; e = { [string]::join("|", [String[]]$_.LastDirSyncTime -ne '') } },
                 @{n = "proxyAddresses" ; e = { [string]::join("|", [String[]]$_.proxyAddresses -ne '') } }
             )
         }

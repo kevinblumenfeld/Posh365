@@ -52,7 +52,11 @@ function Get-MailboxMovePermission {
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string]
-        $Tenant
+        $Tenant,
+
+        [Parameter()]
+        [switch]
+        $PassThru
     )
     end {
         if ($Tenant -notmatch '.mail.onmicrosoft.com') {
@@ -85,6 +89,11 @@ function Get-MailboxMovePermission {
             PermissionChoice = $PermissionChoice
             DirectionChoice  = $DirectionChoice
         }
-        Get-MailboxMovePermissionResult @PermissionResult | Out-GridView -Title "Permission Results"
+        if ($PassThru) {
+            Get-MailboxMovePermissionResult @PermissionResult | Out-GridView -Title "Permission Results" -OutputMode Multiple
+        }
+        else {
+            Get-MailboxMovePermissionResult @PermissionResult | Out-GridView -Title "Permission Results"
+        }
     }
 }

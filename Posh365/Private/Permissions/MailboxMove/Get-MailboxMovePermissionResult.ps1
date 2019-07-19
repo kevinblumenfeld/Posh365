@@ -1,4 +1,3 @@
-
 function Get-MailboxMovePermissionResult {
     [CmdletBinding(DefaultParameterSetName = 'SharePoint')]
     param (
@@ -56,9 +55,9 @@ function Get-MailboxMovePermissionResult {
                     Expression = { 'Mailbox' }
                 }
                 'Object'
-                'UserPrincipalName'
+                'PrimarySmtpAddress'
                 'Granted'
-                'GrantedUPN'
+                'GrantedSMTP'
                 @{
                     Name       = 'Permission'
                     Expression = { $_.Permission }
@@ -89,9 +88,9 @@ function Get-MailboxMovePermissionResult {
                     Expression = { $_.Folder }
                 }
                 'Object'
-                'UserPrincipalName'
+                'PrimarySmtpAddress'
                 'Granted'
-                'GrantedUPN'
+                'GrantedSMTP'
                 @{
                     Name       = 'Permission'
                     Expression = { $_.AccessRights }

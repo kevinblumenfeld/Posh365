@@ -29,6 +29,7 @@ function Get-MailboxFolderPerms {
             $Calendar = (($Mailbox.SamAccountName) + ":\" + (Get-MailboxFolderStatistics @StatSplat -FolderScope Calendar | Select-Object -First 1).Name)
             $Inbox = (($Mailbox.SamAccountName) + ":\" + (Get-MailboxFolderStatistics @StatSplat -FolderScope Inbox | Select-Object -First 1).Name)
             $SentItems = (($Mailbox.SamAccountName) + ":\" + (Get-MailboxFolderStatistics @StatSplat -FolderScope SentItems | Select-Object -First 1).Name)
+            $Contacts = (($Mailbox.SamAccountName) + ":\" + (Get-MailboxFolderStatistics @StatSplat -FolderScope Contacts | Select-Object -First 1).Name)
             $CalAccessList = Get-MailboxFolderPermission $Calendar | Where-Object {
                 $_.User -notmatch 'Default' -and
                 $_.User -notmatch 'Anonymous' -and
@@ -42,7 +43,7 @@ function Get-MailboxFolderPerms {
                         UserPrincipalName  = $Mailbox.UserPrincipalName
                         PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
                         Folder             = 'CALENDAR'
-                        AccessRights       = ($CalAccess.AccessRights) -join '|'
+                        AccessRights       = ($CalAccess.AccessRights) -join ','
                         Granted            = $CalAccess.User
                         GrantedUPN         = $ADHashDisplayName."$($CalAccess.User)".UserPrincipalName
                         GrantedSMTP        = $ADHashDisplayName."$($CalAccess.User)".PrimarySMTPAddress
@@ -64,7 +65,7 @@ function Get-MailboxFolderPerms {
                         UserPrincipalName  = $Mailbox.UserPrincipalName
                         PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
                         Folder             = 'INBOX'
-                        AccessRights       = ($InboxAccess.AccessRights) -join '|'
+                        AccessRights       = ($InboxAccess.AccessRights) -join ','
                         Granted            = $InboxAccess.User
                         GrantedUPN         = $ADHashDisplayName."$($InboxAccess.User)".UserPrincipalName
                         GrantedSMTP        = $ADHashDisplayName."$($InboxAccess.User)".PrimarySMTPAddress
@@ -86,12 +87,34 @@ function Get-MailboxFolderPerms {
                         UserPrincipalName  = $Mailbox.UserPrincipalName
                         PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
                         Folder             = 'SENTITEMS'
-                        AccessRights       = ($SentAccess.AccessRights) -join '|'
+                        AccessRights       = ($SentAccess.AccessRights) -join ','
                         Granted            = $SentAccess.User
                         GrantedUPN         = $ADHashDisplayName."$($SentAccess.User)".UserPrincipalName
                         GrantedSMTP        = $ADHashDisplayName."$($SentAccess.User)".PrimarySMTPAddress
                         TypeDetails        = $ADHashType."$($ADHashDisplayName."$($SentAccess.User)".msExchRecipientTypeDetails)"
                         DisplayType        = $ADHashDisplay."$($ADHashDisplayName."$($SentAccess.User)".msExchRecipientDisplayType)"
+                    }
+                }
+            }
+            $ContactsAccessList = Get-MailboxFolderPermission $Contacts | Where-Object {
+                $_.User -notmatch 'Default' -and
+                $_.User -notmatch 'Anonymous' -and
+                $_.User -notlike 'NT User:*' -and
+                $_.AccessRights -notmatch 'None'
+            }
+            If ($ContactsAccessList) {
+                Foreach ($ContactsAccess in $ContactsAccessList) {
+                    New-Object -TypeName psobject -property @{
+                        Object             = $Mailbox.DisplayName
+                        UserPrincipalName  = $Mailbox.UserPrincipalName
+                        PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
+                        Folder             = 'CONTACTS'
+                        AccessRights       = ($ContactAccess.AccessRights) -join ','
+                        Granted            = $ContactAccess.User
+                        GrantedUPN         = $ADHashDisplayName."$($ContactAccess.User)".UserPrincipalName
+                        GrantedSMTP        = $ADHashDisplayName."$($ContactAccess.User)".PrimarySMTPAddress
+                        TypeDetails        = $ADHashType."$($ADHashDisplayName."$($ContactAccess.User)".msExchRecipientTypeDetails)"
+                        DisplayType        = $ADHashDisplay."$($ADHashDisplayName."$($ContactAccess.User)".msExchRecipientDisplayType)"
                     }
                 }
             }
