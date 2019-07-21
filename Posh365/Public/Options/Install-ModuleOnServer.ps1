@@ -1,22 +1,32 @@
 function Install-ModuleOnServer {
     <#
     .SYNOPSIS
-    Installs
+    Installs Module on a server that you have C$ access to
+    By default installs Posh365 unless specified with -Module parameter
 
     .DESCRIPTION
-    Long description
+    Installs Module on a server that you have C$ access to.
+    By default installs Posh365 unless specified with -Module parameter
+    Helpful when you want a module installed from the PowerShell Gallery
+    but PowerShell 5 is not on the server.
+    Use this command from any other computer that has PS 5
 
     .PARAMETER Server
-    Parameter description
+    The server where you want to module installed from the PowerShell Gallery
 
     .PARAMETER Module
-    Parameter description
+    Specify the module from the PowerShell Gallery that you want to install
+    The default is Posh365 and will be installed if this parameter is not used.
 
     .EXAMPLE
-    An example
+    Install-Module Posh365 -Force -Scope CurrentUser -Confirm:$false
+    Install-ModuleOnServer -Server DC01
+    * Run from Win10 or 2016. Requires access to remote computer's C$ share
 
     .NOTES
-    General notes
+    The computer from which you install this module must have PowerShell 5.
+    The goal is to install the module on that computer and then use this function to
+    install it on remote computers (that do not have PS 5)
     #>
 
     [CmdletBinding()]
@@ -36,6 +46,7 @@ function Install-ModuleOnServer {
                 Path        = $Path
                 Force       = $true
                 ErrorAction = 'Stop'
+                Confirm     = $false
             }
             try {
                 $ModulePath = Join-Path $Path $Module
@@ -51,6 +62,7 @@ function Install-ModuleOnServer {
                         Path        = $Path
                         Force       = $true
                         ErrorAction = 'Stop'
+                        Confirm     = $false
                     }
                     $ExcelPath = Join-Path $Path 'ImportExcel'
                     Save-Module @SaveExcel
@@ -64,6 +76,7 @@ function Install-ModuleOnServer {
                         Path        = $Path
                         Force       = $true
                         ErrorAction = 'Stop'
+                        Confirm     = $false
                     }
                     $PoshRSPath = Join-Path $Path 'PoshRSJob'
                     Save-Module @SavePoshRS

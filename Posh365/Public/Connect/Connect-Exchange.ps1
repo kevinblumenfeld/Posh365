@@ -42,7 +42,7 @@ function Connect-Exchange {
     if ($DeleteExchangeCreds) { Remove-Item $CredFile -Force }
 
     if (-not ($null = Test-Path $CredFile)) {
-        [System.Management.Automation.PSCredential]$Credential = Get-Credential -Message 'Enter Office 365 username and password'
+        [System.Management.Automation.PSCredential]$Credential = Get-Credential -Message 'Enter on-premises Exchange username and password'
         [System.Management.Automation.PSCredential]$Credential | Export-CliXml -Path $CredFile
         [System.Management.Automation.PSCredential]$Credential = Import-CliXml -Path $CredFile
     }
