@@ -24,6 +24,10 @@ function Connect-CloudMFA {
 
         [Parameter()]
         [switch]
+        $SharePoint,
+
+        [Parameter()]
+        [switch]
         $DeleteCredential
     )
     end {
@@ -53,7 +57,7 @@ function Connect-CloudMFA {
                 Connect-CloudDeleteCredential -CredFile $CredFile
                 break
             }
-            { $ExchangeOnline -or $MSOnline -or $AzureAD -or $Compliance } {
+            { $ExchangeOnline -or $MSOnline -or $AzureAD -or $Compliance -or $SharePoint } {
                 if ($null = Test-Path $CredFile) {
                     Connect-CloudMFAClip -CredFile $CredFile
                 }
@@ -84,6 +88,12 @@ function Connect-CloudMFA {
                 Connect-CloudModuleImport -AzureAD
                 Connect-AzureAD
                 Write-Host "Connected to Azure AD" -ForegroundColor Green
+            }
+            $SharePoint {
+                Connect-CloudModuleImport -SharePoint
+                $SharePointAdminSite = 'https://' + $Tenant + '-admin.sharepoint.com'
+                Connect-SPOService -Url $SharePointAdminSite
+                Write-Host "Connected to SharePoint Online" -ForegroundColor Green
             }
             default {
 

@@ -12,7 +12,11 @@ function Connect-CloudModuleImport {
 
         [Parameter()]
         [switch]
-        $AzureAD
+        $AzureAD,
+
+        [Parameter()]
+        [switch]
+        $SharePoint
     )
     end {
         switch ($true) {
@@ -50,6 +54,11 @@ function Connect-CloudModuleImport {
             $AzureAD {
                 if (-not ($null = Get-Module -Name AzureAD -ListAvailable)) {
                     Install-Module -Name AzureAD -Scope CurrentUser -Force
+                }
+            }
+            $SharePoint {
+                if (-not ($null = Get-Module -Name Microsoft.Online.SharePoint.PowerShell -ListAvailable)) {
+                    Install-Module -Name Microsoft.Online.SharePoint.PowerShell -Scope CurrentUser -Force
                 }
             }
             default { }
