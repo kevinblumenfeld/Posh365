@@ -109,12 +109,12 @@ function Get-MailboxFolderPerms {
                         UserPrincipalName  = $Mailbox.UserPrincipalName
                         PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
                         Folder             = 'CONTACTS'
-                        AccessRights       = ($ContactAccess.AccessRights) -join ','
-                        Granted            = $ContactAccess.User
-                        GrantedUPN         = $ADHashDisplayName."$($ContactAccess.User)".UserPrincipalName
-                        GrantedSMTP        = $ADHashDisplayName."$($ContactAccess.User)".PrimarySMTPAddress
-                        TypeDetails        = $ADHashType."$($ADHashDisplayName."$($ContactAccess.User)".msExchRecipientTypeDetails)"
-                        DisplayType        = $ADHashDisplay."$($ADHashDisplayName."$($ContactAccess.User)".msExchRecipientDisplayType)"
+                        AccessRights       = ($ContactsAccess.AccessRights) -join ','
+                        Granted            = $ContactsAccess.User
+                        GrantedUPN         = $ADHashDisplayName."$($ContactsAccess.User)".UserPrincipalName
+                        GrantedSMTP        = $ADHashDisplayName."$($ContactsAccess.User)".PrimarySMTPAddress
+                        TypeDetails        = $ADHashType."$($ADHashDisplayName."$($ContactsAccess.User)".msExchRecipientTypeDetails)"
+                        DisplayType        = $ADHashDisplay."$($ADHashDisplayName."$($ContactsAccess.User)".msExchRecipientDisplayType)"
                     }
                 }
             }
