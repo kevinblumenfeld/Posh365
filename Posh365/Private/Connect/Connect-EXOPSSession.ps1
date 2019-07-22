@@ -66,6 +66,6 @@ function Connect-EXOPSSession {
         }
     }
     catch {
-        throw $_
+        throw "YOU CAN SAFELY IGNORE THIS ERROR - YOU WILL NOT SEE IT AGAIN"
     }
 }

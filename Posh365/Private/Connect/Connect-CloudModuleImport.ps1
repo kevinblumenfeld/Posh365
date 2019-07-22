@@ -21,7 +21,7 @@ function Connect-CloudModuleImport {
     end {
         switch ($true) {
             $ExchangeOnline {
-                $Modules = @(Get-ChildItem -Path "$($env:LOCALAPPDATA)\Apps\2.0" -Filter "Microsoft.Exchange.Management.ExoPowershellModule.manifest" -Recurse )
+                $Modules = @(Get-ChildItem -ErrorAction SilentlyContinue -Path "$($env:LOCALAPPDATA)\Apps\2.0" -Filter "Microsoft.Exchange.Management.ExoPowershellModule.manifest" -Recurse )
                 try {
                     $ModuleName = Join-Path $modules[0].Directory.FullName "Microsoft.Exchange.Management.ExoPowershellModule.dll"
                     Import-Module -FullyQualifiedName $ModuleName -Force -WarningAction SilentlyContinue -DisableNameChecking

@@ -53,7 +53,7 @@ function Connect-CloudMFA {
 
         switch ($true) {
             $DeleteCredential {
-                Write-Host "Deleting credential and halting script" Write-Host -ForegroundColor White
+                Write-Host "Credential is being deleted now" -ForegroundColor White
                 Connect-CloudDeleteCredential -CredFile $CredFile
                 break
             }
