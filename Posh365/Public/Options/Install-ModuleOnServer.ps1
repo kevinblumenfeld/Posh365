@@ -86,9 +86,8 @@ function Install-ModuleOnServer {
                     Remove-Item -Path $PoshRSLatest -Recurse -Force -Confirm:$false
                 }
                 Write-Host "Please restart PowerShell on $Server" -ForegroundColor Cyan
-                Write-Host "When starting PowerShell, make sure to Run As Administrator`n" -ForegroundColor Cyan
-                Write-Host "if you get this error: `"Import-Module : [path] cannot be loaded because running scripts is disabled on this system`"" -ForegroundColor DarkYellow
-                Write-Host "Type the following command on $Server`: Set-ExecutionPolicy RemoteSigned -Force`n" -ForegroundColor DarkYellow
+                Write-Host "Type the following command on $Server`:  " -NoNewline -ForegroundColor Cyan
+                Write-Host "Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force" -ForegroundColor DarkYellow
                 $Here = @'
 $gci = @{
     Path    = "C:\Program Files\WindowsPowerShell\Modules\Posh365"
