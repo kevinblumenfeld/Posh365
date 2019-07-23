@@ -57,6 +57,7 @@ function Invoke-AddMailboxMovePermission {
                                 Identity      = $Permission.PrimarySMTPAddress
                                 User          = $Permission.GrantedSMTP
                                 AccessRights  = 'FullAccess'
+                                AutoMapping   = $false
                                 ErrorAction   = 'Stop'
                                 WarningAction = 'Stop'
                             }
