@@ -35,39 +35,39 @@ function Invoke-CompleteMailboxMove {
 
                 Set-MoveRequest @Param
                 [PSCustomObject]@{
-                    DisplayName   = $User.DisplayName
-                    CompleteAfter = $When
-                    Action        = "SET"
-                    Result        = "Success"
-                    Message       = ""
+                    DisplayName      = $User.DisplayName
+                    CompleteAfterUTC = $When
+                    Action           = "SET"
+                    Result           = "Success"
+                    Message          = ""
                 }
             }
             catch {
                 [PSCustomObject]@{
-                    DisplayName   = $User.DisplayName
-                    CompleteAfter = $When
-                    Action        = "SET"
-                    Result        = "Failed"
-                    Message       = $_.Exception.Message
+                    DisplayName      = $User.DisplayName
+                    CompleteAfterUTC = $When
+                    Action           = "SET"
+                    Result           = "Failed"
+                    Message          = $_.Exception.Message
                 }
             }
             try {
                 Resume-MoveRequest $User.Guid
                 [PSCustomObject]@{
-                    DisplayName   = $User.DisplayName
-                    CompleteAfter = ""
-                    Action        = "RESUME"
-                    Result        = "Success"
-                    Message       = ""
+                    DisplayName      = $User.DisplayName
+                    CompleteAfterUTC = ""
+                    Action           = "RESUME"
+                    Result           = "Success"
+                    Message          = ""
                 }
             }
             catch {
                 [PSCustomObject]@{
-                    DisplayName   = $User.DisplayName
-                    CompleteAfter = ""
-                    Action        = "RESUME"
-                    Result        = "Failed"
-                    Message       = $_.Exception.Message
+                    DisplayName      = $User.DisplayName
+                    CompleteAfterUTC = ""
+                    Action           = "RESUME"
+                    Result           = "Failed"
+                    Message          = $_.Exception.Message
                 }
             }
         }

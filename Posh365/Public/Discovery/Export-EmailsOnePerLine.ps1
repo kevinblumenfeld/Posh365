@@ -15,14 +15,14 @@
     process {
 
         foreach ($Row in $RowItem) {
-            foreach ($expand in ($Row."$FindInColumn").split('|')) {
+            foreach ($Expand in ($Row."$FindInColumn").split('|')) {
                 [PSCustomObject]@{
                     DisplayName          = $Row.DisplayName
                     RecipientTypeDetails = $Row.RecipientTypeDetails
                     Protocol             = $Expand.split(':')[0]
                     Domain               = $Expand.split('@')[1]
-                    EmailAddress         = $expand
-                    EmailNoProtocl       = $Expand.split(':')[1]
+                    PrefixedAddress      = $Expand
+                    Address              = $Expand.split(':')[1]
                     Identity             = $Row.Identity
                     PrimarySmtpAddress   = $Row.PrimarySmtpAddress
                 }
