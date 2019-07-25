@@ -69,6 +69,7 @@ function Connect-CloudMFA {
                 }
             }
             { $PSBoundParameters.Count -eq 1 } {
+                Connect-CloudModuleImport -ExchangeOnline
                 Import-Module (Connect-EXOPSSession) -Global -WarningAction SilentlyContinue -DisableNameChecking
                 Write-Host "Connected to Exchange Online" -ForegroundColor Green
                 Connect-CloudModuleImport -AzureAD
