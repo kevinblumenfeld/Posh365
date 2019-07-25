@@ -19,7 +19,7 @@ function Install-ModuleOnServer {
     The default is Posh365 and will be installed if this parameter is not used.
 
     .EXAMPLE
-    Install-Module Posh365 -Force -Scope CurrentUser -Confirm:$false
+    Install-Module Posh365 -Force -Scope CurrentUser
     Install-ModuleOnServer -Server DC01
     * Run from Win10 or 2016. Requires access to remote computer's C$ share
 

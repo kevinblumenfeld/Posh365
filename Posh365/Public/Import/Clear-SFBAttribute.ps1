@@ -15,7 +15,7 @@ function Clear-SFBAttribute {
     The process to move from On-Premises Skype to Skype for Business Online (where there is not hybrid or transition, contact lists are NOT preserved)
 
     1. Remove Skype for Business Licenses from user(s)
-        Install-Module Posh365 -Force -SkipPublisherCheck  (Run PowerShell as admin. this step is one-time thing)
+        Install-Module Posh365 -Scope CurrentUser -Force
         Connect-Cloud -tenant Contoso -AzureADver2
         Get-Content .\UpnList.txt | Set-CloudLicense -RemoveOptions    (Select-click all entries named Skype & click OK)
     2. Sync AD Connect
@@ -72,16 +72,16 @@ function Clear-SFBAttribute {
             'Name', 'DistinguishedName', 'ObjectGuid', 'DisplayName', 'UserPrincipalName'
         )
         $CalculatedProperties = @(
-            @{n = "msRTCSIP-DeploymentLocator" ; e = {($_."msRTCSIP-DeploymentLocator" | Where-Object {$_ -ne $null}) -join ";" }},
-            @{n = "msRTCSIP-FederationEnabled" ; e = {($_."msRTCSIP-FederationEnabled" | Where-Object {$_ -ne $null}) -join ";" }},
-            @{n = "msRTCSIP-InternetAccessEnabled" ; e = {($_."msRTCSIP-InternetAccessEnabled" | Where-Object {$_ -ne $null}) -join ";" }},
-            @{n = "msRTCSIP-OptionFlags" ; e = {($_."msRTCSIP-OptionFlags" | Where-Object {$_ -ne $null}) -join ";" }},
-            @{n = "msRTCSIP-PrimaryHomeServer" ; e = {($_."msRTCSIP-PrimaryHomeServer" | Where-Object {$_ -ne $null}) -join ";" }},
-            @{n = "msRTCSIP-PrimaryUserAddress" ; e = {($_."msRTCSIP-PrimaryUserAddress" | Where-Object {$_ -ne $null}) -join ";" }},
-            @{n = "msRTCSIP-UserEnabled" ; e = {($_."msRTCSIP-UserEnabled" | Where-Object {$_ -ne $null}) -join ";" }},
-            @{n = "msExchShadowProxyAddresses" ; e = {($_."msExchShadowProxyAddresses" | Where-Object {$_ -ne $null}) -join ";" }},
-            @{n = "msRTCSIP-UserPolicies" ; e = {($_."msRTCSIP-UserPolicies" | Where-Object {$_ -ne $null}) -join ";" }},
-            @{n = "msRTCSIP-UserRoutingGroupId" ; e = {($_."msRTCSIP-UserRoutingGroupId" | Where-Object {$_ -ne $null}) -join ";" }}
+            @{n = "msRTCSIP-DeploymentLocator" ; e = { ($_."msRTCSIP-DeploymentLocator" | Where-Object { $_ -ne $null }) -join ";" } },
+            @{n = "msRTCSIP-FederationEnabled" ; e = { ($_."msRTCSIP-FederationEnabled" | Where-Object { $_ -ne $null }) -join ";" } },
+            @{n = "msRTCSIP-InternetAccessEnabled" ; e = { ($_."msRTCSIP-InternetAccessEnabled" | Where-Object { $_ -ne $null }) -join ";" } },
+            @{n = "msRTCSIP-OptionFlags" ; e = { ($_."msRTCSIP-OptionFlags" | Where-Object { $_ -ne $null }) -join ";" } },
+            @{n = "msRTCSIP-PrimaryHomeServer" ; e = { ($_."msRTCSIP-PrimaryHomeServer" | Where-Object { $_ -ne $null }) -join ";" } },
+            @{n = "msRTCSIP-PrimaryUserAddress" ; e = { ($_."msRTCSIP-PrimaryUserAddress" | Where-Object { $_ -ne $null }) -join ";" } },
+            @{n = "msRTCSIP-UserEnabled" ; e = { ($_."msRTCSIP-UserEnabled" | Where-Object { $_ -ne $null }) -join ";" } },
+            @{n = "msExchShadowProxyAddresses" ; e = { ($_."msExchShadowProxyAddresses" | Where-Object { $_ -ne $null }) -join ";" } },
+            @{n = "msRTCSIP-UserPolicies" ; e = { ($_."msRTCSIP-UserPolicies" | Where-Object { $_ -ne $null }) -join ";" } },
+            @{n = "msRTCSIP-UserRoutingGroupId" ; e = { ($_."msRTCSIP-UserRoutingGroupId" | Where-Object { $_ -ne $null }) -join ";" } }
         )
         $Attribute = @('msRTCSIP-DeploymentLocator', 'msRTCSIP-FederationEnabled', 'msRTCSIP-InternetAccessEnabled', 'msRTCSIP-OptionFlags'
             'msRTCSIP-PrimaryHomeServer', 'msRTCSIP-PrimaryUserAddress', 'msRTCSIP-UserEnabled', 'msExchShadowProxyAddresses', 'msRTCSIP-UserPolicies'
@@ -95,7 +95,7 @@ function Clear-SFBAttribute {
     Process {
         ForEach ($CurUpn in $Upn) {
             $FilterString = "UserPrincipalName -eq '{0}'" -f $CurUpn
-            $ADUser = Get-ADUser -Filter $FilterString -properties $Attribute  |  Select-Object ($SelectProperties + $CalculatedProperties)
+            $ADUser = Get-ADUser -Filter $FilterString -properties $Attribute | Select-Object ($SelectProperties + $CalculatedProperties)
             if (-not $LogOnly) {
                 foreach ($CurClear in $Clear) {
                     Write-Verbose "Clearing Current Attribute: $CurClear"

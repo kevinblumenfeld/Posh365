@@ -11,7 +11,7 @@ function Connect-SharePointPNP {
     )
     end {
         if ( -not (Get-Module -ListAvailable SharePointPnPPowerShellOnline)) {
-            Install-Module SharePointPnPPowerShellOnline -Force -SkipPublisherCheck
+            Install-Module SharePointPnPPowerShellOnline -Scope CurrentUser -Force
         }
         Connect-PnPOnline -Url $Url -UseWebLogin
     }
