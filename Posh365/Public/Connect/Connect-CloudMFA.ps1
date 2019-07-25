@@ -57,7 +57,7 @@ function Connect-CloudMFA {
                 Connect-CloudDeleteCredential -CredFile $CredFile
                 break
             }
-            { $ExchangeOnline -or $MSOnline -or $AzureAD -or $Compliance -or $SharePoint } {
+            { $ExchangeOnline -or $MSOnline -or $AzureAD -or $Compliance -or $SharePoint -or $PSBoundParameters.Count -eq 1 } {
                 if ($null = Test-Path $CredFile) {
                     Connect-CloudMFAClip -CredFile $CredFile
                 }
@@ -67,6 +67,13 @@ function Connect-CloudMFA {
                     [System.Management.Automation.PSCredential]$Credential = Import-CliXml -Path $CredFile
                     Connect-CloudMFAClip -CredFile $CredFile
                 }
+            }
+            { $PSBoundParameters.Count -eq 1 } {
+                Import-Module (Connect-EXOPSSession) -Global -WarningAction SilentlyContinue -DisableNameChecking
+                Write-Host "Connected to Exchange Online" -ForegroundColor Green
+                Connect-CloudModuleImport -AzureAD
+                Connect-AzureAD
+                Write-Host "Connected to Azure AD" -ForegroundColor Green
             }
             { $ExchangeOnline -or $Compliance } {
                 Connect-CloudModuleImport -ExchangeOnline
