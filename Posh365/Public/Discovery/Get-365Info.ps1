@@ -78,7 +78,37 @@ function Get-365Info {
             'DisplayName', 'GroupType', 'Description', 'EmailAddress', 'ManagedBy'
             'LastDirSyncTime', 'proxyAddresses', 'CommonName'
         )
-
+        $EOPOutboundAntiSpamProperties = @(
+            'Identity', 'Enabled', 'AdminDisplayName', 'IsDefault', 'ConfigurationType'
+            'RecipientLimitExternalPerHour', 'RecipientLimitInternalPerHour', 'RecipientLimitPerDay'
+            'ActionWhenThresholdReached', 'NotifyOutboundSpamRecipients', 'BccSuspiciousOutboundAdditionalRecipients'
+            'BccSuspiciousOutboundMail', 'NotifyOutboundSpam', 'ExchangeVersion', 'Name', 'DistinguishedName'
+            'ObjectCategory', 'ObjectClass', 'WhenChanged', 'WhenCreated', 'WhenChangedUTC', 'WhenCreatedUTC'
+            'ExchangeObjectId', 'OrganizationId', 'Id', 'Guid', 'OriginatingServer', 'IsValid', 'ObjectState'
+        )
+        <#
+        $EOPAntiSpamPoliciesProperties = @(
+            'Identity', 'BlockedSenderDomains', 'LanguageBlockList', 'RegionBlockList', 'EnableRegionBlockList'
+            'EnableLanguageBlockList', 'HighConfidenceSpamAction', 'SpamAction', 'BulkSpamAction', 'ModifySubjectValue'
+            'RedirectToRecipients', 'TestModeBccToRecipients', 'FalsePositiveAdditionalRecipients', 'QuarantineRetentionPeriod'
+            'EndUserSpamNotificationFrequency', 'TestModeAction', 'IncreaseScoreWithImageLinks', 'IncreaseScoreWithNumericIps'
+            'IncreaseScoreWithRedirectToOtherPort', 'IncreaseScoreWithBizOrInfoUrls', 'MarkAsSpamEmptyMessages'
+            'MarkAsSpamJavaScriptInHtml', 'MarkAsSpamFramesInHtml', 'MarkAsSpamObjectTagsInHtml', 'MarkAsSpamEmbedTagsInHtml'
+            'MarkAsSpamFormTagsInHtml', 'MarkAsSpamWebBugsInHtml', 'MarkAsSpamSensitiveWordList', 'MarkAsSpamSpfRecordHardFail'
+            'MarkAsSpamFromAddressAuthFail', 'MarkAsSpamBulkMail', 'MarkAsSpamNdrBackscatter', 'IsDefault', 'EnableEndUserSpamNotifications'
+            'DownloadLink', 'EndUserSpamNotificationCustomFromAddress', 'EndUserSpamNotificationCustomFromName'
+            'EndUserSpamNotificationCustomSubject', 'EndUserSpamNotificationLanguage', 'EndUserSpamNotificationLimit'
+            'BulkThreshold', 'AllowedSenders', 'AllowedSenderDomains', 'BlockedSenders', 'ZapEnabled', 'InlineSafetyTipsEnabled'
+            'PhishSpamAction', 'Id', 'IsValid', 'Name', 'WhenChanged', 'WhenCreated', 'WhenChangedUTC', 'WhenCreatedUTC', 'Guid'
+        )
+        #>
+        $EOPConnectionFiltersProperties = @(
+            'Identity', 'IsDefault', 'IPAllowList', 'IPBlockList', 'EnableSafeList', 'DirectoryBasedEdgeBlockMode', 'Id'
+            'IsValid', 'Name', 'WhenChanged', 'WhenCreated', 'WhenChangedUTC', 'WhenCreatedUTC', 'Guid'
+        )
+        $EXOAcceptedDomainProperties = @(
+            'Name', 'DomainName', 'DomainType', 'Default', 'AuthenticationType'
+        )
         $EXORecipientProperties = @(
             'DisplayName', 'RecipientTypeDetails', 'Office', 'Alias', 'Identity', 'PrimarySmtpAddress'
             'WindowsLiveID', 'LitigationHoldEnabled', 'Name', 'EmailAddresses'
@@ -97,6 +127,8 @@ function Get-365Info {
             'UserPrincipalName', 'PrimarySmtpAddress', 'Identity', 'AddressBookPolicy', 'Guid', 'LitigationHoldEnabled'
             'LitigationHoldDuration', 'LitigationHoldOwner', 'InPlaceHolds', 'x500', 'EmailAddresses'
         )
+
+        <#
         $EXOArchiveMailboxProperties = @(
             'Name', 'RecipientTypeDetails', 'DisplayName', 'UserPrincipalName', 'Identity', 'PrimarySmtpAddress', 'Alias'
             'ForwardingAddress', 'ForwardingSmtpAddress', 'LitigationHoldDate', 'AccountDisabled', 'DeliverToMailboxAndForward'
@@ -105,6 +137,7 @@ function Get-365Info {
             'AcceptMessagesOnlyFromDLMembers', 'AcceptMessagesOnlyFromSendersOrMembers', 'RejectMessagesFrom'
             'RejectMessagesFromDLMembers', 'RejectMessagesFromSendersOrMembers', 'InPlaceHolds', 'x500', 'EmailAddresses'
         )
+        #>
         $EXOMailContactsProperties = @(
             'DisplayName', 'PrimarySmtpAddress', 'WindowsEmailAddress', 'ExternalEmailAddress', 'EmailAddresses'
             'RecipientTypeDetails', 'RecipientType', 'ArbitrationMailbox', 'LastExchangeChangedTime', 'MailTip'
@@ -223,20 +256,22 @@ function Get-365Info {
                     Export-AndImportUnifiedGroups -Mode Export -File $365_UnifiedGroups
 
                     Write-Verbose "Gathering Connection Filters"
-                    Get-HostedConnectionFilterPolicy | Export-Csv $EOP_ConnectionFilters @ExportCSVSplat
+                    Get-EOPConnectionPolicy |
+                    Export-Csv $EOP_ConnectionFilters @ExportCSVSplat
 
                     Write-Verbose "Gathering Content Filter Policies"
-                    Get-HostedContentFilterPolicy | Export-Csv $EOP_AntiSpamPolicies @ExportCSVSplat
+                    Get-EOPContentPolicy | Export-Csv $EOP_AntiSpamPolicies @ExportCSVSplat
 
                     Write-Verbose "Gathering Content Filter Rules"
-                    Get-HostedContentFilterRule | Export-Csv $EOP_AntiSpamRules @ExportCSVSplat
+                    Get-EOPContentRule | Export-Csv $EOP_AntiSpamRules @ExportCSVSplat
 
                     Write-Verbose "Gathering Outbound Spam Filter Policies"
-                    Get-HostedOutboundSpamFilterPolicy | Export-Csv $EOP_OutboundAntiSpam @ExportCSVSplat
+                    Get-HostedOutboundSpamFilterPolicy | Select-Object $EOPOutboundAntiSpamProperties |
+                    Export-Csv $EOP_OutboundAntiSpam @ExportCSVSplat
 
                     Write-Verbose "Gathering Accepted Domains"
-                    $SelectDomain = @('Name', 'DomainName', 'DomainType', 'Default', 'AuthenticationType')
-                    Get-AcceptedDomain | Select-Object $SelectDomain | Export-Csv $EXO_AcceptedDomains @ExportCSVSplat
+                    Get-AcceptedDomain | Select-Object $EXOAcceptedDomainProperties |
+                    Export-Csv $EXO_AcceptedDomains @ExportCSVSplat
 
                     Write-Verbose "Gathering Remote Domains"
                     Get-RemoteDomain | Select-Object $EXORemoteDomainsProperties |
@@ -265,9 +300,11 @@ function Get-365Info {
                 Get-EXOMailbox -DetailedReport | Export-Csv $EXO_Mailboxes_Detailed @ExportCSVSplat
                 Import-Csv $EXO_Mailboxes_Detailed | Select-Object $EXOMailboxProperties | Export-Csv $EXO_Mailboxes @ExportCSVSplat
 
+                <#
                 Write-Verbose "Gathering Exchange Online Archive Mailboxes"
                 Get-EXOMailbox -ArchivesOnly -DetailedReport | Export-Csv $EXO_ArchiveMailboxes_Detailed @ExportCSVSplat
                 Import-Csv $EXO_ArchiveMailboxes_Detailed | Select-Object $EXOArchiveMailboxProperties | Export-Csv $EXO_ArchiveMailboxes @ExportCSVSplat
+                #>
 
                 Write-Verbose "Gathering Exchange Online Resource Mailboxes and Calendar Processing"
                 $ResourceMailbox = Import-Csv $EXO_Mailboxes_Detailed | Where-Object { $_.RecipientTypeDetails -in 'RoomMailbox', 'EquipmentMailbox' }
@@ -351,10 +388,10 @@ function Get-365Info {
             }
             else {
                 Write-Verbose "Gathering 365 Recipients - filtered"
-                '{UserPrincipalName -like "*contoso.com" -or
-            emailaddresses -like "*contoso.com" -or
-            ExternalEmailAddress -like "*contoso.com" -or
-            PrimarySmtpAddress -like "*contoso.com"}' | Get-365Recipient -DetailedReport | Export-Csv $EXO_Recipients_Detailed @ExportCSVSplat
+                ' { UserPrincipalName -like "*contoso.com" -or
+                emailaddresses -like "*contoso.com" -or
+                ExternalEmailAddress -like "*contoso.com" -or
+                PrimarySmtpAddress -like "*contoso.com" }' | Get-365Recipient -DetailedReport | Export-Csv $EXO_Recipients_Detailed @ExportCSVSplat
                 Import-Csv $EXO_Recipients_Detailed | Select-Object $EXORecipientProperties | Export-Csv $EXO_Recipients @ExportCSVSplat
 
                 Write-Verbose "Gathering MsolUsers - filtered"
@@ -369,15 +406,15 @@ function Get-365Info {
                 Import-Csv $EXO_Groups_Detailed | Select-Object $EXOGroupProperties | Export-Csv $EXO_Groups @ExportCSVSplat
 
                 Write-Verbose "Gathering Exchange Online Mailboxes - filtered"
-                '{emailaddresses -like "*contoso.com"}' | Get-EXOMailbox -DetailedReport | Export-Csv $EXO_Mailboxes_Detailed @ExportCSVSplat
+                ' { emailaddresses -like "*contoso.com" }' | Get-EXOMailbox -DetailedReport | Export-Csv $EXO_Mailboxes_Detailed @ExportCSVSplat
                 Import-Csv $EXO_Mailboxes_Detailed | Select-Object $EXOMailboxProperties | Export-Csv $EXO_Mailboxes @ExportCSVSplat
 
                 Write-Verbose "Gathering Exchange Online Archive Mailboxes - filtered"
-                '{emailaddresses -like "*contoso.com"}' | Get-EXOMailbox -ArchivesOnly -DetailedReport | Export-Csv $EXO_ArchiveMailboxes_Detailed @ExportCSVSplat
+                ' { emailaddresses -like "*contoso.com" }' | Get-EXOMailbox -ArchivesOnly -DetailedReport | Export-Csv $EXO_ArchiveMailboxes_Detailed @ExportCSVSplat
                 Import-Csv $EXO_ArchiveMailboxes_Detailed | Select-Object $EXOMailboxProperties | Export-Csv $EXO_ArchiveMailboxes @ExportCSVSplat
 
                 Write-Verbose "Gathering Exchange Online Resource Mailboxes and Calendar Processing"
-                '{emailaddresses -like "*contoso.com"}' | Get-EXOResourceMailbox | Export-Csv $EXO_ResourceMailboxes @ExportCSVSplat
+                ' { emailaddresses -like "*contoso.com" }' | Get-EXOResourceMailbox | Export-Csv $EXO_ResourceMailboxes @ExportCSVSplat
 
                 if (-not $SkipLicensingReport) {
                     Write-Verbose "Gathering Office 365 Licenses - filtered"
