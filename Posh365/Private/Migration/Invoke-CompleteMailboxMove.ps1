@@ -36,6 +36,7 @@ function Invoke-CompleteMailboxMove {
                 Set-MoveRequest @Param
                 [PSCustomObject]@{
                     DisplayName      = $User.DisplayName
+                    CompleteAfter    = $When.ToLocalTime()
                     CompleteAfterUTC = $When
                     Action           = "SET"
                     Result           = "Success"
@@ -45,6 +46,7 @@ function Invoke-CompleteMailboxMove {
             catch {
                 [PSCustomObject]@{
                     DisplayName      = $User.DisplayName
+                    CompleteAfter    = $When.ToLocalTime()
                     CompleteAfterUTC = $When
                     Action           = "SET"
                     Result           = "Failed"
@@ -55,6 +57,7 @@ function Invoke-CompleteMailboxMove {
                 Resume-MoveRequest $User.Guid
                 [PSCustomObject]@{
                     DisplayName      = $User.DisplayName
+                    CompleteAfter    = ""
                     CompleteAfterUTC = ""
                     Action           = "RESUME"
                     Result           = "Success"
@@ -64,6 +67,7 @@ function Invoke-CompleteMailboxMove {
             catch {
                 [PSCustomObject]@{
                     DisplayName      = $User.DisplayName
+                    CompleteAfter    = ""
                     CompleteAfterUTC = ""
                     Action           = "RESUME"
                     Result           = "Failed"

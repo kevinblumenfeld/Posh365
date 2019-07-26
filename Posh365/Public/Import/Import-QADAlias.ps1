@@ -96,7 +96,7 @@ function Import-QADAlias {
                                     PrimarySmtpAddress = $PrimarySmtpAddress
                                     Alias              = $Alias
                                     Mail               = $U.Mail
-                                    ProxyBackup        = [string]::join('|', [string[]]$U.ProxyAddresses)
+                                    ProxyBackup        = @($U.ProxyAddresses) -ne '' -join '|'
                                     FullNameError      = $U.DistinguishedName
                                     Message            = $U.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'
                                     ExtendedMessage    = $U.ObjectGUID
@@ -115,7 +115,7 @@ function Import-QADAlias {
                                 PrimarySmtpAddress = $PrimarySmtpAddress
                                 Alias              = $Alias
                                 Mail               = $User.Mail
-                                ProxyBackup        = [string]::join('|', [string[]]$User.ProxyAddresses)
+                                ProxyBackup        = @($User.ProxyAddresses) -ne '' -join '|'
                                 FullNameError      = $User.DistinguishedName
                                 Message            = $User.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'
                                 ExtendedMessage    = $User.ObjectGUID
@@ -135,7 +135,7 @@ function Import-QADAlias {
                                 PrimarySmtpAddress = $PrimarySmtpAddress
                                 Alias              = $Alias
                                 Mail               = $User.Mail
-                                ProxyBackup        = [string]::join('|', [string[]]$User.ProxyAddresses)
+                                ProxyBackup        = @($User.ProxyAddresses) -ne '' -join '|'
                                 FullNameError      = $User.DistinguishedName
                                 Message            = $User.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'
                                 ExtendedMessage    = $User.ObjectGUID
@@ -152,7 +152,7 @@ function Import-QADAlias {
                                 PrimarySmtpAddress = $PrimarySmtpAddress
                                 Alias              = $Alias
                                 Mail               = $NewData.Mail
-                                ProxyBackup        = [string]::join('|', [string[]]$NewData.ProxyAddresses)
+                                ProxyBackup        = @($NewData.ProxyAddresses) -ne '' -join '|'
                                 FullNameError      = $User.DistinguishedName
                                 Message            = $User.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'
                                 ExtendedMessage    = $User.ObjectGUID
@@ -190,7 +190,7 @@ function Import-QADAlias {
                         PrimarySmtpAddress = $PrimarySmtpAddress
                         Alias              = $Alias
                         Mail               = $User.Mail
-                        ProxyBackup        = [string]::join('|', [string[]]$User.ProxyAddresses)
+                        ProxyBackup        = @($User.ProxyAddresses) -ne '' -join '|'
                         FullNameError      = $_.Exception.GetType().fullname
                         Message            = $_.CategoryInfo.Reason
                         ExtendedMessage    = $_.Exception.Message

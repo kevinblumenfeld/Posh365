@@ -126,7 +126,7 @@ function Import-QADData {
                             Mail                  = $PostSet.Mail
                             TargetAddress         = $PostSet.TargetAddress
                             MailNickName          = $PostSet.MailNickName
-                            ProxyAddresses        = [string]::join('|', [String[]]$PostSet.ProxyAddresses -ne '')
+                            ProxyAddresses        = @($PostSet.ProxyAddresses) -ne '' -join '|'
                             ProposedMail          = $NewMail
                             ProposedTargetAddress = $TargetAddress
                             ProposedMailNickName  = $MailNickName

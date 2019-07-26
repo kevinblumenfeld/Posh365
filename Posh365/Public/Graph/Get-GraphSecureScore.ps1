@@ -51,7 +51,7 @@ function Get-GraphSecureScore {
                     CurrentScore    = $Score.currentScore
                     Date            = $Score.createdDateTime
                     LicensedUsers   = $Score.licensedUserCount
-                    EnabledServices = [string]::join('|', [string[]]$Score.enabledServices)
+                    EnabledServices = @($Score.enabledServices) -ne '' -join '|'
                 }
             }
         }

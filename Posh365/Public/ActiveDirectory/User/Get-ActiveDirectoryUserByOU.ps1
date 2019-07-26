@@ -74,25 +74,25 @@ function Get-ActiveDirectoryUserByOU {
 
             $CalculatedProps = @(
                 @{n = 'OU' ; e = { $_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)' } },
-                @{n = 'PrimarySmtpAddress' ; e = { [string]::join('|', [String[]]$_.ProxyAddresses -cmatch 'SMTP:') } },
-                @{n = 'InheritanceBroken'; e = { $_.nTSecurityDescriptor.AreAccessRulesProtected } },
-                @{n = 'altRecipientBL' ; e = { [string]::join('|', [String[]]$_.altRecipientBL -ne '') } },
-                @{n = 'AuthenticationPolicy' ; e = { [string]::join('|', [String[]]$_.AuthenticationPolicy -ne '') } },
-                @{n = 'AuthenticationPolicySilo' ; e = { [string]::join('|', [String[]]$_.AuthenticationPolicySilo -ne '') } },
-                @{n = 'CompoundIdentitySupported' ; e = { [string]::join('|', [String[]]$_.CompoundIdentitySupported -ne '') } },
-                @{n = 'dSCorePropagationData' ; e = { ($_.dSCorePropagationData | Where-Object { $_ -ne $null }) -join ';' } },
-                @{n = 'KerberosEncryptionType' ; e = { [string]::join('|', [String[]]$_.KerberosEncryptionType -ne '') } },
-                @{n = 'managedObjects' ; e = { [string]::join('|', [String[]]$_.managedObjects -ne '') } },
-                @{n = 'MemberOf' ; e = { [string]::join('|', [String[]]$_.MemberOf -ne '') } },
-                @{n = 'msExchADCGlobalNames' ; e = { [string]::join('|', [String[]]$_.msExchADCGlobalNames -ne '') } },
-                @{n = 'msExchPoliciesExcluded' ; e = { [string]::join('|', [String[]]$_.msExchPoliciesExcluded -ne '') } },
-                @{n = 'PrincipalsAllowedToDelegateToAccount' ; e = { [string]::join('|', [String[]]$_.PrincipalsAllowedToDelegateToAccount -ne '') } },
-                @{n = 'protocolSettings' ; e = { [string]::join('|', [String[]]$_.protocolSettings -ne '') } },
-                @{n = 'publicDelegatesBL' ; e = { [string]::join('|', [String[]]$_.publicDelegatesBL -ne '') } },
-                @{n = 'securityProtocol' ; e = { [string]::join('|', [String[]]$_.securityProtocol -ne '') } },
-                @{n = 'ServicePrincipalNames' ; e = { [string]::join('|', [String[]]$_.ServicePrincipalNames -ne '') } },
-                @{n = 'showInAddressBook' ; e = { [string]::join('|', [String[]]$_.showInAddressBook -ne '') } },
-                @{n = 'SIDHistory' ; e = { [string]::join('|', [String[]]$_.SIDHistory -ne '') } }
+                @{n = 'PrimarySmtpAddress' ; e = { @($_.ProxyAddresses ) -cmatch 'SMTP:' -join '|' } },
+                @{n = 'InheritanceBroken'; e = { @($_.InheritanceBroken) -ne '' -join '|' } },
+                @{n = 'altRecipientBL' ; e = { @($_.altRecipientBL) -ne '' -join '|' } },
+                @{n = 'AuthenticationPolicy' ; e = { @($_.AuthenticationPolicy) -ne '' -join '|' } },
+                @{n = 'AuthenticationPolicySilo' ; e = { @($_.AuthenticationPolicySilo) -ne '' -join '|' } },
+                @{n = 'CompoundIdentitySupported' ; e = { @($_.CompoundIdentitySupported) -ne '' -join '|' } },
+                @{n = 'dSCorePropagationData' ; e = { @($_.dSCorePropagationData) -ne '' -join '|' } },
+                @{n = 'KerberosEncryptionType' ; e = { @($_.KerberosEncryptionType) -ne '' -join '|' } },
+                @{n = 'managedObjects' ; e = { @($_.managedObjects) -ne '' -join '|' } },
+                @{n = 'MemberOf' ; e = { @($_.MemberOf) -ne '' -join '|' } },
+                @{n = 'msExchADCGlobalNames' ; e = { @($_.msExchADCGlobalNames) -ne '' -join '|' } },
+                @{n = 'msExchPoliciesExcluded' ; e = { @($_.msExchPoliciesExcluded) -ne '' -join '|' } },
+                @{n = 'PrincipalsAllowedToDelegateToAccount' ; e = { @($_.PrincipalsAllowedToDelegateToAccount) -ne '' -join '|' } },
+                @{n = 'protocolSettings' ; e = { @($_.protocolSettings) -ne '' -join '|' } },
+                @{n = 'publicDelegatesBL' ; e = { @($_.publicDelegatesBL) -ne '' -join '|' } },
+                @{n = 'securityProtocol' ; e = { @($_.securityProtocol) -ne '' -join '|' } },
+                @{n = 'ServicePrincipalNames' ; e = { @($_.ServicePrincipalNames) -ne '' -join '|' } },
+                @{n = 'showInAddressBook' ; e = { @($_.showInAddressBook) -ne '' -join '|' } },
+                @{n = 'SIDHistory' ; e = { @($_.SIDHistory) -ne '' -join '|' } }
             )
             $ExtensionAttribute = @(
                 'extensionAttribute1', 'extensionAttribute2', 'extensionAttribute3', 'extensionAttribute4', 'extensionAttribute5'
@@ -116,11 +116,11 @@ function Get-ActiveDirectoryUserByOU {
                 'targetAddress'
                 @{
                     n = 'PrimarySmtpAddress'
-                    e = { [string]::join('|', [String[]]$_.ProxyAddresses -cmatch 'SMTP:') }
+                    e = { @($_.ProxyAddresses ) -cmatch 'SMTP:' -join '|' }
                 }
                 @{
                     n = 'proxyAddresses'
-                    e = { [string]::join('|', [String[]]$_.ProxyAddresses -ne '') }
+                    e = { @($_.proxyAddresses) -ne '' -join '|' }
                 }
                 @{
                     n = 'OU'

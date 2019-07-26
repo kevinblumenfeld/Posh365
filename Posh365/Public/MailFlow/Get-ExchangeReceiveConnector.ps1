@@ -28,11 +28,11 @@ function Get-ExchangeReceiveConnector {
             'Enabled'
             @{
                 Name       = 'RemoteIPRanges'
-                Expression = { [string]::join("|", [String[]]$_.RemoteIPRanges -ne '') }
+                Expression = { @($_.RemoteIPRanges) -ne '' -join '|' }
             }
             @{
                 Name       = 'Bindings'
-                Expression = { [string]::join("|", [String[]]$_.Bindings -ne '') }
+                Expression = { @($_.Bindings) -ne '' -join '|' }
             }
             'PermissionGroups'
             'AuthMechanism'

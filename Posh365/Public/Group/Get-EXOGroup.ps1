@@ -58,31 +58,31 @@ function Get-EXOGroup {
             )
 
             $CalculatedProps = @(
-                @{n = "AcceptMessagesOnlyFrom" ; e = { [string]::join('|', [String[]]$_.AcceptMessagesOnlyFrom) } },
-                @{n = "AcceptMessagesOnlyFromDLMembers" ; e = { [string]::join('|', [String[]]$_.AcceptMessagesOnlyFromDLMembers) } },
-                @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = { [string]::join('|', [String[]]$_.AcceptMessagesOnlyFromSendersOrMembers) } },
-                @{n = "AddressListMembership" ; e = { [string]::join('|', [String[]]$_.AddressListMembership) } },
-                @{n = "AdministrativeUnits" ; e = { [string]::join('|', [String[]]$_.AdministrativeUnits) } },
-                @{n = "BypassModerationFromSendersOrMembers" ; e = { [string]::join('|', [String[]]$_.BypassModerationFromSendersOrMembers) } },
-                @{n = "GrantSendOnBehalfTo" ; e = { [string]::join('|', [String[]]$_.GrantSendOnBehalfTo) } },
-                @{n = "ManagedBy" ; e = { [string]::join('|', [String[]]$_.ManagedBy) } },
-                @{n = "ModeratedBy" ; e = { [string]::join('|', [String[]]$_.ModeratedBy) } },
-                @{n = "RejectMessagesFrom" ; e = { [string]::join('|', [String[]]$_.RejectMessagesFrom) } },
-                @{n = "RejectMessagesFromDLMembers" ; e = { ($_.RejectMessagesFromDLMembers | Where-Object { $_ -ne $null }) -join ";" } },
-                @{n = "RejectMessagesFromSendersOrMembers" ; e = { [string]::join('|', [String[]]$_.RejectMessagesFromSendersOrMembers) } },
-                @{n = "ExtensionCustomAttribute1" ; e = { [string]::join('|', [String[]]$_.ExtensionCustomAttribute1) } },
-                @{n = "ExtensionCustomAttribute2" ; e = { [string]::join('|', [String[]]$_.ExtensionCustomAttribute2) } },
-                @{n = "ExtensionCustomAttribute3" ; e = { [string]::join('|', [String[]]$_.ExtensionCustomAttribute3) } },
-                @{n = "ExtensionCustomAttribute4" ; e = { [string]::join('|', [String[]]$_.ExtensionCustomAttribute4) } },
-                @{n = "ExtensionCustomAttribute5" ; e = { [string]::join('|', [String[]]$_.ExtensionCustomAttribute5) } },
-                @{n = "MailTipTranslations" ; e = { [string]::join('|', [String[]]$_.MailTipTranslations) } },
-                @{n = "ObjectClass" ; e = { [string]::join('|', [String[]]$_.ObjectClass) } },
-                @{n = "PoliciesExcluded" ; e = { [string]::join('|', [String[]]$_.PoliciesExcluded) } },
-                @{n = "PoliciesIncluded" ; e = { [string]::join('|', [String[]]$_.PoliciesIncluded) } },
-                @{n = "EmailAddresses" ; e = { [string]::join('|', [String[]]$_.EmailAddresses) } },
+                @{n = "AcceptMessagesOnlyFrom" ; e = { @($_.AcceptMessagesOnlyFrom) -ne '' -join '|' } },
+                @{n = "AcceptMessagesOnlyFromDLMembers" ; e = { @($_.AcceptMessagesOnlyFromDLMembers) -ne '' -join '|' } },
+                @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = { @($_.AcceptMessagesOnlyFromSendersOrMembers) -ne '' -join '|' } },
+                @{n = "AddressListMembership" ; e = { @($_.AddressListMembership) -ne '' -join '|' } },
+                @{n = "AdministrativeUnits" ; e = { @($_.AdministrativeUnits) -ne '' -join '|' } },
+                @{n = "BypassModerationFromSendersOrMembers" ; e = { @($_.BypassModerationFromSendersOrMembers) -ne '' -join '|' } },
+                @{n = "GrantSendOnBehalfTo" ; e = { @($_.GrantSendOnBehalfTo) -ne '' -join '|' } },
+                @{n = "ManagedBy" ; e = { @($_.ManagedBy) -ne '' -join '|' } },
+                @{n = "ModeratedBy" ; e = { @($_.ModeratedBy) -ne '' -join '|' } },
+                @{n = "RejectMessagesFrom" ; e = { @($_.RejectMessagesFrom) -ne '' -join '|' } },
+                @{n = "RejectMessagesFromDLMembers" ; e = { @($_.RejectMessagesFromSendersOrMembers) -ne '' -join '|' } },
+                @{n = "RejectMessagesFromSendersOrMembers" ; e = { @($_.RejectMessagesFromSendersOrMembers) -ne '' -join '|' } },
+                @{n = "ExtensionCustomAttribute1" ; e = { @($_.ExtensionCustomAttribute1) -ne '' -join '|' } },
+                @{n = "ExtensionCustomAttribute2" ; e = { @($_.ExtensionCustomAttribute2) -ne '' -join '|' } },
+                @{n = "ExtensionCustomAttribute3" ; e = { @($_.ExtensionCustomAttribute3) -ne '' -join '|' } },
+                @{n = "ExtensionCustomAttribute4" ; e = { @($_.ExtensionCustomAttribute4) -ne '' -join '|' } },
+                @{n = "ExtensionCustomAttribute5" ; e = { @($_.ExtensionCustomAttribute5) -ne '' -join '|' } },
+                @{n = "MailTipTranslations" ; e = { @($_.MailTipTranslations) -ne '' -join '|' } },
+                @{n = "ObjectClass" ; e = { @($_.ObjectClass) -ne '' -join '|' } },
+                @{n = "PoliciesExcluded" ; e = { @($_.PoliciesExcluded) -ne '' -join '|' } },
+                @{n = "PoliciesIncluded" ; e = { @($_.PoliciesIncluded) -ne '' -join '|' } },
+                @{n = "EmailAddresses" ; e = { @($_.emailaddresses) -ne '' -join '|' } },
                 @{n = "x500" ; e = { "x500:" + $_.LegacyExchangeDN } },
-                @{n = "membersName" ; e = { [string]::join('|', [String[]]$Members.name) } },
-                @{n = "membersSMTP" ; e = { [string]::join('|', [String[]]$Members.PrimarySmtpAddress) } }
+                @{n = "membersName" ; e = { @($Members.name) -ne '' -join '|' } },
+                @{n = "membersSmtp" ; e = { @($Members.PrimarySmtpAddress) -ne '' -join '|' } }
             )
         }
         else {
@@ -91,12 +91,12 @@ function Get-EXOGroup {
             )
 
             $CalculatedProps = @(
-                @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = { [string]::join('|', [String[]]$_.AcceptMessagesOnlyFromSendersOrMembers) } },
-                @{n = "ManagedBy" ; e = { [string]::join('|', [String[]]$_.ManagedBy) } },
-                @{n = "EmailAddresses" ; e = { [string]::join('|', [String[]]$_.EmailAddresses) } },
+                @{n = "AcceptMessagesOnlyFromSendersOrMembers" ; e = { @($_.AcceptMessagesOnlyFromSendersOrMembers) -ne '' -join '|' } },
+                @{n = "ManagedBy" ; e = { @($_.ManagedBy) -ne '' -join '|' } },
+                @{n = "EmailAddresses" ; e = { @($_.emailaddresses) -ne '' -join '|' } },
                 @{n = "x500" ; e = { "x500:" + $_.LegacyExchangeDN } },
-                @{n = "membersName" ; e = { [string]::join('|', [String[]]$Members.name) } },
-                @{n = "membersSMTP" ; e = { [string]::join('|', [String[]]$Members.PrimarySmtpAddress) } }
+                @{n = "membersName" ; e = { @($Members.name) -ne '' -join '|' } },
+                @{n = "membersSmtp" ; e = { @($Members.PrimarySmtpAddress) -ne '' -join '|' } }
             )
         }
     }

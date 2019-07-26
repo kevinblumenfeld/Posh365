@@ -44,10 +44,10 @@ function Get-EXOResourceMailbox {
         )
 
         $CalculatedProps = @(
-            @{n = "ResourceDelegates" ; e = { [string]::join("|", [String[]]$_.ResourceDelegates -ne '') } },
-            @{n = "BookInPolicy" ; e = { [string]::join("|", [String[]]$MailboxLegacyExchangeDNHash[$_.BookInPolicy] -ne '') } },
-            @{n = "RequestInPolicy" ; e = { [string]::join("|", [String[]]$MailboxLegacyExchangeDNHash[$_.RequestInPolicy] -ne '') } },
-            @{n = "RequestOutOfPolicy" ; e = { [string]::join("|", [String[]]$MailboxLegacyExchangeDNHash[$_.RequestOutOfPolicy] -ne '') } }
+            @{n = "ResourceDelegates" ; e = { @($MailboxLegacyExchangeDNHash[$_.ResourceDelegates]) -ne '' -join '|' } },
+            @{n = "BookInPolicy" ; e = { @($MailboxLegacyExchangeDNHash[$_.BookInPolicy]) -ne '' -join '|' } },
+            @{n = "RequestInPolicy" ; e = { @($MailboxLegacyExchangeDNHash[$_.RequestInPolicy]) -ne '' -join '|' } },
+            @{n = "RequestOutOfPolicy" ; e = { @($MailboxLegacyExchangeDNHash[$_.RequestOutOfPolicy]) -ne '' -join '|' } }
         )
     }
     Process {

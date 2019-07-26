@@ -15,7 +15,7 @@
     process {
 
         foreach ($Row in $RowItem) {
-            foreach ($Expand in ($Row."$FindInColumn").split('|')) {
+            foreach ($Expand in $Row.$FindInColumn.split('|')) {
                 [PSCustomObject]@{
                     DisplayName          = $Row.DisplayName
                     RecipientTypeDetails = $Row.RecipientTypeDetails

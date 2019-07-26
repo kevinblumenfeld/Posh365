@@ -30,19 +30,19 @@ function Get-ExchangeSendConnector {
             'TlsAuthLevel'
             @{
                 Name       = 'SmartHosts'
-                Expression = { [string]::join("|", [String[]]$_.SmartHosts -ne '') }
+                Expression = { @($_.SmartHosts) -ne '' -join '|' }
             }
             @{
                 Name       = 'AddressSpaces'
-                Expression = { [string]::join("|", [String[]]$_.AddressSpaces -ne '') }
+                Expression = { @($_.AddressSpaces) -ne '' -join '|' }
             }
             @{
                 Name       = 'ConnectedDomains'
-                Expression = { [string]::join("|", [String[]]$_.ConnectedDomains -ne '') }
+                Expression = { @($_.ConnectedDomains) -ne '' -join '|' }
             }
             @{
                 Name       = 'SourceTransportServers'
-                Expression = { [string]::join("|", [String[]]$_.SourceTransportServers -ne '') }
+                Expression = { @($_.SourceTransportServers) -ne '' -join '|' }
             }
             'Port'
             'TlsCertificateName'

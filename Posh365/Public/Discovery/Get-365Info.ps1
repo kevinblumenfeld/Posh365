@@ -166,8 +166,8 @@ function Get-365Info {
                     Get-RemoteDomain | Export-Csv $EXO_RemoteDomains @ExportCSVSplat
 
                     Write-Verbose "Gathering Organization Config"
-                    (Get-OrganizationConfig).PSObject.Properties | ForEach-Object { $_ | Select-Object Name, Value } |
-                    Export-Csv $EXO_OrganizationRelationship @ExportCSVSplat | Export-Csv $EXO_OrganizationConfig @ExportCSVSplat
+                    (Get-OrganizationConfig).PSObject.Properties | Select-Object Name, Value
+                    Export-Csv $EXO_OrganizationConfig @ExportCSVSplat
 
                     Write-Verbose "Gathering Organization Relationship"
                     Get-OrganizationRelationship | Export-Csv $EXO_OrganizationRelationship @ExportCSVSplat
@@ -194,20 +194,20 @@ function Get-365Info {
                 Get-EXOResourceMailbox | Export-Csv $EXO_ResourceMailboxes @ExportCSVSplat
 
                 Import-Csv $EXO_Groups | Export-MembersOnePerLine -ReportPath $TenantPath -FindInColumn MembersName |
-                Export-Csv $EXO_GroupMembersSMTP @ExportCSVSplat
+                Export-Csv $EXO_GroupMembers @ExportCSVSplat
 
                 Import-Csv $EXO_Groups | Export-MembersOnePerLine -ReportPath $TenantPath -FindInColumn MembersSMTP |
-                Export-Csv $EXO_GroupMembers @ExportCSVSplat
+                Export-Csv $EXO_GroupMembersSMTP @ExportCSVSplat
 
                 Import-Csv $EXO_Mailboxes_Detailed | Export-EmailsOnePerLine -ReportPath $TenantPath -FindInColumn EmailAddresses |
                 Export-Csv $EXO_MailboxEmails @ExportCSVSplat
 
-                Import-Csv $EXO_Recipients | Export-EmailsOnePerLine -ReportPath $TenantPath -FindInColumn EmailAddresses |
-                Export-Csv $EXO_RecipientEmails @ExportCSVSplat
-
                 Write-Verbose "Gathering Recipients"
                 Get-365Recipient -DetailedReport | Export-Csv $EXO_Recipients_Detailed @ExportCSVSplat
                 Import-Csv $EXO_Recipients_Detailed | Select-Object $RecipientProperties | Export-Csv $EXO_Recipients @ExportCSVSplat
+
+                Import-Csv $EXO_Recipients | Export-EmailsOnePerLine -ReportPath $TenantPath -FindInColumn EmailAddresses |
+                Export-Csv $EXO_RecipientEmails @ExportCSVSplat
 
                 Write-Verbose "Gathering MsolUsers"
                 Get-365MsolUser -DetailedReport | Export-Csv $MSOL_Users_Detailed @ExportCSVSplat

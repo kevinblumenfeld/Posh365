@@ -61,7 +61,7 @@ function Import-GoogleToSharedMailbox {
                     Alias              = $NewShared.Alias
                     UserPrincipalName  = $NewShared.UserPrincipalName
                     PrimarySmtpAddress = $NewShared.PrimarySmtpAddress
-                    EmailAddresses     = [string]::join('|', [string[]]$NewShared.EmailAddresses)
+                    EmailAddresses     = @($NewShared.EmailAddresses) -ne '' -join '|'
                     ObjectId           = $NewShared.ExternalDirectoryObjectId
                     FullNameError      = 'SUCCESS'
                     Message            = 'SUCCESS'

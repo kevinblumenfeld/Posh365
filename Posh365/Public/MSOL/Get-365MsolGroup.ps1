@@ -46,14 +46,14 @@ function Get-365MsolGroup {
             )
 
             $CalculatedProps = @(
-                @{n = "DirSyncProvisioningErrors" ; e = { [string]::join("|", [String[]]$_.DirSyncProvisioningErrors -ne '') } },
-                @{n = "Errors" ; e = { [string]::join("|", [String[]]$_.Errors -ne '') } },
-                @{n = "GroupType" ; e = { [string]::join("|", [String[]]$_.GroupType -ne '') } },
-                @{n = "IsSystem" ; e = { [string]::join("|", [String[]]$_.IsSystem -ne '') } },
-                @{n = "Licenses" ; e = { [string]::join("|", [String[]]$_.Licenses -ne '') } },
-                @{n = "ObjectId" ; e = { [string]::join("|", [String[]]$_.ObjectId -ne '') } },
-                @{n = "proxyAddresses" ; e = { [string]::join("|", [String[]]$_.proxyAddresses -ne '') } },
-                @{n = "ValidationStatus" ; e = { [string]::join("|", [String[]]$_.ValidationStatus -ne '') } }
+                @{n = "DirSyncProvisioningErrors" ; e = { @($_.DirSyncProvisioningErrors) -ne '' -join '|' } },
+                @{n = "Errors" ; e = { @($_.Errors) -ne '' -join '|' } },
+                @{n = "GroupType" ; e = { @($_.GroupType) -ne '' -join '|' } },
+                @{n = "IsSystem" ; e = { @($_.IsSystem) -ne '' -join '|' } },
+                @{n = "Licenses" ; e = { @($_.Licenses) -ne '' -join '|' } },
+                @{n = "ObjectId" ; e = { @($_.ObjectId) -ne '' -join '|' } },
+                @{n = "proxyAddresses" ; e = { @($_.proxyAddresses) -ne '' -join '|' } },
+                @{n = "ValidationStatus" ; e = { @($_.ValidationStatus) -ne '' -join '|' } }
             )
         }
         else {
@@ -62,8 +62,8 @@ function Get-365MsolGroup {
             )
 
             $CalculatedProps = @(
-                @{n = "GroupType" ; e = { [string]::join("|", [String[]]$_.GroupType -ne '') } },
-                @{n = "proxyAddresses" ; e = { [string]::join("|", [String[]]$_.proxyAddresses -ne '') } }
+                @{n = "GroupType" ; e = { @($_.GroupType) -ne '' -join '|' } },
+                @{n = "proxyAddresses" ; e = { @($_.proxyAddresses) -ne '' -join '|' } }
             )
         }
     }
