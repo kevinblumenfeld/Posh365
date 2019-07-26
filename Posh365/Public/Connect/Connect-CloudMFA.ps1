@@ -84,7 +84,7 @@ function Connect-CloudMFA {
                 Write-Host "Connected to Exchange Online" -ForegroundColor Green
             }
             $Compliance {
-                Import-Module (Connect-IPPSSession) -Global -NoClobber
+                Import-Module (Connect-IPPSSession) -Global
                 Write-Host "Connected to Security & Compliance" -ForegroundColor Green
             }
             $MSOnline {

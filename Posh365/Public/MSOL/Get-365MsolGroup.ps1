@@ -42,13 +42,12 @@ function Get-365MsolGroup {
     Begin {
         if ($DetailedReport) {
             $Selectproperties = @(
-                'CommonName', 'Description', 'DisplayName', 'EmailAddress', 'ManagedBy', 'LastDirSyncTime'
+                'DisplayName', 'GroupType', 'EmailAddress', 'ManagedBy', 'LastDirSyncTime', 'CommonName', 'Description'
             )
 
             $CalculatedProps = @(
                 @{n = "DirSyncProvisioningErrors" ; e = { @($_.DirSyncProvisioningErrors) -ne '' -join '|' } },
                 @{n = "Errors" ; e = { @($_.Errors) -ne '' -join '|' } },
-                @{n = "GroupType" ; e = { @($_.GroupType) -ne '' -join '|' } },
                 @{n = "IsSystem" ; e = { @($_.IsSystem) -ne '' -join '|' } },
                 @{n = "Licenses" ; e = { @($_.Licenses) -ne '' -join '|' } },
                 @{n = "ObjectId" ; e = { @($_.ObjectId) -ne '' -join '|' } },
@@ -58,11 +57,10 @@ function Get-365MsolGroup {
         }
         else {
             $Selectproperties = @(
-                'CommonName', 'Description', 'DisplayName', 'EmailAddress', 'ManagedBy', 'LastDirSyncTime'
+                'DisplayName', 'GroupType', 'EmailAddress', 'ManagedBy', 'LastDirSyncTime', 'CommonName', 'Description'
             )
 
             $CalculatedProps = @(
-                @{n = "GroupType" ; e = { @($_.GroupType) -ne '' -join '|' } },
                 @{n = "proxyAddresses" ; e = { @($_.proxyAddresses) -ne '' -join '|' } }
             )
         }
