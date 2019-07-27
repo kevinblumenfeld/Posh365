@@ -74,13 +74,13 @@ function Get-EXOResourceMailbox {
                 $CalList = Get-CalendarProcessing -Identity $Resource.Guid.ToString()
                 foreach ($Cal in $CalList) {
                     [PSCustomObject]@{
-                        DisplayName                         = $Mailbox.DisplayName
-                        Office                              = $Mailbox.Office
-                        RecipientTypeDetails                = $Mailbox.RecipientTypeDetails
-                        Identity                            = $Mailbox.Identity
-                        PrimarySmtpAddress                  = $Mailbox.PrimarySmtpAddress
-                        Alias                               = $Mailbox.Alias
-                        TotalGB                             = $Mailbox.TotalGB
+                        DisplayName                         = $Resource.DisplayName
+                        Office                              = $Resource.Office
+                        RecipientTypeDetails                = $Resource.RecipientTypeDetails
+                        Identity                            = $Resource.Identity
+                        PrimarySmtpAddress                  = $Resource.PrimarySmtpAddress
+                        Alias                               = $Resource.Alias
+                        TotalGB                             = $Resource.TotalGB
                         ResourceDelegates                   = $Cal.ResourceDelegates
                         MaximumDurationInMinutes            = $Cal.MaximumDurationInMinutes
                         AutomateProcessing                  = $Cal.AutomateProcessing
