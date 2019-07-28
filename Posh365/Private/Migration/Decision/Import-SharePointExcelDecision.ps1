@@ -11,7 +11,7 @@ function Import-SharePointExcelDecision {
         [string]
         $ExcelFile,
 
-        [Parameter(Mandatory)]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [string]
         $Tenant,

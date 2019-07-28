@@ -11,12 +11,7 @@ function Get-MailboxMovePermissionResult {
         [string]
         $ExcelFile,
 
-        [Parameter(Mandatory, ParameterSetName = 'CSV')]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $MailboxCSV,
-
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
         [ValidateNotNullOrEmpty()]
         [string]
         $Tenant,

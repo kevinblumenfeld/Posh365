@@ -49,15 +49,15 @@ function Get-MailboxMoveLicense {
         [string]
         $ExcelFile,
 
+        [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $Tenant,
+
         [Parameter(Mandatory, ParameterSetName = 'CSV')]
         [ValidateNotNullOrEmpty()]
         [string]
-        $MailboxCSV,
-
-        [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $Tenant
+        $MailboxCSV
     )
     end {
         if ($Tenant -notmatch '.mail.onmicrosoft.com') {
@@ -69,11 +69,16 @@ function Get-MailboxMoveLicense {
                     SharePointURL = $SharePointURL
                     ExcelFile     = $ExcelFile
                     Tenant        = $Tenant
+                    NoBatch       = $true
                 }
                 $UserChoice = Import-SharePointExcelDecision @SharePointSplat
             }
             'CSV' {
-                $UserChoice = Import-MailboxCsvDecision -MailboxCSV $MailboxCSV
+                $CSVSplat = @{
+                    MailboxCSV = $MailboxCSV
+                    NoBatch    = $true
+                }
+                $UserChoice = Import-MailboxCsvDecision @CSVSplat
             }
         }
         if ($UserChoice -ne 'Quit' ) {

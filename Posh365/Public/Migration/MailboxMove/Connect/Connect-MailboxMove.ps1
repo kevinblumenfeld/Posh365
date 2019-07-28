@@ -17,7 +17,7 @@ Function Connect-MailboxMove {
     [CmdletBinding()]
     param
     (
-        [Parameter(Position = 0, Mandatory = $true)]
+        [Parameter(Position = 0, Mandatory)]
         [string] $Tenant
     )
     Connect-CloudMFA -Tenant $Tenant -ExchangeOnline -AzureAD

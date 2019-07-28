@@ -2,7 +2,7 @@ function Connect-CloudMFA {
     [CmdletBinding(SupportsShouldProcess = $true)]
     Param
     (
-        [parameter(Mandatory)]
+        [Parameter(Mandatory)]
         [string]
         $Tenant,
 
@@ -63,8 +63,8 @@ function Connect-CloudMFA {
                 }
                 else {
                     [System.Management.Automation.PSCredential]$Credential = Get-Credential -Message 'Enter Office 365 username and password'
-                    [System.Management.Automation.PSCredential]$Credential | Export-CliXml -Path $CredFile
-                    [System.Management.Automation.PSCredential]$Credential = Import-CliXml -Path $CredFile
+                    [System.Management.Automation.PSCredential]$Credential | Export-Clixml -Path $CredFile
+                    [System.Management.Automation.PSCredential]$Credential = Import-Clixml -Path $CredFile
                     Connect-CloudMFAClip -CredFile $CredFile
                 }
             }

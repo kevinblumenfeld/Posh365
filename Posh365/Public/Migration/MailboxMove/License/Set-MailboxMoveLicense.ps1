@@ -77,6 +77,5 @@ function Set-MailboxMoveLicense {
                 Invoke-SetMailboxMoveLicense @CSVSplat
             }
         }
-
     }
 }
