@@ -1,4 +1,4 @@
-function Set-MailboxMoveLicense {
+function Invoke-SetMailboxMoveLicense {
     <#
     .SYNOPSIS
     Sets Office 365 licenses during a migration project
@@ -53,7 +53,11 @@ function Set-MailboxMoveLicense {
         [Parameter(Mandatory, ParameterSetName = 'CSV')]
         [ValidateNotNullOrEmpty()]
         [string]
-        $MailboxCSV
+        $MailboxCSV,
+
+        [Parameter()]
+        [switch]
+        $NoBatch
     )
     end {
         if ($Tenant -notmatch '.mail.onmicrosoft.com') {
@@ -67,16 +71,24 @@ function Set-MailboxMoveLicense {
                     Tenant        = $Tenant
                     NoBatch       = $true
                 }
-                Invoke-SetMailboxMoveLicense @SharePointSplat
+                $UserChoice = Import-SharePointExcelDecision @SharePointSplat
             }
             'CSV' {
                 $CSVSplat = @{
                     MailboxCSV = $MailboxCSV
                     NoBatch    = $true
                 }
-                Invoke-SetMailboxMoveLicense @CSVSplat
+
+                $UserChoice = Import-MailboxCsvDecision @CSVSplat
             }
         }
-
+        if ($UserChoice -ne 'Quit' ) {
+            $LicenseDecision = Get-LicenseDecision
+            $LicenseOptions = @{ }
+            foreach ($License in $LicenseDecision.Options) {
+                $LicenseOptions.Add($License, $true)
+            }
+            ($UserChoice).UserPrincipalName | Set-CloudLicense @LicenseOptions | Out-GridView
+        }
     }
 }

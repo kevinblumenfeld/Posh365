@@ -6,11 +6,19 @@ function Import-MailboxCsvDecision {
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string]
-        $MailboxCsv
+        $MailboxCsv,
+
+        [Parameter()]
+        [switch]
+        $NoBatch
     )
     end {
-        $Mailbox = Import-Csv -Path $MailboxCSV
-        $UserChoice = Get-UserDecision -DecisionObject $Mailbox
+        $UserChoiceSplat = @{
+            DecisionObject = Import-Csv -Path $MailboxCSV
+            NoBatch        = $NoBatch
+        }
+
+        $UserChoice = Get-UserDecision @UserChoiceSplat
         $UserChoice
     }
 }
