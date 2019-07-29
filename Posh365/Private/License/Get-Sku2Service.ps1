@@ -231,7 +231,7 @@
                 Else {
                     $sku2service['Service'] = $plan
                 }
-                $sku2service['Remaining'] = ($sku.prepaidunits.enabled - $sku.consumedunits)
+                $sku2service['Remaining'] = (($sku.prepaidunits.enabled) - ($sku.prepaidunits.enabled - $sku.consumedunits))
                 $sku2service['Total'] = ($sku.prepaidunits.enabled)
                 $resultArray += [psCustomObject]$sku2service
             }
@@ -255,7 +255,7 @@
                     $sku2service['FriendlyService'] = $plan
                 }
                 $sku2service['Service'] = $plan
-                $sku2service['Remaining'] = ($sku.prepaidunits.enabled - $sku.consumedunits)
+                $sku2service['Remaining'] = (($sku.prepaidunits.enabled) - ($sku.prepaidunits.enabled - $sku.consumedunits))
                 $sku2service['Total'] = ($sku.prepaidunits.enabled)
                 $resultArray += [psCustomObject]$sku2service
             }
@@ -267,7 +267,7 @@
             foreach ($plan in $sku.serviceplans.serviceplanname) {
                 $sku2service['Sku'] = $sku.SkuPartNumber
                 $sku2service['Service'] = $plan
-                $sku2service['Remaining'] = ($sku.prepaidunits.enabled - $sku.consumedunits)
+                $sku2service['Remaining'] = (($sku.prepaidunits.enabled) - ($sku.prepaidunits.enabled - $sku.consumedunits))
                 $sku2service['Total'] = ($sku.prepaidunits.enabled)
                 $resultArray += [psCustomObject]$sku2service
             }
