@@ -188,10 +188,10 @@
 
         # The Output will be written to this file in the current working directory
         if ($DomainFilter) {
-            $LogFile = (Join-Path $Path ($(get-date -Format yyyy-MM-dd_HH-mm-ss) + "-" + $DomainFilter + "-licenses.csv"))
+            $LogFile = (Join-Path $Path ($(Get-Date -Format yyyy-MM-dd_HH-mm-ss) + "-" + $DomainFilter + "-licenses.csv"))
         }
         else {
-            $LogFile = (Join-Path $Path '356_Licenses.csv')
+            $LogFile = (Join-Path $Path '365_Licenses.csv')
         }
 
         # Get a list of all Licenses that exist within the tenant
@@ -323,12 +323,12 @@
                 $headerstring = ($headerstring + "," + $thisLicense)
             }
             Out-File -FilePath $LogFile -InputObject $headerstring -Encoding UTF8 -append
-            write-host ("Gathering users with the following subscription: " + $license.accountskuid)
+            Write-Host ("Gathering users with the following subscription: " + $license.accountskuid)
             If ($DomainFilter) {
-                $users = Get-MsolUser -all -Domain $DomainFilter | where { $_.isLicensed -eq "True" }
+                $users = Get-MsolUser -all -Domain $DomainFilter | Where-Object { $_.isLicensed -eq "True" }
             }
             else {
-                $users = Get-MsolUser -all | where { $_.isLicensed -eq "True" }
+                $users = Get-MsolUser -all | Where-Object { $_.isLicensed -eq "True" }
             }
             $skuid = $license.accountskuid
             foreach ($user in $users) {
@@ -337,7 +337,7 @@
                     $userSkuId = $userLicenses[$i].AccountSkuId
 
                     if ($userSkuId -eq $skuid) {
-                        write-host ("Processing " + $user.displayname)
+                        Write-Host ("Processing " + $user.displayname)
                         if ($u2fSku.Item($userLicenses[$i].AccountSku.SkuPartNumber)) {
                             $datastring = ("`"" + $user.displayname + "`"" + "," + $user.userprincipalname + "," + $u2fSku.Item($userLicenses[$i].AccountSku.SkuPartNumber))
                         }
@@ -354,7 +354,7 @@
                 }
             }
         }
-        write-host ("Script Completed.  Results available in " + $LogFile)
+        Write-Host ("Script Completed.  Results available in " + $LogFile)
     }
     End {
 

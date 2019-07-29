@@ -58,10 +58,15 @@ function Get-365MsolUser {
                 @{n = "PortalSettings" ; e = { @($_.PortalSettings) -ne '' -join '|' } },
                 @{n = "proxyAddresses" ; e = { @($_.proxyAddresses) -ne '' -join '|' } },
                 @{n = "ServiceInformation" ; e = { @($_.ServiceInformation) -ne '' -join '|' } },
-                @{n = "StrongAuthenticationMethods" ; e = { @($_.StrongAuthenticationMethods) -ne '' -join '|' } },
-                @{n = "StrongAuthenticationPhoneAppDetails" ; e = { @($_.StrongAuthenticationPhoneAppDetails) -ne '' -join '|' } },
-                @{n = "StrongAuthenticationRequirements" ; e = { @($_.StrongAuthenticationRequirements) -ne '' -join '|' } },
-                @{n = "StrongAuthenticationUserDetails" ; e = { @($_.StrongAuthenticationUserDetails) -ne '' -join '|' } }
+                @{n = "MFA_State"; e = { ($_.StrongAuthenticationRequirements).State } },
+                @{n = "DefaultMethod"; e = { ($_.StrongAuthenticationMethods).Where( { $_.IsDefault } ).MethodType } },
+                @{n = "Methods"; e = { (($_.StrongAuthenticationMethods).MethodType) -join ";" } },
+                @{n = "MethodChoice"; e = { (($_.StrongAuthenticationMethods).IsDefault) -join ";" } },
+                @{n = "Auth_AlternatePhoneNumber"; e = { ($_.StrongAuthenticationUserDetails).AlternativePhoneNumber } },
+                @{n = "Auth_Email"; e = { ($_.StrongAuthenticationUserDetails).Email } },
+                @{n = "Auth_OldPin"; e = { ($_.StrongAuthenticationUserDetails).OldPin } },
+                @{n = "Auth_PhoneNumber"; e = { ($_.StrongAuthenticationUserDetails).PhoneNumber } },
+                @{n = "Auth_Pin"; e = { ($_.StrongAuthenticationUserDetails).Pin } }
             )
         }
         else {

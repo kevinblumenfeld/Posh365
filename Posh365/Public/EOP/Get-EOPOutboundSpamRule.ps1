@@ -18,10 +18,6 @@ function Get-EOPOutboundSpamRule {
                 Expression = { @($_.ExceptIfFrom) -ne '' -join '|' }
             }
             @{
-                Name       = 'ExceptIfFrom'
-                Expression = { @($_.ExceptIfFrom) -ne '' -join '|' }
-            }
-            @{
                 Name       = 'ExceptIfFromMemberOf'
                 Expression = { @($_.ExceptIfFromMemberOf) -ne '' -join '|' }
             }

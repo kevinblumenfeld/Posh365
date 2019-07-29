@@ -88,7 +88,7 @@ function Invoke-SetMailboxMoveLicense {
             foreach ($License in $LicenseDecision.Options) {
                 $LicenseOptions.Add($License, $true)
             }
-            ($UserChoice).UserPrincipalName | Set-CloudLicense @LicenseOptions | Out-GridView
+            ($UserChoice).UserPrincipalName | Set-CloudLicense @LicenseOptions | Out-GridView -Title "Results of Set Mailbox Move License"
         }
     }
 }
