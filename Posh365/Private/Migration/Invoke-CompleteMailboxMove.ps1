@@ -14,10 +14,13 @@ function Invoke-CompleteMailboxMove {
     begin {
 
         if ($CompleteAfter) {
-            $When = $CompleteAfter
+            $LocalTime = $CompleteAfter.ToLocalTime()
+            $UTCTime = $CompleteAfter
         }
         else {
-            $When = (Get-Date).AddDays(-1)
+            $Yesterday = (Get-Date).AddDays(-1)
+            $LocalTime = $Yesterday
+            $UTCTime = $Yesterday.ToUniversalTime()
         }
     }
     process {
@@ -29,15 +32,15 @@ function Invoke-CompleteMailboxMove {
                     BatchName                  = $User.BatchName
                     SuspendWhenReadyToComplete = $False
                     Confirm                    = $False
-                    CompleteAfter              = $When
+                    CompleteAfter              = $LocalTime
                     ErrorAction                = 'Stop'
                 }
 
                 Set-MoveRequest @Param
                 [PSCustomObject]@{
                     DisplayName      = $User.DisplayName
-                    CompleteAfter    = $When.ToLocalTime()
-                    CompleteAfterUTC = $When
+                    CompleteAfter    = $LocalTime
+                    CompleteAfterUTC = $UTCTime
                     Action           = "SET"
                     Result           = "Success"
                     Message          = ""
@@ -46,8 +49,8 @@ function Invoke-CompleteMailboxMove {
             catch {
                 [PSCustomObject]@{
                     DisplayName      = $User.DisplayName
-                    CompleteAfter    = $When.ToLocalTime()
-                    CompleteAfterUTC = $When
+                    CompleteAfter    = $LocalTime
+                    CompleteAfterUTC = $UTCTime
                     Action           = "SET"
                     Result           = "Failed"
                     Message          = $_.Exception.Message
