@@ -34,10 +34,6 @@ function Get-365Info {
 
         [Parameter()]
         [switch]
-        $Filtered,
-
-        [Parameter()]
-        [switch]
         $LicensingReport,
 
         [Parameter()]
@@ -54,7 +50,11 @@ function Get-365Info {
 
         [Parameter()]
         [switch]
-        $DontExportToExcel
+        $AzureAD,
+
+        [Parameter()]
+        [switch]
+        $CreateExcel
 
     )
     end {
@@ -181,10 +181,14 @@ function Get-365Info {
         $MSOL_Upn = (Join-Path $TenantPath 'MSOL_Upn.csv')
         $MSOL_Users = (Join-Path $TenantPath 'MSOL_Users.csv')
         $MSOL_MFAUsers = (Join-Path $TenantPath 'MSOL_MFAUsers.csv')
+        $MSOL_Roles = (Join-Path $TenantPath 'MSOL_Roles.csv')
         $MSOL_Groups = (Join-Path $TenantPath 'MSOL_Groups.csv')
         $MSOL_Groups_Type = (Join-Path $TenantPath 'MSOL_GroupType.csv')
         $MSOL_Users_Detailed = (Join-Path $DetailedTenantPath 'MSOL_Users_Detailed.csv')
 
+        $AzureAD_Roles = (Join-Path $TenantPath 'AzureAD_Roles.csv')
+
+        $EXO_Roles = (Join-Path $TenantPath 'EXO_Roles.csv')
         $EXO_MailContacts = (Join-Path $TenantPath 'EXO_MailContacts.csv')
         $EXO_Recipients = (Join-Path $TenantPath 'EXO_Recipients.csv')
         $EXO_RecipientEmails = (Join-Path $TenantPath 'EXO_RecipientEmails.csv')
@@ -216,6 +220,18 @@ function Get-365Info {
 
         $365_UnifiedGroups = (Join-Path $DetailedTenantPath '365_UnifiedGroups.csv')
 
+        if (-not $MSOnline) {
+            $MsolUserDetailedImport = Import-Csv $MSOL_Users_Detailed
+        }
+        $MFAHash = Get-MsolUserMFAHash -MsolUserList $MsolUserDetailedImport -ErrorAction SilentlyContinue
+
+        Write-Verbose "Gathering Exchange Roles"
+        if ($MFAHash) {
+            Get-ExchangeRoleReport -MFAHash $MFAHash | Export-Csv $EXO_Roles @ExportCSVSplat
+        }
+        else {
+            Get-ExchangeRoleReport | Export-Csv $EOP_ConnectionFilters @ExportCSVSplat
+        }
         if ($ExchangeOnline) {
             Write-Verbose "Gathering Connection Filters"
             Get-EOPConnectionPolicy | Export-Csv $EOP_ConnectionFilters @ExportCSVSplat
@@ -291,10 +307,14 @@ function Get-365Info {
 
             Write-Verbose "Gathering MsolUsers"
             Get-365MsolUser -DetailedReport | Export-Csv $MSOL_Users_Detailed @ExportCSVSplat
-            Import-Csv $MSOL_Users_Detailed | Select-Object $MsolUserProperties | Export-Csv $MSOL_Users @ExportCSVSplat
+            $MsolUserDetailedImport = Import-Csv $MSOL_Users_Detailed
+            $MsolUserDetailedImport | Select-Object $MsolUserProperties | Export-Csv $MSOL_Users @ExportCSVSplat
 
             Write-Verbose "Gathering MsolUsers MFA Report"
-            Import-Csv $MSOL_Users_Detailed | Select-Object $MsolUserMFAProperties | Export-Csv $MSOL_MFAUsers @ExportCSVSplat
+            $MsolUserDetailedImport | Select-Object $MsolUserMFAProperties | Export-Csv $MSOL_MFAUsers @ExportCSVSplat
+
+            Write-Verbose "Gathering MsolUser Roles Report"
+            Get-MsolRoleReport | Export-Csv $MSOL_Roles @ExportCSVSplat
 
             Write-Verbose "Gathering MsolGroups"
             Get-365MsolGroup | Select-Object $MSOLGroupProperties | Export-Csv $MSOL_Groups @ExportCSVSplat
@@ -315,14 +335,14 @@ function Get-365Info {
             ) | Sort-Object -Property consumed -Descending | Export-Csv $365_Sku @ExportCSVSplat
 
             $Result = [System.Collections.Generic.List[PSObject]]::New()
-            $UPN = Import-Csv $MSOL_Users_Detailed | Where-Object { $_.userprincipalname -notlike "*#EXT*" } | Select-Object @(
+            $UPN = $MsolUserDetailedImport | Where-Object { $_.userprincipalname -notlike "*#EXT*" } | Select-Object @(
                 @{
                     Name       = 'UserPrincipalName'
                     Expression = { ($_.userprincipalname -split '@')[1] }
                 }
             )
             $Result.Add($UPN)
-            $EXTUPN = Import-Csv $MSOL_Users_Detailed | Where-Object { $_.userprincipalname -like "*#EXT*" } | Select-Object @(
+            $EXTUPN = $MsolUserDetailedImport | Where-Object { $_.userprincipalname -like "*#EXT*" } | Select-Object @(
                 @{
                     Name       = 'UserPrincipalName'
                     Expression = { [regex]::match($_.UserPrincipalName, '#[\s\S]*$').captures.groups[0] }
@@ -335,6 +355,15 @@ function Get-365Info {
             Import-Csv $MSOL_Groups | Select-Object GroupType | Group-Object -Property GroupType | Select-Object Name, Count |
             Sort-Object -Property Count -Descending | Export-Csv $MSOL_Groups_Type @ExportCSVSplat
 
+        }
+        if ($AzureAD) {
+            Write-Verbose "Gathering AzureAD Roles"
+            If ($MFAHash) {
+                Get-AzureADRoleReport -MFAHash $MFAHash | Export-Csv $AzureAD_Roles @ExportCSVSplat
+            }
+            else {
+                Get-AzureADRoleReport | Export-Csv $AzureAD_Roles @ExportCSVSplat
+            }
         }
         if ($LicensingReport) {
             Write-Verbose "Gathering Office 365 Licenses"
@@ -374,7 +403,7 @@ function Get-365Info {
             Export-Csv $Compliance_AlertPolicies @ExportCSVSplat
         }
 
-        if (-not $DontExportToExcel) {
+        if ($CreateExcel) {
             $ExcelSplat = @{
                 Path                    = (Join-Path $TenantPath '365_Discovery.xlsx')
                 TableStyle              = 'Medium2'
@@ -387,24 +416,22 @@ function Get-365Info {
             Get-ChildItem $TenantPath -Filter *.csv | Where-Object { $_.BaseName -ne '365_LicenseReport' } | Sort-Object BaseName -Descending |
             ForEach-Object { Import-Csv $_.fullname | Export-Excel @ExcelSplat -WorksheetName $_.basename }
 
-            if ($LicensingReport) {
-                $Excel365Licenses = @{
-                    Path                    = (Join-Path $TenantPath '365_Discovery.xlsx')
-                    TableStyle              = 'Medium2'
-                    FreezeTopRowFirstColumn = $true
-                    AutoSize                = $true
-                    BoldTopRow              = $false
-                    ClearSheet              = $true
-                    ErrorAction             = 'SilentlyContinue'
-                    WorksheetName           = '365_Licenses'
-                    ConditionalText         = $(
-                        New-ConditionalText DisplayName White Black
-                        New-ConditionalText UserPrincipalName White Black
-                        New-ConditionalText AccountSku White Black
-                    )
-                }
-                Import-Csv -Path (Join-Path $TenantPath 365_LicenseReport.csv) | Export-Excel @Excel365Licenses
+            $Excel365Licenses = @{
+                Path                    = (Join-Path $TenantPath '365_Discovery.xlsx')
+                TableStyle              = 'Medium2'
+                FreezeTopRowFirstColumn = $true
+                AutoSize                = $true
+                BoldTopRow              = $false
+                ClearSheet              = $true
+                ErrorAction             = 'SilentlyContinue'
+                WorksheetName           = '365_Licenses'
+                ConditionalText         = $(
+                    New-ConditionalText DisplayName White Black
+                    New-ConditionalText UserPrincipalName White Black
+                    New-ConditionalText AccountSku White Black
+                )
             }
+            Import-Csv -Path (Join-Path $TenantPath 365_LicenseReport.csv) -ErrorAction SilentlyContinue | Export-Excel @Excel365Licenses
         }
         <#
             else {
