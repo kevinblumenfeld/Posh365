@@ -188,6 +188,7 @@ function Get-365Info {
 
         $AzureAD_Roles = (Join-Path $TenantPath 'AzureAD_Roles.csv')
 
+        $EXO_TransportRules_Detailed = (Join-Path $DetailedTenantPath 'EXO_TransportRules_Detailed.csv')
         $EXO_TransportRuleCollection = (Join-Path $DetailedTenantPath 'EXO_TransportRuleCollection.xml')
         $EXO_TransportRules = (Join-Path $TenantPath 'EXO_TransportRules.csv')
         $EXO_OutboundConnectors = (Join-Path $TenantPath 'EXO_OutboundConnectors.csv')
@@ -227,24 +228,23 @@ function Get-365Info {
         $EA = $ErrorActionPreference
         $ErrorActionPreference = "SilentlyContinue"
         if (-not $MSOnline) {
-            $MsolUserDetailedImport = Import-Csv $MSOL_Users_Detailed -ErrorAction Stop
+            $MsolUserDetailedImport = Import-Csv $MSOL_Users_Detailed
         }
-        $MFAHash = Get-MsolUserMFAHash -MsolUserList $MsolUserDetailedImport -ErrorAction SilentlyContinue
         $ErrorActionPreference = $EA
+        $MFAHash = Get-MsolUserMFAHash -MsolUserList $MsolUserDetailedImport
+
         if ($ExchangeOnline) {
-            Write-Verbose "Exporting Exchange Transport Rules to xml"
+            Write-Verbose "Gathering Exchange Transport Rules"
+            Get-TransportRuleReport | Export-Csv $EXO_TransportRules_Detailed @ExportCSVSplat
+            $TransportData = Import-Csv $EXO_TransportRules_Detailed
+            $TransportHash = Get-TransportRuleHash -TransportData $TransportData
+            $TransportCsv = Convert-TransportXMLtoCSV -TRuleColList $TRuleColList -TransportHash $TransportHash
+            $TransportCsv | Sort-Object Name | Export-Csv $EXO_TransportRules @ExportCSVSplat
+
             $TransportCollection = Export-TransportRuleCollection
             Set-Content -Path $EXO_TransportRuleCollection -Value $TransportCollection.FileData -Encoding Byte
             [xml]$TRuleColList = Get-Content $EXO_TransportRuleCollection
-            $TransportCSV = foreach ($TRule in $TRuleColList) {
-                foreach ($Rule in $TRule.rules.rule) {
-                    [PSCustomObject]@{
-                        Name    = $Rule.name
-                        Command = $Rule.version.commandblock."#cdata-section"
-                    }
-                }
-            }
-            $TransportCSV | Sort-Object Name | Export-Csv $EXO_TransportRules @ExportCSVSplat
+
             Write-Verbose "Gathering Exchange Roles"
             if ($MFAHash) {
                 Get-ExchangeRoleReport -MFAHash $MFAHash | Sort-Object Role | Export-Csv $EXO_Roles @ExportCSVSplat
@@ -275,7 +275,7 @@ function Get-365Info {
 
             Write-Verbose "Gathering Retention Polices and linked Retention Policy Tags"
             Get-RetentionLinks | Select-Object $EXORetentionPoliciesProperties |
-            Sort-Object TagType, PolicyName | Export-Csv $EXO_RetentionPolicies @ExportCSVSplat
+            Sort-Object PolicyName, TagType | Export-Csv $EXO_RetentionPolicies @ExportCSVSplat
 
             Write-Verbose "Gathering Office 365 Unified Groups"
             Export-AndImportUnifiedGroups -Mode Export -File $365_UnifiedGroups
@@ -307,7 +307,7 @@ function Get-365Info {
 
             Write-Verbose "Gathering Exchange Online Mailboxes"
             Get-EXOMailbox -DetailedReport | Export-Csv $EXO_Mailboxes_Detailed @ExportCSVSplat
-            Import-Csv $EXO_Mailboxes_Detailed | Select-Object $EXOMailboxProperties |
+            Import-Csv $EXO_Mailboxes_Detailed | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' } | Select-Object $EXOMailboxProperties |
             Sort-Object DisplayName | Export-Csv $EXO_Mailboxes @ExportCSVSplat
 
             Write-Verbose "Gathering Exchange Online Resource Mailboxes and Calendar Processing"
@@ -325,7 +325,7 @@ function Get-365Info {
 
             Write-Verbose "Gathering Recipients"
             Get-365Recipient -DetailedReport | Export-Csv $EXO_Recipients_Detailed @ExportCSVSplat
-            Import-Csv $EXO_Recipients_Detailed | Sort-Object DisplayName |
+            Import-Csv $EXO_Recipients_Detailed | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' } | Sort-Object DisplayName |
             Select-Object $EXORecipientProperties | Export-Csv $EXO_Recipients @ExportCSVSplat
 
             Import-Csv $EXO_Recipients | Export-EmailsOnePerLine -ReportPath $TenantPath -FindInColumn EmailAddresses |
@@ -339,7 +339,7 @@ function Get-365Info {
             Sort-Object DisplayName | Export-Csv $MSOL_Users @ExportCSVSplat
 
             Write-Verbose "Gathering MsolUsers MFA Report"
-            $MsolUserDetailedImport | Where-Object { $_.UserPrincipalName -notmatch "#EXT#" } |
+            $MsolUserDetailedImport | Where-Object { $_.UserPrincipalName -notmatch "#EXT#" -and $_.UserPrincipalName -notmatch "federatedemail" } |
             Select-Object $MsolUserMFAProperties | Sort-Object DisplayName | Export-Csv $MSOL_MFAUsers @ExportCSVSplat
 
             Write-Verbose "Gathering MsolUser Roles Report"
@@ -475,3 +475,4 @@ function Get-365Info {
         }
     }
 }
+

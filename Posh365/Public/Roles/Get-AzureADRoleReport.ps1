@@ -19,7 +19,7 @@ function Get-AzureADRoleReport {
                             'UserPrincipalName' = $RoleMember.UserPrincipalName
                             'UserType'          = $RoleMember.UserType
                             'LastDirSyncTime'   = $RoleMember.LastDirSyncTime
-                            'MFA_State'         = $MFAHash[$RoleMember.UserPrincipalName]
+                            'MFA_State'         = $MFAHash[$RoleMember.ExternalDirectoryObjectId].MFA_State
                             'RoleDescription'   = $AzureADRole.Description
                         }
                     }

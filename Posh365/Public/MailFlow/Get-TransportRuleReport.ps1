@@ -7,6 +7,12 @@ function Get-TransportRuleReport {
         $RuleList = Get-TransportRule
         foreach ($Rule in $RuleList) {
             [PSCustomObject]@{
+                'Name'                                          = $Rule.Name
+                'Comments'                                      = $Rule.Comments
+                'Priority'                                      = $Rule.Priority
+                'StopRuleProcessing'                            = $Rule.StopRuleProcessing
+                'Description'                                   = $Rule.Description
+                'Guid'                                          = $Rule.Guid
                 'ApplyOME'                                      = $Rule.ApplyOME
                 'AttachmentHasExecutableContent'                = $Rule.AttachmentHasExecutableContent
                 'AttachmentIsPasswordProtected'                 = $Rule.AttachmentIsPasswordProtected
@@ -25,29 +31,17 @@ function Get-TransportRuleReport {
                 'IsValid'                                       = $Rule.IsValid
                 'ManuallyModified'                              = $Rule.ManuallyModified
                 'ModerateMessageByManager'                      = $Rule.ModerateMessageByManager
-                'PSShowComputerName'                            = $Rule.PSShowComputerName
                 'Quarantine'                                    = $Rule.Quarantine
                 'RemoveOME'                                     = $Rule.RemoveOME
                 'RemoveOMEv2'                                   = $Rule.RemoveOMEv2
                 'RouteMessageOutboundRequireTls'                = $Rule.RouteMessageOutboundRequireTls
-                'StopRuleProcessing'                            = $Rule.StopRuleProcessing
                 'UseLegacyRegex'                                = $Rule.UseLegacyRegex
                 'WhenChanged'                                   = $Rule.WhenChanged
                 'DlpPolicyId'                                   = $Rule.DlpPolicyId
-                'Guid'                                          = $Rule.Guid
                 'ImmutableId'                                   = $Rule.ImmutableId
-                'RunspaceId'                                    = $Rule.RunspaceId
-                'Priority'                                      = $Rule.Priority
-                'Comments'                                      = $Rule.Comments
-                'Description'                                   = $Rule.Description
-                'DistinguishedName'                             = $Rule.DistinguishedName
-                'ExchangeVersion'                               = $Rule.ExchangeVersion
                 'FromScope'                                     = $Rule.FromScope
                 'Identity'                                      = $Rule.Identity
                 'Mode'                                          = $Rule.Mode
-                'Name'                                          = $Rule.Name
-                'OrganizationId'                                = $Rule.OrganizationId
-                'PSComputerName'                                = $Rule.PSComputerName
                 'RouteMessageOutboundConnector'                 = $Rule.RouteMessageOutboundConnector
                 'RuleErrorAction'                               = $Rule.RuleErrorAction
                 'RuleSubType'                                   = $Rule.RuleSubType
