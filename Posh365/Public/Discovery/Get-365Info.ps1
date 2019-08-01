@@ -244,49 +244,49 @@ function Get-365Info {
                     }
                 }
             }
-            $TransportCSV | Export-Csv $EXO_TransportRules @ExportCSVSplat
+            $TransportCSV | Sort-Object Name | Export-Csv $EXO_TransportRules @ExportCSVSplat
             Write-Verbose "Gathering Exchange Roles"
             if ($MFAHash) {
-                Get-ExchangeRoleReport -MFAHash $MFAHash | Export-Csv $EXO_Roles @ExportCSVSplat
+                Get-ExchangeRoleReport -MFAHash $MFAHash | Sort-Object Role | Export-Csv $EXO_Roles @ExportCSVSplat
             }
             else {
-                Get-ExchangeRoleReport | Export-Csv $EXO_Roles @ExportCSVSplat
+                Get-ExchangeRoleReport | Sort-Object Role | Export-Csv $EXO_Roles @ExportCSVSplat
             }
             Write-Verbose "Gathering Inbound Connectors"
-            Get-InboundConnectorReport | Export-Csv $EXO_InboundConnectors @ExportCSVSplat
+            Get-InboundConnectorReport | Sort-Object Name | Export-Csv $EXO_InboundConnectors @ExportCSVSplat
 
             Write-Verbose "Gathering Outbound Connectors"
-            Get-OutboundConnectorReport | Export-Csv $EXO_OutboundConnectors @ExportCSVSplat
+            Get-OutboundConnectorSummary | Sort-Object Name | Export-Csv $EXO_OutboundConnectors @ExportCSVSplat
 
             Write-Verbose "Gathering Connection Filters"
-            Get-EOPConnectionPolicy | Export-Csv $EOP_ConnectionFilters @ExportCSVSplat
+            Get-EOPConnectionPolicy | Sort-Object Name | Export-Csv $EOP_ConnectionFilters @ExportCSVSplat
 
             Write-Verbose "Gathering Content Filter Policies"
-            Get-EOPContentPolicy | Export-Csv $EOP_ContentPolicy @ExportCSVSplat
+            Get-EOPContentPolicy | Sort-Object Identity | Export-Csv $EOP_ContentPolicy @ExportCSVSplat
 
             Write-Verbose "Gathering Content Filter Rules"
             Get-EOPContentRule | Export-Csv $EOP_ContentRule @ExportCSVSplat
 
             Write-Verbose "Gathering Outbound Spam Filter Policies"
-            Get-EOPOutboundSpamPolicy | Export-Csv $EOP_OutboundSpamPolicy @ExportCSVSplat
+            Get-EOPOutboundSpamPolicy | Sort-Object Name | Export-Csv $EOP_OutboundSpamPolicy @ExportCSVSplat
 
             Write-Verbose "Gathering Outbound Spam Filter Rules"
             Get-EOPOutboundSpamRule | Export-Csv $EOP_OutboundSpamRule @ExportCSVSplat
 
             Write-Verbose "Gathering Retention Polices and linked Retention Policy Tags"
             Get-RetentionLinks | Select-Object $EXORetentionPoliciesProperties |
-            Export-Csv $EXO_RetentionPolicies @ExportCSVSplat
+            Sort-Object TagType, PolicyName | Export-Csv $EXO_RetentionPolicies @ExportCSVSplat
 
             Write-Verbose "Gathering Office 365 Unified Groups"
             Export-AndImportUnifiedGroups -Mode Export -File $365_UnifiedGroups
 
             Write-Verbose "Gathering Accepted Domains"
             Get-AcceptedDomain | Select-Object $EXOAcceptedDomainProperties |
-            Export-Csv $EXO_AcceptedDomains @ExportCSVSplat
+            Sort-Object Name | Export-Csv $EXO_AcceptedDomains @ExportCSVSplat
 
             Write-Verbose "Gathering Remote Domains"
             Get-RemoteDomain | Select-Object $EXORemoteDomainsProperties |
-            Export-Csv $EXO_RemoteDomains @ExportCSVSplat
+            Sort-Object DomainName | Export-Csv $EXO_RemoteDomains @ExportCSVSplat
 
             Write-Verbose "Gathering Organization Config"
             (Get-OrganizationConfig).PSObject.Properties | Select-Object Name, Value |
@@ -294,55 +294,60 @@ function Get-365Info {
 
             Write-Verbose "Gathering Organization Relationship"
             Get-OrganizationRelationship | Select-Object $EXOOrganizationRelationshipProperties |
-            Export-Csv $EXO_OrganizationRelationship @ExportCSVSplat
+            Sort-Object Id | Export-Csv $EXO_OrganizationRelationship @ExportCSVSplat
 
             Write-Verbose "Gathering Mail Contacts"
             Get-EXOMailContact | Select-Object $EXOMailContactsProperties |
-            Export-Csv $EXO_MailContacts @ExportCSVSplat
+            Sort-Object DisplayName | Export-Csv $EXO_MailContacts @ExportCSVSplat
 
             Write-Verbose "Gathering Distribution & Mail-Enabled Security Groups"
             Get-EXOGroup -DetailedReport | Export-Csv $EXO_Groups_Detailed @ExportCSVSplat
-            Import-Csv $EXO_Groups_Detailed | Select-Object $EXOGroupProperties | Export-Csv $EXO_Groups @ExportCSVSplat
+            Import-Csv $EXO_Groups_Detailed | Select-Object $EXOGroupProperties |
+            Sort-Object DisplayName | Export-Csv $EXO_Groups @ExportCSVSplat
 
             Write-Verbose "Gathering Exchange Online Mailboxes"
             Get-EXOMailbox -DetailedReport | Export-Csv $EXO_Mailboxes_Detailed @ExportCSVSplat
-            Import-Csv $EXO_Mailboxes_Detailed | Select-Object $EXOMailboxProperties | Export-Csv $EXO_Mailboxes @ExportCSVSplat
+            Import-Csv $EXO_Mailboxes_Detailed | Select-Object $EXOMailboxProperties |
+            Sort-Object DisplayName | Export-Csv $EXO_Mailboxes @ExportCSVSplat
 
             Write-Verbose "Gathering Exchange Online Resource Mailboxes and Calendar Processing"
             $ResourceMailbox = Import-Csv $EXO_Mailboxes_Detailed | Where-Object { $_.RecipientTypeDetails -in 'RoomMailbox', 'EquipmentMailbox' }
-            Get-EXOResourceMailbox -ResourceMailbox $ResourceMailbox | Export-Csv $EXO_ResourceMailboxes @ExportCSVSplat
+            Get-EXOResourceMailbox -ResourceMailbox $ResourceMailbox | Sort-Object DisplayName | Export-Csv $EXO_ResourceMailboxes @ExportCSVSplat
 
             Import-Csv $EXO_Groups | Export-MembersOnePerLine -ReportPath $TenantPath -FindInColumn MembersName |
-            Export-Csv $EXO_GroupMembers @ExportCSVSplat
+            Sort-Object DisplayName | Export-Csv $EXO_GroupMembers @ExportCSVSplat
 
             Import-Csv $EXO_Groups | Export-MembersOnePerLine -ReportPath $TenantPath -FindInColumn MembersSMTP |
-            Export-Csv $EXO_GroupMembersSMTP @ExportCSVSplat
+            Sort-Object DisplayName | Export-Csv $EXO_GroupMembersSMTP @ExportCSVSplat
 
             Import-Csv $EXO_Mailboxes_Detailed | Export-EmailsOnePerLine -ReportPath $TenantPath -FindInColumn EmailAddresses |
-            Export-Csv $EXO_MailboxEmails @ExportCSVSplat
+            Sort-Object DisplayName | Export-Csv $EXO_MailboxEmails @ExportCSVSplat
 
             Write-Verbose "Gathering Recipients"
             Get-365Recipient -DetailedReport | Export-Csv $EXO_Recipients_Detailed @ExportCSVSplat
-            Import-Csv $EXO_Recipients_Detailed | Select-Object $EXORecipientProperties | Export-Csv $EXO_Recipients @ExportCSVSplat
+            Import-Csv $EXO_Recipients_Detailed | Sort-Object DisplayName |
+            Select-Object $EXORecipientProperties | Export-Csv $EXO_Recipients @ExportCSVSplat
 
             Import-Csv $EXO_Recipients | Export-EmailsOnePerLine -ReportPath $TenantPath -FindInColumn EmailAddresses |
-            Export-Csv $EXO_RecipientEmails @ExportCSVSplat
+            Sort-Object DisplayName | Export-Csv $EXO_RecipientEmails @ExportCSVSplat
         }
         if ($MSOnline) {
-
             Write-Verbose "Gathering MsolUsers"
             Get-365MsolUser -DetailedReport | Export-Csv $MSOL_Users_Detailed @ExportCSVSplat
             $MsolUserDetailedImport = Import-Csv $MSOL_Users_Detailed
-            $MsolUserDetailedImport | Select-Object $MsolUserProperties | Export-Csv $MSOL_Users @ExportCSVSplat
+            $MsolUserDetailedImport | Where-Object { $_.UserPrincipalName -notmatch "federatedemail" } | Select-Object $MsolUserProperties |
+            Sort-Object DisplayName | Export-Csv $MSOL_Users @ExportCSVSplat
 
             Write-Verbose "Gathering MsolUsers MFA Report"
-            $MsolUserDetailedImport | Select-Object $MsolUserMFAProperties | Export-Csv $MSOL_MFAUsers @ExportCSVSplat
+            $MsolUserDetailedImport | Where-Object { $_.UserPrincipalName -notmatch "#EXT#" } |
+            Select-Object $MsolUserMFAProperties | Sort-Object DisplayName | Export-Csv $MSOL_MFAUsers @ExportCSVSplat
 
             Write-Verbose "Gathering MsolUser Roles Report"
-            Get-MsolRoleReport | Export-Csv $MSOL_Roles @ExportCSVSplat
+            Get-MsolRoleReport | Sort-Object Role, DisplayName | Export-Csv $MSOL_Roles @ExportCSVSplat
 
             Write-Verbose "Gathering MsolGroups"
-            Get-365MsolGroup | Select-Object $MSOLGroupProperties | Export-Csv $MSOL_Groups @ExportCSVSplat
+            Get-365MsolGroup | Select-Object $MSOLGroupProperties |
+            Sort-Object DisplayName | Export-Csv $MSOL_Groups @ExportCSVSplat
 
             Get-MsolAccountSku | Select-Object @(
                 @{
@@ -357,7 +362,7 @@ function Get-365Info {
                     Name       = 'Consumed'
                     Expression = 'ConsumedUnits'
                 }
-            ) | Sort-Object -Property consumed -Descending | Export-Csv $365_Sku @ExportCSVSplat
+            ) | Sort-Object -Property Consumed -Descending | Export-Csv $365_Sku @ExportCSVSplat
 
             $Result = [System.Collections.Generic.List[PSObject]]::New()
             $UPN = $MsolUserDetailedImport | Where-Object { $_.userprincipalname -notlike "*#EXT*" } | Select-Object @(

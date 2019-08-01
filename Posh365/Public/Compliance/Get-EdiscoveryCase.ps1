@@ -2,21 +2,21 @@ function Get-EdiscoveryCase {
     <#
     .SYNOPSIS
     The script in this article lets eDiscovery administrators and eDiscovery managers generate a report that contains
-    information about all holds that are associated with eDiscovery cases in the Office 365 Security & Compliance Center. 
-    
+    information about all holds that are associated with eDiscovery cases in the Office 365 Security & Compliance Center.
+
     .DESCRIPTION
     The script in this article lets eDiscovery administrators and eDiscovery managers generate a report that contains
-    information about all holds that are associated with eDiscovery cases in the Office 365 Security & Compliance Center. 
-    
+    information about all holds that are associated with eDiscovery cases in the Office 365 Security & Compliance Center.
+
     To generate a report on all eDiscovery cases in your organization, you have to be an eDiscovery Administrator in your organization.
-    
+
     .PARAMETER Path
     The path where the report will be generated
-    
+
     .EXAMPLE
     Connect-Cloud Contoso -compliance
     Get-EdiscoveryCase -Path C:\scripts\ -Verbose
-    
+
     .NOTES
     Modified from original script located here: https://support.office.com/en-us/article/Create-a-report-on-holds-in-eDiscovery-cases-in-Office-365-cca08d26-6fbf-4b2c-b102-b226e4cd7381
     #>
@@ -39,7 +39,7 @@ function Get-EdiscoveryCase {
         }
         else {
             $cmembers = ((Get-ComplianceCaseMember -Case $cc.name).windowsLiveID) -join ';'
-            $policies = Get-CaseHoldPolicy -Case $cc.Name | % { Get-CaseHoldPolicy $_.Name -Case $_.CaseId -DistributionDetail}
+            $policies = Get-CaseHoldPolicy -Case $cc.Name | ForEach-Object { Get-CaseHoldPolicy $_.Name -Case $_.CaseId -DistributionDetail }
             foreach ($policy in $policies) {
                 $rule = Get-CaseHoldRule -Policy $policy.name
                 Add-ToCaseReport -casename $cc.name -casemembers $cmembers -casestatus $cc.Status -casecreatedtime $cc.CreatedDateTime -holdname $policy.name -holdenabled $policy.enabled -holdcreatedby $policy.CreatedBy -holdlastmodifiedby $policy.LastModifiedBy -ExchangeLocation (($policy.exchangelocation.name) -join ';') -SharePointLocation (($policy.sharePointlocation.name) -join ';') -ContentMatchQuery $rule.ContentMatchQuery -holdcreatedtime $policy.WhenCreatedUTC -holdchangedtime $policy.WhenChangedUTC -OutputPath $outputpath

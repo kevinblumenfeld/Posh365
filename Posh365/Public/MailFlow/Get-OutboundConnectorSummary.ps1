@@ -1,4 +1,4 @@
-function Get-OutboundConnectorReport {
+function Get-OutboundConnectorSummary {
     [CmdletBinding()]
     param (
 
