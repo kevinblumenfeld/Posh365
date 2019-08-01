@@ -49,4 +49,4 @@ function Get-AzureADRoleReport {
         }
     }
 }
-Get-365Info -Tenant Wunder -Path C:\Scripts\WW4 -AzureAD -Verbose
+
