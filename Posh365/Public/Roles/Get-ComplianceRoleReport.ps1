@@ -7,7 +7,7 @@ function Get-ComplianceRoleReport {
     )
     $ComplianceRoleList = Get-RoleGroup
     switch ($PSBoundParameters.Keys) {
-        $MFAHash {
+        MFAHash {
             foreach ($ComplianceRole in $ComplianceRoleList) {
                 Write-Verbose "Processing $($ComplianceRole.DisplayName)"
                 $RoleMemberList = Get-RoleGroupMember -Identity $ComplianceRole.Identity

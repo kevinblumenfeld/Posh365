@@ -7,13 +7,13 @@ function Get-ExchangeRoleReport {
     )
     $ExchangeRoleList = Get-RoleGroup
     switch ($PSBoundParameters.Keys) {
-        $MFAHash {
+        MFAHash {
             foreach ($ExchangeRole in $ExchangeRoleList) {
-                Write-Verbose "Processing $($ExchangeRole.DisplayName)"
+                Write-Verbose "Processing $($ExchangeRole.Name)"
                 $RoleMemberList = Get-RoleGroupMember -Identity $ExchangeRole.Identity
                 foreach ($RoleMember in $RoleMemberList) {
                     [PSCustomObject]@{
-                        'Role'              = $ExchangeRole.DisplayName
+                        'Role'              = $ExchangeRole.Name
                         'DisplayName'       = $RoleMember.DisplayName
                         'UserPrincipalName' = $MFAHash[$RoleMember.ExternalDirectoryObjectId].UserPrincipalName
                         'IsLicensed'        = $MFAHash[$RoleMember.ExternalDirectoryObjectId].IsLicensed
@@ -26,11 +26,11 @@ function Get-ExchangeRoleReport {
         }
         Default {
             foreach ($ExchangeRole in $ExchangeRoleList) {
-                Write-Verbose "Processing $($ExchangeRole.DisplayName)"
+                Write-Verbose "Processing $($ExchangeRole.Name)"
                 $RoleMemberList = Get-RoleGroupMember -Identity $ExchangeRole.Identity
                 foreach ($RoleMember in $RoleMemberList) {
                     [PSCustomObject]@{
-                        'Role'              = $ExchangeRole.DisplayName
+                        'Role'              = $ExchangeRole.Name
                         'DisplayName'       = $RoleMember.DisplayName
                         'UserPrincipalName' = ""
                         'IsLicensed'        = ""

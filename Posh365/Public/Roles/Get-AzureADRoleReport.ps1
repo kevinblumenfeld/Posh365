@@ -7,7 +7,7 @@ function Get-AzureADRoleReport {
     )
     $AzureADRoleList = Get-AzureADDirectoryRole
     switch ($PSBoundParameters.Keys) {
-        $MFAHash {
+        MFAHash {
             foreach ($AzureADRole in $AzureADRoleList) {
                 Write-Verbose "Processing $($AzureADRole.DisplayName)"
                 try {
