@@ -9,7 +9,7 @@ function Get-ComplianceRoleReport {
     switch ($PSBoundParameters.Keys) {
         MFAHash {
             foreach ($ComplianceRole in $ComplianceRoleList) {
-                Write-Verbose "Processing with hash $($ComplianceRole.DisplayName)"
+                Write-Verbose "Processing $($ComplianceRole.DisplayName)"
                 $RoleMemberList = Get-RoleGroupMember -Identity $ComplianceRole.Identity
                 foreach ($RoleMember in $RoleMemberList) {
                     [PSCustomObject]@{

@@ -10,23 +10,19 @@ function Get-AzureADRoleReport {
         MFAHash {
             foreach ($AzureADRole in $AzureADRoleList) {
                 Write-Verbose "Processing $($AzureADRole.DisplayName)"
-                try {
-                    $RoleMemberList = Get-AzureADDirectoryRoleMember -ObjectId $AzureADRole.ObjectId -ErrorAction Stop
-                    foreach ($RoleMember in $RoleMemberList) {
-                        [PSCustomObject]@{
-                            'Role'              = $AzureADRole.DisplayName
-                            'DisplayName'       = $RoleMember.DisplayName
-                            'UserPrincipalName' = $RoleMember.UserPrincipalName
-                            'UserType'          = $RoleMember.UserType
-                            'LastDirSyncTime'   = $RoleMember.LastDirSyncTime
-                            'MFA_State'         = $MFAHash[$RoleMember.ExternalDirectoryObjectId].MFA_State
-                            'RoleDescription'   = $AzureADRole.Description
-                        }
+                $RoleMemberList = Get-AzureADDirectoryRoleMember -ObjectId $AzureADRole.ObjectId
+                foreach ($RoleMember in $RoleMemberList) {
+                    [PSCustomObject]@{
+                        'Role'              = $AzureADRole.DisplayName
+                        'DisplayName'       = $RoleMember.DisplayName
+                        'UserPrincipalName' = $RoleMember.UserPrincipalName
+                        'UserType'          = $RoleMember.UserType
+                        'LastDirSyncTime'   = $RoleMember.LastDirSyncTime
+                        'MFA_State'         = $MFAHash[$RoleMember.ObjectId].MFA_State
+                        'RoleDescription'   = $AzureADRole.Description
                     }
                 }
-                catch {
 
-                }
             }
         }
         Default {
@@ -53,3 +49,4 @@ function Get-AzureADRoleReport {
         }
     }
 }
+Get-365Info -Tenant Wunder -Path C:\Scripts\WW4 -AzureAD -Verbose
