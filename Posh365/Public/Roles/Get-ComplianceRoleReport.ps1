@@ -1,42 +1,42 @@
-function Get-ExchangeRoleReport {
+function Get-ComplianceRoleReport {
     [CmdletBinding()]
     param (
         [Parameter()]
         [hashtable]
         $MFAHash
     )
-    $ExchangeRoleList = Get-RoleGroup
+    $ComplianceRoleList = Get-RoleGroup
     switch ($PSBoundParameters.Keys) {
         $MFAHash {
-            foreach ($ExchangeRole in $ExchangeRoleList) {
-                Write-Verbose "Processing $($ExchangeRole.DisplayName)"
-                $RoleMemberList = Get-RoleGroupMember -Identity $ExchangeRole.Identity
+            foreach ($ComplianceRole in $ComplianceRoleList) {
+                Write-Verbose "Processing $($ComplianceRole.DisplayName)"
+                $RoleMemberList = Get-RoleGroupMember -Identity $ComplianceRole.Identity
                 foreach ($RoleMember in $RoleMemberList) {
                     [PSCustomObject]@{
-                        'Role'              = $ExchangeRole.DisplayName
+                        'Role'              = $ComplianceRole.DisplayName
                         'DisplayName'       = $RoleMember.DisplayName
                         'UserPrincipalName' = $MFAHash[$RoleMember.ExternalDirectoryObjectId].UserPrincipalName
                         'IsLicensed'        = $MFAHash[$RoleMember.ExternalDirectoryObjectId].IsLicensed
                         'LastDirSyncTime'   = $MFAHash[$RoleMember.ExternalDirectoryObjectId].LastDirSyncTime
                         'MFA_State'         = $MFAHash[$RoleMember.ExternalDirectoryObjectId].MFA_State
-                        'RoleDescription'   = $ExchangeRole.Description
+                        'RoleDescription'   = $ComplianceRole.Description
                     }
                 }
             }
         }
         Default {
-            foreach ($ExchangeRole in $ExchangeRoleList) {
-                Write-Verbose "Processing $($ExchangeRole.DisplayName)"
-                $RoleMemberList = Get-RoleGroupMember -Identity $ExchangeRole.Identity
+            foreach ($ComplianceRole in $ComplianceRoleList) {
+                Write-Verbose "Processing $($ComplianceRole.DisplayName)"
+                $RoleMemberList = Get-RoleGroupMember -Identity $ComplianceRole.Identity
                 foreach ($RoleMember in $RoleMemberList) {
                     [PSCustomObject]@{
-                        'Role'              = $ExchangeRole.DisplayName
+                        'Role'              = $ComplianceRole.DisplayName
                         'DisplayName'       = $RoleMember.DisplayName
                         'UserPrincipalName' = ""
                         'IsLicensed'        = ""
                         'LastDirSyncTime'   = ""
                         'MFA_State'         = ""
-                        'RoleDescription'   = $ExchangeRole.Description
+                        'RoleDescription'   = $ComplianceRole.Description
                     }
                 }
             }
