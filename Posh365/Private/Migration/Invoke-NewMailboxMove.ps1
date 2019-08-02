@@ -50,11 +50,11 @@ function Invoke-NewMailboxMove {
         $CredentialPath = "${env:\userprofile}\$Tenant.Migrations.Cred"
 
         if (Test-Path $CredentialPath) {
-            $RemoteCred = Import-CliXml -Path $CredentialPath
+            $RemoteCred = Import-Clixml -Path $CredentialPath
         }
         else {
-            $RemoteCred = Get-Credential
-            $RemoteCred | Export-CliXml -Path $CredentialPath
+            $RemoteCred = Get-Credential -Message "Enter Credentials for Remote Host DOMAIN\User (On-Premises Migration Endpoint)"
+            $RemoteCred | Export-Clixml -Path $CredentialPath
         }
     }
     process {

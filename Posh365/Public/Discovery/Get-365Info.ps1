@@ -227,23 +227,80 @@ function Get-365Info {
         $365_UnifiedGroups = (Join-Path $DetailedTenantPath '365_UnifiedGroups.csv')
         $EA = $ErrorActionPreference
         $ErrorActionPreference = "SilentlyContinue"
+        if ($MSOnline) {
+            Write-Verbose "Gathering MsolUsers"
+            Get-365MsolUser -DetailedReport | Export-Csv $MSOL_Users_Detailed @ExportCSVSplat
+            $MsolUserDetailedImport = Import-Csv $MSOL_Users_Detailed
+            $MsolUserDetailedImport | Where-Object { $_.UserPrincipalName -notmatch "federatedemail" } | Select-Object $MsolUserProperties |
+            Sort-Object DisplayName | Export-Csv $MSOL_Users @ExportCSVSplat
+
+            Write-Verbose "Gathering MsolUsers MFA Report"
+            $MsolUserDetailedImport | Where-Object { $_.UserPrincipalName -notmatch "#EXT#" -and $_.UserPrincipalName -notmatch "federatedemail" } |
+            Select-Object $MsolUserMFAProperties | Sort-Object DisplayName | Export-Csv $MSOL_MFAUsers @ExportCSVSplat
+
+            Write-Verbose "Gathering MsolUser Roles Report"
+            Get-MsolRoleReport | Sort-Object Role, DisplayName | Export-Csv $MSOL_Roles @ExportCSVSplat
+
+            Write-Verbose "Gathering MsolGroups"
+            Get-365MsolGroup | Select-Object $MSOLGroupProperties |
+            Sort-Object DisplayName | Export-Csv $MSOL_Groups @ExportCSVSplat
+
+            Get-MsolAccountSku | Select-Object @(
+                @{
+                    Name       = 'Sku'
+                    Expression = { ($_.AccountSkuId -split ':')[1] }
+                }
+                @{
+                    Name       = 'Active'
+                    Expression = 'ActiveUnits'
+                }
+                @{
+                    Name       = 'Consumed'
+                    Expression = 'ConsumedUnits'
+                }
+            ) | Sort-Object -Property Consumed -Descending | Export-Csv $365_Sku @ExportCSVSplat
+
+            $Result = [System.Collections.Generic.List[PSObject]]::New()
+            $UPN = $MsolUserDetailedImport | Where-Object { $_.userprincipalname -notlike "*#EXT*" } | Select-Object @(
+                @{
+                    Name       = 'UserPrincipalName'
+                    Expression = { ($_.userprincipalname -split '@')[1] }
+                }
+            )
+            $Result.Add($UPN)
+            $EXTUPN = $MsolUserDetailedImport | Where-Object { $_.userprincipalname -like "*#EXT*" } | Select-Object @(
+                @{
+                    Name       = 'UserPrincipalName'
+                    Expression = { [regex]::match($_.UserPrincipalName, '#[\s\S]*$').captures.groups[0] }
+                }
+            )
+            $Result.Add($EXTUPN)
+            ($Result).UserPrincipalName | Group-Object | Select-Object name, count |
+            Sort-Object -Property count -Descending | Export-Csv $MSOL_Upn @ExportCSVSplat
+
+            Import-Csv $MSOL_Groups | Select-Object GroupType | Group-Object -Property GroupType | Select-Object Name, Count |
+            Sort-Object -Property Count -Descending | Export-Csv $MSOL_Groups_Type @ExportCSVSplat
+
+        }
         if (-not $MSOnline) {
             $MsolUserDetailedImport = Import-Csv $MSOL_Users_Detailed
         }
-        $ErrorActionPreference = $EA
-        $MFAHash = Get-MsolUserMFAHash -MsolUserList $MsolUserDetailedImport
+        if ($MsolUserDetailedImport) {
+            $MFAHash = Get-MsolUserMFAHash -MsolUserList $MsolUserDetailedImport
+        }
+
 
         if ($ExchangeOnline) {
             Write-Verbose "Gathering Exchange Transport Rules"
+            $TransportCollection = Export-TransportRuleCollection
+            Set-Content -Path $EXO_TransportRuleCollection -Value $TransportCollection.FileData -Encoding Byte
+            [xml]$TRuleColList = Get-Content $EXO_TransportRuleCollection
+
             Get-TransportRuleReport | Export-Csv $EXO_TransportRules_Detailed @ExportCSVSplat
             $TransportData = Import-Csv $EXO_TransportRules_Detailed
             $TransportHash = Get-TransportRuleHash -TransportData $TransportData
             $TransportCsv = Convert-TransportXMLtoCSV -TRuleColList $TRuleColList -TransportHash $TransportHash
             $TransportCsv | Sort-Object Name | Export-Csv $EXO_TransportRules @ExportCSVSplat
-
-            $TransportCollection = Export-TransportRuleCollection
-            Set-Content -Path $EXO_TransportRuleCollection -Value $TransportCollection.FileData -Encoding Byte
-            [xml]$TRuleColList = Get-Content $EXO_TransportRuleCollection
 
             Write-Verbose "Gathering Exchange Roles"
             if ($MFAHash) {
@@ -330,61 +387,6 @@ function Get-365Info {
 
             Import-Csv $EXO_Recipients | Export-EmailsOnePerLine -ReportPath $TenantPath -FindInColumn EmailAddresses |
             Sort-Object DisplayName | Export-Csv $EXO_RecipientEmails @ExportCSVSplat
-        }
-        if ($MSOnline) {
-            Write-Verbose "Gathering MsolUsers"
-            Get-365MsolUser -DetailedReport | Export-Csv $MSOL_Users_Detailed @ExportCSVSplat
-            $MsolUserDetailedImport = Import-Csv $MSOL_Users_Detailed
-            $MsolUserDetailedImport | Where-Object { $_.UserPrincipalName -notmatch "federatedemail" } | Select-Object $MsolUserProperties |
-            Sort-Object DisplayName | Export-Csv $MSOL_Users @ExportCSVSplat
-
-            Write-Verbose "Gathering MsolUsers MFA Report"
-            $MsolUserDetailedImport | Where-Object { $_.UserPrincipalName -notmatch "#EXT#" -and $_.UserPrincipalName -notmatch "federatedemail" } |
-            Select-Object $MsolUserMFAProperties | Sort-Object DisplayName | Export-Csv $MSOL_MFAUsers @ExportCSVSplat
-
-            Write-Verbose "Gathering MsolUser Roles Report"
-            Get-MsolRoleReport | Sort-Object Role, DisplayName | Export-Csv $MSOL_Roles @ExportCSVSplat
-
-            Write-Verbose "Gathering MsolGroups"
-            Get-365MsolGroup | Select-Object $MSOLGroupProperties |
-            Sort-Object DisplayName | Export-Csv $MSOL_Groups @ExportCSVSplat
-
-            Get-MsolAccountSku | Select-Object @(
-                @{
-                    Name       = 'Sku'
-                    Expression = { ($_.AccountSkuId -split ':')[1] }
-                }
-                @{
-                    Name       = 'Active'
-                    Expression = 'ActiveUnits'
-                }
-                @{
-                    Name       = 'Consumed'
-                    Expression = 'ConsumedUnits'
-                }
-            ) | Sort-Object -Property Consumed -Descending | Export-Csv $365_Sku @ExportCSVSplat
-
-            $Result = [System.Collections.Generic.List[PSObject]]::New()
-            $UPN = $MsolUserDetailedImport | Where-Object { $_.userprincipalname -notlike "*#EXT*" } | Select-Object @(
-                @{
-                    Name       = 'UserPrincipalName'
-                    Expression = { ($_.userprincipalname -split '@')[1] }
-                }
-            )
-            $Result.Add($UPN)
-            $EXTUPN = $MsolUserDetailedImport | Where-Object { $_.userprincipalname -like "*#EXT*" } | Select-Object @(
-                @{
-                    Name       = 'UserPrincipalName'
-                    Expression = { [regex]::match($_.UserPrincipalName, '#[\s\S]*$').captures.groups[0] }
-                }
-            )
-            $Result.Add($EXTUPN)
-            ($Result).UserPrincipalName | Group-Object | Select-Object name, count |
-            Sort-Object -Property count -Descending | Export-Csv $MSOL_Upn @ExportCSVSplat
-
-            Import-Csv $MSOL_Groups | Select-Object GroupType | Group-Object -Property GroupType | Select-Object Name, Count |
-            Sort-Object -Property Count -Descending | Export-Csv $MSOL_Groups_Type @ExportCSVSplat
-
         }
         if ($AzureAD) {
             Write-Verbose "Gathering AzureAD Roles"

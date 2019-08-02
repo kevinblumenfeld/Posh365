@@ -10,7 +10,7 @@ function Convert-TransportXMLtoCSV {
     foreach ($TRule in $TRuleColList) {
         foreach ($Rule in $TRule.rules.rule) {
             [PSCustomObject]@{
-                Name        = $Rule.name
+                Name        = ($Rule.name)
                 Description = $TransportHash[$Rule.Id].Description
                 Command     = $Rule.version.commandblock."#cdata-section"
             }
