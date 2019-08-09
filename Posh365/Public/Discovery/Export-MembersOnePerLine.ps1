@@ -49,6 +49,7 @@
                     Name                 = $Row.Name
                     PrimarySmtpAddress   = $Row.PrimarySmtpAddress
                     EmailAddresses       = $Row.EmailAddresses
+                    ExchangeObjectId     = $Row.ExchangeObjectId
                 }
             }
         }

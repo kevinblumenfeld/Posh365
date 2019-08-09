@@ -39,15 +39,8 @@ Function Test-MailboxMove {
             }
         }
         if ($UserChoice -ne 'Quit' ) {
-            $Sync = @{
-                RemoteHost = $RemoteHost
-                Tenant     = $Tenant
-            }
-            $UserChoice | Invoke-NewMailboxMove @Sync | Out-GridView -Title "Results of New Mailbox Move"
-            foreach ($Group in $GroupsToAddUserTo) {
-                $GuidList = $UserChoice | Get-ADUserGuid
-                $GuidList | Add-UserToADGroup -Group $Group
-            }
+            Invoke-TestMailboxMove -UserList $UserChoice | Out-GridView -Title "Results of Test Mailbox Move"
         }
     }
 }
+

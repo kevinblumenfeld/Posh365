@@ -32,10 +32,10 @@ function Get-EXOGroup {
     #>
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)]
+        [Parameter()]
         [switch] $DetailedReport,
 
-        [Parameter(ValueFromPipeline = $true, Mandatory = $false)]
+        [Parameter(ValueFromPipeline)]
         [string[]] $ListofGroups
     )
     Begin {
@@ -82,7 +82,8 @@ function Get-EXOGroup {
                 @{n = "EmailAddresses" ; e = { @($_.emailaddresses) -ne '' -join '|' } },
                 @{n = "x500" ; e = { "x500:" + $_.LegacyExchangeDN } },
                 @{n = "membersName" ; e = { @($Members.name) -ne '' -join '|' } },
-                @{n = "membersSmtp" ; e = { @($Members.PrimarySmtpAddress) -ne '' -join '|' } }
+                @{n = "membersSmtp" ; e = { @($Members.PrimarySmtpAddress) -ne '' -join '|' } },
+                @{n = "ExchangeObjectId" ; e = { ($_.ExchangeObjectId).Guid } }
             )
         }
         else {

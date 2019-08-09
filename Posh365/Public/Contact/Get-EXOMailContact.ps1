@@ -57,7 +57,8 @@ function Get-EXOMailContact {
             @{n = "ObjectClass" ; e = { @($_.ObjectClass) -ne '' -join '|' } },
             @{n = "PoliciesExcluded" ; e = { @($_.PoliciesExcluded) -ne '' -join '|' } },
             @{n = "PoliciesIncluded" ; e = { @($_.PoliciesIncluded) -ne '' -join '|' } },
-            @{n = "EmailAddresses" ; e = { @($_.emailaddresses) -ne '' -join '|' } }
+            @{n = "EmailAddresses" ; e = { @($_.emailaddresses) -ne '' -join '|' } },
+            @{n = "ExchangeObjectId" ; e = { ($_.ExchangeObjectId).Guid } }
         )
     }
     Process {

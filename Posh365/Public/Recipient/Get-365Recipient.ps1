@@ -107,7 +107,8 @@ function Get-365Recipient {
                 @{n = "UMDtmfMap" ; e = { @($_.UMDtmfMap) -ne '' -join '|' } },
                 @{n = "EmailAddresses" ; e = { @($_.EmailAddresses) -ne '' -join '|' } },
                 @{n = "x500" ; e = { "x500:" + $_.LegacyExchangeDN } },
-                @{n = "MailboxLocations" ; e = { @($_.MailboxLocations) -ne '' -join '|' } }
+                @{n = "MailboxLocations" ; e = { @($_.MailboxLocations) -ne '' -join '|' } },
+                @{n = "ExchangeObjectId" ; e = { ($_.ExchangeObjectId).Guid } }
             )
         }
         else {

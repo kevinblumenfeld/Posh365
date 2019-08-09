@@ -35,7 +35,7 @@ function Connect-OktaSecure {
 
     }
     else {
-        [System.Management.Automation.PSCredential]$Script:OKTACredential = Get-Credential -Message "Enter OKTA Tenant/Domain (ex. CONTOSO) as Username and API Token as Password"
+        [System.Management.Automation.PSCredential]$Script:OKTACredential = Get-Credential -Message "If Okta tenant is contoso.okta.com use CONTOSO as Username and API Token as Password"
         $OKTACredential | Export-Clixml ($KeyPath + "$($Tenant).OktaXml")
         $url = $OKTACredential.GetNetworkCredential().username
         $token = $OKTACredential.GetNetworkCredential().Password

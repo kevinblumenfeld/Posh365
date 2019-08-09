@@ -92,12 +92,12 @@ function Get-365Info {
         )
         $EXORecipientProperties = @(
             'DisplayName', 'RecipientTypeDetails', 'Office', 'Alias', 'Identity', 'PrimarySmtpAddress'
-            'WindowsLiveID', 'LitigationHoldEnabled', 'Name', 'EmailAddresses'
+            'WindowsLiveID', 'LitigationHoldEnabled', 'Name', 'EmailAddresses', 'ExchangeObjectId'
         )
         $EXOGroupProperties = @(
             'DisplayName', 'Alias', 'GroupType', 'IsDirSynced', 'PrimarySmtpAddress', 'RecipientTypeDetails'
             'WindowsEmailAddress', 'AcceptMessagesOnlyFromSendersOrMembers', 'ManagedBy', 'EmailAddresses', 'x500'
-            'Name', 'membersName', 'membersSMTP', 'Identity'
+            'Name', 'membersName', 'membersSMTP', 'Identity', 'ExchangeObjectId'
         )
         $EXOMailboxProperties = @(
             'DisplayName', 'Office', 'RecipientTypeDetails', 'AccountDisabled', 'IsDirSynced', 'MailboxGB'
@@ -106,7 +106,7 @@ function Get-365Info {
             'PopEnabled', 'ImapEnabled', 'MAPIEnabled', 'EwsEnabled', 'RecipientLimits', 'AcceptMessagesOnlyFrom'
             'AcceptMessagesOnlyFromDLMembers', 'ForwardingAddress', 'ForwardingSmtpAddress', 'DeliverToMailboxAndForward'
             'UserPrincipalName', 'PrimarySmtpAddress', 'Identity', 'AddressBookPolicy', 'Guid', 'LitigationHoldEnabled'
-            'LitigationHoldDuration', 'LitigationHoldOwner', 'InPlaceHolds', 'x500', 'EmailAddresses'
+            'LitigationHoldDuration', 'LitigationHoldOwner', 'InPlaceHolds', 'x500', 'EmailAddresses', 'ExchangeObjectId'
         )
         $EXOContactsProperties = @(
             'DisplayName', 'PrimarySmtpAddress', 'WindowsEmailAddress', 'ExternalEmailAddress', 'EmailAddresses'
@@ -124,7 +124,7 @@ function Get-365Info {
             'ModeratedBy', 'RejectMessagesFrom', 'RejectMessagesFromDLMembers', 'RejectMessagesFromSendersOrMembers'
             'UserCertificate', 'UserSMimeCertificate', 'ExtensionCustomAttribute1', 'ExtensionCustomAttribute2'
             'ExtensionCustomAttribute3', 'ExtensionCustomAttribute4', 'ExtensionCustomAttribute5', 'Extensions'
-            'MailTipTranslations', 'PoliciesExcluded', 'PoliciesIncluded', 'UMDtmfMap', 'DistinguishedName'
+            'MailTipTranslations', 'PoliciesExcluded', 'PoliciesIncluded', 'UMDtmfMap', 'DistinguishedName', 'ExchangeObjectId'
         )
         $EXORetentionPoliciesProperties = @(
             'PolicyName', 'TagType', 'TagName', 'TagAgeLimit', 'TagAction', 'TagEnabled', 'IsDefault', 'RetentionPolicyID'
@@ -206,8 +206,8 @@ function Get-365Info {
         $EXO_GroupMembersSMTP = (Join-Path $TenantPath 'EXO_GroupMembersSMTP.csv')
         $EXO_Mailboxes = (Join-Path $TenantPath 'EXO_Mailboxes.csv')
         $EXO_MailboxTypes = (Join-Path $TenantPath 'EXO_MailboxTypes.csv')
-        $EXO_MailboxEmails = (Join-Path $TenantPath 'EXO_MailboxEmails.csv')
-        $EXO_MailboxDomains = (Join-Path $TenantPath 'EXO_MailboxDomains.csv')
+        $EXO_Emails = (Join-Path $TenantPath 'EXO_Emails.csv')
+        $EXO_Domains = (Join-Path $TenantPath 'EXO_Domains.csv')
         $EXO_MailboxesSync = (Join-Path $DetailedTenantPath 'EXO_MailboxesSync.csv')
         $EXO_ResourceMailboxes = (Join-Path $TenantPath 'EXO_ResourceMailboxes.csv')
         $EXO_RetentionPolicies = (Join-Path $TenantPath 'EXO_RetentionPolicies.csv')
@@ -221,6 +221,8 @@ function Get-365Info {
         $EXO_Permissions = (Join-Path $TenantPath 'EXO_Permissions.csv')
         $EXO_PermissionsDG = (Join-Path $TenantPath 'EXO_DGPermissions.csv')
         $EXO_DirSyncCount = (Join-Path $TenantPath 'EXO_DirSyncCount.csv')
+        $EXO_AllRecipientEmails = (Join-Path $DetailedTenantPath 'EXO_AllRecipientEmails.csv')
+        # $EXO_UniqueEmails = (Join-Path $DetailedTenantPath 'EXO_UniqueEmails.csv')
 
         $EOP_ConnectionFilters = (Join-Path $TenantPath 'EOP_ConnectionFilters.csv')
         $EOP_ContentPolicy = (Join-Path $TenantPath 'EOP_ContentPolicy.csv')
@@ -267,7 +269,8 @@ function Get-365Info {
                     Expression = 'ConsumedUnits'
                 }
             ) | Sort-Object -Property Consumed -Descending | Export-Csv $365_Sku @ExportCSVSplat
-
+            $EA = $ErrorActionPreference
+            $ErrorActionPreference = "SilentlyContinue"
             $Result = [System.Collections.Generic.List[PSObject]]::New()
             $UPN = $MsolUserDetailedImport | Where-Object { $_.userprincipalname -notlike "*#EXT*" } | Select-Object @(
                 @{
@@ -296,7 +299,7 @@ function Get-365Info {
         if ($MsolUserDetailedImport) {
             $MFAHash = Get-MsolUserMFAHash -MsolUserList $MsolUserDetailedImport
         }
-
+        $ErrorActionPreference = $EA
 
         if ($ExchangeOnline) {
             $EA = $ErrorActionPreference
@@ -367,7 +370,8 @@ function Get-365Info {
             Get-EXOMailContact | Select-Object $EXOContactsProperties |
             Sort-Object DisplayName | Export-Csv $EXO_Contacts @ExportCSVSplat
 
-            Import-Csv $EXO_Contacts | Group-Object IsDirSynced | Select-Object name, count |
+            $ContactDetails = Import-Csv $EXO_Contacts
+            $ContactDetails | Group-Object IsDirSynced | Select-Object name, count |
             Sort-Object -Property count -Descending | Export-Csv $EXO_ContactsSync @ExportCSVSplat
 
             Write-Verbose "Gathering Distribution & Mail-Enabled Security Groups"
@@ -390,7 +394,7 @@ function Get-365Info {
             Sort-Object -Property count -Descending | Export-Csv $EXO_MailboxesSync @ExportCSVSplat
 
             Write-Verbose "Gathering Exchange Online Resource Mailboxes and Calendar Processing"
-            $ResourceMailbox = Import-Csv $EXO_Mailboxes_Detailed | Where-Object { $_.RecipientTypeDetails -in 'RoomMailbox', 'EquipmentMailbox' }
+            $ResourceMailbox = $MailboxDetails | Where-Object { $_.RecipientTypeDetails -in 'RoomMailbox', 'EquipmentMailbox' }
             Get-EXOResourceMailbox -ResourceMailbox $ResourceMailbox | Sort-Object DisplayName | Export-Csv $EXO_ResourceMailboxes @ExportCSVSplat
 
             Import-Csv $EXO_Groups | Export-MembersOnePerLine -ReportPath $TenantPath -FindInColumn MembersName |
@@ -399,11 +403,28 @@ function Get-365Info {
             Import-Csv $EXO_Groups | Export-MembersOnePerLine -ReportPath $TenantPath -FindInColumn MembersSMTP |
             Sort-Object DisplayName | Export-Csv $EXO_GroupMembersSMTP @ExportCSVSplat
 
-            Import-Csv $EXO_Mailboxes_Detailed | Export-EmailsOnePerLine -ReportPath $TenantPath -FindInColumn EmailAddresses |
-            Sort-Object DisplayName | Export-Csv $EXO_MailboxEmails @ExportCSVSplat
+            $OnePerExoEmail = [System.Collections.Generic.List[PSObject]]::New()
 
-            Import-Csv $EXO_MailboxEmails | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' -and $_.Domain -and $_.Domain -notmatch "SPO_" } |
-            Group-Object domain | Select-Object name, count | Sort-Object -Property count -Descending | Export-Csv $EXO_MailboxDomains @ExportCSVSplat
+            $OnePerMailbox = $MailboxDetails | Export-EmailsOnePerLine -ReportPath $TenantPath -FindInColumn EmailAddresses
+
+            $OnePerExoEmail.AddRange([PSObject[]]$OnePerMailbox)
+
+            $OnePerContactExt = $ContactDetails | Export-EmailsOnePerLine -ReportPath $TenantPath -FindInColumn ExternalEmailAddress
+
+            $OnePerExoEmail.AddRange([PSObject[]]$OnePerContactExt)
+
+            $OnePerContact = $ContactDetails | Export-EmailsOnePerLine -ReportPath $TenantPath -FindInColumn EmailAddresses
+
+            $OnePerExoEmail.AddRange([PSObject[]]$OnePerContact)
+
+            $OnePerGroup = $EXOGroupsDetails | Export-EmailsOnePerLine -ReportPath $TenantPath -FindInColumn EmailAddresses
+
+            $OnePerExoEmail.AddRange([PSObject[]]$OnePerGroup)
+
+            $OnePerExoEmail | Sort-Object DisplayName, RecipientTypeDetails | Export-Csv $EXO_Emails @ExportCSVSplat
+
+            $OnePerExoEmail | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' -and $_.Domain -and $_.Domain -notmatch "SPO_" } |
+            Group-Object domain | Select-Object name, count | Sort-Object -Property count -Descending | Export-Csv $EXO_Domains @ExportCSVSplat
 
             $DirSyncCount = Get-ChildItem $DetailedTenantPath -Filter *sync.csv | ForEach-Object {
                 $BaseName = $_.BaseName
@@ -430,11 +451,25 @@ function Get-365Info {
             $RecipientsDetails | Group-Object RecipientTypeDetails | Select-Object name, count |
             Sort-Object -Property count -Descending | Export-Csv $EXO_RecipientTypes @ExportCSVSplat
 
-            Import-Csv $EXO_Recipients | Export-EmailsOnePerLine -ReportPath $TenantPath -FindInColumn EmailAddresses |
-            Sort-Object DisplayName | Export-Csv $EXO_RecipientEmails @ExportCSVSplat
+            $OnePerRecipientEmail = Import-Csv $EXO_Recipients |
+            Export-EmailsOnePerLine -ReportPath $TenantPath -FindInColumn EmailAddresses | Sort-Object DisplayName
 
-            Import-Csv $EXO_RecipientEmails | Where-Object { $_.Domain -and $_.Domain -notmatch "SPO_" } |
+            $OnePerRecipientEmail | Export-Csv $EXO_RecipientEmails @ExportCSVSplat
+
+            $OnePerRecipientEmail | Where-Object { $_.Domain -and $_.Domain -notmatch "SPO_" } |
             Group-Object Domain | Select-Object name, count | Sort-Object -Property count -Descending | Export-Csv $EXO_RecipientDomains @ExportCSVSplat
+
+            # $AllEmails = [System.Collections.Generic.List[PSObject]]::New()
+
+            # $Email = $OnePerExoEmail | Where-Object { $_.Address -and $_.Protocol -notmatch 'x500|SPO|x400' -and $_.RecipientTypeDetails -ne 'GuestMailUser' }
+            # $AllEmails.AddRange([PSObject[]]$Email)
+
+            $AllRecipientEmails = $OnePerRecipientEmail | Where-Object { $_.Address -and $_.Protocol -notmatch 'x500|SPO|x400' -and $_.RecipientTypeDetails -ne 'GuestMailUser' }
+            # $AllEmails.AddRange([PSObject[]]$RecEmail)
+
+            $AllRecipientEmails | Sort-Object -Property DisplayName | Export-Csv $EXO_AllRecipientEmails @ExportCSVSplat
+            # $AllEmails | Sort-Object -Property Address -Unique | Select-Object Address | Export-Csv $EXO_UniqueEmails @ExportCSVSplat
+
             $ErrorActionPreference = $EA
         }
         if ($AzureAD) {
