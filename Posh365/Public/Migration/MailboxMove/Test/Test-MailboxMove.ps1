@@ -43,4 +43,3 @@ Function Test-MailboxMove {
         }
     }
 }
-
