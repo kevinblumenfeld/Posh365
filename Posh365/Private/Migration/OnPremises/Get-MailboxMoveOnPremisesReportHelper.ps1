@@ -12,6 +12,7 @@
                 BatchName             = ''
                 DisplayName           = $Mailbox.DisplayName
                 OrganizationalUnit    = $Mailbox.OrganizationalUnit
+                IsMigrated            = ''
                 CompleteBatchOn       = ''
                 CompleteBatchonTimePT = ''
                 MailboxGB             = $Statistic.MailboxGB
@@ -34,8 +35,8 @@
             }
             if ($Mailbox.ForwardingAddress) {
                 $Distinguished = Convert-CanonicalToDistinguished -CanonicalName $Mailbox.ForwardingAddress
-                $PSHash.Add('ForwardingAddress', $RecHash.$Distinguished.PrimarySmtpAddress)
-                $PSHash.Add('ForwardingRecipientType', $RecHash.$Distinguished.RecipientTypeDetails)
+                $PSHash.Add('ForwardingAddress', $RecHash[$Distinguished].PrimarySmtpAddress)
+                $PSHash.Add('ForwardingRecipientType', $RecHash[$Distinguished].RecipientTypeDetails)
                 $PSHash.Add('DeliverToMailboxAndForward', $Mailbox.DeliverToMailboxAndForward)
             }
             else {

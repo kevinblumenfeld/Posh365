@@ -9,8 +9,8 @@
         New-Item -ItemType Directory -Path $ReportPath -ErrorAction SilentlyContinue
         $BatchesFile = Join-Path $ReportPath 'Batches.csv'
         $Select = @(
-            'BatchName', 'DisplayName', 'OrganizationalUnit', 'CompleteBatchOn'
-            'CompleteBatchonTimePT', 'MailboxGB', 'ArchiveGB', 'DeletedGB', 'TotalGB'
+            'BatchName', 'DisplayName', 'OrganizationalUnit', 'IsMigrated', 'CompleteBatchDate'
+            'CompleteBatchTimePT', 'MailboxGB', 'ArchiveGB', 'DeletedGB', 'TotalGB'
             'LastLogonTime', 'ItemCount', 'UserPrincipalName', 'PrimarySmtpAddress'
             'AddressBookPolicy', 'RetentionPolicy', 'AccountDisabled', 'Alias'
             'Database', 'OU', 'Office', 'RecipientTypeDetails', 'UMEnabled'
