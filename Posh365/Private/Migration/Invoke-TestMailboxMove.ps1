@@ -10,12 +10,14 @@ function Invoke-TestMailboxMove {
         foreach ($User in $UserList) {
             $Error = [System.Collections.Generic.List[string]]::New()
             $PreFlightHash = @{
-                'DisplayName'       = $User.DisplayName
-                'UserPrincipalName' = $User.UserPrincipalName
+                'DisplayName'        = $User.DisplayName
+                'UserPrincipalName'  = $User.UserPrincipalName
+                'OrganizationalUnit' = $User.OrganizationalUnit
             }
+            $ErrorValue = [System.Collections.Generic.List[string]]::New()
             try {
-                $ErrorValue = [System.Collections.Generic.List[string]]::New()
                 $MailUser = Get-MailUser -Identity $User.UserPrincipalName -ErrorAction Stop
+                $PreFlightHash.Add('MailboxType', $User.RecipientTypeDetails)
                 $BadEmail = [System.Collections.Generic.List[string]]::New()
                 foreach ($Email in $MailUser.EmailAddresses) {
                     $UserDomain = [regex]::matches($Email, '(?<=@)(.*)').value
@@ -50,10 +52,14 @@ function Invoke-TestMailboxMove {
                 else {
                     $PreFlightHash.Add('UpnMatchesPrimarySmtp', $false)
                     $Error.Add('UpnDoesNotMatchPrimarySmtp')
+                    $ErrorValue.Add('{0}/{1}' -f $MailUser.WindowsEmailAddress, $MailUser.UserPrincipalName)
+                    Write-Host $ErrorValue -ForegroundColor Gray
                 }
             }
             catch {
                 if ($Mailbox = Get-Mailbox -Identity $User.UserPrincipalName -ErrorAction silentlycontinue) {
+                    "CATCH?"
+                    $PreFlightHash.Add('MailboxType', $Mailbox.RecipientTypeDetails)
                     $PreFlightHash.Add('AccountDisabled', $Mailbox.AccountDisabled)
                     $PreFlightHash.Add('IsDirSynced', $Mailbox.IsDirSynced)
                     $BadEmail = [System.Collections.Generic.List[string]]::New()
@@ -83,7 +89,7 @@ function Invoke-TestMailboxMove {
                     $ErrorValue.Add('MailboxCreated:{0}' -f $Mailbox.WhenCreated)
                 }
                 else {
-                    $PreFlightHash.Add('AccountDisabled', $false)
+                    $PreFlightHash.Add('MailboxType', $false)
                     $PreFlightHash.Add('IsDirSynced', $false)
                     $PreFlightHash.Add('EmailAddressesValid', $false)
                     $PreFlightHash.Add('RoutingAddressValid', $false)
