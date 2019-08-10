@@ -7,7 +7,6 @@ function Invoke-TestMailboxMove {
     end {
         $AcceptedDomains = (Get-AcceptedDomain).DomainName
         $RoutingAddress = $AcceptedDomains -match '.mail.onmicrosoft.com'
-
         foreach ($User in $UserList) {
             $Error = [System.Collections.Generic.List[string]]::New()
             $PreFlightHash = @{
@@ -19,47 +18,67 @@ function Invoke-TestMailboxMove {
                 $BadEmail = [System.Collections.Generic.List[string]]::New()
                 foreach ($Email in $MailUser.EmailAddresses) {
                     $UserDomain = [regex]::matches($Email, '(?<=@)(.*)').value
-                    if ($UserDomain -notin $AcceptedDomains) {
+                    if ($UserDomain -notin $AcceptedDomains -and $UserDomain.length -gt 0) {
                         $BadEmail.Add($Email)
                     }
                 }
                 if (-not $BadEmail) {
-                    $PreFlightHash.Add('EmailAddressesValid', 'True')
+                    $PreFlightHash.Add('EmailAddressesValid', $true)
+                    $PreFlightHash.Add('Value', '')
                 }
                 else {
-                    $Error.Add($BadEmail -join ',')
-                    $PreFlightHash.Add('EmailAddressesValid', 'False')
+                    $Error.Add('InvalidEmail')
+                    $PreFlightHash.Add('Value', $BadEmail -join ',')
+                    $PreFlightHash.Add('EmailAddressesValid', $false)
                 }
-                $PreFlightHash.Add('MailboxExists', 'False')
+                $PreFlightHash.Add('MailboxExists', $false)
                 $PreFlightHash.Add('IsDirSynced', $MailUser.IsDirSynced)
                 $PreFlightHash.Add('AccountDisabled', $MailUser.AccountDisabled)
                 if ($MailUser.AccountDisabled -and $User.RecipientTypeDetails -eq 'UserMailbox') {
                     $Error.Add('AccountDisabledforUserMailbox')
                 }
-                if ($UserDomain -contains $RoutingAddress) {
-                    $PreFlightHash.Add('RoutingAddressValid', 'True')
+                if ($MailUser.EmailAddresses -match $RoutingAddress) {
+                    $PreFlightHash.Add('RoutingAddressValid', $true)
                 }
                 else {
-                    $PreFlightHash.Add('RoutingAddressValid', 'False')
+                    $PreFlightHash.Add('RoutingAddressValid', $false)
                     $Error.Add('NoRoutingAddress')
                 }
                 if ($MailUser.WindowsEmailAddress -eq $MailUser.UserPrincipalName) {
-                    $PreFlightHash.Add('UpnMatchesPrimarySmtp', 'True')
+                    $PreFlightHash.Add('UpnMatchesPrimarySmtp', $true)
                 }
                 else {
-                    $PreFlightHash.Add('UpnMatchesPrimarySmtp', 'False')
+                    $PreFlightHash.Add('UpnMatchesPrimarySmtp', $false)
                     $Error.Add('UpnDoesNotMatchPrimarySmtp')
                 }
             }
             catch {
-                if ($null = Get-Mailbox -Identity $User.UserPrincipalName -ErrorAction silentlycontinue) {
-                    $PreFlightHash.Add('MailboxExists', 'True')
+                if ($Mailbox = Get-Mailbox -Identity $User.UserPrincipalName -ErrorAction silentlycontinue) {
+                    $PreFlightHash.Add('AccountDisabled', $Mailbox.AccountDisabled)
+                    $PreFlightHash.Add('IsDirSynced', $Mailbox.IsDirSynced)
+                    $PreFlightHash.Add('EmailAddressesValid', '')
+                    $PreFlightHash.Add('RoutingAddressValid', '')
+                    $PreFlightHash.Add('UpnMatchesPrimarySmtp', '')
+                    $PreFlightHash.Add('MailboxExists', $true)
                     $Error.Add('NoMailUserFound')
+                    $PreFlightHash.Add('Value', $Mailbox.WhenCreated)
+
                 }
                 else {
-                    $PreFlightHash.Add('MailboxExists', 'False')
+                    $PreFlightHash.Add('AccountDisabled', '')
+                    $PreFlightHash.Add('IsDirSynced', '')
+                    $PreFlightHash.Add('EmailAddressesValid', '')
+                    $PreFlightHash.Add('RoutingAddressValid', '')
+                    $PreFlightHash.Add('UpnMatchesPrimarySmtp', '')
+                    $PreFlightHash.Add('MailboxExists', $false)
                     $Error.Add('NoMailUserOrMailboxFound')
                 }
+            }
+            if ($Error) {
+                $PreFlightHash.Add('Result', 'FAIL')
+            }
+            else {
+                $PreFlightHash.Add('Result', 'PASS')
             }
             [PSCustomObject]$PreFlightHash
         }
