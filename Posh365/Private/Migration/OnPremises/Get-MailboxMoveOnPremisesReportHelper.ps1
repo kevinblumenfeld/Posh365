@@ -7,6 +7,7 @@
         $RecHash = Get-MailboxMoveRecipientHash
         $MailboxList = Get-Mailbox -ResultSize Unlimited
         foreach ($Mailbox in $MailboxList) {
+            Write-Verbose "Mailbox`t$($Mailbox.DisplayName)"
             $Statistic = $Mailbox | Get-ExchangeMailboxStatistics
             $PSHash = @{
                 BatchName             = ''
