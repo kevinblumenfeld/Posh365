@@ -52,13 +52,11 @@ function Invoke-TestMailboxMove {
                 else {
                     $PreFlightHash.Add('UpnMatchesPrimarySmtp', $false)
                     $Error.Add('UpnDoesNotMatchPrimarySmtp')
-                    $ErrorValue.Add('{0}/{1}' -f $MailUser.WindowsEmailAddress, $MailUser.UserPrincipalName)
-                    Write-Host $ErrorValue -ForegroundColor Gray
+                    $ErrorValue.Add(('{0}/{1}' -f $MailUser.WindowsEmailAddress, $MailUser.UserPrincipalName))
                 }
             }
             catch {
                 if ($Mailbox = Get-Mailbox -Identity $User.UserPrincipalName -ErrorAction silentlycontinue) {
-                    "CATCH?"
                     $PreFlightHash.Add('MailboxType', $Mailbox.RecipientTypeDetails)
                     $PreFlightHash.Add('AccountDisabled', $Mailbox.AccountDisabled)
                     $PreFlightHash.Add('IsDirSynced', $Mailbox.IsDirSynced)
