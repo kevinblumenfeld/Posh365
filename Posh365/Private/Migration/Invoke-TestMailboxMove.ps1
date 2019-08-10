@@ -14,6 +14,7 @@ function Invoke-TestMailboxMove {
                 'UserPrincipalName' = $User.UserPrincipalName
             }
             try {
+                $ErrorValue = [System.Collections.Generic.List[string]]::New()
                 $MailUser = Get-MailUser -Identity $User.UserPrincipalName -ErrorAction Stop
                 $BadEmail = [System.Collections.Generic.List[string]]::New()
                 foreach ($Email in $MailUser.EmailAddresses) {
@@ -24,11 +25,10 @@ function Invoke-TestMailboxMove {
                 }
                 if (-not $BadEmail) {
                     $PreFlightHash.Add('EmailAddressesValid', $true)
-                    $PreFlightHash.Add('Value', '')
                 }
                 else {
                     $Error.Add('InvalidEmail')
-                    $PreFlightHash.Add('Value', $BadEmail -join ',')
+                    $ErrorValue.Add($BadEmail -join ',')
                     $PreFlightHash.Add('EmailAddressesValid', $false)
                 }
                 $PreFlightHash.Add('MailboxExists', $false)
@@ -56,20 +56,38 @@ function Invoke-TestMailboxMove {
                 if ($Mailbox = Get-Mailbox -Identity $User.UserPrincipalName -ErrorAction silentlycontinue) {
                     $PreFlightHash.Add('AccountDisabled', $Mailbox.AccountDisabled)
                     $PreFlightHash.Add('IsDirSynced', $Mailbox.IsDirSynced)
-                    $PreFlightHash.Add('EmailAddressesValid', '')
-                    $PreFlightHash.Add('RoutingAddressValid', '')
-                    $PreFlightHash.Add('UpnMatchesPrimarySmtp', '')
+                    $BadEmail = [System.Collections.Generic.List[string]]::New()
+                    foreach ($Email in $Mailbox.EmailAddresses) {
+                        $UserDomain = [regex]::matches($Email, '(?<=@)(.*)').value
+                        if ($UserDomain -notin $AcceptedDomains -and $UserDomain.length -gt 0) {
+                            $BadEmail.Add($Email)
+                        }
+                    }
+                    if (-not $BadEmail) {
+                        $PreFlightHash.Add('EmailAddressesValid', $true)
+                    }
+                    else {
+                        $Error.Add('InvalidEmail')
+                        $ErrorValue.Add($BadEmail -join ',')
+                        $PreFlightHash.Add('EmailAddressesValid', $false)
+                    }
+                    if ($Mailbox.emailaddresses -match $RoutingAddress) {
+                        $PreFlightHash.Add('RoutingAddressValid', $true)
+                    }
+                    else {
+                        $PreFlightHash.Add('RoutingAddressValid', $false)
+                    }
+                    $PreFlightHash.Add('UpnMatchesPrimarySmtp', $mailbox.PrimarySmtpAddress -eq $mailbox.UserPrincipalName)
                     $PreFlightHash.Add('MailboxExists', $true)
-                    $Error.Add('NoMailUserFound')
-                    $PreFlightHash.Add('Value', $Mailbox.WhenCreated)
-
+                    $Error.Add('MailboxFound')
+                    $ErrorValue.Add('MailboxCreated:{0}' -f $Mailbox.WhenCreated)
                 }
                 else {
-                    $PreFlightHash.Add('AccountDisabled', '')
-                    $PreFlightHash.Add('IsDirSynced', '')
-                    $PreFlightHash.Add('EmailAddressesValid', '')
-                    $PreFlightHash.Add('RoutingAddressValid', '')
-                    $PreFlightHash.Add('UpnMatchesPrimarySmtp', '')
+                    $PreFlightHash.Add('AccountDisabled', $false)
+                    $PreFlightHash.Add('IsDirSynced', $false)
+                    $PreFlightHash.Add('EmailAddressesValid', $false)
+                    $PreFlightHash.Add('RoutingAddressValid', $false)
+                    $PreFlightHash.Add('UpnMatchesPrimarySmtp', $false)
                     $PreFlightHash.Add('MailboxExists', $false)
                     $Error.Add('NoMailUserOrMailboxFound')
                 }
@@ -80,6 +98,13 @@ function Invoke-TestMailboxMove {
             else {
                 $PreFlightHash.Add('Result', 'PASS')
             }
+            if ($ErrorValue) {
+                $PreFlightHash.Add('ErrorValue', $ErrorValue -join '|')
+            }
+            else {
+                $PreFlightHash.Add('ErrorValue', '')
+            }
+            $PreFlightHash.Add('ErrorType', $Error -join '|')
             [PSCustomObject]$PreFlightHash
         }
     }

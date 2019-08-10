@@ -39,7 +39,12 @@ Function Test-MailboxMove {
             }
         }
         if ($UserChoice -ne 'Quit' ) {
-            Invoke-TestMailboxMove -UserList $UserChoice | Out-GridView -Title "Results of Test Mailbox Move"
+            $TestSelect = @(
+                'DisplayName', 'Result', 'AccountDisabled', 'UpnMatchesPrimarySmtp'
+                'RoutingAddressValid', 'IsDirSynced', 'EmailAddressesValid', 'UserPrincipalName'
+                'MailboxExists', 'ErrorType', 'ErrorValue'
+            )
+            Invoke-TestMailboxMove -UserList $UserChoice | Select-Object $TestSelect | Out-GridView -Title "Results of Test Mailbox Move"
         }
     }
 }
