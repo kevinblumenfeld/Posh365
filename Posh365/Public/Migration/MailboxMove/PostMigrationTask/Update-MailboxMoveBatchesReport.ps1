@@ -57,17 +57,24 @@ function Update-MailboxMoveBatchesReport {
         if ($Tenant -notmatch '.mail.onmicrosoft.com') {
             $Tenant = '{0}.mail.onmicrosoft.com' -f $Tenant
         }
-
         $SharePointSplat = @{
             SharePointURL = $SharePointURL
             ExcelFile     = $ExcelFile
             Tenant        = $Tenant
-
         }
         $CurrentHash = @{ }
         $CurrentList = (Import-SharePointExcel @SharePointSplat).where{ $_.BatchName }
         foreach ($Current in $CurrentList) {
             $CurrentHash.Add($Current.UserPrincipalName, $Current.BatchName)
         }
+        $FutureList = Import-Csv $NewCsvFile
+        $SelectProps = ($FutureList[0].psobject.properties.name).where{ $_ -ne 'BatchName' }
+        $FutureList | Select-Object @(
+            $SelectProps
+            @{
+                Name       = 'BatchName'
+                Expression = { $CurrentHash.$($_.UserPrincipalName) }
+            }
+        )
     }
 }
