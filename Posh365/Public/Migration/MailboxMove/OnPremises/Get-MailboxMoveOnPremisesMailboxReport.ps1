@@ -14,7 +14,8 @@
             'LastLogonTime', 'ItemCount', 'UserPrincipalName', 'PrimarySmtpAddress'
             'AddressBookPolicy', 'RetentionPolicy', 'AccountDisabled', 'Alias'
             'Database', 'OU', 'Office', 'RecipientTypeDetails', 'UMEnabled'
-            'ForwardingAddress', 'ForwardingRecipientType', 'DeliverToMailboxAndForward'
+            'ForwardingAddress', 'ForwardingRecipientType', 'ForwardingSmtpAddress'
+            'DeliverToMailboxAndForward'
         )
         Get-MailboxMoveOnPremisesReportHelper | Select-Object $Select | Export-Csv $BatchesFile -NoTypeInformation -Encoding UTF8
 

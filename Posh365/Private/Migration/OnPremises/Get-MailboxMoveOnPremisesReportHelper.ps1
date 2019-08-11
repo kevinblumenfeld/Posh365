@@ -33,17 +33,17 @@
                 Office                = $Mailbox.Office
                 RecipientTypeDetails  = $Mailbox.RecipientTypeDetails
                 UMEnabled             = $Mailbox.UMEnabled
+                DeliverToMailboxAndForward = $Mailbox.DeliverToMailboxAndForward
+                ForwardingSmtpAddress      = $Mailbox.ForwardingSmtpAddress
             }
             if ($Mailbox.ForwardingAddress) {
                 $Distinguished = Convert-CanonicalToDistinguished -CanonicalName $Mailbox.ForwardingAddress
                 $PSHash.Add('ForwardingAddress', $RecHash[$Distinguished].PrimarySmtpAddress)
                 $PSHash.Add('ForwardingRecipientType', $RecHash[$Distinguished].RecipientTypeDetails)
-                $PSHash.Add('DeliverToMailboxAndForward', $Mailbox.DeliverToMailboxAndForward)
             }
             else {
                 $PSHash.Add('ForwardingAddress', '')
                 $PSHash.Add('ForwardingRecipientType', '')
-                $PSHash.Add('DeliverToMailboxAndForward', '')
             }
             New-Object -TypeName PSObject -Property $PSHash
         }
