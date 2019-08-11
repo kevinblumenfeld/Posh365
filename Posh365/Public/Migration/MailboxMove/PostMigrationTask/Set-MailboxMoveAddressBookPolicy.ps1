@@ -1,11 +1,11 @@
-function Set-MailboxMoveLicense {
+function Set-MailboxMoveAddressBookPolicy {
     <#
     .SYNOPSIS
-    Sets Office 365 licenses during a migration project
+    Sets Office 365 Address Book Policy during a migration project
     Either CSV or Excel file from SharePoint can be used
 
     .DESCRIPTION
-    Sets Office 365 licenses during a migration project
+    Sets Office 365 Address Book Policy during a migration project
     Either CSV or Excel file from SharePoint can be used
 
     .PARAMETER SharePointURL
@@ -24,10 +24,10 @@ function Set-MailboxMoveLicense {
     Example if tenant is contoso.mail.onmicrosoft.com use contoso
 
     .EXAMPLE
-    Set-MailboxMoveLicense -MailboxCSV c:\scripts\batches.csv
+    Set-MailboxMoveAddressBookPolicy -MailboxCSV c:\scripts\batches.csv
 
     .EXAMPLE
-    Set-MailboxMoveLicense -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -Tenant Contoso
+    Set-MailboxMoveAddressBookPolicy -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -Tenant Contoso
 
     .NOTES
     General notes
@@ -65,16 +65,14 @@ function Set-MailboxMoveLicense {
                     SharePointURL = $SharePointURL
                     ExcelFile     = $ExcelFile
                     Tenant        = $Tenant
-                    NoBatch       = $true
                 }
-                Invoke-SetMailboxMoveLicense @SharePointSplat
+                Invoke-SetMailboxMoveAddressBookPolicy @SharePointSplat | Out-GridView -Title "Results of Set Mailbox Address Book Policy"
             }
             'CSV' {
                 $CSVSplat = @{
                     MailboxCSV = $MailboxCSV
-                    NoBatch    = $true
                 }
-                Invoke-SetMailboxMoveLicense @CSVSplat
+                Invoke-SetMailboxMoveAddressBookPolicy @CSVSplat | Out-GridView -Title "Results of Set Mailbox Address Book Policy"
             }
         }
     }

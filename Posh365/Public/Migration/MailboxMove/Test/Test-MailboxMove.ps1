@@ -11,15 +11,15 @@ Function Test-MailboxMove {
         [string]
         $ExcelFile,
 
+        [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $Tenant,
+
         [Parameter(Mandatory, ParameterSetName = 'CSV')]
         [ValidateNotNullOrEmpty()]
         [string]
-        $MailboxCSV,
-
-        [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $Tenant
+        $MailboxCSV
     )
     end {
         if ($Tenant -notmatch '.mail.onmicrosoft.com') {

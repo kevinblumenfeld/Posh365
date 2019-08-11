@@ -1,11 +1,11 @@
-function Set-MailboxMoveLicense {
+function Set-MailboxMoveForwards {
     <#
     .SYNOPSIS
-    Sets Office 365 licenses during a migration project
+    Sets Office 365 Forwards during a migration project
     Either CSV or Excel file from SharePoint can be used
 
     .DESCRIPTION
-    Sets Office 365 licenses during a migration project
+    Sets Office 365 Forwards during a migration project
     Either CSV or Excel file from SharePoint can be used
 
     .PARAMETER SharePointURL
@@ -24,10 +24,10 @@ function Set-MailboxMoveLicense {
     Example if tenant is contoso.mail.onmicrosoft.com use contoso
 
     .EXAMPLE
-    Set-MailboxMoveLicense -MailboxCSV c:\scripts\batches.csv
+    Set-MailboxMoveForwards -MailboxCSV c:\scripts\batches.csv
 
     .EXAMPLE
-    Set-MailboxMoveLicense -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -Tenant Contoso
+    Set-MailboxMoveForwards -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -Tenant Contoso
 
     .NOTES
     General notes
@@ -65,16 +65,14 @@ function Set-MailboxMoveLicense {
                     SharePointURL = $SharePointURL
                     ExcelFile     = $ExcelFile
                     Tenant        = $Tenant
-                    NoBatch       = $true
                 }
-                Invoke-SetMailboxMoveLicense @SharePointSplat
+                Invoke-SetMailboxMoveForwards @SharePointSplat | Out-GridView -Title "Results of Set Mailbox Forwards"
             }
             'CSV' {
                 $CSVSplat = @{
                     MailboxCSV = $MailboxCSV
-                    NoBatch    = $true
                 }
-                Invoke-SetMailboxMoveLicense @CSVSplat
+                Invoke-SetMailboxMoveForwards @CSVSplat | Out-GridView -Title "Results of Set Mailbox Forwards"
             }
         }
     }

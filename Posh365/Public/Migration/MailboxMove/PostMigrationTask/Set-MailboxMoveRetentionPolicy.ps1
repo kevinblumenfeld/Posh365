@@ -1,12 +1,12 @@
-function Start-MailboxMoveTask {
+function Set-MailboxMoveRetentionPolicy {
     <#
     .SYNOPSIS
-    Once a mailbox has been migrated to Office 365, often there are post-migration tasks.
-    For example a user's address book policy (ABP), if not the default will need to be applied.
+    Sets Office 365 Retention Policy during a migration project
+    Either CSV or Excel file from SharePoint can be used
 
     .DESCRIPTION
-    Once a mailbox has been migrated to Office 365, often there are post-migration tasks.
-    For example a user's address book policy (ABP), if not the default will need to be applied.
+    Sets Office 365 Retention Policy during a migration project
+    Either CSV or Excel file from SharePoint can be used
 
     .PARAMETER SharePointURL
     Sharepoint url ex. https://fabrikam.sharepoint.com/sites/Contoso
@@ -20,16 +20,17 @@ function Start-MailboxMoveTask {
     Path to csv of mailboxes. Minimum headers required are: BatchName, UserPrincipalName
 
     .PARAMETER Tenant
-    This is the tenant domain - where you are migrating to. Ex. if tenant is contoso.mail.onmicrosoft.com use contoso
-
-    .PARAMETER AddressBookPolicy
-    For each UserPrincipalName selected, the Address Book Policy (ABP) will be updated to the value in AddressBookPolicy column
+    This is the tenant domain - where you are migrating to.
+    Example if tenant is contoso.mail.onmicrosoft.com use contoso
 
     .EXAMPLE
-    Start-MailboxMoveTask -AddressBookPolicy -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -Tenant mkevin
+    Set-MailboxMoveRetentionPolicy -MailboxCSV c:\scripts\batches.csv
+
+    .EXAMPLE
+    Set-MailboxMoveRetentionPolicy -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -Tenant Contoso
 
     .NOTES
-    Connect to Exchange Online
+    General notes
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'SharePoint')]
@@ -44,19 +45,15 @@ function Start-MailboxMoveTask {
         [string]
         $ExcelFile,
 
-        [Parameter(Mandatory, ParameterSetName = 'CSV')]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $MailboxCSV,
-
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
         [ValidateNotNullOrEmpty()]
         [string]
         $Tenant,
 
-        [Parameter()]
-        [switch]
-        $AddressBookPolicy
+        [Parameter(Mandatory, ParameterSetName = 'CSV')]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $MailboxCSV
     )
     end {
         if ($Tenant -notmatch '.mail.onmicrosoft.com') {
@@ -69,17 +66,13 @@ function Start-MailboxMoveTask {
                     ExcelFile     = $ExcelFile
                     Tenant        = $Tenant
                 }
-                $UserChoice = Import-SharePointExcelDecision @SharePointSplat
+                Invoke-SetMailboxMoveRetentionPolicy @SharePointSplat | Out-GridView -Title "Results of Set Mailbox Retention Policy"
             }
             'CSV' {
-                $UserChoice = Import-MailboxCsvDecision -MailboxCSV $MailboxCSV
-            }
-        }
-        if ($UserChoice -ne 'Quit' ) {
-            if ($UserChoice) {
-                if ($AddressBookPolicy) {
-                    $UserChoice | Sync-AddressBookPolicy
+                $CSVSplat = @{
+                    MailboxCSV = $MailboxCSV
                 }
+                Invoke-SetMailboxMoveRetentionPolicy @CSVSplat | Out-GridView -Title "Results of Set Mailbox Retention Policy"
             }
         }
     }
