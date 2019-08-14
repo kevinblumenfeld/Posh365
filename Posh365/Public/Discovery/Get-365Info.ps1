@@ -58,7 +58,15 @@ function Get-365Info {
 
         [Parameter()]
         [switch]
-        $CreateExcel
+        $CreateExcel,
+
+        [Parameter()]
+        [switch]
+        $SkipMailboxReport,
+
+        [Parameter()]
+        [switch]
+        $SkipDistributionGroupReport
 
     )
     end {
@@ -243,367 +251,369 @@ function Get-365Info {
         $Compliance_RetentionPolicies = (Join-Path $TenantPath 'Compliance_RetentionPolicies.csv')
         $Compliance_AlertPolicies = (Join-Path $TenantPath 'Compliance_AlertPolicies.csv')
 
-        $365_UnifiedGroups = (Join-Path $TenantPath '365_UnifiedGroups.csv')
+        # $365_UnifiedGroups = (Join-Path $TenantPath '365_UnifiedGroups.csv')
         $365_UnifiedGroupEmails = (Join-Path $TenantPath '365_UnifiedGroupEmails.csv')
 
-        if ($MSOnline) {
-            Write-Verbose "Gathering MsolUsers"
-            Get-365MsolUser -DetailedReport | Export-Csv $MSOL_Users_Detailed @ExportCSVSplat
-            $MsolUserDetailedImport = Import-Csv $MSOL_Users_Detailed | Where-Object { $_.UserPrincipalName -notmatch "FederatedEmail" -and $_.DisplayName -notmatch "SystemMailbox{" }
-            $MsolUserDetailedImport | Select-Object $MsolUserProperties | Sort-Object DisplayName | Export-Csv $MSOL_Users @ExportCSVSplat
+        switch ($true) {
+            { $MSOnline } {
+                Write-Verbose "Gathering MsolUsers"
+                Get-365MsolUser -DetailedReport | Export-Csv $MSOL_Users_Detailed @ExportCSVSplat
+                $MsolUserDetailedImport = Import-Csv $MSOL_Users_Detailed | Where-Object { $_.UserPrincipalName -notmatch "FederatedEmail" -and $_.DisplayName -notmatch "SystemMailbox{" }
+                $MsolUserDetailedImport | Select-Object $MsolUserProperties | Sort-Object DisplayName | Export-Csv $MSOL_Users @ExportCSVSplat
 
-            Write-Verbose "Gathering MsolUsers MFA Report"
-            $MsolUserDetailedImport | Where-Object { $_.UserPrincipalName -notmatch "#EXT#" -and $_.UserPrincipalName -notmatch "FederatedEmail" } |
-            Select-Object $MsolUserMFAProperties | Sort-Object DisplayName | Export-Csv $MSOL_MFAUsers @ExportCSVSplat
+                Write-Verbose "Gathering MsolUsers MFA Report"
+                $MsolUserDetailedImport | Where-Object { $_.UserPrincipalName -notmatch "#EXT#" -and $_.UserPrincipalName -notmatch "FederatedEmail" } |
+                Select-Object $MsolUserMFAProperties | Sort-Object DisplayName | Export-Csv $MSOL_MFAUsers @ExportCSVSplat
 
-            Write-Verbose "Gathering MsolUser Roles Report"
-            Get-MsolRoleReport | Sort-Object Role, DisplayName | Export-Csv $MSOL_Roles @ExportCSVSplat
+                Write-Verbose "Gathering MsolUser Roles Report"
+                Get-MsolRoleReport | Sort-Object Role, DisplayName | Export-Csv $MSOL_Roles @ExportCSVSplat
 
-            Write-Verbose "Gathering MsolGroups"
-            Get-365MsolGroup | Select-Object $MSOLGroupProperties |
-            Sort-Object DisplayName | Export-Csv $MSOL_Groups @ExportCSVSplat
+                Write-Verbose "Gathering MsolGroups"
+                Get-365MsolGroup | Select-Object $MSOLGroupProperties |
+                Sort-Object DisplayName | Export-Csv $MSOL_Groups @ExportCSVSplat
 
-            Get-MsolAccountSku | Select-Object @(
-                @{
-                    Name       = 'Sku'
-                    Expression = { ($_.AccountSkuId -split ':')[1] }
-                }
-                @{
-                    Name       = 'Active'
-                    Expression = 'ActiveUnits'
-                }
-                @{
-                    Name       = 'Consumed'
-                    Expression = 'ConsumedUnits'
-                }
-            ) | Sort-Object -Property Consumed -Descending | Export-Csv $365_Sku @ExportCSVSplat
-            $EA = $ErrorActionPreference
-            $ErrorActionPreference = "SilentlyContinue"
-            $Result = [System.Collections.Generic.List[PSObject]]::New()
-            $UPN = $MsolUserDetailedImport | Where-Object { $_.userprincipalname -notlike "*#EXT*" } | Select-Object @(
-                @{
-                    Name       = 'UserPrincipalName'
-                    Expression = { ($_.userprincipalname -split '@')[1] }
-                }
-            )
-            $Result.AddRange([PSObject[]]$UPN)
-            $EXTUPN = $MsolUserDetailedImport | Where-Object { $_.userprincipalname -like "*#EXT*" } | Select-Object @(
-                @{
-                    Name       = 'UserPrincipalName'
-                    Expression = { [regex]::match($_.UserPrincipalName, '#[\s\S]*$').captures.groups[0] }
-                }
-            )
-            $Result.AddRange([PSObject[]]$EXTUPN)
-            ($Result).UserPrincipalName | Group-Object | Select-Object name, count |
-            Sort-Object -Property count -Descending | Export-Csv $MSOL_Upn @ExportCSVSplat
-
-            Import-Csv $MSOL_Groups | Select-Object GroupType | Group-Object -Property GroupType | Select-Object Name, Count |
-            Sort-Object -Property Count -Descending | Export-Csv $MSOL_Groups_Type @ExportCSVSplat
-
-        }
-        if (-not $MSOnline) {
-            $MsolUserDetailedImport = Import-Csv $MSOL_Users_Detailed
-        }
-        if ($MsolUserDetailedImport) {
-            $MFAHash = Get-MsolUserMFAHash -MsolUserList $MsolUserDetailedImport
-        }
-        $ErrorActionPreference = $EA
-        if ($AzureAD) {
-            Write-Verbose "Gathering AzureAD Roles"
-            If ($MFAHash) {
-                Get-AzureADRoleReport -MFAHash $MFAHash | Export-Csv $AzureAD_Roles @ExportCSVSplat
-            }
-            else {
-                Get-AzureADRoleReport | Export-Csv $AzureAD_Roles @ExportCSVSplat
-            }
-            Write-Verbose "Gathering AzureAD Users and Guest Users"
-            $AzureADDetails = Get-AzureActiveDirectoryUser
-            $AzureADDetails | Export-Csv $AzureAD_Users @ExportCSVSplat
-            $AzureADGuests = $AzureADDetails | Where-Object { $_.UserType -eq 'Guest' }
-            $AzureADGuests | Export-Csv $AzureAD_Guests @ExportCSVSplat
-
-            $OnePerGuestProxy = Export-EmailsOnePerLine -FindInColumn ProxyAddresses -RowList ($AzureADGuests | Where-Object { $_.ProxyAddresses })
-            $OnePerGuestMail = Export-EmailsOnePerLine -FindInColumn Mail -RowList ($AzureADGuests | Where-Object { $_.Mail } )
-            $OnePerGuestOtherMails = Export-EmailsOnePerLine -FindInColumn OtherMails -RowList ($AzureADGuests | Where-Object { $_.OtherMails })
-        }
-        if ($ExchangeOnline) {
-            $EA = $ErrorActionPreference
-            $ErrorActionPreference = "SilentlyContinue"
-            Write-Verbose "Gathering Exchange Transport Rules"
-            $TransportCollection = Export-TransportRuleCollection
-            Set-Content -Path $EXO_TransportRuleCollection -Value $TransportCollection.FileData -Encoding Byte
-            [xml]$TRuleColList = Get-Content $EXO_TransportRuleCollection
-
-            Get-TransportRuleReport | Export-Csv $EXO_TransportRules_Detailed @ExportCSVSplat
-            $TransportData = Import-Csv $EXO_TransportRules_Detailed
-            $TransportHash = Get-TransportRuleHash -TransportData $TransportData
-            $TransportCsv = Convert-TransportXMLtoCSV -TRuleColList $TRuleColList -TransportHash $TransportHash
-            $TransportCsv | Sort-Object Name | Export-Csv $EXO_TransportRules @ExportCSVSplat
-
-            Write-Verbose "Gathering Exchange Roles"
-            if ($MFAHash) {
-                Get-ExchangeRoleReport -MFAHash $MFAHash | Sort-Object Role | Export-Csv $EXO_Roles @ExportCSVSplat
-            }
-            else {
-                Get-ExchangeRoleReport | Sort-Object Role | Export-Csv $EXO_Roles @ExportCSVSplat
-            }
-            Write-Verbose "Gathering Inbound Connectors"
-            Get-InboundConnectorReport | Sort-Object Name | Export-Csv $EXO_InboundConnectors @ExportCSVSplat
-
-            Write-Verbose "Gathering Outbound Connectors"
-            Get-OutboundConnectorSummary | Sort-Object Name | Export-Csv $EXO_OutboundConnectors @ExportCSVSplat
-
-            Write-Verbose "Gathering Connection Filters"
-            Get-EOPConnectionPolicy | Sort-Object Name | Export-Csv $EOP_ConnectionFilters @ExportCSVSplat
-
-            Write-Verbose "Gathering Content Filter Policies"
-            Get-EOPContentPolicy | Sort-Object Identity | Export-Csv $EOP_ContentPolicy @ExportCSVSplat
-
-            Write-Verbose "Gathering Content Filter Rules"
-            Get-EOPContentRule | Export-Csv $EOP_ContentRule @ExportCSVSplat
-
-            Write-Verbose "Gathering Outbound Spam Filter Policies"
-            Get-EOPOutboundSpamPolicy | Sort-Object Name | Export-Csv $EOP_OutboundSpamPolicy @ExportCSVSplat
-
-            Write-Verbose "Gathering Outbound Spam Filter Rules"
-            Get-EOPOutboundSpamRule | Export-Csv $EOP_OutboundSpamRule @ExportCSVSplat
-
-            Write-Verbose "Gathering Retention Polices and linked Retention Policy Tags"
-            Get-RetentionLinks | Select-Object $EXORetentionPoliciesProperties |
-            Sort-Object PolicyName, TagType | Export-Csv $EXO_RetentionPolicies @ExportCSVSplat
-
-            # Write-Verbose "Gathering Office 365 Unified Groups"
-            # Export-AndImportUnifiedGroups -Mode Export -File $365_UnifiedGroups
-
-            Write-Verbose "Gathering Office 365 Unified Group Emails"
-            $UGDetails = Get-UnifiedGroupOwnersMembersSubscribers
-            $UGDetails | Export-Csv $365_UnifiedGroupEmails @ExportCSVSplat
-
-            if (-not $DontIncludeUnifiedGroupsInAllEmailsReport) {
-                $OnePerUGOwners = Export-EmailsOnePerLine -FindInColumn Owners -RowList ($UGDetails | Where-Object { $_.Owners })
-                $OnePerUGMember = Export-EmailsOnePerLine -FindInColumn Members -RowList ($UGDetails | Where-Object { $_.Members })
-                $OnePerUGSubscribers = Export-EmailsOnePerLine -FindInColumn Subscribers -RowList ($UGDetails | Where-Object { $_.Subscribers } )
-            }
-            Write-Verbose "Gathering Accepted Domains"
-            Get-AcceptedDomain | Select-Object $EXOAcceptedDomainProperties |
-            Sort-Object Name | Export-Csv $EXO_AcceptedDomains @ExportCSVSplat
-
-            Write-Verbose "Gathering Remote Domains"
-            Get-RemoteDomain | Select-Object $EXORemoteDomainsProperties |
-            Sort-Object DomainName | Export-Csv $EXO_RemoteDomains @ExportCSVSplat
-
-            Write-Verbose "Gathering Organization Config"
-            (Get-OrganizationConfig).PSObject.Properties | Select-Object Name, Value |
-            Export-Csv $EXO_OrganizationConfig @ExportCSVSplat
-
-            Write-Verbose "Gathering Organization Relationship"
-            Get-OrganizationRelationship | Select-Object $EXOOrganizationRelationshipProperties |
-            Sort-Object Id | Export-Csv $EXO_OrganizationRelationship @ExportCSVSplat
-
-            Write-Verbose "Gathering Mail Contacts"
-            Get-EXOMailContact | Select-Object $EXOContactsProperties |
-            Sort-Object DisplayName | Export-Csv $EXO_Contacts @ExportCSVSplat
-
-            $ContactDetails = Import-Csv $EXO_Contacts
-            $ContactDetails | Group-Object IsDirSynced | Select-Object name, count |
-            Sort-Object -Property count -Descending | Export-Csv $EXO_ContactsSync @ExportCSVSplat
-
-            Write-Verbose "Gathering Distribution & Mail-Enabled Security Groups"
-            Get-EXOGroup -DetailedReport | Export-Csv $EXO_Groups_Detailed @ExportCSVSplat
-            $EXOGroupsDetails = Import-Csv $EXO_Groups_Detailed
-            $EXOGroupsDetails | Select-Object $EXOGroupProperties | Sort-Object DisplayName | Export-Csv $EXO_Groups @ExportCSVSplat
-
-            $EXOGroupsDetails | Group-Object IsDirSynced | Select-Object name, count |
-            Sort-Object -Property count -Descending | Export-Csv $EXO_GroupsSync @ExportCSVSplat
-
-            Write-Verbose "Gathering Exchange Online Mailboxes"
-            Get-EXOMailbox -DetailedReport | Export-Csv $EXO_Mailboxes_Detailed @ExportCSVSplat
-            $MailboxDetails = Import-Csv $EXO_Mailboxes_Detailed | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' }
-            $MailboxDetails | Select-Object $EXOMailboxProperties | Sort-Object DisplayName | Export-Csv $EXO_Mailboxes @ExportCSVSplat
-
-            $MailboxDetails | Group-Object RecipientTypeDetails | Select-Object name, count |
-            Sort-Object -Property count -Descending | Export-Csv $EXO_MailboxTypes @ExportCSVSplat
-
-            $MailboxDetails | Group-Object IsDirSynced | Select-Object name, count |
-            Sort-Object -Property count -Descending | Export-Csv $EXO_MailboxesSync @ExportCSVSplat
-
-            Write-Verbose "Gathering Exchange Online Resource Mailboxes and Calendar Processing"
-            $ResourceMailbox = $MailboxDetails | Where-Object { $_.RecipientTypeDetails -in 'RoomMailbox', 'EquipmentMailbox' }
-            Get-EXOResourceMailbox -ResourceMailbox $ResourceMailbox | Sort-Object DisplayName | Export-Csv $EXO_ResourceMailboxes @ExportCSVSplat
-
-            Import-Csv $EXO_Groups | Export-MembersOnePerLine -FindInColumn MembersName |
-            Sort-Object DisplayName | Export-Csv $EXO_GroupMembers @ExportCSVSplat
-
-            Import-Csv $EXO_Groups | Export-MembersOnePerLine -FindInColumn MembersSMTP |
-            Sort-Object DisplayName | Export-Csv $EXO_GroupMembersSMTP @ExportCSVSplat
-
-            $OnePerExoEmail = [System.Collections.Generic.List[PSObject]]::New()
-
-            $OnePerMailbox = Export-EmailsOnePerLine -FindInColumn EmailAddresses -RowList $MailboxDetails
-
-            $OnePerExoEmail.AddRange([PSObject[]]$OnePerMailbox)
-
-            $OnePerContactExt = Export-EmailsOnePerLine -FindInColumn ExternalEmailAddress -RowList $ContactDetails
-
-            $OnePerExoEmail.AddRange([PSObject[]]$OnePerContactExt)
-
-            $OnePerContact = Export-EmailsOnePerLine -FindInColumn EmailAddresses -RowList $ContactDetails
-
-            $OnePerExoEmail.AddRange([PSObject[]]$OnePerContact)
-
-            $OnePerGroup = Export-EmailsOnePerLine -FindInColumn EmailAddresses -RowList $EXOGroupsDetails
-
-            $OnePerExoEmail.AddRange([PSObject[]]$OnePerGroup)
-
-            $OnePerExoEmail | Sort-Object DisplayName, RecipientTypeDetails | Export-Csv $EXO_Emails @ExportCSVSplat
-
-            $OnePerExoEmail | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' -and $_.Domain -and $_.Domain -notmatch "SPO_" } |
-            Group-Object domain | Select-Object name, count | Sort-Object -Property count -Descending | Export-Csv $EXO_Domains @ExportCSVSplat
-
-            $DirSyncCount = Get-ChildItem $DetailedTenantPath -Filter *sync.csv | ForEach-Object {
-                $BaseName = $_.BaseName
-                Import-Csv $_.FullName | Select-Object @(
+                Get-MsolAccountSku | Select-Object @(
                     @{
-                        Name       = "ObjectType"
-                        Expression = { [regex]::Matches(($BaseName), "(?<=EXO_).*?(?=Sync)").value }
+                        Name       = 'Sku'
+                        Expression = { ($_.AccountSkuId -split ':')[1] }
                     }
                     @{
-                        Name       = "IsDirSynced"
-                        Expression = { $_.Name }
+                        Name       = 'Active'
+                        Expression = 'ActiveUnits'
                     }
-                    'Count'
+                    @{
+                        Name       = 'Consumed'
+                        Expression = 'ConsumedUnits'
+                    }
+                ) | Sort-Object -Property Consumed -Descending | Export-Csv $365_Sku @ExportCSVSplat
+                $EA = $ErrorActionPreference
+                $ErrorActionPreference = "SilentlyContinue"
+                $Result = [System.Collections.Generic.List[PSObject]]::New()
+                $UPN = $MsolUserDetailedImport | Where-Object { $_.userprincipalname -notlike "*#EXT*" } | Select-Object @(
+                    @{
+                        Name       = 'UserPrincipalName'
+                        Expression = { ($_.userprincipalname -split '@')[1] }
+                    }
                 )
-            }
-
-            $DirSyncCount | Export-Csv $EXO_DirSyncCount @ExportCSVSplat
-
-            Write-Verbose "Gathering Recipients"
-            Get-365Recipient -DetailedReport | Export-Csv $EXO_Recipients_Detailed @ExportCSVSplat
-            $RecipientsDetails = Import-Csv $EXO_Recipients_Detailed | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' }
-            $RecipientsDetails | Sort-Object DisplayName | Select-Object $EXORecipientProperties | Export-Csv $EXO_Recipients @ExportCSVSplat
-
-            $RecipientsDetails | Group-Object RecipientTypeDetails | Select-Object name, count |
-            Sort-Object -Property count -Descending | Export-Csv $EXO_RecipientTypes @ExportCSVSplat
-
-            $Recipients = Import-Csv $EXO_Recipients | Where-Object { $_.EmailAddresses }
-            $OnePerRecipientEmail = Export-EmailsOnePerLine -FindInColumn EmailAddresses -RowList $Recipients | Sort-Object DisplayName
-            $OnePerRecipientEmail | Export-Csv $EXO_RecipientEmails @ExportCSVSplat
-
-            $OnePerAllEmail = [System.Collections.Generic.List[PSObject]]::New()
-
-            if ($OnePerGuestOtherMails) {
-                $OnePerAllEmail.AddRange([PSObject[]]$OnePerGuestOtherMails)
-            }
-            if ($OnePerGuestProxy) {
-                $OnePerAllEmail.AddRange([PSObject[]]$OnePerGuestProxy)
-            }
-            if ($OnePerGuestMail) {
-                $OnePerAllEmail.AddRange([PSObject[]]$OnePerGuestMail)
-            }
-            $OnePerAllEmail.AddRange([PSObject[]]$OnePerContactExt)
-
-            $OnePerAllEmail.AddRange([PSObject[]]$OnePerRecipientEmail)
-            if (-not $DontIncludeUnifiedGroupsInAllEmailsReport) {
-                $OnePerAllEmail.AddRange([PSObject[]]$OnePerUGOwners)
-                $OnePerAllEmail.AddRange([PSObject[]]$OnePerUGMember)
-                $OnePerAllEmail.AddRange([PSObject[]]$OnePerUGSubscribers)
-            }
-            $OnePerAllEmail | Sort-Object DisplayName, RecipientTypeDetails | Export-Csv $365_AllEmails @ExportCSVSplat
-
-            $OnePerRecipientEmail | Where-Object { $_.Domain -and $_.Domain -notmatch "SPO_" } |
-            Group-Object Domain | Select-Object name, count | Sort-Object -Property count -Descending | Export-Csv $EXO_RecipientDomains @ExportCSVSplat
-
-            # $AllEmails = [System.Collections.Generic.List[PSObject]]::New()
-
-            # $Email = $OnePerExoEmail | Where-Object { $_.Address -and $_.Protocol -notmatch 'x500|SPO|x400' -and $_.RecipientTypeDetails -ne 'GuestMailUser' }
-            # $AllEmails.AddRange([PSObject[]]$Email)
-
-            $AllRecipientEmails = $OnePerRecipientEmail | Where-Object { $_.Address -and $_.Protocol -notmatch 'x500|SPO|x400' -and $_.RecipientTypeDetails -ne 'GuestMailUser' }
-            # $AllEmails.AddRange([PSObject[]]$RecEmail)
-
-            $AllRecipientEmails | Sort-Object -Property DisplayName | Export-Csv $EXO_AllRecipientEmails @ExportCSVSplat
-            # $AllEmails | Sort-Object -Property Address -Unique | Select-Object Address | Export-Csv $EXO_UniqueEmails @ExportCSVSplat
-
-            $ErrorActionPreference = $EA
-        }
-        if ($LicensingReport) {
-            Write-Verbose "Gathering Office 365 Licenses"
-            Get-CloudLicense -Path $DetailedTenantPath
-            $ColumnList = (Get-Content (Join-Path $DetailedTenantPath 365_Licenses.csv) | ForEach-Object { $_.split(',').count } | Sort-Object -Descending)[0]
-            Import-Csv -Path (Join-Path $DetailedTenantPath 365_Licenses.csv) -Header (1..$ColumnList | ForEach-Object { "Column$_" }) |
-            Export-Csv -Path (Join-Path $TenantPath 365_LicenseReport.csv) -NoTypeInformation
-
-        }
-        if ($PermissionsReport) {
-            Write-Verbose "Gathering Mailbox Delegate Permissions"
-            Get-EXOMailboxPerms -Path $DetailedTenantPath
-
-            'EXO_FullAccess.csv', 'EXO_SendOnBehalf.csv', 'EXO_SendAs.csv' | ForEach-Object {
-                Import-Csv (Join-Path $DetailedTenantPath $_) -ErrorAction SilentlyContinue | Where-Object { $_ } |
-                Export-Csv $EXO_Permissions -NoTypeInformation -Append }
-
-            Write-Verbose "Gathering Distribution Group Delegate Permissions"
-            Get-EXODGPerms $DetailedTenantPath
-
-            'EXO_DGSendOnBehalf.csv', 'EXO_DGSendAs.csv' | ForEach-Object {
-                Import-Csv (Join-Path $DetailedTenantPath $_) -ErrorAction SilentlyContinue | Where-Object { $_ } |
-                Export-Csv $EXO_PermissionsDG -NoTypeInformation -Append }
-        }
-
-        if ($Compliance) {
-            Write-Verbose "Gathering Security and Compliance Roles"
-            if ($MFAHash) {
-                Get-ComplianceRoleReport -MFAHash $MFAHash | Export-Csv $Compliance_Roles @ExportCSVSplat
-            }
-            else {
-                Get-ExchangeRoleReport | Export-Csv $Compliance_Roles @ExportCSVSplat
-            }
-            Write-Verbose "Gathering DLP Compliance Policies"
-            Get-DlpCompliancePolicy -DistributionDetail | Select-Object $ComplianceDLPPoliciesProperties |
-            Export-Csv $Compliance_DLPPolicies @ExportCSVSplat
-
-            Write-Verbose "Gathering Compliance Retention Policies"
-            Get-RetentionCompliancePolicy -DistributionDetail | Select-Object $ComplianceRetentionPoliciesProperties |
-            Export-Csv $Compliance_RetentionPolicies @ExportCSVSplat
-
-            Write-Verbose "Gathering Compliance Alert Policies"
-            Get-ProtectionAlert | Select-Object $ComplianceAlertPoliciesProperties |
-            Export-Csv $Compliance_AlertPolicies @ExportCSVSplat
-        }
-
-        if ($CreateExcel) {
-            $EA = $ErrorActionPreference
-            $ErrorActionPreference = "SilentlyContinue"
-            $ExcelSplat = @{
-                Path                    = (Join-Path $TenantPath '365_Discovery.xlsx')
-                TableStyle              = 'Medium2'
-                FreezeTopRowFirstColumn = $true
-                AutoSize                = $true
-                BoldTopRow              = $false
-                ClearSheet              = $true
-                ErrorAction             = 'SilentlyContinue'
-            }
-            Get-ChildItem $TenantPath -Filter *.csv | Where-Object { $_.BaseName -ne '365_LicenseReport' } | Sort-Object BaseName -Descending |
-            ForEach-Object { Import-Csv $_.fullname | Export-Excel @ExcelSplat -WorksheetName $_.basename }
-
-            $Excel365Licenses = @{
-                Path                    = (Join-Path $TenantPath '365_Discovery.xlsx')
-                TableStyle              = 'Medium2'
-                FreezeTopRowFirstColumn = $true
-                AutoSize                = $true
-                BoldTopRow              = $false
-                ClearSheet              = $true
-                ErrorAction             = 'SilentlyContinue'
-                WorksheetName           = '365_Licenses'
-                ConditionalText         = $(
-                    New-ConditionalText DisplayName White Black
-                    New-ConditionalText UserPrincipalName White Black
-                    New-ConditionalText AccountSku White Black
+                $Result.AddRange([PSObject[]]$UPN)
+                $EXTUPN = $MsolUserDetailedImport | Where-Object { $_.userprincipalname -like "*#EXT*" } | Select-Object @(
+                    @{
+                        Name       = 'UserPrincipalName'
+                        Expression = { [regex]::match($_.UserPrincipalName, '#[\s\S]*$').captures.groups[0] }
+                    }
                 )
+                $Result.AddRange([PSObject[]]$EXTUPN)
+                ($Result).UserPrincipalName | Group-Object | Select-Object name, count |
+                Sort-Object -Property count -Descending | Export-Csv $MSOL_Upn @ExportCSVSplat
+
+                Import-Csv $MSOL_Groups | Select-Object GroupType | Group-Object -Property GroupType | Select-Object Name, Count |
+                Sort-Object -Property Count -Descending | Export-Csv $MSOL_Groups_Type @ExportCSVSplat
+
             }
-            Import-Csv -Path (Join-Path $TenantPath 365_LicenseReport.csv) -ErrorAction SilentlyContinue | Export-Excel @Excel365Licenses
-            $ErrorActionPreference = $EA
+            { -not $MSOnline } {
+                $MsolUserDetailedImport = Import-Csv $MSOL_Users_Detailed
+            }
+            { $MsolUserDetailedImport } {
+                $MFAHash = Get-MsolUserMFAHash -MsolUserList $MsolUserDetailedImport
+            }
+            { $AzureAD } {
+
+                Write-Verbose "Gathering AzureAD Roles"
+                If ($MFAHash) {
+                    Get-AzureADRoleReport -MFAHash $MFAHash | Export-Csv $AzureAD_Roles @ExportCSVSplat
+                }
+                else {
+                    Get-AzureADRoleReport | Export-Csv $AzureAD_Roles @ExportCSVSplat
+                }
+                Write-Verbose "Gathering AzureAD Users and Guest Users"
+                $AzureADDetails = Get-AzureActiveDirectoryUser
+                $AzureADDetails | Export-Csv $AzureAD_Users @ExportCSVSplat
+                $AzureADGuests = $AzureADDetails | Where-Object { $_.UserType -eq 'Guest' }
+                $AzureADGuests | Export-Csv $AzureAD_Guests @ExportCSVSplat
+
+                $OnePerGuestProxy = Export-EmailsOnePerLine -FindInColumn ProxyAddresses -RowList ($AzureADGuests | Where-Object { $_.ProxyAddresses })
+                $OnePerGuestMail = Export-EmailsOnePerLine -FindInColumn Mail -RowList ($AzureADGuests | Where-Object { $_.Mail } )
+                $OnePerGuestOtherMails = Export-EmailsOnePerLine -FindInColumn OtherMails -RowList ($AzureADGuests | Where-Object { $_.OtherMails })
+            }
+            { $ExchangeOnline } {
+                $EA = $ErrorActionPreference
+                $ErrorActionPreference = "SilentlyContinue"
+                Write-Verbose "Gathering Exchange Transport Rules"
+                $TransportCollection = Export-TransportRuleCollection
+                Set-Content -Path $EXO_TransportRuleCollection -Value $TransportCollection.FileData -Encoding Byte
+                [xml]$TRuleColList = Get-Content $EXO_TransportRuleCollection
+
+                Get-TransportRuleReport | Export-Csv $EXO_TransportRules_Detailed @ExportCSVSplat
+                $TransportData = Import-Csv $EXO_TransportRules_Detailed
+                $TransportHash = Get-TransportRuleHash -TransportData $TransportData
+                $TransportCsv = Convert-TransportXMLtoCSV -TRuleColList $TRuleColList -TransportHash $TransportHash
+                $TransportCsv | Sort-Object Name | Export-Csv $EXO_TransportRules @ExportCSVSplat
+
+                Write-Verbose "Gathering Exchange Roles"
+                if ($MFAHash) {
+                    Get-ExchangeRoleReport -MFAHash $MFAHash | Sort-Object Role | Export-Csv $EXO_Roles @ExportCSVSplat
+                }
+                else {
+                    Get-ExchangeRoleReport | Sort-Object Role | Export-Csv $EXO_Roles @ExportCSVSplat
+                }
+                Write-Verbose "Gathering Inbound Connectors"
+                Get-InboundConnectorReport | Sort-Object Name | Export-Csv $EXO_InboundConnectors @ExportCSVSplat
+
+                Write-Verbose "Gathering Outbound Connectors"
+                Get-OutboundConnectorSummary | Sort-Object Name | Export-Csv $EXO_OutboundConnectors @ExportCSVSplat
+
+                Write-Verbose "Gathering Connection Filters"
+                Get-EOPConnectionPolicy | Sort-Object Name | Export-Csv $EOP_ConnectionFilters @ExportCSVSplat
+
+                Write-Verbose "Gathering Content Filter Policies"
+                Get-EOPContentPolicy | Sort-Object Identity | Export-Csv $EOP_ContentPolicy @ExportCSVSplat
+
+                Write-Verbose "Gathering Content Filter Rules"
+                Get-EOPContentRule | Export-Csv $EOP_ContentRule @ExportCSVSplat
+
+                Write-Verbose "Gathering Outbound Spam Filter Policies"
+                Get-EOPOutboundSpamPolicy | Sort-Object Name | Export-Csv $EOP_OutboundSpamPolicy @ExportCSVSplat
+
+                Write-Verbose "Gathering Outbound Spam Filter Rules"
+                Get-EOPOutboundSpamRule | Export-Csv $EOP_OutboundSpamRule @ExportCSVSplat
+
+                Write-Verbose "Gathering Retention Polices and linked Retention Policy Tags"
+                Get-RetentionLinks | Select-Object $EXORetentionPoliciesProperties |
+                Sort-Object PolicyName, TagType | Export-Csv $EXO_RetentionPolicies @ExportCSVSplat
+
+                # Write-Verbose "Gathering Office 365 Unified Groups"
+                # Export-AndImportUnifiedGroups -Mode Export -File $365_UnifiedGroups
+
+                Write-Verbose "Gathering Office 365 Unified Group Emails"
+                $UGDetails = Get-UnifiedGroupOwnersMembersSubscribers
+                $UGDetails | Export-Csv $365_UnifiedGroupEmails @ExportCSVSplat
+
+                if (-not $DontIncludeUnifiedGroupsInAllEmailsReport) {
+                    $OnePerUGOwners = Export-EmailsOnePerLine -FindInColumn Owners -RowList ($UGDetails | Where-Object { $_.Owners })
+                    $OnePerUGMember = Export-EmailsOnePerLine -FindInColumn Members -RowList ($UGDetails | Where-Object { $_.Members })
+                    $OnePerUGSubscribers = Export-EmailsOnePerLine -FindInColumn Subscribers -RowList ($UGDetails | Where-Object { $_.Subscribers } )
+                }
+                Write-Verbose "Gathering Accepted Domains"
+                Get-AcceptedDomain | Select-Object $EXOAcceptedDomainProperties |
+                Sort-Object Name | Export-Csv $EXO_AcceptedDomains @ExportCSVSplat
+
+                Write-Verbose "Gathering Remote Domains"
+                Get-RemoteDomain | Select-Object $EXORemoteDomainsProperties |
+                Sort-Object DomainName | Export-Csv $EXO_RemoteDomains @ExportCSVSplat
+
+                Write-Verbose "Gathering Organization Config"
+                (Get-OrganizationConfig).PSObject.Properties | Select-Object Name, Value |
+                Export-Csv $EXO_OrganizationConfig @ExportCSVSplat
+
+                Write-Verbose "Gathering Organization Relationship"
+                Get-OrganizationRelationship | Select-Object $EXOOrganizationRelationshipProperties |
+                Sort-Object Id | Export-Csv $EXO_OrganizationRelationship @ExportCSVSplat
+
+                Write-Verbose "Gathering Mail Contacts"
+                Get-EXOMailContact | Select-Object $EXOContactsProperties |
+                Sort-Object DisplayName | Export-Csv $EXO_Contacts @ExportCSVSplat
+
+                $ContactDetails = Import-Csv $EXO_Contacts
+                $ContactDetails | Group-Object IsDirSynced | Select-Object name, count |
+                Sort-Object -Property count -Descending | Export-Csv $EXO_ContactsSync @ExportCSVSplat
+
+                if (-not $SkipDistributionGroupReport) {
+                    Write-Verbose "Gathering Distribution & Mail-Enabled Security Groups"
+                    Get-EXOGroup -DetailedReport | Export-Csv $EXO_Groups_Detailed @ExportCSVSplat
+                }
+                $EXOGroupsDetails = Import-Csv $EXO_Groups_Detailed
+                $EXOGroupsDetails | Select-Object $EXOGroupProperties | Sort-Object DisplayName | Export-Csv $EXO_Groups @ExportCSVSplat
+
+                $EXOGroupsDetails | Group-Object IsDirSynced | Select-Object name, count |
+                Sort-Object -Property count -Descending | Export-Csv $EXO_GroupsSync @ExportCSVSplat
+
+                if (-not $SkipMailboxReport) {
+                    Write-Verbose "Gathering Exchange Online Mailboxes"
+                    Get-EXOMailbox -DetailedReport | Export-Csv $EXO_Mailboxes_Detailed @ExportCSVSplat
+                }
+                $MailboxDetails = Import-Csv $EXO_Mailboxes_Detailed | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' }
+                $MailboxDetails | Select-Object $EXOMailboxProperties | Sort-Object DisplayName | Export-Csv $EXO_Mailboxes @ExportCSVSplat
+
+                $MailboxDetails | Group-Object RecipientTypeDetails | Select-Object name, count |
+                Sort-Object -Property count -Descending | Export-Csv $EXO_MailboxTypes @ExportCSVSplat
+
+                $MailboxDetails | Group-Object IsDirSynced | Select-Object name, count |
+                Sort-Object -Property count -Descending | Export-Csv $EXO_MailboxesSync @ExportCSVSplat
+
+                Write-Verbose "Gathering Exchange Online Resource Mailboxes and Calendar Processing"
+                $ResourceMailbox = $MailboxDetails | Where-Object { $_.RecipientTypeDetails -in 'RoomMailbox', 'EquipmentMailbox' }
+                Get-EXOResourceMailbox -ResourceMailbox $ResourceMailbox | Sort-Object DisplayName | Export-Csv $EXO_ResourceMailboxes @ExportCSVSplat
+
+                Import-Csv $EXO_Groups | Export-MembersOnePerLine -FindInColumn MembersName |
+                Sort-Object DisplayName | Export-Csv $EXO_GroupMembers @ExportCSVSplat
+
+                Import-Csv $EXO_Groups | Export-MembersOnePerLine -FindInColumn MembersSMTP |
+                Sort-Object DisplayName | Export-Csv $EXO_GroupMembersSMTP @ExportCSVSplat
+
+                $OnePerExoEmail = [System.Collections.Generic.List[PSObject]]::New()
+
+                $OnePerMailbox = Export-EmailsOnePerLine -FindInColumn EmailAddresses -RowList $MailboxDetails
+
+                $OnePerExoEmail.AddRange([PSObject[]]$OnePerMailbox)
+
+                $OnePerContactExt = Export-EmailsOnePerLine -FindInColumn ExternalEmailAddress -RowList $ContactDetails
+
+                $OnePerExoEmail.AddRange([PSObject[]]$OnePerContactExt)
+
+                $OnePerContact = Export-EmailsOnePerLine -FindInColumn EmailAddresses -RowList $ContactDetails
+
+                $OnePerExoEmail.AddRange([PSObject[]]$OnePerContact)
+
+                $OnePerGroup = Export-EmailsOnePerLine -FindInColumn EmailAddresses -RowList $EXOGroupsDetails
+
+                $OnePerExoEmail.AddRange([PSObject[]]$OnePerGroup)
+
+                $OnePerExoEmail | Sort-Object DisplayName, RecipientTypeDetails | Export-Csv $EXO_Emails @ExportCSVSplat
+
+                $OnePerExoEmail | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' -and $_.Domain -and $_.Domain -notmatch "SPO_" } |
+                Group-Object domain | Select-Object name, count | Sort-Object -Property count -Descending | Export-Csv $EXO_Domains @ExportCSVSplat
+
+                $DirSyncCount = Get-ChildItem $DetailedTenantPath -Filter *sync.csv | ForEach-Object {
+                    $BaseName = $_.BaseName
+                    Import-Csv $_.FullName | Select-Object @(
+                        @{
+                            Name       = "ObjectType"
+                            Expression = { [regex]::Matches(($BaseName), "(?<=EXO_).*?(?=Sync)").value }
+                        }
+                        @{
+                            Name       = "IsDirSynced"
+                            Expression = { $_.Name }
+                        }
+                        'Count'
+                    )
+                }
+
+                $DirSyncCount | Export-Csv $EXO_DirSyncCount @ExportCSVSplat
+
+                Write-Verbose "Gathering Recipients"
+                Get-365Recipient -DetailedReport | Export-Csv $EXO_Recipients_Detailed @ExportCSVSplat
+                $RecipientsDetails = Import-Csv $EXO_Recipients_Detailed | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' }
+                $RecipientsDetails | Sort-Object DisplayName | Select-Object $EXORecipientProperties | Export-Csv $EXO_Recipients @ExportCSVSplat
+
+                $RecipientsDetails | Group-Object RecipientTypeDetails | Select-Object name, count |
+                Sort-Object -Property count -Descending | Export-Csv $EXO_RecipientTypes @ExportCSVSplat
+
+                $Recipients = Import-Csv $EXO_Recipients | Where-Object { $_.EmailAddresses }
+                $OnePerRecipientEmail = Export-EmailsOnePerLine -FindInColumn EmailAddresses -RowList $Recipients | Sort-Object DisplayName
+                $OnePerRecipientEmail | Export-Csv $EXO_RecipientEmails @ExportCSVSplat
+
+                $OnePerAllEmail = [System.Collections.Generic.List[PSObject]]::New()
+
+                if ($OnePerGuestOtherMails) {
+                    $OnePerAllEmail.AddRange([PSObject[]]$OnePerGuestOtherMails)
+                }
+                if ($OnePerGuestProxy) {
+                    $OnePerAllEmail.AddRange([PSObject[]]$OnePerGuestProxy)
+                }
+                if ($OnePerGuestMail) {
+                    $OnePerAllEmail.AddRange([PSObject[]]$OnePerGuestMail)
+                }
+                $OnePerAllEmail.AddRange([PSObject[]]$OnePerContactExt)
+
+                $OnePerAllEmail.AddRange([PSObject[]]$OnePerRecipientEmail)
+                if (-not $DontIncludeUnifiedGroupsInAllEmailsReport) {
+                    $OnePerAllEmail.AddRange([PSObject[]]$OnePerUGOwners)
+                    $OnePerAllEmail.AddRange([PSObject[]]$OnePerUGMember)
+                    $OnePerAllEmail.AddRange([PSObject[]]$OnePerUGSubscribers)
+                }
+                $OnePerAllEmail | Sort-Object DisplayName, RecipientTypeDetails | Export-Csv $365_AllEmails @ExportCSVSplat
+
+                $OnePerRecipientEmail | Where-Object { $_.Domain -and $_.Domain -notmatch "SPO_" } |
+                Group-Object Domain | Select-Object name, count | Sort-Object -Property count -Descending | Export-Csv $EXO_RecipientDomains @ExportCSVSplat
+
+                # $AllEmails = [System.Collections.Generic.List[PSObject]]::New()
+
+                # $Email = $OnePerExoEmail | Where-Object { $_.Address -and $_.Protocol -notmatch 'x500|SPO|x400' -and $_.RecipientTypeDetails -ne 'GuestMailUser' }
+                # $AllEmails.AddRange([PSObject[]]$Email)
+
+                $AllRecipientEmails = $OnePerRecipientEmail | Where-Object { $_.Address -and $_.Protocol -notmatch 'x500|SPO|x400' -and $_.RecipientTypeDetails -ne 'GuestMailUser' }
+                # $AllEmails.AddRange([PSObject[]]$RecEmail)
+
+                $AllRecipientEmails | Sort-Object -Property DisplayName | Export-Csv $EXO_AllRecipientEmails @ExportCSVSplat
+                # $AllEmails | Sort-Object -Property Address -Unique | Select-Object Address | Export-Csv $EXO_UniqueEmails @ExportCSVSplat
+
+                $ErrorActionPreference = $EA
+            }
+            { $LicensingReport } {
+                Write-Verbose "Gathering Office 365 Licenses"
+                Get-CloudLicense -Path $DetailedTenantPath
+                $ColumnList = (Get-Content (Join-Path $DetailedTenantPath 365_Licenses.csv) | ForEach-Object { $_.split(',').count } | Sort-Object -Descending)[0]
+                Import-Csv -Path (Join-Path $DetailedTenantPath 365_Licenses.csv) -Header (1..$ColumnList | ForEach-Object { "Column$_" }) |
+                Export-Csv -Path (Join-Path $TenantPath 365_LicenseReport.csv) -NoTypeInformation
+            }
+            { $PermissionsReport } {
+                Write-Verbose "Gathering Mailbox Delegate Permissions"
+                Get-EXOMailboxPerms -Path $DetailedTenantPath
+
+                'EXO_FullAccess.csv', 'EXO_SendOnBehalf.csv', 'EXO_SendAs.csv' | ForEach-Object {
+                    Import-Csv (Join-Path $DetailedTenantPath $_) -ErrorAction SilentlyContinue | Where-Object { $_ } |
+                    Export-Csv $EXO_Permissions -NoTypeInformation -Append }
+
+                Write-Verbose "Gathering Distribution Group Delegate Permissions"
+                Get-EXODGPerms $DetailedTenantPath
+
+                'EXO_DGSendOnBehalf.csv', 'EXO_DGSendAs.csv' | ForEach-Object {
+                    Import-Csv (Join-Path $DetailedTenantPath $_) -ErrorAction SilentlyContinue | Where-Object { $_ } |
+                    Export-Csv $EXO_PermissionsDG -NoTypeInformation -Append }
+            }
+            { $Compliance } {
+                Write-Verbose "Gathering Security and Compliance Roles"
+                if ($MFAHash) {
+                    Get-ComplianceRoleReport -MFAHash $MFAHash | Export-Csv $Compliance_Roles @ExportCSVSplat
+                }
+                else {
+                    Get-ExchangeRoleReport | Export-Csv $Compliance_Roles @ExportCSVSplat
+                }
+                Write-Verbose "Gathering DLP Compliance Policies"
+                Get-DlpCompliancePolicy -DistributionDetail | Select-Object $ComplianceDLPPoliciesProperties |
+                Export-Csv $Compliance_DLPPolicies @ExportCSVSplat
+
+                Write-Verbose "Gathering Compliance Retention Policies"
+                Get-RetentionCompliancePolicy -DistributionDetail | Select-Object $ComplianceRetentionPoliciesProperties |
+                Export-Csv $Compliance_RetentionPolicies @ExportCSVSplat
+
+                Write-Verbose "Gathering Compliance Alert Policies"
+                Get-ProtectionAlert | Select-Object $ComplianceAlertPoliciesProperties |
+                Export-Csv $Compliance_AlertPolicies @ExportCSVSplat
+            }
+            { $CreateExcel } {
+                $EA = $ErrorActionPreference
+                $ErrorActionPreference = "SilentlyContinue"
+                $ExcelSplat = @{
+                    Path                    = (Join-Path $TenantPath '365_Discovery.xlsx')
+                    TableStyle              = 'Medium2'
+                    FreezeTopRowFirstColumn = $true
+                    AutoSize                = $true
+                    BoldTopRow              = $false
+                    ClearSheet              = $true
+                    ErrorAction             = 'SilentlyContinue'
+                }
+                Get-ChildItem $TenantPath -Filter *.csv | Where-Object { $_.BaseName -ne '365_LicenseReport' } | Sort-Object BaseName -Descending |
+                ForEach-Object { Import-Csv $_.fullname | Export-Excel @ExcelSplat -WorksheetName $_.basename }
+
+                $Excel365Licenses = @{
+                    Path                    = (Join-Path $TenantPath '365_Discovery.xlsx')
+                    TableStyle              = 'Medium2'
+                    FreezeTopRowFirstColumn = $true
+                    AutoSize                = $true
+                    BoldTopRow              = $false
+                    ClearSheet              = $true
+                    ErrorAction             = 'SilentlyContinue'
+                    WorksheetName           = '365_Licenses'
+                    ConditionalText         = $(
+                        New-ConditionalText DisplayName White Black
+                        New-ConditionalText UserPrincipalName White Black
+                        New-ConditionalText AccountSku White Black
+                    )
+                }
+                Import-Csv -Path (Join-Path $TenantPath 365_LicenseReport.csv) -ErrorAction SilentlyContinue | Export-Excel @Excel365Licenses
+                $ErrorActionPreference = $EA
+            }
         }
     }
 }
-
