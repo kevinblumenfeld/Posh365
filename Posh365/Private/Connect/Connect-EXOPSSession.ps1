@@ -66,6 +66,7 @@ function Connect-EXOPSSession {
         }
     }
     catch {
-        throw "YOU CAN SAFELY IGNORE THIS ERROR - YOU WILL NOT SEE IT AGAIN"
+        Write-Error -Message "Error: $($_.Exception.Message)"
+        throw "IF INITIAL SETUP, YOU CAN SAFELY IGNORE THIS ERROR"
     }
 }

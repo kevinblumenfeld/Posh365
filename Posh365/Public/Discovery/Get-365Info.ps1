@@ -54,6 +54,10 @@ function Get-365Info {
 
         [Parameter()]
         [switch]
+        $DontIncludeUnifiedGroupsInAllEmailsReport,
+
+        [Parameter()]
+        [switch]
         $CreateExcel
 
     )
@@ -187,6 +191,8 @@ function Get-365Info {
         $MSOL_Users_Detailed = (Join-Path $DetailedTenantPath 'MSOL_Users_Detailed.csv')
 
         $AzureAD_Roles = (Join-Path $TenantPath 'AzureAD_Roles.csv')
+        $AzureAD_Users = (Join-Path $DetailedTenantPath 'AzureAD_Users.csv')
+        $AzureAD_Guests = (Join-Path $DetailedTenantPath 'AzureAD_Guests.csv')
 
         $EXO_TransportRules_Detailed = (Join-Path $DetailedTenantPath 'EXO_TransportRules_Detailed.csv')
         $EXO_TransportRuleCollection = (Join-Path $DetailedTenantPath 'EXO_TransportRuleCollection.xml')
@@ -222,6 +228,7 @@ function Get-365Info {
         $EXO_PermissionsDG = (Join-Path $TenantPath 'EXO_DGPermissions.csv')
         $EXO_DirSyncCount = (Join-Path $TenantPath 'EXO_DirSyncCount.csv')
         $EXO_AllRecipientEmails = (Join-Path $DetailedTenantPath 'EXO_AllRecipientEmails.csv')
+        $365_AllEmails = (Join-Path $TenantPath '365_AllEmails.csv')
         # $EXO_UniqueEmails = (Join-Path $DetailedTenantPath 'EXO_UniqueEmails.csv')
 
         $EOP_ConnectionFilters = (Join-Path $TenantPath 'EOP_ConnectionFilters.csv')
@@ -237,6 +244,7 @@ function Get-365Info {
         $Compliance_AlertPolicies = (Join-Path $TenantPath 'Compliance_AlertPolicies.csv')
 
         $365_UnifiedGroups = (Join-Path $TenantPath '365_UnifiedGroups.csv')
+        $365_UnifiedGroupEmails = (Join-Path $TenantPath '365_UnifiedGroupEmails.csv')
 
         if ($MSOnline) {
             Write-Verbose "Gathering MsolUsers"
@@ -300,7 +308,24 @@ function Get-365Info {
             $MFAHash = Get-MsolUserMFAHash -MsolUserList $MsolUserDetailedImport
         }
         $ErrorActionPreference = $EA
+        if ($AzureAD) {
+            Write-Verbose "Gathering AzureAD Roles"
+            If ($MFAHash) {
+                Get-AzureADRoleReport -MFAHash $MFAHash | Export-Csv $AzureAD_Roles @ExportCSVSplat
+            }
+            else {
+                Get-AzureADRoleReport | Export-Csv $AzureAD_Roles @ExportCSVSplat
+            }
+            Write-Verbose "Gathering AzureAD Users and Guest Users"
+            $AzureADDetails = Get-AzureActiveDirectoryUser
+            $AzureADDetails | Export-Csv $AzureAD_Users @ExportCSVSplat
+            $AzureADGuests = $AzureADDetails | Where-Object { $_.UserType -eq 'Guest' }
+            $AzureADGuests | Export-Csv $AzureAD_Guests @ExportCSVSplat
 
+            $OnePerGuestProxy = Export-EmailsOnePerLine -FindInColumn ProxyAddresses -RowList ($AzureADGuests | Where-Object { $_.ProxyAddresses })
+            $OnePerGuestMail = Export-EmailsOnePerLine -FindInColumn Mail -RowList ($AzureADGuests | Where-Object { $_.Mail } )
+            $OnePerGuestOtherMails = Export-EmailsOnePerLine -FindInColumn OtherMails -RowList ($AzureADGuests | Where-Object { $_.OtherMails })
+        }
         if ($ExchangeOnline) {
             $EA = $ErrorActionPreference
             $ErrorActionPreference = "SilentlyContinue"
@@ -347,9 +372,18 @@ function Get-365Info {
             Get-RetentionLinks | Select-Object $EXORetentionPoliciesProperties |
             Sort-Object PolicyName, TagType | Export-Csv $EXO_RetentionPolicies @ExportCSVSplat
 
-            Write-Verbose "Gathering Office 365 Unified Groups"
-            Export-AndImportUnifiedGroups -Mode Export -File $365_UnifiedGroups
+            # Write-Verbose "Gathering Office 365 Unified Groups"
+            # Export-AndImportUnifiedGroups -Mode Export -File $365_UnifiedGroups
 
+            Write-Verbose "Gathering Office 365 Unified Group Emails"
+            $UGDetails = Get-UnifiedGroupOwnersMembersSubscribers
+            $UGDetails | Export-Csv $365_UnifiedGroupEmails @ExportCSVSplat
+
+            if (-not $DontIncludeUnifiedGroupsInAllEmailsReport) {
+                $OnePerUGOwners = Export-EmailsOnePerLine -FindInColumn Owners -RowList ($UGDetails | Where-Object { $_.Owners })
+                $OnePerUGMember = Export-EmailsOnePerLine -FindInColumn Members -RowList ($UGDetails | Where-Object { $_.Members })
+                $OnePerUGSubscribers = Export-EmailsOnePerLine -FindInColumn Subscribers -RowList ($UGDetails | Where-Object { $_.Subscribers } )
+            }
             Write-Verbose "Gathering Accepted Domains"
             Get-AcceptedDomain | Select-Object $EXOAcceptedDomainProperties |
             Sort-Object Name | Export-Csv $EXO_AcceptedDomains @ExportCSVSplat
@@ -397,27 +431,27 @@ function Get-365Info {
             $ResourceMailbox = $MailboxDetails | Where-Object { $_.RecipientTypeDetails -in 'RoomMailbox', 'EquipmentMailbox' }
             Get-EXOResourceMailbox -ResourceMailbox $ResourceMailbox | Sort-Object DisplayName | Export-Csv $EXO_ResourceMailboxes @ExportCSVSplat
 
-            Import-Csv $EXO_Groups | Export-MembersOnePerLine -ReportPath $TenantPath -FindInColumn MembersName |
+            Import-Csv $EXO_Groups | Export-MembersOnePerLine -FindInColumn MembersName |
             Sort-Object DisplayName | Export-Csv $EXO_GroupMembers @ExportCSVSplat
 
-            Import-Csv $EXO_Groups | Export-MembersOnePerLine -ReportPath $TenantPath -FindInColumn MembersSMTP |
+            Import-Csv $EXO_Groups | Export-MembersOnePerLine -FindInColumn MembersSMTP |
             Sort-Object DisplayName | Export-Csv $EXO_GroupMembersSMTP @ExportCSVSplat
 
             $OnePerExoEmail = [System.Collections.Generic.List[PSObject]]::New()
 
-            $OnePerMailbox = $MailboxDetails | Export-EmailsOnePerLine -ReportPath $TenantPath -FindInColumn EmailAddresses
+            $OnePerMailbox = Export-EmailsOnePerLine -FindInColumn EmailAddresses -RowList $MailboxDetails
 
             $OnePerExoEmail.AddRange([PSObject[]]$OnePerMailbox)
 
-            $OnePerContactExt = $ContactDetails | Export-EmailsOnePerLine -ReportPath $TenantPath -FindInColumn ExternalEmailAddress
+            $OnePerContactExt = Export-EmailsOnePerLine -FindInColumn ExternalEmailAddress -RowList $ContactDetails
 
             $OnePerExoEmail.AddRange([PSObject[]]$OnePerContactExt)
 
-            $OnePerContact = $ContactDetails | Export-EmailsOnePerLine -ReportPath $TenantPath -FindInColumn EmailAddresses
+            $OnePerContact = Export-EmailsOnePerLine -FindInColumn EmailAddresses -RowList $ContactDetails
 
             $OnePerExoEmail.AddRange([PSObject[]]$OnePerContact)
 
-            $OnePerGroup = $EXOGroupsDetails | Export-EmailsOnePerLine -ReportPath $TenantPath -FindInColumn EmailAddresses
+            $OnePerGroup = Export-EmailsOnePerLine -FindInColumn EmailAddresses -RowList $EXOGroupsDetails
 
             $OnePerExoEmail.AddRange([PSObject[]]$OnePerGroup)
 
@@ -451,10 +485,30 @@ function Get-365Info {
             $RecipientsDetails | Group-Object RecipientTypeDetails | Select-Object name, count |
             Sort-Object -Property count -Descending | Export-Csv $EXO_RecipientTypes @ExportCSVSplat
 
-            $OnePerRecipientEmail = Import-Csv $EXO_Recipients |
-            Export-EmailsOnePerLine -ReportPath $TenantPath -FindInColumn EmailAddresses | Sort-Object DisplayName
-
+            $Recipients = Import-Csv $EXO_Recipients | Where-Object { $_.EmailAddresses }
+            $OnePerRecipientEmail = Export-EmailsOnePerLine -FindInColumn EmailAddresses -RowList $Recipients | Sort-Object DisplayName
             $OnePerRecipientEmail | Export-Csv $EXO_RecipientEmails @ExportCSVSplat
+
+            $OnePerAllEmail = [System.Collections.Generic.List[PSObject]]::New()
+
+            if ($OnePerGuestOtherMails) {
+                $OnePerAllEmail.AddRange([PSObject[]]$OnePerGuestOtherMails)
+            }
+            if ($OnePerGuestProxy) {
+                $OnePerAllEmail.AddRange([PSObject[]]$OnePerGuestProxy)
+            }
+            if ($OnePerGuestMail) {
+                $OnePerAllEmail.AddRange([PSObject[]]$OnePerGuestMail)
+            }
+            $OnePerAllEmail.AddRange([PSObject[]]$OnePerContactExt)
+
+            $OnePerAllEmail.AddRange([PSObject[]]$OnePerRecipientEmail)
+            if (-not $DontIncludeUnifiedGroupsInAllEmailsReport) {
+                $OnePerAllEmail.AddRange([PSObject[]]$OnePerUGOwners)
+                $OnePerAllEmail.AddRange([PSObject[]]$OnePerUGMember)
+                $OnePerAllEmail.AddRange([PSObject[]]$OnePerUGSubscribers)
+            }
+            $OnePerAllEmail | Sort-Object DisplayName, RecipientTypeDetails | Export-Csv $365_AllEmails @ExportCSVSplat
 
             $OnePerRecipientEmail | Where-Object { $_.Domain -and $_.Domain -notmatch "SPO_" } |
             Group-Object Domain | Select-Object name, count | Sort-Object -Property count -Descending | Export-Csv $EXO_RecipientDomains @ExportCSVSplat
@@ -471,15 +525,6 @@ function Get-365Info {
             # $AllEmails | Sort-Object -Property Address -Unique | Select-Object Address | Export-Csv $EXO_UniqueEmails @ExportCSVSplat
 
             $ErrorActionPreference = $EA
-        }
-        if ($AzureAD) {
-            Write-Verbose "Gathering AzureAD Roles"
-            If ($MFAHash) {
-                Get-AzureADRoleReport -MFAHash $MFAHash | Export-Csv $AzureAD_Roles @ExportCSVSplat
-            }
-            else {
-                Get-AzureADRoleReport | Export-Csv $AzureAD_Roles @ExportCSVSplat
-            }
         }
         if ($LicensingReport) {
             Write-Verbose "Gathering Office 365 Licenses"

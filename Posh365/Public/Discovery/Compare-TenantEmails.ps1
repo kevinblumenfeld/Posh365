@@ -25,7 +25,7 @@
         'TargetDisplayName', 'TargetPrefixedAddress', 'TargetRecipientTypeDetails'
         'TargetExchangeObjectId'
         )
-    Compare-TenantEmails -SourceTenant Contoso -TargetTenant Fabrikam -Path C:\Scripts\ | Select-Object $Selects |
+    Compare-TenantEmails -SourceTenantPath c:\scripts\contoso\ -TargetTenantPath c:\scripts\fabrikam\ | Select-Object $Selects |
     Export-csv C:\Scripts\Contoso\EXO_DuplicateEmails.csv -NoTypeInformation -Encoding UTF8
 
     .NOTES
@@ -35,35 +35,19 @@
     param(
         [Parameter(Mandatory)]
         [string]
-        $SourceTenant,
+        $SourceTenantPath,
 
         [Parameter(Mandatory)]
         [string]
-        $TargetTenant,
-
-        [Parameter(Mandatory)]
-        [string]
-        $Path,
+        $TargetTenantPath,
 
         [Parameter()]
         [string]
-        $CsvDocument = 'EXO_AllRecipientEmails.csv'
+        $CsvDocument = '365_AllEmails.csv'
     )
     end {
-
-        $SourceTenantPath = Join-Path $Path $SourceTenant
-        $DetailedSourceTenantPath = Join-Path  $SourceTenantPath 'Detailed'
-
-        $TargetTenantPath = Join-Path $Path $TargetTenant
-        $DetailedTargetTenantPath = Join-Path  $TargetTenantPath 'Detailed'
-
-        $ExportCSVSplat = @{
-            NoTypeInformation = $true
-            Encoding          = 'UTF8'
-        }
-
-        $SourceAddress = Import-Csv (Join-Path $DetailedSourceTenantPath $CsvDocument)
-        $TargetAddress = Import-Csv (Join-Path $DetailedTargetTenantPath $CsvDocument)
+        $SourceAddress = Import-Csv (Join-Path $SourceTenantPath $CsvDocument)
+        $TargetAddress = Import-Csv (Join-Path $TargetTenantPath $CsvDocument)
         $TargetHash = @{ }
         foreach ($Target in $TargetAddress) {
             $TargetHash[$Target.PrefixedAddress] = @{
