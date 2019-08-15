@@ -49,6 +49,7 @@
         $SourceAddress = Import-Csv (Join-Path $SourceTenantPath $CsvDocument)
         $TargetAddress = Import-Csv (Join-Path $TargetTenantPath $CsvDocument)
         $TargetHash = @{ }
+
         foreach ($Target in $TargetAddress) {
             $TargetHash[$Target.PrefixedAddress] = @{
                 'DisplayName'          = $Target.DisplayName
@@ -61,8 +62,11 @@
                 'ExchangeObjectId'     = $Target.ExchangeObjectId
             }
         }
+        $AlreadyAdded = [System.Collections.Generic.HashSet[string]]::new()
         foreach ($Source in $SourceAddress) {
-            if ($TargetHash.Keys -contains $Source.PrefixedAddress) {
+            $SourceAndTargetID = '{0}{1}' -f $Source.ExchangeObjectId, $TargetHash.($Source.PrefixedAddress).ExchangeObjectId
+            if ($TargetHash.Keys -contains $Source.PrefixedAddress -and -not $AlreadyAdded.Contains($SourceAndTargetID)) {
+                $null = $AlreadyAdded.Add($SourceAndTargetID)
                 [PSCustomObject]@{
                     DisplayName                = $Source.DisplayName
                     PrefixedAddress            = $Source.PrefixedAddress

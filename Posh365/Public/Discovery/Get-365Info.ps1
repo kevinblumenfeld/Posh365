@@ -331,9 +331,9 @@ function Get-365Info {
                 $AzureADGuests = $AzureADDetails | Where-Object { $_.UserType -eq 'Guest' }
                 $AzureADGuests | Export-Csv $AzureAD_Guests @ExportCSVSplat
 
-                $OnePerGuestProxy = Export-EmailsOnePerLine -FindInColumn ProxyAddresses -RowList ($AzureADGuests | Where-Object { $_.ProxyAddresses })
-                $OnePerGuestMail = Export-EmailsOnePerLine -FindInColumn Mail -RowList ($AzureADGuests | Where-Object { $_.Mail } )
-                $OnePerGuestOtherMails = Export-EmailsOnePerLine -FindInColumn OtherMails -RowList ($AzureADGuests | Where-Object { $_.OtherMails })
+                $OnePerGuestProxy = Export-EmailsOnePerLineOneOff -FindInColumn ProxyAddresses -RowList ($AzureADGuests | Where-Object { $_.ProxyAddresses })
+                $OnePerGuestMail = Export-EmailsOnePerLineOneOff -FindInColumn Mail -RowList ($AzureADGuests | Where-Object { $_.Mail } )
+                $OnePerGuestOtherMails = Export-EmailsOnePerLineOneOff -FindInColumn OtherMails -RowList ($AzureADGuests | Where-Object { $_.OtherMails })
             }
             { $ExchangeOnline } {
                 $EA = $ErrorActionPreference
