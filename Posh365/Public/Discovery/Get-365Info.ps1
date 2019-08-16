@@ -189,7 +189,7 @@ function Get-365Info {
             'ExchangeVersion', 'DistinguishedName', 'ObjectCategory', 'ObjectClass', 'WhenChanged', 'WhenCreated', 'WhenChangedUTC'
             'WhenCreatedUTC', 'ExchangeObjectId', 'OriginatingServer', 'ObjectState'
         )
-        $365_Sku = (Join-Path $TenantPath '365_Skus.csv')
+        $MSOL_Spn = (Join-Path $TenantPath 'MSOL_Spn.csv')
         $MSOL_Upn = (Join-Path $TenantPath 'MSOL_Upn.csv')
         $MSOL_Users = (Join-Path $TenantPath 'MSOL_Users.csv')
         $MSOL_MFAUsers = (Join-Path $TenantPath 'MSOL_MFAUsers.csv')
@@ -253,9 +253,13 @@ function Get-365Info {
 
         # $365_UnifiedGroups = (Join-Path $TenantPath '365_UnifiedGroups.csv')
         $365_UnifiedGroupEmails = (Join-Path $TenantPath '365_UnifiedGroupEmails.csv')
+        $365_Sku = (Join-Path $TenantPath '365_Skus.csv')
 
         switch ($true) {
             { $MSOnline } {
+                Write-Verbose "Gathering Internal Domains Matching Azure AD Service Principal Names"
+                Get-DomainMatchingServicePrincipal | Export-Csv $MSOL_Spn @ExportCSVSplat
+
                 Write-Verbose "Gathering MsolUsers"
                 Get-365MsolUser -DetailedReport | Export-Csv $MSOL_Users_Detailed @ExportCSVSplat
                 $MsolUserDetailedImport = Import-Csv $MSOL_Users_Detailed | Where-Object { $_.UserPrincipalName -notmatch "FederatedEmail" -and $_.DisplayName -notmatch "SystemMailbox{" }
