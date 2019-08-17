@@ -16,10 +16,17 @@ function Connect-BitTitan {
         $MigrationWiz,
 
         [Parameter()]
+        [string]
+        $OrganizationId,
+
+        [Parameter()]
         [switch]
         $DeleteCredential
     )
     end {
+        if ( $Email ) {
+            $EmailAddress = $Email
+        }
         if (-not (Get-Module -Name BitTitanManagement -ListAvailable).version.build -eq 85) {
             Install-Module -Name BitTitanManagement -RequiredVersion 0.0.85 -Force -Scope CurrentUser
             Import-Module -Name BitTitanManagement -Version 0.0.85 -Force
@@ -32,9 +39,6 @@ function Connect-BitTitan {
         $TenantPath = Join-Path $PoshPath $EmailAddress
         $CredPath = Join-Path $TenantPath 'Credentials'
         $CredFile = Join-Path $CredPath BitTitan.xml
-        $BTTicketFile = Join-Path $CredPath BTTicket.xml
-        $MWTicketFile = Join-Path $CredPath MWTicket.xml
-        $LogPath = Join-Path $TenantPath 'Logs'
 
         if (-not ($null = Test-Path $CredFile)) {
             $ItemSplat = @{
@@ -44,19 +48,17 @@ function Connect-BitTitan {
             }
             $null = New-Item $PoshPath @ItemSplat
             $null = New-Item $CredPath @ItemSplat
-            $null = New-Item $LogPath @ItemSplat
         }
 
-        if ($null = Test-Path $CredFile) {
-            [System.Management.Automation.PSCredential]$Credential = Import-Clixml -Path $CredFile
-        }
-        else {
+        if (-not ($null = Test-Path $CredFile)) {
             [System.Management.Automation.PSCredential]$Credential = Get-Credential -Message 'Enter your BitTitan email address and password' -UserName $EmailAddress
             [System.Management.Automation.PSCredential]$Credential | Export-Clixml -Path $CredFile
-            [System.Management.Automation.PSCredential]$Credential = Import-Clixml -Path $CredFile
         }
-
         switch ($true) {
+            { $EmailAddress } {
+                $Script:Email = $EmailAddress.Address
+                Write-Host "in Emailaddress: $Email" -ForegroundColor Blue
+            }
             { $DeleteCredential } {
                 Write-Host "Credential is being deleted now" -ForegroundColor White
                 Connect-CloudDeleteCredential -CredFile $CredFile
@@ -65,48 +67,34 @@ function Connect-BitTitan {
             { $BitTitan } {
                 Write-Host "Obtaining BitTitan Ticket" -ForegroundColor White
                 try {
-                    if ($null = Test-Path $BTTicketFile) {
-                        [ManagementProxy.ManagementService.Ticket]$BTTicket = Import-Clixml -Path $BTTicketFile
-                        if ($BTTicket.ExpirationDate -lt (Get-Date)) {
-                            Get-BTTicket -Path $BTTicketFile -CredFile $CredFile -ErrorAction Stop
-                            Write-Host "Successfully Obtained BitTitan Ticket" -ForegroundColor Green
-                        }
-                        else {
-                            Get-BTTicket -Path $BTTicketFile -UseExistingTicket -ErrorAction Stop
-                            Write-Host "Successfully Obtained BitTitan Ticket" -ForegroundColor Green
-                        }
-                    }
-                    else {
-                        Get-BTTicket -Path $BTTicketFile -CredFile $CredFile -ErrorAction Stop
-                        Write-Host "Successfully Obtained BitTitan Ticket" -ForegroundColor Green
-                    }
+                    Get-BTTicket -CredFile $CredFile -ErrorAction Stop
+                    Write-Host "Successfully obtained BitTitan Ticket" -ForegroundColor Green
                 }
                 catch {
-                    Write-Host "Could not Obtain BitTitan Ticket" -ForegroundColor Red
+                    Write-Host "Could not obtain BitTitan Ticket" -ForegroundColor Red
+                    $_.Exception.Message
                 }
             }
             { $MigrationWiz } {
                 Write-Host "Obtaining MigrationWiz Ticket" -ForegroundColor White
                 try {
-                    if ($null = Test-Path $MWTicketFile) {
-                        [MigrationProxy.WebApi.Ticket]$MWTicket = Import-Clixml -Path $MWTicketFile
-                        if ($MWTicket.ExpirationDate -lt (Get-Date)) {
-                            Get-MWTicket -Path $MWTicketFile -CredFile $CredFile -ErrorAction Stop
-                            Write-Host "Successfully Obtained MigrationWiz Ticket" -ForegroundColor Green
-                        }
-                        else {
-                            Get-MWTicket -Path $MWTicketFile -UseExistingTicket -ErrorAction Stop
-                            Write-Host "Successfully Obtained MigrationWiz Ticket" -ForegroundColor Green
-                        }
-                    }
-                    else {
-                        Get-MWTicket -Path $MWTicketFile -CredFile $CredFile -ErrorAction Stop
-                        Write-Host "Successfully Obtained MigrationWiz Ticket" -ForegroundColor Green
-                    }
+                    Get-MWTicket -CredFile $CredFile -ErrorAction Stop
+                    Write-Host "Successfully obtained MigrationWiz Ticket" -ForegroundColor Green
                 }
                 catch {
+                    Write-Host "Could not obtain MigrationWiz Ticket" -ForegroundColor Red
+                    $_.Exception.Message
+                }
+            }
+            { $OrganizationId } {
+                Write-Host "Obtaining BitTitan Ticket" -ForegroundColor White
+                try {
+                    Get-BTTicket -OrganizationId $OrganizationId -ErrorAction Stop
+                    Write-Host "Successfully obtained BitTitan Ticket" -ForegroundColor Green
+                }
+                catch {
+                    Write-Host "Could not obtain BitTitan Ticket" -ForegroundColor Red
                     $_
-                    Write-Host "Could not Obtain MigrationWiz Ticket" -ForegroundColor Red
                 }
             }
             default { }
