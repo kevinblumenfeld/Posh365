@@ -1,4 +1,4 @@
-function Get-BTTicket {
+function Get-MWTicket {
     [CmdletBinding(SupportsShouldProcess = $true)]
     Param
     (
@@ -14,13 +14,13 @@ function Get-BTTicket {
     )
     end {
         if ($UseExistingTicket) {
-            [ManagementProxy.ManagementService.Ticket]$BTTicket = Import-Clixml -Path $Path
-            $null = Get-BT_Ticket -Ticket $BTTicket
+            [MigrationProxy.WebApi.Ticket]$MWTicket = Import-Clixml -Path $Path
+            $null = Get-MW_Ticket -Ticket $MWTicket
         }
         else {
             [System.Management.Automation.PSCredential]$Credential = Import-Clixml -Path $CredFile
-            $BTTicket = Get-BT_Ticket -Credentials $Credential -ServiceType BitTitan -SetDefault -ErrorAction Stop
-            [ManagementProxy.ManagementService.Ticket]$BTTicket | Export-Clixml -Path $Path
+            $MWTicket = Get-MW_Ticket -Credentials $Credential -SetDefault -ErrorAction Stop
+            [MigrationProxy.WebApi.Ticket]$MWTicket | Export-Clixml -Path $Path
         }
     }
 }

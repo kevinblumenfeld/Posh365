@@ -88,12 +88,25 @@ function Connect-BitTitan {
             { $MigrationWiz } {
                 Write-Host "Obtaining MigrationWiz Ticket" -ForegroundColor White
                 try {
-                    $MWTicket = Get-MW_Ticket -Credentials $Credential -SetDefault -ErrorAction Stop
-                    $MWTicket
-                    Write-Host "Successfully Obtained Migration Wiz Ticket" -ForegroundColor Green
+                    if ($null = Test-Path $MWTicketFile) {
+                        [MigrationProxy.WebApi.Ticket]$MWTicket = Import-Clixml -Path $MWTicketFile
+                        if ($MWTicket.ExpirationDate -lt (Get-Date)) {
+                            Get-MWTicket -Path $MWTicketFile -CredFile $CredFile -ErrorAction Stop
+                            Write-Host "Successfully Obtained MigrationWiz Ticket" -ForegroundColor Green
+                        }
+                        else {
+                            Get-MWTicket -Path $MWTicketFile -UseExistingTicket -ErrorAction Stop
+                            Write-Host "Successfully Obtained MigrationWiz Ticket" -ForegroundColor Green
+                        }
+                    }
+                    else {
+                        Get-MWTicket -Path $MWTicketFile -CredFile $CredFile -ErrorAction Stop
+                        Write-Host "Successfully Obtained MigrationWiz Ticket" -ForegroundColor Green
+                    }
                 }
                 catch {
-                    Write-Host "Could not Obtain Migration Wiz Ticket" -ForegroundColor Red
+                    $_
+                    Write-Host "Could not Obtain MigrationWiz Ticket" -ForegroundColor Red
                 }
             }
             default { }
