@@ -21,6 +21,6 @@ function Get-MWMailboxMovePasses {
             'CreateDate'
             'Id'
         ) | Out-GridView -Title "Choose Mailboxes to report on Migration Wiz Passes" -PassThru |
-        Invoke-GetMWMailboxMovePasses | Sort-Object -Property Source, StartDate | Out-GridView
+        Invoke-GetMWMailboxMovePasses | Sort-Object -Property Source, StartDate | Out-GridView -Title "Each MigrationWiz pass for each mailbox"
     }
 }
