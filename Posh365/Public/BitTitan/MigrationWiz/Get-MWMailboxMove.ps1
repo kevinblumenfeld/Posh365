@@ -5,7 +5,7 @@ function Get-MWMailboxMove {
 
     )
     end {
-        Get-BT_Mailbox -ConnectorId $Connector.Id | Select-Object @(
+        Invoke-GetMWMailboxMove | Select-Object @(
             @{
                 Name       = 'Source'
                 Expression = 'ExportEmailAddress'
@@ -14,9 +14,12 @@ function Get-MWMailboxMove {
                 Name       = 'Target'
                 Expression = 'ImportEmailAddress'
             }
-            'Categories'
+            @{
+                Name       = 'Categories'
+                Expression = { If ($_.Categories) { $StarColor[$_.Categories] } else { "" } }
+            }
             'CreateDate'
             'Id'
-        )
+        ) | Out-GridView -Title "MigrationWiz Mailbox Moves"
     }
 }
