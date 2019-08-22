@@ -5,6 +5,6 @@ function Get-MWMailboxMoveStatistics {
 
     )
     end {
-        Invoke-GetMWMailboxMove | Invoke-GetMWMailboxMoveStatistics
+        Invoke-GetMWMailboxMove | Invoke-GetMWMailboxMoveStatistics | Out-GridView -Title "MigrationWiz Mailbox Move Stats"
     }
 }

@@ -9,18 +9,6 @@ function Connect-BitTitan {
 
         [Parameter()]
         [switch]
-        $BitTitan,
-
-        [Parameter()]
-        [switch]
-        $MigrationWiz,
-
-        [Parameter()]
-        [string]
-        $OrganizationId,
-
-        [Parameter()]
-        [switch]
         $DeleteCredential
     )
     end {
@@ -63,40 +51,17 @@ function Connect-BitTitan {
                 Connect-CloudDeleteCredential -CredFile $CredFile
                 return
             }
-            { $BitTitan } {
-                Write-Host "Obtaining BitTitan Ticket" -ForegroundColor White
-                try {
-                    Get-BTTicket -CredFile $CredFile -ErrorAction Stop
-                    Write-Host "Successfully obtained BitTitan Ticket" -ForegroundColor Green
-                }
-                catch {
-                    Write-Host "Could not obtain BitTitan Ticket" -ForegroundColor Red
-                    $_.Exception.Message
-                }
-            }
-            { $MigrationWiz } {
-                Write-Host "Obtaining MigrationWiz Ticket" -ForegroundColor White
-                try {
-                    Get-MWTicket -CredFile $CredFile -ErrorAction Stop
-                    Write-Host "Successfully obtained MigrationWiz Ticket" -ForegroundColor Green
-                }
-                catch {
-                    Write-Host "Could not obtain MigrationWiz Ticket" -ForegroundColor Red
-                    $_.Exception.Message
-                }
-            }
-            { $OrganizationId } {
-                Write-Host "Obtaining BitTitan Ticket" -ForegroundColor White
-                try {
-                    Get-BTTicket -OrganizationId $OrganizationId -ErrorAction Stop
-                    Write-Host "Successfully obtained BitTitan Ticket" -ForegroundColor Green
-                }
-                catch {
-                    Write-Host "Could not obtain BitTitan Ticket" -ForegroundColor Red
-                    $_
-                }
-            }
+
             default { }
+        }
+        Write-Host "Obtaining BitTitan Ticket" -ForegroundColor White
+        try {
+            Get-BTTicket -CredFile $CredFile -ErrorAction Stop
+            Write-Host "Successfully obtained BitTitan Ticket" -ForegroundColor Green
+        }
+        catch {
+            Write-Host "Could not obtain BitTitan Ticket" -ForegroundColor Red
+            $_.Exception.Message
         }
         Enter-BTCustomer
     }

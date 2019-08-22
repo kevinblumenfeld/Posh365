@@ -5,6 +5,9 @@ function Invoke-GetMWMailboxMoveStatistics {
         [Parameter(ValueFromPipeline)]
         $MailboxList
     )
+    begin {
+        $Now = [DateTime]::Now
+    }
     process {
         foreach ($Mailbox in $MailboxList) {
             Get-MW_MailboxStat -MailboxID $Mailbox.Id | Select-Object @(
@@ -17,8 +20,12 @@ function Invoke-GetMWMailboxMoveStatistics {
                     Expression = { $Mailbox.ImportEmailAddress }
                 }
                 @{
-                    Name       = 'RemainingGB'
-                    Expression = { [Math]::Round([Double]($_.RemainingTransferSize) / 1GB, 4) }
+                    Name       = 'SinceCreated'
+                    Expression = { '{0:dd}d {0:hh}h {0:mm}m' -f $Now.subtract(($_.CreateDate).ToLocalTime()) }
+                }
+                @{
+                    Name       = 'SinceLastStart'
+                    Expression = { '{0:dd}d {0:hh}h {0:mm}m' -f $Now.subtract(($_.LastStartDate).ToLocalTime()) }
                 }
                 @{
                     Name       = 'CurrentlyExported'
@@ -28,7 +35,18 @@ function Invoke-GetMWMailboxMoveStatistics {
                     Name       = 'CurrentlyImported'
                     Expression = { $_.CurrentlyImportedFolderName }
                 }
-                'CreateDate'
+                @{
+                    Name       = 'ExportDuration'
+                    Expression = { [timespan]::new($_.ExportDuration) }
+                }
+                @{
+                    Name       = 'ImportDuration'
+                    Expression = { [timespan]::new($_.ImportDuration) }
+                }
+                @{
+                    Name       = 'CreateDateLocal'
+                    Expression = { (($_.CreateDate).ToLocalTime()) }
+                }
             )
         }
     }
