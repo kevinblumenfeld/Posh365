@@ -16,7 +16,7 @@ function Get-MWMailboxMovePasses {
             }
             @{
                 Name       = 'Categories'
-                Expression = { If ($_.Categories) { $StarColor[$_.Categories] } else { "" } }
+                Expression = { if ($_.Categories) { $StarColor[$_.Categories] } else { "" } }
             }
             'CreateDate'
             'Id'

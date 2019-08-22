@@ -7,6 +7,6 @@ function Get-MWTicket {
     )
     end {
         [System.Management.Automation.PSCredential]$Credential = Import-Clixml -Path $CredFile
-        $Global:MWTicket = Get-MW_Ticket -Credentials $Credential -SetDefault
+        $Script:MWTicket = Get-MW_Ticket -Credentials $Credential -SetDefault
     }
 }
