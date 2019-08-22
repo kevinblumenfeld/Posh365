@@ -57,7 +57,6 @@ function Connect-BitTitan {
         switch ($true) {
             { $EmailAddress } {
                 $Script:Email = $EmailAddress.Address
-                Write-Host "in Emailaddress: $Email" -ForegroundColor Blue
             }
             { $DeleteCredential } {
                 Write-Host "Credential is being deleted now" -ForegroundColor White
@@ -99,5 +98,6 @@ function Connect-BitTitan {
             }
             default { }
         }
+        Enter-BTCustomer
     }
 }

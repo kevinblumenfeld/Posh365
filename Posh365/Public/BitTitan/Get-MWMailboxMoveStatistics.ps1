@@ -1,4 +1,4 @@
-function Get-MWMailboxStat {
+function Get-MWMailboxMoveStatistics {
     [CmdletBinding()]
     Param
     (
