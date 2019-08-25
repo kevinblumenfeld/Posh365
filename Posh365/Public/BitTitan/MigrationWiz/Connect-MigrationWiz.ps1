@@ -72,5 +72,8 @@ function Connect-MigrationWiz {
             ';tag-6;' = 'MINT'
         }
         Enter-MWProject
+        Write-Host "To switch projects type:" -NoNewline -ForegroundColor Yellow
+        Write-Host " Enter-MWProject " -ForegroundColor Green -NoNewline
+        Write-Host "Then hit enter and select the project from the menu that appears." -ForegroundColor Yellow
     }
 }

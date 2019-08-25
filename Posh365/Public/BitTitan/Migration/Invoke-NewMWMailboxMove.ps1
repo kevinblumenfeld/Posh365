@@ -1,8 +1,4 @@
 function Invoke-NewMWMailboxMove {
-    <#
-
-    #>
-
     param (
         [Parameter(ValueFromPipeline, Mandatory)]
         [ValidateNotNullOrEmpty()]
@@ -16,33 +12,39 @@ function Invoke-NewMWMailboxMove {
     }
     process {
         foreach ($User in $UserList) {
-            Write-Host "USER: $($User.DisplayName)"
             $Param = @{
                 Ticket             = $MWTicket
-                ImportEmailAddress = $User.PrimarySmtpAddress
+                ExportEmailAddress = $User.PrimarySmtpAddress
+                ConnectorId        = $MWProject.Id
             }
-            switch ($user.TargetPrimarySmtpAddress) {
-                { $True } { $Param.Add('ExportEmailAddress', $User.TargetPrimarySmtpAddress) }
-                { $False } { $Param.Add('ExportEmailAddress', '{0}@{1}' ) -f ($User.PrimarySmtpAddress -split '@')[0], $TargetEmailSuffix }
+            switch ($User) {
+                { $_.TargetPrimarySmtpAddress } { $Param.Add('ImportEmailAddress', $User.TargetPrimarySmtpAddress) }
+                Default { $Param.Add('ImportEmailAddress', '{0}@{1}' -f (($User.PrimarySmtpAddress -split '@')[0], $TargetEmailSuffix)) }
             }
-            if ($Param.ExportEmailAddress) {
+            if ($Param.ImportEmailAddress) {
                 try {
                     $Result = Add-MW_Mailbox @Param -WarningAction SilentlyContinue -ErrorAction Stop
                     [PSCustomObject]@{
-                        'DisplayName'       = $User.DisplayName
-                        'UserPrincipalName' = $User.PrimarySmtpAddress
-                        'Result'            = 'SUCCESS'
-                        'Log'               = $Result
-                        'Action'            = 'NEW'
+                        'DisplayName' = $User.DisplayName
+                        'Source'      = $Result.ExportEmailAddress
+                        'Target'      = $Result.ImportEmailAddress
+                        'Result'      = 'SUCCESS'
+                        'Log'         = 'SUCCESS'
+                        'Action'      = 'NEW'
+                        'CreateDate'  = $Result.CreateDate
+                        'Id'          = $Result.Id
                     }
                 }
                 catch {
                     [PSCustomObject]@{
-                        'DisplayName'       = $User.DisplayName
-                        'UserPrincipalName' = $User.UserPrincipalName
-                        'Result'            = 'FAILED'
-                        'Log'               = $_.Exception.Message
-                        'Action'            = 'NEW'
+                        'DisplayName' = $User.DisplayName
+                        'Source'      = $User.PrimarySmtpAddress
+                        'Target'      = $Param.ImportEmailAddress
+                        'Result'      = 'FAILED'
+                        'Log'         = $_.Exception.Message
+                        'Action'      = 'NEW'
+                        'CreateDate'  = ''
+                        'Id'          = ''
                     }
                 }
             }
