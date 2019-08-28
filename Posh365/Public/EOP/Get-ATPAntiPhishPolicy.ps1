@@ -67,4 +67,3 @@ function Get-ATPAntiPhishPolicy {
         )
     }
 }
-
