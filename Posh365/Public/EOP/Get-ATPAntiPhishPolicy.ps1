@@ -44,6 +44,7 @@ function Get-ATPAntiPhishPolicy {
                 Name       = 'SenderDomainIs'
                 Expression = { @($_.SenderDomainIs) -ne '' -join '|' }
             }
+            'EnableAntiSpoofEnforcement'
             'EnableAuthenticationSafetyTip'
             'EnableAuthenticationSoftPassSafetyTip'
             'Enabled'
