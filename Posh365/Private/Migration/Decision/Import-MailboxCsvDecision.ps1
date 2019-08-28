@@ -10,12 +10,16 @@ function Import-MailboxCsvDecision {
 
         [Parameter()]
         [switch]
-        $NoBatch
+        $NoBatch,
+
+        [Parameter()]
+        [switch]
+        $ChooseDomain
     )
     end {
         $UserChoiceSplat = @{
             DecisionObject = Import-Csv -Path $MailboxCSV
-            NoBatch        = $NoBatch
+            ChooseDomain   = $ChooseDomain
         }
 
         $UserChoice = Get-UserDecision @UserChoiceSplat

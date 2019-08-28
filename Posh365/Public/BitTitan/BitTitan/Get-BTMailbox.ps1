@@ -5,6 +5,6 @@ function Get-BTMailbox {
 
     )
     end {
-        Get-BT_Mailbox -Ticket $BTTicket
+        Get-BT_Mailbox -Ticket $BitTitanTicket
     }
 }

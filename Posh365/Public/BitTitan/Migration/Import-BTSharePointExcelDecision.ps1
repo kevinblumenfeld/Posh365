@@ -14,11 +14,6 @@ function Import-BTSharePointExcelDecision {
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [string]
-        $Tenant,
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [string]
         $WorksheetName,
 
         [Parameter()]
@@ -34,7 +29,7 @@ function Import-BTSharePointExcelDecision {
         Connect-SharePointPNP -Url $SharePointURL
 
         $ExcelURL = "Shared Documents\{0}" -f $ExcelFile
-        $TempExcel = '{0}_{1}' -f $Tenant, $ExcelFile
+        $TempExcel = '{0}_{1}' -f $mwticket.UserID.Guid, $ExcelFile
         $TempExcelPath = Join-Path -Path $ENV:TEMP $TempExcel
 
         Get-PnPFile -Url $ExcelURL -Path $Env:TEMP -Filename $TempExcel -AsFile -Force

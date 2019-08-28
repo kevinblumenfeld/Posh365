@@ -1,12 +1,10 @@
 function New-MWMailboxMove {
     <#
     .SYNOPSIS
-    Sync Mailboxes from On-Premises Exchange to Exchange Online
-    Either CSV or Excel file from SharePoint can be used
+    Create New "Mailbox Moves" with Migration Wiz from Source Tenant to Target Tenant
 
     .DESCRIPTION
-    Sync Mailboxes from On-Premises Exchange to Exchange Online
-    Either CSV or Excel file from SharePoint can be used
+    Create New "Mailbox Moves" with Migration Wiz from Source Tenant to Target Tenant
 
     .PARAMETER SharePointURL
     Sharepoint url ex. https://fabrikam.sharepoint.com/sites/Contoso
@@ -19,21 +17,11 @@ function New-MWMailboxMove {
     .PARAMETER MailboxCSV
     Path to csv of mailboxes. Minimum headers required are: BatchName, UserPrincipalName
 
-    .PARAMETER RemoteHost
-    This is the on-premises endpoint where the source mailboxes reside ex. mail.contoso.com
-
-    .PARAMETER Tenant
-    This is the tenant domain - where you are migrating to. Ex. if tenant is contoso.mail.onmicrosoft.com use contoso
-
-    .PARAMETER GroupsToAddUserTo
-    Provide one or more Active Directory Groups to add each user chosen to. -GroupsToAddUserTo "Human Resources", "Accounting"
-    Requires AD Module. This is optional
+    .EXAMPLE
+    New-MWMailboxMove -MailboxCSV C:\Scripts\testbatches.csv -TargetEmailSuffix fabrikam.com
 
     .EXAMPLE
-    New-MWMailboxMove -RemoteHost mail.contoso.com -Tenant Contoso -MailboxCSV c:\scripts\batches.csv -GroupsToAddUserTo "Office 365 E3"
-
-    .EXAMPLE
-    New-MWMailboxMove -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -RemoteHost mail.contoso.com -Tenant Contoso
+    New-MWMailboxMove -SharePointURL 'https://contoso.sharepoint.com/sites/o365-fabrikam/' -ExcelFile 'Batches.xlsx'
 
     .NOTES
     General notes
@@ -56,11 +44,6 @@ function New-MWMailboxMove {
         [string]
         $MailboxCSV,
 
-        [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $Project,
-
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         $TargetEmailSuffix
@@ -71,12 +54,11 @@ function New-MWMailboxMove {
                 $SharePointSplat = @{
                     SharePointURL = $SharePointURL
                     ExcelFile     = $ExcelFile
-                    Tenant        = $Project
                 }
                 $UserChoice = Import-BTSharePointExcelDecision @SharePointSplat
             }
             'CSV' {
-                $UserChoice = Import-MailboxCsvDecision -MailboxCSV $MailboxCSV
+                $UserChoice = Import-MailboxCsvDecision -MailboxCSV $MailboxCSV -ChooseDomain
             }
         }
         if ($UserChoice -ne 'Quit' ) {

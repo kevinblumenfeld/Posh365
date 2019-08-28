@@ -13,7 +13,7 @@ function Invoke-NewMWMailboxMove {
     process {
         foreach ($User in $UserList) {
             $Param = @{
-                Ticket             = $MWTicket
+                Ticket             = $MigWizTicket
                 ExportEmailAddress = $User.PrimarySmtpAddress
                 ConnectorId        = $MWProject.Id
             }
