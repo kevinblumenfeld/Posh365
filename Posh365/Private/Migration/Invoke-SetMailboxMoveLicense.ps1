@@ -78,7 +78,6 @@ function Invoke-SetMailboxMoveLicense {
                     MailboxCSV = $MailboxCSV
                     NoBatch    = $true
                 }
-
                 $UserChoice = Import-MailboxCsvDecision @CSVSplat
             }
         }

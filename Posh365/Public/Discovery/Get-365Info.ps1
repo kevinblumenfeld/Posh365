@@ -66,8 +66,11 @@ function Get-365Info {
 
         [Parameter()]
         [switch]
-        $SkipDistributionGroupReport
+        $SkipDistributionGroupReport,
 
+        [Parameter()]
+        [switch]
+        $CreateMSPCompleteBulkFile
     )
     end {
         $TenantPath = Join-Path $Path $Tenant
@@ -254,6 +257,8 @@ function Get-365Info {
         # $365_UnifiedGroups = (Join-Path $TenantPath '365_UnifiedGroups.csv')
         $365_UnifiedGroupEmails = (Join-Path $TenantPath '365_UnifiedGroupEmails.csv')
         $365_Sku = (Join-Path $TenantPath '365_Skus.csv')
+
+        $MSP_BulkFile = (Join-Path $TenantPath 'MSP_BulkFile.csv')
 
         switch ($true) {
             { $MSOnline } {
@@ -617,6 +622,28 @@ function Get-365Info {
                 }
                 Import-Csv -Path (Join-Path $TenantPath 365_LicenseReport.csv) -ErrorAction SilentlyContinue | Export-Excel @Excel365Licenses
                 $ErrorActionPreference = $EA
+            }
+            { $CreateMSPCompleteBulkFile } {
+                $MsolHash = @{ }
+                Import-Csv $MSOL_Users | ForEach-Object {
+                    $MsolHash.Add($_.UserPrincipalName, @{
+                            FirstName = $_.FirstName
+                            LastName  = $_.LastName
+                        })
+                }
+
+                Import-Csv $EXO_Mailboxes | Select-Object @(
+                    'PrimarySmtpAddress'
+                    @{
+                        Name       = 'FirstName'
+                        Expression = { $MsolHash.$($_.UserPrincipalName).FirstName }
+                    }
+                    @{
+                        Name       = 'LastName'
+                        Expression = { $MsolHash.$($_.UserPrincipalName).LastName }
+                    }
+                    'UserPrincipalName'
+                ) | Select-Object -Skip 1 | Export-Csv $MSP_BulkFile @ExportCSVSplat -
             }
         }
     }

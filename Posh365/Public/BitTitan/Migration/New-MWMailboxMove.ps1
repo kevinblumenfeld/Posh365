@@ -58,7 +58,7 @@ function New-MWMailboxMove {
                 $UserChoice = Import-BTSharePointExcelDecision @SharePointSplat
             }
             'CSV' {
-                $UserChoice = Import-MailboxCsvDecision -MailboxCSV $MailboxCSV -ChooseDomain
+                $UserChoice = Import-MailboxCsvDecisionDomainChoice -MailboxCSV $MailboxCSV -ChooseDomain
             }
         }
         if ($UserChoice -ne 'Quit' ) {

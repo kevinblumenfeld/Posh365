@@ -1,8 +1,7 @@
-function Import-MailboxCsvDecision {
+function Import-MailboxCsvDecisionDomainChoice {
 
     [CmdletBinding()]
     param (
-
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string]
@@ -10,16 +9,14 @@ function Import-MailboxCsvDecision {
 
         [Parameter()]
         [switch]
-        $NoBatch
+        $ChooseDomain
     )
     end {
         $UserChoiceSplat = @{
             DecisionObject = Import-Csv -Path $MailboxCSV
-            NoBatch        = $NoBatch
+            ChooseDomain   = $ChooseDomain
         }
-
         $UserChoice = Get-UserDecision @UserChoiceSplat
         $UserChoice
     }
 }
-
