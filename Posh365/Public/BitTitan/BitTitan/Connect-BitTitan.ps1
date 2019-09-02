@@ -9,19 +9,26 @@ function Connect-BitTitan {
 
         [Parameter()]
         [switch]
+        $SkipModuleCheck,
+
+        [Parameter()]
+        [switch]
         $DeleteCredential
     )
     end {
         if ( $Email ) {
             $EmailAddress = $Email
         }
-        if (-not (Get-Module -Name BitTitanManagement -ListAvailable).version.build -eq 85) {
-            Install-Module -Name BitTitanManagement -RequiredVersion 0.0.85 -Force -Scope CurrentUser
-            Import-Module -Name BitTitanManagement -Version 0.0.85 -Force
+        if ($SkipModuleCheck ) {
+            if (-not (Get-Module -Name BitTitanManagement -ListAvailable).version.build -eq 85) {
+                Install-Module -Name BitTitanManagement -RequiredVersion 0.0.85 -Force -Scope CurrentUser
+                Import-Module -Name BitTitanManagement -Version 0.0.85 -Force
+            }
+            else {
+                Import-Module -Name BitTitanManagement -Version 0.0.85 -Force
+            }
         }
-        else {
-            Import-Module -Name BitTitanManagement -Version 0.0.85 -Force
-        }
+
         $host.ui.RawUI.WindowTitle = "BitTitan Tenant: $($EmailAddress)"
         $PoshPath = Join-Path $Env:USERPROFILE '.Posh365'
         $TenantPath = Join-Path $PoshPath $EmailAddress
