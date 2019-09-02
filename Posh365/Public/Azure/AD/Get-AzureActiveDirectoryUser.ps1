@@ -11,6 +11,7 @@ function Get-AzureActiveDirectoryUser {
             'ObjectId', 'ShowInAddressList', 'UserState', 'UserStateChangedOn', 'MailNickName', 'ImmutableId', 'FacsimileTelephoneNumber'
         )
         $CalculatedProps = @(
+            @{n = 'OrganizationalUnit'; e = { $_.extensionproperty.onPremisesDistinguishedName -replace '^.+?,(?=(OU|CN)=)' } }
             @{n = "OtherMails" ; e = { @($_.OtherMails) -ne '' -join '|' } },
             @{n = "proxyAddresses" ; e = { @($_.proxyAddresses) -ne '' -join '|' } }
         )

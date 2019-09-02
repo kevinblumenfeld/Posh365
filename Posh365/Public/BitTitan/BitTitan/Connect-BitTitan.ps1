@@ -64,5 +64,8 @@ function Connect-BitTitan {
             $_.Exception.Message
         }
         Enter-BTCustomer
+        Write-Host "To switch projects type:" -NoNewline -ForegroundColor Yellow
+        Write-Host " Enter-BTCustomer " -ForegroundColor Green -NoNewline
+        Write-Host "Then hit enter and select the Customer from the menu that appears." -ForegroundColor Yellow
     }
 }

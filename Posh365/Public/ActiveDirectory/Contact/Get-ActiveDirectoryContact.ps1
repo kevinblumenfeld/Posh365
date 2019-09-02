@@ -58,8 +58,9 @@ function Get-ActiveDirectoryContact {
         )
 
         $CalculatedProps = @(
-            @{n = "OU" ; e = {$_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)'}},
-            @{n = "proxyAddresses" ; e = {($_.proxyAddresses | Where-Object {$_ -ne $null}) -join '|' }}
+            @{n = "OU" ; e = { $_.DistinguishedName -replace '^.+?,(?=(OU|CN)=)' } },
+            @{n = "proxyAddresses" ; e = { ($_.proxyAddresses | Where-Object { $_ -ne $null }) -join '|' } },
+            @{n = "PrimarySmtpAddress" ; e = { ( $_.proxyAddresses | Where-Object { $_ -cmatch "SMTP:" }) } }
         )
     }
     Process {

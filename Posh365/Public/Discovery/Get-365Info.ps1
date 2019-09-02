@@ -204,6 +204,7 @@ function Get-365Info {
         $AzureAD_Roles = (Join-Path $TenantPath 'AzureAD_Roles.csv')
         $AzureAD_Users = (Join-Path $DetailedTenantPath 'AzureAD_Users.csv')
         $AzureAD_Guests = (Join-Path $DetailedTenantPath 'AzureAD_Guests.csv')
+        $AzureAD_Devices = (Join-Path $TenantPath 'AzureAD_Devices.csv')
 
         $EXO_TransportRules_Detailed = (Join-Path $DetailedTenantPath 'EXO_TransportRules_Detailed.csv')
         $EXO_TransportRuleCollection = (Join-Path $DetailedTenantPath 'EXO_TransportRuleCollection.xml')
@@ -258,7 +259,7 @@ function Get-365Info {
         $365_UnifiedGroupEmails = (Join-Path $TenantPath '365_UnifiedGroupEmails.csv')
         $365_Sku = (Join-Path $TenantPath '365_Skus.csv')
 
-        $MSP_BulkFile = (Join-Path $TenantPath 'MSP_BulkFile.csv')
+        $MSP_BulkFile = (Join-Path $TenantPath 'Batches.csv')
 
         switch ($true) {
             { $MSOnline } {
@@ -343,6 +344,8 @@ function Get-365Info {
                 $OnePerGuestProxy = Export-EmailsOnePerLineOneOff -FindInColumn ProxyAddresses -RowList ($AzureADGuests | Where-Object { $_.ProxyAddresses })
                 $OnePerGuestMail = Export-EmailsOnePerLineOneOff -FindInColumn Mail -RowList ($AzureADGuests | Where-Object { $_.Mail } )
                 $OnePerGuestOtherMails = Export-EmailsOnePerLineOneOff -FindInColumn OtherMails -RowList ($AzureADGuests | Where-Object { $_.OtherMails })
+                Write-Verbose "Gathering AzureAD Devices"
+                Get-AzureActiveDirectoryDevice | Export-Csv $AzureAD_Devices @ExportCSVSplat
             }
             { $ExchangeOnline } {
                 $EA = $ErrorActionPreference
@@ -631,8 +634,28 @@ function Get-365Info {
                             LastName  = $_.LastName
                         })
                 }
+                $AzureADHash = @{ }
+                Import-Csv $AzureAD_Users | ForEach-Object {
+                    $AzureADHash.Add($_.UserPrincipalName, @{
+                            OrganizationalUnit = $_.OrganizationalUnit
+                            DirSyncEnabled     = [Bool]$_.DirSyncEnabled
+                        })
+                }
 
                 Import-Csv $EXO_Mailboxes | Select-Object @(
+                    'Migrate'
+                    @{
+                        Name       = 'PrimaryAliasmatchesTargetAlias'
+                        Expression = {
+                            $TenantAlias = ([regex]::matches(@(($_.EmailAddresses).split('|')), "(?<=smtp:|SMTP:)[\S]+@\w+\.+?onmicrosoft.com")[0].Value).split('@')[0]
+                            $PrimaryAlias = ($_.PrimarySmtpAddress).split('@')[0]
+                            $TenantAlias -eq $PrimaryAlias
+                        }
+                    }
+                    @{
+                        Name       = 'TenantAddress'
+                        Expression = { [regex]::matches(@(($_.EmailAddresses).split('|')), "(?<=smtp:|SMTP:)[\S]+@\w+\.+?onmicrosoft.com")[0].Value }
+                    }
                     'PrimarySmtpAddress'
                     @{
                         Name       = 'FirstName'
@@ -643,7 +666,31 @@ function Get-365Info {
                         Expression = { $MsolHash.$($_.UserPrincipalName).LastName }
                     }
                     'UserPrincipalName'
-                ) | Select-Object -Skip 1 | Export-Csv $MSP_BulkFile @ExportCSVSplat -
+                    @{
+                        Name       = 'OrganizationalUnit'
+                        Expression = { $AzureADHash.$($_.UserPrincipalName).OrganizationalUnit }
+                    }
+                    'RecipientTypeDetails'
+                    @{
+                        Name       = 'DirSyncEnabled'
+                        Expression = { $AzureADHash.$($_.UserPrincipalName).DirSyncEnabled }
+                    }
+                    'ArchiveStatus'
+                    'MailboxGB'
+                    'ArchiveGB'
+                    'DeletedGB'
+                    'TotalGB'
+                ) | Export-Csv $MSP_BulkFile @ExportCSVSplat
+                $ExcelSplat = @{
+                    Path                    = (Join-Path $TenantPath 'Batches.xlsx')
+                    TableStyle              = 'Medium2'
+                    FreezeTopRowFirstColumn = $true
+                    AutoSize                = $true
+                    BoldTopRow              = $false
+                    ClearSheet              = $true
+                    ErrorAction             = 'SilentlyContinue'
+                }
+                Import-Csv $MSP_BulkFile | Export-Excel @ExcelSplat -WorksheetName 'Batches'
             }
         }
     }
