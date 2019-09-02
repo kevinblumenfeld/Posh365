@@ -49,7 +49,7 @@
         $SourceAddress = Import-Csv (Join-Path $SourceTenantPath $CsvDocument)
         $TargetAddress = Import-Csv (Join-Path $TargetTenantPath $CsvDocument)
         $TargetHash = @{ }
-
+        # Fix this match?
         foreach ($Target in $TargetAddress.where{ $_.Domain -match 'onmicrosoft.com' }) {
             if ($TargetHash.Keys -notcontains ($Target.Address -split '@')[0]) {
                 $TargetHash[($Target.Address -split '@')[0]] = @{
