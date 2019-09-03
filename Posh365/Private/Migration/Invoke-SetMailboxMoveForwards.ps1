@@ -1,4 +1,4 @@
-function Invoke-SetMailboxMoveForwards {
+function Invoke-SetMailboxMoveForward {
     [CmdletBinding(DefaultParameterSetName = 'SharePoint')]
     param (
         [Parameter(Mandatory, ParameterSetName = 'SharePoint')]

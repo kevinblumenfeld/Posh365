@@ -1,4 +1,4 @@
-function Set-MailboxMoveForwards {
+function Set-MailboxMoveForward {
     <#
     .SYNOPSIS
     Sets Office 365 Forwards during a migration project
@@ -24,10 +24,10 @@ function Set-MailboxMoveForwards {
     Example if tenant is contoso.mail.onmicrosoft.com use contoso
 
     .EXAMPLE
-    Set-MailboxMoveForwards -MailboxCSV c:\scripts\batches.csv
+    Set-MailboxMoveForward -MailboxCSV c:\scripts\batches.csv
 
     .EXAMPLE
-    Set-MailboxMoveForwards -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -Tenant Contoso
+    Set-MailboxMoveForward -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -Tenant Contoso
 
     .NOTES
     General notes
@@ -66,13 +66,13 @@ function Set-MailboxMoveForwards {
                     ExcelFile     = $ExcelFile
                     Tenant        = $Tenant
                 }
-                Invoke-SetMailboxMoveForwards @SharePointSplat | Out-GridView -Title "Results of Set Mailbox Forwards"
+                Invoke-SetMailboxMoveForward @SharePointSplat | Out-GridView -Title "Results of Set Mailbox Forwards"
             }
             'CSV' {
                 $CSVSplat = @{
                     MailboxCSV = $MailboxCSV
                 }
-                Invoke-SetMailboxMoveForwards @CSVSplat | Out-GridView -Title "Results of Set Mailbox Forwards"
+                Invoke-SetMailboxMoveForward @CSVSplat | Out-GridView -Title "Results of Set Mailbox Forwards"
             }
         }
     }

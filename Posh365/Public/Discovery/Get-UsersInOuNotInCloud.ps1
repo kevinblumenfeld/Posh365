@@ -51,7 +51,7 @@ function Get-UsersInOuNotInCloud {
                 Enabled            = $_.Enabled
                 UserPrincipalName  = $_.UserPrincipalName
                 PrimarySmtpAddress = ($_.PrimarySmtpAddress -split ':')[1]
-                TenantAddress      = [regex]::matches(@(($_.ProxyAddresses).split('|')), "(?<=smtp:|SMTP:)[\S]+@\w+\.+?onmicrosoft.com")[0].Value
+                TenantAddress      = [regex]::matches(@(($_.ProxyAddresses).split('|')), "(?<=(smtp|SMTP):)[^@]+@[^.]+?\.onmicrosoft\.com")[0].Value
                 OrganizationalUnit = $_.OU
                 Description        = $_.Description
                 SamAccountName     = $_.SamAccountName

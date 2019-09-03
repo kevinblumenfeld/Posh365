@@ -647,14 +647,14 @@ function Get-365Info {
                     @{
                         Name       = 'PrimaryAliasmatchesTargetAlias'
                         Expression = {
-                            $TenantAlias = ([regex]::matches(@(($_.EmailAddresses).split('|')), "(?<=smtp:|SMTP:)[\S]+@\w+\.+?onmicrosoft.com")[0].Value).split('@')[0]
+                            $TenantAlias = ([regex]::matches(@(($_.EmailAddresses).split('|')), "(?<=(smtp|SMTP):)[^@]+@[^.]+?\.onmicrosoft\.com")[0].Value).split('@')[0]
                             $PrimaryAlias = ($_.PrimarySmtpAddress).split('@')[0]
                             $TenantAlias -eq $PrimaryAlias
                         }
                     }
                     @{
                         Name       = 'TenantAddress'
-                        Expression = { [regex]::matches(@(($_.EmailAddresses).split('|')), "(?<=smtp:|SMTP:)[\S]+@\w+\.+?onmicrosoft.com")[0].Value }
+                        Expression = { [regex]::matches(@(($_.EmailAddresses).split('|')), "(?<=(smtp|SMTP):)[^@]+@[^.]+?\.onmicrosoft\.com")[0].Value }
                     }
                     'PrimarySmtpAddress'
                     @{
