@@ -637,27 +637,32 @@ function Get-365Info {
                 $AzureADHash = @{ }
                 Import-Csv $AzureAD_Users | ForEach-Object {
                     $AzureADHash.Add($_.UserPrincipalName, @{
-                            DistinguishedName  = $_.DistinguishedName
-                            OrganizationalUnit = $_.OrganizationalUnit
-                            DirSyncEnabled     = [Bool]$_.DirSyncEnabled
+                            DistinguishedName        = $_.DistinguishedName
+                            OrganizationalUnit       = $_.OrganizationalUnit
+                            'OrganizationalUnit(CN)' = $_."OrganizationalUnit(CN)"
+                            DirSyncEnabled           = [Bool]$_.DirSyncEnabled
                         })
                 }
 
                 Import-Csv $EXO_Mailboxes | Select-Object @(
                     'Migrate'
+                    'DeploymentPro'
                     @{
-                        Name       = 'PrimaryAliasmatchesTargetAlias'
-                        Expression = {
-                            $TenantAlias = ([regex]::matches(@(($_.EmailAddresses).split('|')), "(?<=(smtp|SMTP):)[^@]+@[^.]+?\.onmicrosoft\.com")[0].Value).split('@')[0]
-                            $PrimaryAlias = ($_.PrimarySmtpAddress).split('@')[0]
-                            $TenantAlias -eq $PrimaryAlias
-                        }
+                        Name       = 'DirSyncEnabled'
+                        Expression = { $AzureADHash.$($_.UserPrincipalName).DirSyncEnabled }
                     }
+                    'DisplayName'
+                    'RecipientTypeDetails'
+                    'ArchiveStatus'
+                    @{
+                        Name       = 'OrganizationalUnit(CN)'
+                        Expression = { $AzureADHash.$($_.UserPrincipalName).'OrganizationalUnit(CN)' }
+                    }
+                    'PrimarySmtpAddress'
                     @{
                         Name       = 'TenantAddress'
                         Expression = { [regex]::matches(@(($_.EmailAddresses).split('|')), "(?<=(smtp|SMTP):)[^@]+@[^.]+?\.onmicrosoft\.com")[0].Value }
                     }
-                    'PrimarySmtpAddress'
                     @{
                         Name       = 'FirstName'
                         Expression = { $MsolHash.$($_.UserPrincipalName).FirstName }
@@ -668,23 +673,14 @@ function Get-365Info {
                     }
                     'UserPrincipalName'
                     @{
-                        Name       = 'OrganizationalUnit'
-                        Expression = { $AzureADHash.$($_.UserPrincipalName).OrganizationalUnit }
-                    }
-                    @{
                         Name       = 'DistinguishedName'
                         Expression = { $AzureADHash.$($_.UserPrincipalName).DistinguishedName }
                     }
-                    'RecipientTypeDetails'
-                    @{
-                        Name       = 'DirSyncEnabled'
-                        Expression = { $AzureADHash.$($_.UserPrincipalName).DirSyncEnabled }
-                    }
-                    'ArchiveStatus'
                     'MailboxGB'
                     'ArchiveGB'
                     'DeletedGB'
                     'TotalGB'
+                    'Notes'
                 ) | Export-Csv $MSP_BulkFile @ExportCSVSplat
                 $ExcelSplat = @{
                     Path                    = (Join-Path $TenantPath 'Batches.xlsx')

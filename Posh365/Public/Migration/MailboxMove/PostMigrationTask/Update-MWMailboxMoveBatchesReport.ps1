@@ -1,4 +1,4 @@
-function Update-MailboxMoveBatchesReport {
+function Update-MWMailboxMoveBatchesReport {
     <#
     .SYNOPSIS
     Updates Batches.xlsx by pulling batch names from existing and pairing it with a new batches.csv
@@ -25,7 +25,8 @@ function Update-MailboxMoveBatchesReport {
     Example if tenant is contoso.mail.onmicrosoft.com use: Contoso
 
     .EXAMPLE
-    Update-MailboxMoveBatchesReport -SharePointURL https://fabrikam.sharepoint.com/sites/Contoso -ExcelFile batches.xlsx -Tenant Contoso -NewCsvFile C:\Scripts\Batches.csv -ReportPath C:\Scripts\
+    This uses batches.xlsx stored in the teams "General" folder.
+    Update-MWMailboxMoveBatchesReport -SharePointURL 'https://fabrikam.sharepoint.com/sites/365migration' -ExcelFile 'General\batches.xlsx' -NewCsvFile "C:\Scripts\Batches.csv" -Tenant contoso -ReportPath C:\Scripts
 
     .NOTES
     General notes
@@ -68,58 +69,44 @@ function Update-MailboxMoveBatchesReport {
             Tenant        = $Tenant
         }
         $CurrentHash = @{ }
-        # Look at removing the where.{...}... I could just create the hashtable with everything as needs might change (diff parameters)
-        $CurrentList = (Import-SharePointExcel @SharePointSplat).where{ $_.BatchName -or $_.IsMigrated -or $_.CompleteBatchDate -or $_.CompleteBatchTimePT }
+        $CurrentList = Import-SharePointExcel @SharePointSplat
         foreach ($Current in $CurrentList) {
             $CurrentHash.Add($Current.UserPrincipalName, @{
-                    'BatchName'           = $Current.BatchName
-                    'IsMigrated'          = $Current.IsMigrated
-                    'CompleteBatchDate'   = $Current.CompleteBatchDate
-                    'CompleteBatchTimePT' = $Current.CompleteBatchTimePT
+                    'Migrate'       = $Current.Migrate
+                    'DeploymentPro' = $Current.DeploymentPro
+                    'Notes'         = $Current.Notes
                 }
             )
         }
-        # $SelectProps = ($FutureList[0].psobject.properties.name).where{ $_ -notmatch 'BatchName|IsMigrated|CompleteBatchDate|CompleteBatchTimePT' }
+
         $Future = Import-Csv $NewCsvFile | Select-Object @(
-            @{
-                Name       = 'BatchName'
-                Expression = { $CurrentHash.$($_.UserPrincipalName).BatchName }
-            }
             'DisplayName'
-            'OrganizationalUnit'
             @{
-                Name       = 'IsMigrated'
-                Expression = { $CurrentHash.$($_.UserPrincipalName).IsMigrated }
+                Name       = 'Migrate'
+                Expression = { $CurrentHash.$($_.UserPrincipalName).Migrate }
             }
             @{
-                Name       = 'CompleteBatchDate'
-                Expression = { $CurrentHash.$($_.UserPrincipalName).CompleteBatchDate }
+                Name       = 'DeploymentPro'
+                Expression = { $CurrentHash.$($_.UserPrincipalName).DeploymentPro }
             }
-            @{
-                Name       = 'CompleteBatchTimePT'
-                Expression = { $CurrentHash.$($_.UserPrincipalName).CompleteBatchTimePT }
-            }
+            'DirSyncEnabled'
+            'RecipientTypeDetails'
+            'ArchiveStatus'
+            'OrganizationalUnit(CN)'
+            'PrimarySmtpAddress'
+            'TenantAddress'
+            'FirstName'
+            'LastName'
+            'UserPrincipalName'
+            'DistinguishedName'
             'MailboxGB'
             'ArchiveGB'
             'DeletedGB'
             'TotalGB'
-            'LastLogonTime'
-            'ItemCount'
-            'UserPrincipalName'
-            'PrimarySmtpAddress'
-            'AddressBookPolicy'
-            'RetentionPolicy'
-            'AccountDisabled'
-            'Alias'
-            'Database'
-            'OU'
-            'Office'
-            'RecipientTypeDetails'
-            'UMEnabled'
-            'ForwardingAddress'
-            'ForwardingRecipientType'
-            'ForwardingSmtpAddress'
-            'DeliverToMailboxAndForward'
+            @{
+                Name       = 'Notes'
+                Expression = { $CurrentHash.$($_.UserPrincipalName).Notes }
+            }
         )
         $ExcelSplat = @{
             Path                    = (Join-Path $ReportPath 'Batches.xlsx')
@@ -132,10 +119,6 @@ function Update-MailboxMoveBatchesReport {
             ErrorAction             = 'SilentlyContinue'
         }
         $Future | Sort-Object @(
-            @{
-                Expression = "BatchName"
-                Descending = $true
-            }
             @{
                 Expression = "DisplayName"
                 Descending = $false
