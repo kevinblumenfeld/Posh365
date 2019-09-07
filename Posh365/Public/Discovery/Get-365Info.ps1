@@ -670,6 +670,10 @@ function Get-365Info {
                         Name       = 'OrganizationalUnit'
                         Expression = { $AzureADHash.$($_.UserPrincipalName).OrganizationalUnit }
                     }
+                    @{
+                        Name       = 'DistinguishedName'
+                        Expression = { $AzureADHash.$($_.UserPrincipalName).DistinguishedName }
+                    }
                     'RecipientTypeDetails'
                     @{
                         Name       = 'DirSyncEnabled'

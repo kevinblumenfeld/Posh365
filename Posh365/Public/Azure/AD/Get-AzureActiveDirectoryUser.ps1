@@ -12,6 +12,7 @@ function Get-AzureActiveDirectoryUser {
         )
         $CalculatedProps = @(
             @{n = 'OrganizationalUnit'; e = { $_.extensionproperty.onPremisesDistinguishedName -replace '^.+?,(?=(OU|CN)=)' } }
+            @{n = 'DistinguishedName'; e = { $_.extensionproperty.onPremisesDistinguishedName } }
             @{n = "OtherMails" ; e = { @($_.OtherMails) -ne '' -join '|' } },
             @{n = "proxyAddresses" ; e = { @($_.proxyAddresses) -ne '' -join '|' } }
         )
