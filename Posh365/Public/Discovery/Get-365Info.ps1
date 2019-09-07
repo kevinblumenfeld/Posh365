@@ -645,13 +645,13 @@ function Get-365Info {
                 }
 
                 Import-Csv $EXO_Mailboxes | Select-Object @(
-                    'Migrate'
+                'DisplayName'
+                'Migrate'
                     'DeploymentPro'
                     @{
                         Name       = 'DirSyncEnabled'
                         Expression = { $AzureADHash.$($_.UserPrincipalName).DirSyncEnabled }
                     }
-                    'DisplayName'
                     'RecipientTypeDetails'
                     'ArchiveStatus'
                     @{
