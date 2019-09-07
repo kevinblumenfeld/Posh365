@@ -637,6 +637,7 @@ function Get-365Info {
                 $AzureADHash = @{ }
                 Import-Csv $AzureAD_Users | ForEach-Object {
                     $AzureADHash.Add($_.UserPrincipalName, @{
+                            DistinguishedName  = $_.DistinguishedName
                             OrganizationalUnit = $_.OrganizationalUnit
                             DirSyncEnabled     = [Bool]$_.DirSyncEnabled
                         })
