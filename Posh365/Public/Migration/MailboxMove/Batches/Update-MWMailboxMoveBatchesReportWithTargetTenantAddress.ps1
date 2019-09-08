@@ -1,12 +1,10 @@
-function Update-MWMailboxMoveBatchesReport {
+function Update-MWMailboxMoveBatchesReportWithTargetTenantAddress {
     <#
     .SYNOPSIS
-    Updates Batches.xlsx by pulling batch names from existing and pairing it with a new batches.csv
-    Creates a new Batches.xlsx
+    Updates Batches.xlsx with Target Tenant Address
 
     .DESCRIPTION
-    Updates Batches.xlsx by pulling batch names from existing and pairing it with a new batches.csv
-    Creates a new Batches.xlsx
+    Updates Batches.xlsx with Target Tenant Address
 
     .PARAMETER SharePointURL
     Sharepoint url ex. https://fabrikam.sharepoint.com/sites/Contoso
@@ -14,11 +12,9 @@ function Update-MWMailboxMoveBatchesReport {
     .PARAMETER ExcelFile
     Excel file found in "Shared Documents" of SharePoint site specified in SharePointURL
     ex. "Batchex.xlsx"
-    Minimum headers required are: BatchName, UserPrincipalName
 
     .PARAMETER NewCsvFile
-    Path to csv of mailboxes. Minimum headers required are: BatchName, UserPrincipalName
-    This would be a new Csv of existing mailboxes that you want to update with BatchNames from the current excel on the SharePoint Team Site
+    Path to csv of mailboxes.  In discovery it is typically EXO_Mailboxes.csv
 
     .PARAMETER Tenant
     This is the tenant domain - where you are migrating to.
@@ -50,11 +46,6 @@ function Update-MWMailboxMoveBatchesReport {
         $Tenant,
 
         [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $NewCsvFile,
-
-        [Parameter(Mandatory)]
         [string]
         $ReportPath
     )
@@ -68,45 +59,40 @@ function Update-MWMailboxMoveBatchesReport {
             ExcelFile     = $ExcelFile
             Tenant        = $Tenant
         }
-        $CurrentHash = @{ }
-        $CurrentList = Import-SharePointExcel @SharePointSplat
-        foreach ($Current in $CurrentList) {
-            $CurrentHash.Add($Current.UserPrincipalName, @{
-                    'Migrate'       = $Current.Migrate
-                    'DeploymentPro' = $Current.DeploymentPro
-                    'Notes'         = $Current.Notes
-                }
-            )
+
+        $AzureSIDHash = @{ }
+        (Get-AzureADUser -All:$true).where( { $_.OnPremisesSecurityIdentifier }).foreach{
+            $SID = $_.OnPremisesSecurityIdentifier
+            $TargetAddress = [regex]::matches(@(($_.ProxyAddresses) -split '\|'), "(?<=(smtp|SMTP):)[^@]+@[^.]+?\.onmicrosoft\.com")[0].Value
+            if ($SID -and $TargetAddress) {
+                $AzureSIDHash.Add($SID, $TargetAddress)
+            }
         }
 
-        $Future = Import-Csv $NewCsvFile | Select-Object @(
+        $Future = Import-SharePointExcel @SharePointSplat | Select-Object @(
             'DisplayName'
-            @{
-                Name       = 'Migrate'
-                Expression = { $CurrentHash.$($_.UserPrincipalName).Migrate }
-            }
-            @{
-                Name       = 'DeploymentPro'
-                Expression = { $CurrentHash.$($_.UserPrincipalName).DeploymentPro }
-            }
+            'Migrate'
+            'DeploymentPro'
             'DirSyncEnabled'
             'RecipientTypeDetails'
             'ArchiveStatus'
             'OrganizationalUnit(CN)'
-            'PrimarySmtpAddress'
-            'TenantAddress'
+            'SourcePrimary'
+            'SourceTenantAddress'
+            @{
+                Name       = 'TargetTenantAddress'
+                Expression = { $AzureSIDHash.$($_.OnPremisesSecurityIdentifier) }
+            }
             'FirstName'
             'LastName'
             'UserPrincipalName'
+            'OnPremisesSecurityIdentifier'
             'DistinguishedName'
             'MailboxGB'
             'ArchiveGB'
             'DeletedGB'
             'TotalGB'
-            @{
-                Name       = 'Notes'
-                Expression = { $CurrentHash.$($_.UserPrincipalName).Notes }
-            }
+            'Notes'
         )
         $ExcelSplat = @{
             Path                    = (Join-Path $ReportPath 'Batches.xlsx')

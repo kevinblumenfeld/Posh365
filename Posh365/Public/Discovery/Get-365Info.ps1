@@ -70,6 +70,10 @@ function Get-365Info {
 
         [Parameter()]
         [switch]
+        $SkipUnifiedGroupsReport,
+
+        [Parameter()]
+        [switch]
         $CreateMSPCompleteBulkFile
     )
     end {
@@ -396,9 +400,11 @@ function Get-365Info {
                 # Write-Verbose "Gathering Office 365 Unified Groups"
                 # Export-AndImportUnifiedGroups -Mode Export -File $365_UnifiedGroups
 
-                Write-Verbose "Gathering Office 365 Unified Group Emails"
-                $UGDetails = Get-UnifiedGroupOwnersMembersSubscribers
-                $UGDetails | Export-Csv $365_UnifiedGroupEmails @ExportCSVSplat
+                if ($SkipUnifiedGroupsReport) {
+                    Write-Verbose "Gathering Office 365 Unified Group Emails"
+                    $UGDetails = Get-UnifiedGroupOwnersMembersSubscribers
+                    $UGDetails | Export-Csv $365_UnifiedGroupEmails @ExportCSVSplat
+                }
 
                 if (-not $DontIncludeUnifiedGroupsInAllEmailsReport) {
                     $OnePerUGOwners = Export-EmailsOnePerLine -FindInColumn Owners -RowList ($UGDetails | Where-Object { $_.Owners })
@@ -637,16 +643,17 @@ function Get-365Info {
                 $AzureADHash = @{ }
                 Import-Csv $AzureAD_Users | ForEach-Object {
                     $AzureADHash.Add($_.UserPrincipalName, @{
-                            DistinguishedName        = $_.DistinguishedName
-                            OrganizationalUnit       = $_.OrganizationalUnit
-                            'OrganizationalUnit(CN)' = $_."OrganizationalUnit(CN)"
-                            DirSyncEnabled           = [Bool]$_.DirSyncEnabled
+                            DistinguishedName            = $_.DistinguishedName
+                            OrganizationalUnit           = $_.OrganizationalUnit
+                            'OrganizationalUnit(CN)'     = $_."OrganizationalUnit(CN)"
+                            DirSyncEnabled               = [Bool]$_.DirSyncEnabled
+                            OnPremisesSecurityIdentifier = $_.OnPremisesSecurityIdentifier
                         })
                 }
 
                 Import-Csv $EXO_Mailboxes | Select-Object @(
-                'DisplayName'
-                'Migrate'
+                    'DisplayName'
+                    'Migrate'
                     'DeploymentPro'
                     @{
                         Name       = 'DirSyncEnabled'
@@ -658,11 +665,15 @@ function Get-365Info {
                         Name       = 'OrganizationalUnit(CN)'
                         Expression = { $AzureADHash.$($_.UserPrincipalName).'OrganizationalUnit(CN)' }
                     }
-                    'PrimarySmtpAddress'
                     @{
-                        Name       = 'TenantAddress'
+                        Name       = 'SourcePrimary'
+                        Expression = 'PrimarySmtpAddress'
+                    }
+                    @{
+                        Name       = 'SourceTenantAddress'
                         Expression = { [regex]::matches(@(($_.EmailAddresses).split('|')), "(?<=(smtp|SMTP):)[^@]+@[^.]+?\.onmicrosoft\.com")[0].Value }
                     }
+                    'TargetTenantAddress'
                     @{
                         Name       = 'FirstName'
                         Expression = { $MsolHash.$($_.UserPrincipalName).FirstName }
@@ -672,6 +683,10 @@ function Get-365Info {
                         Expression = { $MsolHash.$($_.UserPrincipalName).LastName }
                     }
                     'UserPrincipalName'
+                    @{
+                        Name       = 'OnPremisesSecurityIdentifier'
+                        Expression = { $AzureADHash.$($_.UserPrincipalName).OnPremisesSecurityIdentifier }
+                    }
                     @{
                         Name       = 'DistinguishedName'
                         Expression = { $AzureADHash.$($_.UserPrincipalName).DistinguishedName }

@@ -49,6 +49,7 @@ function Get-AzureActiveDirectoryUser {
                 Name       = 'DistinguishedName'
                 Expression = { $_.extensionproperty.onPremisesDistinguishedName }
             }
+            'OnPremisesSecurityIdentifier'
             @{
                 Name       = "OtherMails"
                 Expression = { @($_.OtherMails) -ne '' -join '|' }
