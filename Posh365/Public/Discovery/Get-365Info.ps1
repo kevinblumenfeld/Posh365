@@ -674,6 +674,7 @@ function Get-365Info {
                         Expression = { [regex]::matches(@(($_.EmailAddresses).split('|')), "(?<=(smtp|SMTP):)[^@]+@[^.]+?\.onmicrosoft\.com")[0].Value }
                     }
                     'TargetTenantAddress'
+                    'TargetPrimary'
                     @{
                         Name       = 'FirstName'
                         Expression = { $MsolHash.$($_.UserPrincipalName).FirstName }

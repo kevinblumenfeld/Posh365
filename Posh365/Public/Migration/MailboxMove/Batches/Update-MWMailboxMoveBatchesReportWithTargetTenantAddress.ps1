@@ -63,17 +63,21 @@ function Update-MWMailboxMoveBatchesReportWithTargetTenantAddress {
         $AzureSIDHash = @{ }
         (Get-AzureADUser -All:$true).where( { $_.OnPremisesSecurityIdentifier }).foreach{
             $SID = $_.OnPremisesSecurityIdentifier
-            $TargetAddress = [regex]::matches(@(($_.ProxyAddresses) -split '\|'), "(?<=(smtp|SMTP):)[^@]+@[^.]+?\.onmicrosoft\.com")[0].Value
-            if ($SID -and $TargetAddress) {
-                $AzureSIDHash.Add($SID, $TargetAddress)
+            $TargetTenantAddress = [regex]::matches(@(($_.ProxyAddresses) -split '\|'), "(?<=(smtp|SMTP):)[^@]+@[^.]+?\.onmicrosoft\.com")[0].Value
+            $TargetPrimary = ($_.ProxyAddresses -cmatch 'SMTP:' -split ':')[1]
+            if ($SID -and ($TargetTenantAddress -or $TargetPrimary)) {
+                $AzureSIDHash.Add($SID, @{
+                        TargetTenantAddress = $TargetTenantAddress
+                        TargetPrimary       = $TargetPrimary
+                    })
             }
         }
-
         $Future = Import-SharePointExcel @SharePointSplat | Select-Object @(
             'DisplayName'
             'Migrate'
             'DeploymentPro'
             'DirSyncEnabled'
+            'CustomTargetAddress'
             'RecipientTypeDetails'
             'ArchiveStatus'
             'OrganizationalUnit(CN)'
@@ -81,7 +85,11 @@ function Update-MWMailboxMoveBatchesReportWithTargetTenantAddress {
             'SourceTenantAddress'
             @{
                 Name       = 'TargetTenantAddress'
-                Expression = { $AzureSIDHash.$($_.OnPremisesSecurityIdentifier) }
+                Expression = { if ($_.CustomTargetAddress -ne $True) { $AzureSIDHash.$($_.OnPremisesSecurityIdentifier).TargetTenantAddress } else { $_.TargetTenantAddress } }
+            }
+            @{
+                Name       = 'TargetPrimary'
+                Expression = { if ($_.CustomTargetAddress -ne $True) { $AzureSIDHash.$($_.OnPremisesSecurityIdentifier).TargetPrimary } else { $_.TargetPrimary } }
             }
             'FirstName'
             'LastName'

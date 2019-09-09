@@ -69,9 +69,10 @@ function Update-MWMailboxMoveBatchesReport {
         $CurrentList = Import-SharePointExcel @SharePointSplat
         foreach ($Current in $CurrentList) {
             $CurrentHash.Add($Current.UserPrincipalName, @{
-                    'Migrate'       = $Current.Migrate
-                    'DeploymentPro' = $Current.DeploymentPro
-                    'Notes'         = $Current.Notes
+                    'Migrate'             = $Current.Migrate
+                    'DeploymentPro'       = $Current.DeploymentPro
+                    'Notes'               = $Current.Notes
+                    'CustomTargetAddress' = $Current.CustomTargetAddress
                 }
             )
         }
@@ -87,12 +88,17 @@ function Update-MWMailboxMoveBatchesReport {
                 Expression = { $CurrentHash.$($_.UserPrincipalName).DeploymentPro }
             }
             'DirSyncEnabled'
+            @{
+                Name       = 'CustomTargetAddress'
+                Expression = { $CurrentHash.$($_.UserPrincipalName).CustomTargetAddress }
+            }
             'RecipientTypeDetails'
             'ArchiveStatus'
             'OrganizationalUnit(CN)'
             'SourcePrimary'
             'SourceTenantAddress'
             'TargetTenantAddress'
+            'TargetPrimary'
             'FirstName'
             'LastName'
             'UserPrincipalName'
