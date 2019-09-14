@@ -12,7 +12,7 @@ function New-BTUser {
     .PARAMETER ExcelFile
     Excel file found in "Shared Documents" of SharePoint site specified in SharePointURL
     ex. "Batchex.xlsx"
-    Minimum headers required are: BatchName, UserPrincipalName
+
 
     .PARAMETER MailboxCSV
     Path to csv of mailboxes. Minimum headers required are: BatchName, UserPrincipalName
@@ -22,6 +22,10 @@ function New-BTUser {
 
     .EXAMPLE
     New-BTUser -SharePointURL 'https://contoso.sharepoint.com/sites/o365-fabrikam/' -ExcelFile 'Batches.xlsx'
+
+    .EXAMPLE
+    This example finds the batches file in the root of the Teams "General" folder on the SharePoint site
+    New-BTUser -SharePointURL 'https://contoso.sharepoint.com/sites/o365-fabrikam/' -ExcelFile '/General/batches.xlsx'
 
     .NOTES
     General notes

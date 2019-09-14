@@ -1,16 +1,8 @@
-function Invoke-NewMWMailboxMove {
+function Invoke-SetMWMailboxMove {
     param (
         [Parameter(ValueFromPipeline, Mandatory)]
         [ValidateNotNullOrEmpty()]
-        $UserList,
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [switch]
-        $UseTenantAddressAsSource
-
-        # [Parameter()]
-        # $TargetEmailSuffix
+        $UserList
     )
     begin {
 
@@ -22,18 +14,13 @@ function Invoke-NewMWMailboxMove {
                 ImportEmailAddress = $User.TargetTenantAddress
                 ConnectorId        = $MWProject.Id
             }
-            if ($UseTenantAddressAsSource) {
-                $Param.Add('ExportEmailAddress', $User.SourceTenantAddress)
-            }
-            else {
+            if ($UsePrimaryasSource) {
                 $Param.Add('ExportEmailAddress', $User.SourcePrimary)
             }
-            <#
-            switch ($User) {
-                { $_.SourceTenantAddrress } { $Param.Add('ImportEmailAddress', $User.TargetTenantAddress) }
-                { Default } { $Param.Add('ImportEmailAddress', '{0}@{1}' -f (($User.PrimarySmtpAddress -split '@')[0], $TargetEmailSuffix)) }
+            else {
+                $Param.Add('ExportEmailAddress', $User.SourceTenantAddress)
             }
-            #>
+
             if ($Param.ExportEmailAddress) {
                 try {
                     $Result = Add-MW_Mailbox @Param -WarningAction SilentlyContinue -ErrorAction Stop

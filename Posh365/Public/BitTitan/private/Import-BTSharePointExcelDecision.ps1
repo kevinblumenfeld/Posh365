@@ -43,8 +43,9 @@ function Import-BTSharePointExcelDecision {
             DecisionObject = $ExcelObject
             ChooseDomain   = $true
             NoConfirmation = $NoConfirmation
+            NoBatch        = $NoBatch
         }
-        $UserChoice = Get-UserDecision @UserDecisionSplat
+        $UserChoice = Get-BTUserDecision @UserDecisionSplat
         $UserChoice
     }
 }

@@ -42,6 +42,10 @@ function Get-365Info {
 
         [Parameter()]
         [switch]
+        $FolderPermissionReport,
+
+        [Parameter()]
+        [switch]
         $ExchangeOnline,
 
         [Parameter()]
@@ -115,8 +119,8 @@ function Get-365Info {
         )
         $EXOGroupProperties = @(
             'DisplayName', 'Alias', 'GroupType', 'IsDirSynced', 'PrimarySmtpAddress', 'RecipientTypeDetails'
-            'WindowsEmailAddress', 'AcceptMessagesOnlyFromSendersOrMembers', 'ManagedBy', 'EmailAddresses', 'x500'
-            'Name', 'membersName', 'membersSMTP', 'Identity', 'ExchangeObjectId'
+            'WindowsEmailAddress', 'AcceptMessagesOnlyFromSendersOrMembers', 'RequireSenderAuthenticationEnabled'
+            'ManagedBy', 'EmailAddresses', 'x500', 'Name', 'membersName', 'membersSMTP', 'Identity', 'ExchangeObjectId'
         )
         $EXOMailboxProperties = @(
             'DisplayName', 'Office', 'RecipientTypeDetails', 'AccountDisabled', 'IsDirSynced', 'MailboxGB'
@@ -241,6 +245,7 @@ function Get-365Info {
         $EXO_Groups_Detailed = (Join-Path $DetailedTenantPath 'EXO_Groups_Detailed.csv')
         $EXO_Mailboxes_Detailed = (Join-Path $DetailedTenantPath 'EXO_Mailboxes_Detailed.csv')
         $EXO_Permissions = (Join-Path $TenantPath 'EXO_Permissions.csv')
+        $EXO_FolderPermissions = (Join-Path $TenantPath 'EXO_FolderPermissions.csv')
         $EXO_PermissionsDG = (Join-Path $TenantPath 'EXO_DGPermissions.csv')
         $EXO_DirSyncCount = (Join-Path $TenantPath 'EXO_DirSyncCount.csv')
         $EXO_AllRecipientEmails = (Join-Path $DetailedTenantPath 'EXO_AllRecipientEmails.csv')
@@ -262,6 +267,7 @@ function Get-365Info {
         # $365_UnifiedGroups = (Join-Path $TenantPath '365_UnifiedGroups.csv')
         $365_UnifiedGroupEmails = (Join-Path $TenantPath '365_UnifiedGroupEmails.csv')
         $365_Sku = (Join-Path $TenantPath '365_Skus.csv')
+        $365_LicenseOptions = (Join-Path $TenantPath '365_LicenseOptions.csv')
 
         $MSP_BulkFile = (Join-Path $TenantPath 'Batches.csv')
 
@@ -350,6 +356,18 @@ function Get-365Info {
                 $OnePerGuestOtherMails = Export-EmailsOnePerLineOneOff -FindInColumn OtherMails -RowList ($AzureADGuests | Where-Object { $_.OtherMails })
                 Write-Verbose "Gathering AzureAD Devices"
                 Get-AzureActiveDirectoryDevice | Export-Csv $AzureAD_Devices @ExportCSVSplat
+                'placeholder' | Invoke-SetCloudLicense -DisplayTenantsSkusAndOptionsFriendlyNames -ErrorAction SilentlyContinue | Select-Object @(
+                    'Group5'
+                    'Group4'
+                    'Group3'
+                    'Group2'
+                    'Group1'
+                    'Sku'
+                    'Service'
+                    'Remaining'
+                    'Total'
+                ) | Export-Csv $365_LicenseOptions @ExportCSVSplat
+
             }
             { $ExchangeOnline } {
                 $EA = $ErrorActionPreference
@@ -397,8 +415,8 @@ function Get-365Info {
                 Get-RetentionLinks | Select-Object $EXORetentionPoliciesProperties |
                 Sort-Object PolicyName, TagType | Export-Csv $EXO_RetentionPolicies @ExportCSVSplat
 
-                # Write-Verbose "Gathering Office 365 Unified Groups"
-                # Export-AndImportUnifiedGroups -Mode Export -File $365_UnifiedGroups
+                Write-Verbose "Gathering Office 365 Unified Groups"
+                Export-AndImportUnifiedGroups -Mode Export -File $365_UnifiedGroups
 
                 if ($SkipUnifiedGroupsReport) {
                     Write-Verbose "Gathering Office 365 Unified Group Emails"
@@ -578,7 +596,32 @@ function Get-365Info {
                 'EXO_DGSendOnBehalf.csv', 'EXO_DGSendAs.csv' | ForEach-Object {
                     Import-Csv (Join-Path $DetailedTenantPath $_) -ErrorAction SilentlyContinue | Where-Object { $_ } |
                     Export-Csv $EXO_PermissionsDG -NoTypeInformation -Append }
+
             }
+            { $FolderPermissionReport } {
+                $MailboxDetails = Import-Csv $EXO_Mailboxes_Detailed | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' }
+                Write-Host "`nTotal Mailboxes Found: $($MailboxDetails.count)" -ForegroundColor Green
+
+                $ConfirmCount = Read-Host "Do you want to split the count?:(y/n)"
+
+                if ($ConfirmCount -eq 'y') {
+                    Write-Host "You need the 'StartNumber' and 'EndNumber' to split the accounts" -ForegroundColor Yellow
+                    Write-Host "################## FOR EXAMPLE ##############################"
+                    Write-Host "If you want to run for first 1000 users"
+                    Write-Host "Enter 'StartNumber' as '0' and 'EndNumber' as '999'`n"
+                    Write-Host "If you want to run for second 1000 users"
+                    Write-Host "Enter 'StartNumber' as '1000' and 'EndNumber' as '1999' and so on...`n"
+                    Write-Host "#############################################################`n"
+                    $StartNumber = Read-Host "Enter StartNumber"
+                    $EndNumber = Read-Host "Enter EndNumber"
+                    Write-Host "`n"
+                    $MailboxDetails = $MailboxDetails[$StartNumber..$EndNumber]
+                }
+                if ($ConfirmCount -eq 'n' -or $ConfirmCount -eq 'y') {
+                    Get-EXOMailboxFolderPerms -MailboxList $MailboxDetails | Export-Csv $EXO_FolderPermissions @ExportCSVSplat -Append
+                }
+            }
+
             { $Compliance } {
                 Write-Verbose "Gathering Security and Compliance Roles"
                 if ($MFAHash) {
@@ -655,6 +698,8 @@ function Get-365Info {
                     'DisplayName'
                     'Migrate'
                     'DeploymentPro'
+                    'LicenseGroup'
+                    'DeploymentProEmail'
                     @{
                         Name       = 'DirSyncEnabled'
                         Expression = { $AzureADHash.$($_.UserPrincipalName).DirSyncEnabled }

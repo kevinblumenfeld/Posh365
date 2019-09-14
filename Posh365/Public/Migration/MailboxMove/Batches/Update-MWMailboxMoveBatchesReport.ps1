@@ -71,6 +71,8 @@ function Update-MWMailboxMoveBatchesReport {
             $CurrentHash.Add($Current.UserPrincipalName, @{
                     'Migrate'             = $Current.Migrate
                     'DeploymentPro'       = $Current.DeploymentPro
+                    'LicenseGroup'        = $Current.LicenseGroup
+                    'DeploymentProEmail'  = $Current.DeploymentProEmail
                     'Notes'               = $Current.Notes
                     'CustomTargetAddress' = $Current.CustomTargetAddress
                 }
@@ -86,6 +88,14 @@ function Update-MWMailboxMoveBatchesReport {
             @{
                 Name       = 'DeploymentPro'
                 Expression = { $CurrentHash.$($_.UserPrincipalName).DeploymentPro }
+            }
+            @{
+                Name       = 'LicenseGroup'
+                Expression = { $CurrentHash.$($_.UserPrincipalName).LicenseGroup }
+            }
+            @{
+                Name       = 'DeploymentProEmail'
+                Expression = { $CurrentHash.$($_.UserPrincipalName).DeploymentProEmail }
             }
             'DirSyncEnabled'
             @{

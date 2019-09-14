@@ -1,4 +1,4 @@
-function New-MWMailboxMove {
+function Set-MWMailboxMove {
     <#
     .SYNOPSIS
     Create New "Mailbox Moves" with Migration Wiz from Source Tenant to Target Tenant
@@ -11,17 +11,16 @@ function New-MWMailboxMove {
 
     .PARAMETER ExcelFile
     Excel file found in "Shared Documents" of SharePoint site specified in SharePointURL
-    ex. "Batchex.xlsx"
-    Minimum headers required are: BatchName, UserPrincipalName
+
 
     .PARAMETER MailboxCSV
     Path to csv of mailboxes. Minimum headers required are: BatchName, UserPrincipalName
 
     .EXAMPLE
-    New-MWMailboxMove -MailboxCSV C:\Scripts\testbatches.csv -TargetEmailSuffix fabrikam.com
+    Set-MWMailboxMove -MailboxCSV C:\Scripts\testbatches.csv -TargetEmailSuffix fabrikam.com
 
     .EXAMPLE
-    New-MWMailboxMove -SharePointURL 'https://contoso.sharepoint.com/sites/o365-fabrikam/' -ExcelFile 'Batches.xlsx'
+    Set-MWMailboxMove -SharePointURL 'https://contoso.sharepoint.com/sites/o365-fabrikam/' -ExcelFile 'Batches.xlsx'
 
     .EXAMPLE
     This example finds the batches file in the root of the Teams "General" folder on the SharePoint site
@@ -49,8 +48,9 @@ function New-MWMailboxMove {
         $MailboxCSV,
 
         [Parameter()]
+        [ValidateNotNullOrEmpty()]
         [switch]
-        $UseTenantAddressAsSource
+        $SwapSourcePrimaryWithSourceTenant
 
         # [Parameter()]
         # [ValidateNotNullOrEmpty()]
@@ -70,11 +70,12 @@ function New-MWMailboxMove {
             }
         }
         if ($UserChoice -ne 'Quit' ) {
+            <#
             $Sync = @{
-                # TargetEmailSuffix = $TargetEmailSuffix
-                UseTenantAddressAsSource = $UseTenantAddressAsSource
+                TargetEmailSuffix = $TargetEmailSuffix
             }
-            $UserChoice | Invoke-NewMWMailboxMove @Sync | Out-GridView -Title "Results of MigrationWiz New Mailbox Move"
+            #>
+            $UserChoice | Invoke-SetMWMailboxMove | Out-GridView -Title "Results of MigrationWiz New Mailbox Move"
         }
     }
 }

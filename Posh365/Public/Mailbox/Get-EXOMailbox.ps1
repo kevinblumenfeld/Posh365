@@ -179,20 +179,39 @@ function Get-EXOMailbox {
         else {
             if (-not $ArchivesOnly) {
                 $MailboxList = Get-Mailbox -ResultSize unlimited
-                $StatsHash = @{ }
-                foreach ($Mailbox in $MailboxList) {
-                    $Stat = $Mailbox | Get-ExchangeMailboxStatistics
-                    if ($Stat) {
-                        $StatsHash.Add(($Stat.PrimarySmtpAddress), @{
-                                DisplayName       = $Stat.DisplayName
-                                UserPrincipalName = $Stat.UserPrincipalName
-                                MailboxGB         = $Stat.MailboxGB
-                                ArchiveGB         = $Stat.ArchiveGB
-                                DeletedGB         = $Stat.DeletedGB
-                                TotalGB           = $Stat.TotalGB
-                                LastLogonTime     = $Stat.LastLogonTime
-                                ItemCount         = $Stat.ItemCount
-                            })
+                Write-Host "`nTotal Mailboxes Found: $($MailboxList.count)" -ForegroundColor Green
+
+                $ConfirmCount = Read-Host "Do you want to split the count?:(y/n)"
+
+                if ($ConfirmCount -eq 'y') {
+                    Write-Host "You need the 'StartNumber' and 'EndNumber' to split the accounts" -ForegroundColor Yellow
+                    Write-Host "################## FOR EXAMPLE ##############################"
+                    Write-Host "If you want to run for first 1000 users"
+                    Write-Host "Enter 'StartNumber' as '0' and 'EndNumber' as '999'`n"
+                    Write-Host "If you want to run for second 1000 users"
+                    Write-Host "Enter 'StartNumber' as '1000' and 'EndNumber' as '1999' and so on...`n"
+                    Write-Host "#############################################################`n"
+                    $StartNumber = Read-Host "Enter StartNumber"
+                    $EndNumber = Read-Host "Enter EndNumber"
+                    Write-Host "`n"
+                    $MailboxList = $MailboxList[$StartNumber..$EndNumber]
+                }
+                if ($ConfirmCount -eq 'n' -or $ConfirmCount -eq 'y') {
+                    $StatsHash = @{ }
+                    foreach ($Mailbox in $MailboxList) {
+                        $Stat = $Mailbox | Get-ExchangeMailboxStatistics
+                        if ($Stat) {
+                            $StatsHash.Add(($Stat.PrimarySmtpAddress), @{
+                                    DisplayName       = $Stat.DisplayName
+                                    UserPrincipalName = $Stat.UserPrincipalName
+                                    MailboxGB         = $Stat.MailboxGB
+                                    ArchiveGB         = $Stat.ArchiveGB
+                                    DeletedGB         = $Stat.DeletedGB
+                                    TotalGB           = $Stat.TotalGB
+                                    LastLogonTime     = $Stat.LastLogonTime
+                                    ItemCount         = $Stat.ItemCount
+                                })
+                        }
                     }
                 }
                 $MailboxList | Select-Object ($Selectproperties + $CalculatedProps)

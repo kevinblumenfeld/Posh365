@@ -11,7 +11,7 @@ function Invoke-NewBTUser {
         foreach ($User in $UserList) {
             $Param = @{
                 Ticket              = $BitTitanTicket
-                PrimaryEmailAddress = $User.PrimarySmtpAddress
+                PrimaryEmailAddress = $User.SourcePrimary
             }
             switch ($User) {
                 { $_.FirstName } { $Param.Add('FirstName', $User.FirstName) }
