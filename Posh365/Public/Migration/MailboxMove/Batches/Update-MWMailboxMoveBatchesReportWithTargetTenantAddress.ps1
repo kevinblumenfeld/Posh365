@@ -76,6 +76,8 @@ function Update-MWMailboxMoveBatchesReportWithTargetTenantAddress {
             'DisplayName'
             'Migrate'
             'DeploymentPro'
+            'LicenseGroup'
+            'DeploymentProEmail'
             'DirSyncEnabled'
             'CustomTargetAddress'
             'RecipientTypeDetails'

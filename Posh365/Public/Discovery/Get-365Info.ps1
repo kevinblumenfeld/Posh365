@@ -704,6 +704,7 @@ function Get-365Info {
                         Name       = 'DirSyncEnabled'
                         Expression = { $AzureADHash.$($_.UserPrincipalName).DirSyncEnabled }
                     }
+                    'CustomTargetAddress'
                     'RecipientTypeDetails'
                     'ArchiveStatus'
                     @{
