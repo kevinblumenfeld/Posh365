@@ -50,13 +50,18 @@ function Set-MWMailboxMove {
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [switch]
-        $SwapSourcePrimaryWithSourceTenant
+        $SwapSourcePrimaryWithSourceTenant,
 
-        # [Parameter()]
-        # [ValidateNotNullOrEmpty()]
-        # $TargetEmailSuffix
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [switch]
+        $SwapSourceTenantWithSourcePrimary
     )
     end {
+        if ($SwapSourcePrimaryWithSourceTenant -and $SwapSourceTenantWithSourcePrimary) {
+            Write-Host "Please choose either SwapSourceTenantWithSourcePrimary or SwapSourcePrimaryWithSourceTenant, not both." -ForegroundColor Red
+            return
+        }
         switch ($PSCmdlet.ParameterSetName) {
             'SharePoint' {
                 $SharePointSplat = @{
@@ -70,12 +75,18 @@ function Set-MWMailboxMove {
             }
         }
         if ($UserChoice -ne 'Quit' ) {
-            <#
-            $Sync = @{
-                TargetEmailSuffix = $TargetEmailSuffix
+            $Sync = @{ }
+            switch ($true) {
+                $SwapSourcePrimaryWithSourceTenant { $Sync.Add('SwapSourcePrimaryWithSourceTenant', $true) }
+                $SwapSourceTenantWithSourcePrimary { $Sync.Add('SwapSourceTenantWithSourcePrimary', $true) }
+                Default { }
             }
-            #>
-            $UserChoice | Invoke-SetMWMailboxMove | Out-GridView -Title "Results of MigrationWiz New Mailbox Move"
+            if ($Sync.Keys) {
+                $UserChoice | Invoke-SetMWMailboxMove @Sync | Out-GridView -Title "Results of MigrationWiz Set Mailbox Move"
+            }
+            else {
+                Write-Host "Run the command again and choose something to set with one of the parameters" -ForegroundColor White
+            }
         }
     }
 }

@@ -2,54 +2,110 @@ function Invoke-SetMWMailboxMove {
     param (
         [Parameter(ValueFromPipeline, Mandatory)]
         [ValidateNotNullOrEmpty()]
-        $UserList
+        $UserList,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [switch]
+        $SwapSourcePrimaryWithSourceTenant,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [switch]
+        $SwapSourceTenantWithSourcePrimary
     )
     begin {
 
     }
     process {
         foreach ($User in $UserList) {
-            $Param = @{
-                Ticket             = $MigWizTicket
-                ImportEmailAddress = $User.TargetTenantAddress
-                ConnectorId        = $MWProject.Id
+            $GetParam = @{
+                Ticket      = $MigWizTicket
+                ConnectorId = $MWProject.Id
             }
-            if ($UsePrimaryasSource) {
-                $Param.Add('ExportEmailAddress', $User.SourcePrimary)
+            $SetParam = @{ }
+            switch ($true) {
+                $SwapSourcePrimaryWithSourceTenant {
+                    $GetParam.Add('ExportEmailAddress', $User.SourcePrimary)
+                    $SetParam.Add('ExportEmailAddress', $User.SourceTenantAddress)
+                }
+                $SwapSourceTenantWithSourcePrimary {
+                    $GetParam.Add('ExportEmailAddress', $User.SourceTenantAddress)
+                    $SetParam.Add('ExportEmailAddress', $User.SourcePrimary)
+                }
+                Default { }
             }
-            else {
-                $Param.Add('ExportEmailAddress', $User.SourceTenantAddress)
-            }
-
-            if ($Param.ExportEmailAddress) {
+            if ($GetParam.ExportEmailAddress) {
                 try {
-                    $Result = Add-MW_Mailbox @Param -WarningAction SilentlyContinue -ErrorAction Stop
+                    $GetMailbox = Get-MW_Mailbox @GetParam -WarningAction SilentlyContinue -ErrorAction Stop
                     [PSCustomObject]@{
                         'DisplayName' = $User.DisplayName
-                        'Source'      = $Result.ExportEmailAddress
-                        'Target'      = $Result.ImportEmailAddress
+                        'Source'      = $GetMailbox.ExportEmailAddress
+                        'Target'      = $GetMailbox.ImportEmailAddress
                         'Result'      = 'SUCCESS'
                         'Log'         = 'SUCCESS'
-                        'Action'      = 'NEW'
-                        'CreateDate'  = $Result.CreateDate
-                        'Id'          = $Result.Id
+                        'Action'      = 'GET'
+                        'CreateDate'  = $GetMailbox.CreateDate
+                        'UpdateDate'  = $GetMailbox.UpdateDate
+                        'Id'          = $GetMailbox.Id
                     }
                 }
                 catch {
                     [PSCustomObject]@{
                         'DisplayName' = $User.DisplayName
-                        'Source'      = $User.SourceTenantAddrress
+                        'Source'      = $User.SourceTenantAddress
                         'Target'      = $User.TargetTenantAddress
                         'Result'      = 'FAILED'
                         'Log'         = $_.Exception.Message
-                        'Action'      = 'NEW'
+                        'Action'      = 'GET'
                         'CreateDate'  = ''
+                        'UpdateDate'  = ''
+                        'Id'          = ''
+                    }
+                }
+                try {
+                    $SetParam.Add('Ticket', $MigWizTicket)
+                    $SetParam.Add('ConnectorId', $MWProject.Id)
+                    $SetParam.Add('Mailbox', $GetMailbox)
+                    $SetMailbox = Set-MW_Mailbox @SetParam -WarningAction SilentlyContinue -ErrorAction Stop
+                    [PSCustomObject]@{
+                        'DisplayName' = $User.DisplayName
+                        'Source'      = $SetMailbox.ExportEmailAddress
+                        'Target'      = $SetMailbox.ImportEmailAddress
+                        'Result'      = 'SUCCESS'
+                        'Log'         = 'SUCCESS'
+                        'Action'      = 'SET'
+                        'CreateDate'  = $SetMailbox.CreateDate
+                        'UpdateDate'  = $SetMailbox.UpdateDate
+                        'Id'          = $SetMailbox.Id
+                    }
+                }
+                catch {
+                    [PSCustomObject]@{
+                        'DisplayName' = $User.DisplayName
+                        'Source'      = $User.SourceTenantAddress
+                        'Target'      = $User.TargetTenantAddress
+                        'Result'      = 'FAILED'
+                        'Log'         = $_.Exception.Message
+                        'Action'      = 'SET'
+                        'CreateDate'  = ''
+                        'UpdateDate'  = ''
                         'Id'          = ''
                     }
                 }
             }
             else {
-                Write-Host "$($User.DisplayName) is missing source address" -ForegroundColor White
+                [PSCustomObject]@{
+                    'DisplayName' = $User.DisplayName
+                    'Source'      = $User.SourceTenantAddress
+                    'Target'      = $User.TargetTenantAddress
+                    'Result'      = 'FAILED'
+                    'Log'         = 'MissingSourcePrimary'
+                    'Action'      = 'SET'
+                    'CreateDate'  = ''
+                    'UpdateDate'  = ''
+                    'Id'          = ''
+                }
             }
         }
     }

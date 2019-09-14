@@ -30,7 +30,7 @@ function Invoke-NewMWMailboxMove {
             }
             <#
             switch ($User) {
-                { $_.SourceTenantAddrress } { $Param.Add('ImportEmailAddress', $User.TargetTenantAddress) }
+                { $_.SourceTenantAddress } { $Param.Add('ImportEmailAddress', $User.TargetTenantAddress) }
                 { Default } { $Param.Add('ImportEmailAddress', '{0}@{1}' -f (($User.PrimarySmtpAddress -split '@')[0], $TargetEmailSuffix)) }
             }
             #>
@@ -51,7 +51,7 @@ function Invoke-NewMWMailboxMove {
                 catch {
                     [PSCustomObject]@{
                         'DisplayName' = $User.DisplayName
-                        'Source'      = $User.SourceTenantAddrress
+                        'Source'      = $User.SourceTenantAddress
                         'Target'      = $User.TargetTenantAddress
                         'Result'      = 'FAILED'
                         'Log'         = $_.Exception.Message
@@ -62,7 +62,16 @@ function Invoke-NewMWMailboxMove {
                 }
             }
             else {
-                Write-Host "$($User.DisplayName) is missing source address" -ForegroundColor White
+                [PSCustomObject]@{
+                    'DisplayName' = $User.DisplayName
+                    'Source'      = $User.SourceTenantAddress
+                    'Target'      = $User.TargetTenantAddress
+                    'Result'      = 'FAILED'
+                    'Log'         = 'MissingSourceAddress'
+                    'Action'      = 'NEW'
+                    'CreateDate'  = ''
+                    'Id'          = ''
+                }
             }
         }
     }
