@@ -50,7 +50,7 @@ function Connect-MigrationWiz {
         }
         switch ($true) {
             { $EmailAddress } {
-                $Global:Email = $EmailAddress.Address
+                $Script:Email = $EmailAddress.Address
             }
             { $DeleteCredential } {
                 Write-Host "Credential is being deleted now" -ForegroundColor White
@@ -69,7 +69,7 @@ function Connect-MigrationWiz {
             Write-Host "Could not obtain MigrationWiz Ticket" -ForegroundColor Red
             $_.Exception.Message
         }
-        $Global:StarColor = @{
+        $Script:StarColor = @{
             ';tag-1;' = 'RED'
             ';tag-2;' = 'GREEN'
             ';tag-3;' = 'BLUE'

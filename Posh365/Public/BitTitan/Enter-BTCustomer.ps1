@@ -11,7 +11,7 @@ function Enter-BTCustomer {
         $CustomerChoice = Invoke-EnterBTCustomer | Select-Object $Select | Out-GridView -Title "Choose the BitTitan customer you wish to work with" -OutputMode Single
         if ($CustomerChoice) {
             Write-Host "CompanyName: $($CustomerChoice.CompanyName)"
-            $Global:BitTitanTicket = Get-BT_Ticket -Ticket $BitTitanTicket -OrganizationId $CustomerChoice.OrganizationId -Environment BT
+            $Script:BitTitanTicket = Get-BT_Ticket -Ticket $BitTitanTicket -OrganizationId $CustomerChoice.OrganizationId -Environment BT
             $host.ui.RawUI.WindowTitle = "BitTitan Project: *** $($CustomerChoice.CompanyName) ***"
         }
         else {
