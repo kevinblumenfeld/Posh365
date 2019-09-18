@@ -1,4 +1,4 @@
-function Remove-OfficeLicense { 
+function Remove-OfficeLicense {
     <#
 
 .SYNOPSIS
@@ -17,7 +17,7 @@ Remove-OfficeLicense
     $licrem = join-path $env:temp OfficeProPlusLicenseRemoved.txt
     if (-not (Test-Path $licrem)) {
 
-        $license = cscript “C:\Program Files (x86)\Microsoft Office\Office16\OSPP.VBS” /dstatus
+        $license = cscript "C:\Program Files (x86)\Microsoft Office\Office16\OSPP.VBS" /dstatus
 
         $o365 = 'LICENSE NAME'
 
@@ -30,7 +30,7 @@ Remove-OfficeLicense
             }
         }
 
-        cscript “C:\Program Files (x86)\Microsoft Office\Office16\OSPP.VBS” /unpkey:$prodkey
+        cscript "C:\Program Files (x86)\Microsoft Office\Office16\OSPP.VBS" /unpkey:$prodkey
         New-Item $licrem
     }
 }
