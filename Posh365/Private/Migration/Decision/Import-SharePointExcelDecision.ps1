@@ -14,11 +14,6 @@ function Import-SharePointExcelDecision {
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [string]
-        $Tenant,
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [string]
         $WorksheetName,
 
         [Parameter()]
@@ -30,22 +25,29 @@ function Import-SharePointExcelDecision {
         $NoConfirmation
     )
     end {
-
         Connect-SharePointPNP -Url $SharePointURL
-
-        $ExcelURL = "Shared Documents\{0}" -f $ExcelFile
-        $TempExcel = '{0}_{1}' -f $Tenant, $ExcelFile
+        $ExcelURL = "Shared Documents/{0}" -f ($ExcelFile).TrimStart('/')
+        $TempExcel = '{0}.xlsx' -f [guid]::newguid().guid
         $TempExcelPath = Join-Path -Path $ENV:TEMP $TempExcel
+        try {
+            Get-PnPFile -Url $ExcelURL -Path $Env:TEMP -Filename $TempExcel -AsFile -Force -ErrorAction Stop
+            $ExcelSplat = @{
+                Path = $TempExcelPath
+            }
+            if ($WorksheetName) {
+                $ExcelSplat.Add('WorksheetName' , $WorksheetName)
+            }
+            $ExcelObject = Import-Excel @ExcelSplat
 
-        Get-PnPFile -Url $ExcelURL -Path $Env:TEMP -Filename $TempExcel -AsFile -Force
+        }
+        catch {
+            Write-Host "Error getting file from SharePoint"
+            $_.Exception.Message
+        }
+        finally {
+            Remove-Item -Path $TempExcelPath -Force -Confirm:$false -ErrorAction SilentlyContinue
+        }
 
-        $ExcelSplat = @{
-            Path = $TempExcelPath
-        }
-        if ($WorksheetName) {
-            $ExcelSplat.Add('WorksheetName' , $WorksheetName)
-        }
-        $ExcelObject = Import-Excel @ExcelSplat
         $UserDecisionSplat = @{
             DecisionObject = $ExcelObject
             NoBatch        = $NoBatch

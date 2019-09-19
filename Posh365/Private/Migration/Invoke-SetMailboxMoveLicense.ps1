@@ -19,15 +19,11 @@ function Invoke-SetMailboxMoveLicense {
     .PARAMETER MailboxCSV
     Path to csv of mailboxes. Minimum headers required are: BatchName, UserPrincipalName
 
-    .PARAMETER Tenant
-    This is the tenant domain - where you are migrating to.
-    Example if tenant is contoso.mail.onmicrosoft.com use contoso
+    .EXAMPLE
+    Set-MailboxMoveLicense -MailboxCSV c:\scripts\batches.csv
 
     .EXAMPLE
-    Set-MailboxMoveLicense -Tenant Contoso -MailboxCSV c:\scripts\batches.csv
-
-    .EXAMPLE
-    Set-MailboxMoveLicense -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -Tenant Contoso
+    Set-MailboxMoveLicense -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx'
 
     .NOTES
     General notes
@@ -45,11 +41,6 @@ function Invoke-SetMailboxMoveLicense {
         [string]
         $ExcelFile,
 
-        [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $Tenant,
-
         [Parameter(Mandatory, ParameterSetName = 'CSV')]
         [ValidateNotNullOrEmpty()]
         [string]
@@ -60,15 +51,11 @@ function Invoke-SetMailboxMoveLicense {
         $NoBatch
     )
     end {
-        if ($Tenant -notmatch '.mail.onmicrosoft.com') {
-            $Tenant = '{0}.mail.onmicrosoft.com' -f $Tenant
-        }
         switch ($PSCmdlet.ParameterSetName) {
             'SharePoint' {
                 $SharePointSplat = @{
                     SharePointURL = $SharePointURL
                     ExcelFile     = $ExcelFile
-                    Tenant        = $Tenant
                     NoBatch       = $true
                 }
                 $UserChoice = Import-SharePointExcelDecision @SharePointSplat

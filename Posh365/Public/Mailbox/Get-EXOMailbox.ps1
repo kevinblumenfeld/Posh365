@@ -178,6 +178,7 @@ function Get-EXOMailbox {
         }
         else {
             if (-not $ArchivesOnly) {
+                Write-Verbose "Gathering Mailbox Report"
                 $MailboxList = Get-Mailbox -ResultSize unlimited
                 Write-Host "`nTotal Mailboxes Found: $($MailboxList.count)" -ForegroundColor Green
 

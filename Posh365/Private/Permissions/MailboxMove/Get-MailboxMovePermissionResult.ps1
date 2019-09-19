@@ -11,11 +11,6 @@ function Get-MailboxMovePermissionResult {
         [string]
         $ExcelFile,
 
-        [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $Tenant,
-
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         $UserChoiceRegex,
@@ -39,7 +34,6 @@ function Get-MailboxMovePermissionResult {
                 SharePointURL  = $SharePointURL
                 ExcelFile      = 'Permissions.xlsx'
                 WorksheetName  = 'Mailbox'
-                Tenant         = $Tenant
                 NoBatch        = $true
                 NoConfirmation = $true
             }
@@ -70,7 +64,6 @@ function Get-MailboxMovePermissionResult {
                 SharePointURL  = $SharePointURL
                 ExcelFile      = 'Permissions.xlsx'
                 WorksheetName  = 'Folder'
-                Tenant         = $Tenant
                 NoBatch        = $true
                 NoConfirmation = $true
             }

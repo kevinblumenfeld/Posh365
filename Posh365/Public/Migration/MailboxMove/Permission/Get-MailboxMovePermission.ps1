@@ -19,14 +19,11 @@ function Get-MailboxMovePermission {
     .PARAMETER MailboxCSV
     Path to csv of mailboxes. Minimum headers required are: BatchName, UserPrincipalName
 
-    .PARAMETER Tenant
-    This is the tenant domain - where you are migrating to. Ex. if tenant is contoso.mail.onmicrosoft.com use contoso
+    .EXAMPLE
+    Get-MailboxMovePermission -MailboxCSV c:\scripts\batches.csv
 
     .EXAMPLE
-    Get-MailboxMovePermission -RemoteHost mail.contoso.com -Tenant Contoso -MailboxCSV c:\scripts\batches.csv
-
-    .EXAMPLE
-    Get-MailboxMovePermission -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -Tenant Contoso
+    Get-MailboxMovePermission -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx'
 
     .NOTES
     General notes
@@ -44,11 +41,6 @@ function Get-MailboxMovePermission {
         [string]
         $ExcelFile,
 
-        [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $Tenant,
-
         [Parameter()]
         [switch]
         $Remove,
@@ -58,15 +50,11 @@ function Get-MailboxMovePermission {
         $PassThru
     )
     end {
-        if ($Tenant -notmatch '.mail.onmicrosoft.com') {
-            $Tenant = '{0}.mail.onmicrosoft.com' -f $Tenant
-        }
         switch ($PSCmdlet.ParameterSetName) {
             'SharePoint' {
                 $SharePointSplat = @{
                     SharePointURL  = $SharePointURL
                     ExcelFile      = $ExcelFile
-                    Tenant         = $Tenant
                     NoBatch        = $true
                     NoConfirmation = $true
                 }
@@ -83,7 +71,6 @@ function Get-MailboxMovePermission {
         $PermissionResult = @{
             SharePointURL    = $SharePointURL
             ExcelFile        = $ExcelFile
-            Tenant           = $Tenant
             UserChoiceRegex  = $UserChoiceRegex
             PermissionChoice = $PermissionChoice
             DirectionChoice  = $DirectionChoice

@@ -19,15 +19,11 @@ function Set-MailboxMoveRetentionPolicy {
     .PARAMETER MailboxCSV
     Path to csv of mailboxes. Minimum headers required are: BatchName, UserPrincipalName
 
-    .PARAMETER Tenant
-    This is the tenant domain - where you are migrating to.
-    Example if tenant is contoso.mail.onmicrosoft.com use contoso
-
     .EXAMPLE
     Set-MailboxMoveRetentionPolicy -MailboxCSV c:\scripts\batches.csv
 
     .EXAMPLE
-    Set-MailboxMoveRetentionPolicy -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -Tenant Contoso
+    Set-MailboxMoveRetentionPolicy -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx'
 
     .NOTES
     General notes
@@ -45,26 +41,17 @@ function Set-MailboxMoveRetentionPolicy {
         [string]
         $ExcelFile,
 
-        [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $Tenant,
-
         [Parameter(Mandatory, ParameterSetName = 'CSV')]
         [ValidateNotNullOrEmpty()]
         [string]
         $MailboxCSV
     )
     end {
-        if ($Tenant -notmatch '.mail.onmicrosoft.com') {
-            $Tenant = '{0}.mail.onmicrosoft.com' -f $Tenant
-        }
         switch ($PSCmdlet.ParameterSetName) {
             'SharePoint' {
                 $SharePointSplat = @{
                     SharePointURL = $SharePointURL
                     ExcelFile     = $ExcelFile
-                    Tenant        = $Tenant
                 }
                 Invoke-SetMailboxMoveRetentionPolicy @SharePointSplat | Out-GridView -Title "Results of Set Mailbox Retention Policy"
             }

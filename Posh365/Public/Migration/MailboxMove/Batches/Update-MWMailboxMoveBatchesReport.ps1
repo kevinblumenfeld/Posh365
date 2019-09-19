@@ -21,13 +21,9 @@ function Update-MWMailboxMoveBatchesReport {
     .PARAMETER NewCsvFile
     Use a new batches.csv file
 
-    .PARAMETER Tenant
-    This is the tenant domain - where you are migrating to.
-    Example if tenant is contoso.mail.onmicrosoft.com use: Contoso
-
     .EXAMPLE
     This uses batches.xlsx stored in the teams "General" folder.
-    Update-MWMailboxMoveBatchesReport -SharePointURL 'https://fabrikam.sharepoint.com/sites/365migration' -ExcelFile 'General\batches.xlsx' -NewCsvFile "C:\Scripts\Batches.csv" -Tenant contoso -ReportPath C:\Scripts
+    Update-MWMailboxMoveBatchesReport -SharePointURL 'https://fabrikam.sharepoint.com/sites/365migration' -ExcelFile 'General\batches.xlsx' -NewCsvFile "C:\Scripts\Batches.csv" -ReportPath C:\Scripts
 
     .NOTES
     General notes
@@ -48,11 +44,6 @@ function Update-MWMailboxMoveBatchesReport {
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string]
-        $Tenant,
-
-        [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [string]
         $NewCsvFile,
 
         [Parameter(Mandatory)]
@@ -60,14 +51,10 @@ function Update-MWMailboxMoveBatchesReport {
         $ReportPath
     )
     end {
-        if ($Tenant -notmatch '.mail.onmicrosoft.com') {
-            $Tenant = '{0}.mail.onmicrosoft.com' -f $Tenant
-        }
         New-Item -ItemType Directory -Path $ReportPath -ErrorAction SilentlyContinue
         $SharePointSplat = @{
             SharePointURL = $SharePointURL
             ExcelFile     = $ExcelFile
-            Tenant        = $Tenant
         }
         $CurrentHash = @{ }
         $CurrentList = Import-SharePointExcel @SharePointSplat

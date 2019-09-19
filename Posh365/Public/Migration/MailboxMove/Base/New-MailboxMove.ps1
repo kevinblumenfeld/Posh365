@@ -91,7 +91,6 @@ function New-MailboxMove {
                 $SharePointSplat = @{
                     SharePointURL = $SharePointURL
                     ExcelFile     = $ExcelFile
-                    Tenant        = $Tenant
                 }
                 $UserChoice = Import-SharePointExcelDecision @SharePointSplat
             }

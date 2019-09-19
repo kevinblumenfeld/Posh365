@@ -11,26 +11,17 @@ function Invoke-SetMailboxMoveRetentionPolicy {
         [string]
         $ExcelFile,
 
-        [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $Tenant,
-
         [Parameter(Mandatory, ParameterSetName = 'CSV')]
         [ValidateNotNullOrEmpty()]
         [string]
         $MailboxCSV
     )
     end {
-        if ($Tenant -notmatch '.mail.onmicrosoft.com') {
-            $Tenant = '{0}.mail.onmicrosoft.com' -f $Tenant
-        }
         switch ($PSCmdlet.ParameterSetName) {
             'SharePoint' {
                 $SharePointSplat = @{
                     SharePointURL = $SharePointURL
                     ExcelFile     = $ExcelFile
-                    Tenant        = $Tenant
                 }
                 $UserChoice = Import-SharePointExcelDecision @SharePointSplat | Where-Object { $_.RetentionPolicy }
             }

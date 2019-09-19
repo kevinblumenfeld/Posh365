@@ -598,6 +598,7 @@ function Get-365Info {
 
             }
             { $FolderPermissionReport } {
+                Write-Verbose "Gathering Folder Permissions"
                 $MailboxDetails = Import-Csv $EXO_Mailboxes_Detailed | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' }
                 Write-Host "`nTotal Mailboxes Found: $($MailboxDetails.count)" -ForegroundColor Green
 

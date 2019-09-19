@@ -1,7 +1,8 @@
 function Update-MWMailboxMoveBatchesReportWithTargetTenantAddress {
     <#
     .SYNOPSIS
-    Updates Batches.xlsx with Target Tenant Address
+    Updates Batches.xlsx with Target Tenant Address (onmicrosoft address)
+    Connect to AzureAD in Target Tenant.
 
     .DESCRIPTION
     Updates Batches.xlsx with Target Tenant Address
@@ -14,20 +15,16 @@ function Update-MWMailboxMoveBatchesReportWithTargetTenantAddress {
     Excel file found in "Shared Documents" of SharePoint site specified in SharePointURL
     ex. "Batchex.xlsx"
 
-    .PARAMETER Tenant
-    This is the tenant domain - where you are migrating to.
-    Example if tenant is contoso.mail.onmicrosoft.com use: Contoso
-
     .PARAMETER ReportPath
     Output path where a new and updated Batches.xlsx will be output
 
     .EXAMPLE
     This uses batches.xlsx stored in the teams "General" folder.
-    Update-MWMailboxMoveBatchesReport -SharePointURL 'https://fabrikam.sharepoint.com/sites/365migration' -ExcelFile 'General\batches.xlsx' -Tenant contoso -ReportPath C:\Scripts
+    Update-MWMailboxMoveBatchesReport -SharePointURL 'https://fabrikam.sharepoint.com/sites/365migration' -ExcelFile 'General\batches.xlsx' -ReportPath C:\Scripts
 
     .EXAMPLE
     This uses batches.xlsx stored in the root of the SharePoint documents (sometimes called Shared Documents) folder.
-    Update-MWMailboxMoveBatchesReport -SharePointURL 'https://fabrikam.sharepoint.com/sites/365migration' -ExcelFile 'batches.xlsx' -Tenant contoso -ReportPath C:\Scripts
+    Update-MWMailboxMoveBatchesReport -SharePointURL 'https://fabrikam.sharepoint.com/sites/365migration' -ExcelFile 'batches.xlsx' -ReportPath C:\Scripts
 
     .NOTES
     General notes
@@ -46,23 +43,14 @@ function Update-MWMailboxMoveBatchesReportWithTargetTenantAddress {
         $ExcelFile,
 
         [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $Tenant,
-
-        [Parameter(Mandatory)]
         [string]
         $ReportPath
     )
     end {
-        if ($Tenant -notmatch '.mail.onmicrosoft.com') {
-            $Tenant = '{0}.mail.onmicrosoft.com' -f $Tenant
-        }
         New-Item -ItemType Directory -Path $ReportPath -ErrorAction SilentlyContinue
         $SharePointSplat = @{
             SharePointURL = $SharePointURL
             ExcelFile     = $ExcelFile
-            Tenant        = $Tenant
         }
 
         $AzureSIDHash = @{ }

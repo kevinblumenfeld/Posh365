@@ -20,12 +20,8 @@ function Update-MailboxMoveBatchesReport {
     Path to csv of mailboxes. Minimum headers required are: BatchName, UserPrincipalName
     This would be a new Csv of existing mailboxes that you want to update with BatchNames from the current excel on the SharePoint Team Site
 
-    .PARAMETER Tenant
-    This is the tenant domain - where you are migrating to.
-    Example if tenant is contoso.mail.onmicrosoft.com use: Contoso
-
     .EXAMPLE
-    Update-MailboxMoveBatchesReport -SharePointURL https://fabrikam.sharepoint.com/sites/Contoso -ExcelFile batches.xlsx -Tenant Contoso -NewCsvFile C:\Scripts\Batches.csv -ReportPath C:\Scripts\
+    Update-MailboxMoveBatchesReport -SharePointURL https://fabrikam.sharepoint.com/sites/Contoso -ExcelFile batches.xlsx -NewCsvFile C:\Scripts\Batches.csv -ReportPath C:\Scripts\
 
     .NOTES
     General notes
@@ -46,11 +42,6 @@ function Update-MailboxMoveBatchesReport {
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string]
-        $Tenant,
-
-        [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [string]
         $NewCsvFile,
 
         [Parameter(Mandatory)]
@@ -58,14 +49,11 @@ function Update-MailboxMoveBatchesReport {
         $ReportPath
     )
     end {
-        if ($Tenant -notmatch '.mail.onmicrosoft.com') {
-            $Tenant = '{0}.mail.onmicrosoft.com' -f $Tenant
-        }
+
         New-Item -ItemType Directory -Path $ReportPath -ErrorAction SilentlyContinue
         $SharePointSplat = @{
             SharePointURL = $SharePointURL
             ExcelFile     = $ExcelFile
-            Tenant        = $Tenant
         }
         $CurrentHash = @{ }
         # Look at removing the where.{...}... I could just create the hashtable with everything as needs might change (diff parameters)

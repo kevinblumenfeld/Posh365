@@ -1,4 +1,27 @@
 Function Test-MailboxMove {
+    <#
+    .SYNOPSIS
+    Short description
+
+    .DESCRIPTION
+    Long description
+
+    .PARAMETER SharePointURL
+    Parameter description
+
+    .PARAMETER ExcelFile
+    Parameter description
+
+    .PARAMETER MailboxCSV
+    Parameter description
+
+    .EXAMPLE
+    An example
+
+    .NOTES
+    General notes
+    #>
+
     [CmdletBinding(DefaultParameterSetName = 'SharePoint')]
     param (
         [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
@@ -11,26 +34,17 @@ Function Test-MailboxMove {
         [string]
         $ExcelFile,
 
-        [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $Tenant,
-
         [Parameter(Mandatory, ParameterSetName = 'CSV')]
         [ValidateNotNullOrEmpty()]
         [string]
         $MailboxCSV
     )
     end {
-        if ($Tenant -notmatch '.mail.onmicrosoft.com') {
-            $Tenant = '{0}.mail.onmicrosoft.com' -f $Tenant
-        }
         switch ($PSCmdlet.ParameterSetName) {
             'SharePoint' {
                 $SharePointSplat = @{
                     SharePointURL = $SharePointURL
                     ExcelFile     = $ExcelFile
-                    Tenant        = $Tenant
                 }
                 $UserChoice = Import-SharePointExcelDecision @SharePointSplat
             }
