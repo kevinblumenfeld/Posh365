@@ -264,8 +264,8 @@ function Get-365Info {
         $Compliance_RetentionPolicies = (Join-Path $TenantPath 'Compliance_RetentionPolicies.csv')
         $Compliance_AlertPolicies = (Join-Path $TenantPath 'Compliance_AlertPolicies.csv')
 
-        # $365_UnifiedGroups = (Join-Path $TenantPath '365_UnifiedGroups.csv')
-        $365_UnifiedGroupEmails = (Join-Path $TenantPath '365_UnifiedGroupEmails.csv')
+        $365_UnifiedGroups = (Join-Path $TenantPath '365_UnifiedGroups.csv')
+        $365_UnifiedGroupReport = (Join-Path $TenantPath '365_UnifiedGroupReport.csv')
         $365_Sku = (Join-Path $TenantPath '365_Skus.csv')
         $365_LicenseOptions = (Join-Path $TenantPath '365_LicenseOptions.csv')
 
@@ -331,7 +331,7 @@ function Get-365Info {
 
             }
             { -not $MSOnline } {
-                $MsolUserDetailedImport = Import-Csv $MSOL_Users_Detailed
+                $MsolUserDetailedImport = Import-Csv $MSOL_Users_Detailed -ErrorAction SilentlyContinue
             }
             { $MsolUserDetailedImport } {
                 $MFAHash = Get-MsolUserMFAHash -MsolUserList $MsolUserDetailedImport
@@ -415,13 +415,12 @@ function Get-365Info {
                 Get-RetentionLinks | Select-Object $EXORetentionPoliciesProperties |
                 Sort-Object PolicyName, TagType | Export-Csv $EXO_RetentionPolicies @ExportCSVSplat
 
-                Write-Verbose "Gathering Office 365 Unified Groups"
-                Export-AndImportUnifiedGroups -Mode Export -File $365_UnifiedGroups
-
-                if ($SkipUnifiedGroupsReport) {
-                    Write-Verbose "Gathering Office 365 Unified Group Emails"
+                if (-not $SkipUnifiedGroupsReport) {
+                    Write-Verbose "Gathering Office 365 Unified Groups"
+                    Export-AndImportUnifiedGroups -Mode Export -File $365_UnifiedGroups
+                    Write-Verbose "Gathering Office 365 Unified Group Emails, Members, Subscribers & Owners"
                     $UGDetails = Get-UnifiedGroupOwnersMembersSubscribers
-                    $UGDetails | Export-Csv $365_UnifiedGroupEmails @ExportCSVSplat
+                    $UGDetails | Export-Csv $365_UnifiedGroupReport @ExportCSVSplat
                 }
 
                 if (-not $DontIncludeUnifiedGroupsInAllEmailsReport) {
@@ -697,16 +696,18 @@ function Get-365Info {
                 Import-Csv $EXO_Mailboxes | Select-Object @(
                     'DisplayName'
                     'Migrate'
+                    'ArchiveOnly'
                     'DeploymentPro'
+                    'DeploymentProMethod'
                     'LicenseGroup'
-                    'DeploymentProEmail'
                     @{
                         Name       = 'DirSyncEnabled'
                         Expression = { $AzureADHash.$($_.UserPrincipalName).DirSyncEnabled }
                     }
-                    'CustomTargetAddress'
+                    'TargetMailboxInUse'
                     'RecipientTypeDetails'
-                    'ArchiveStatus'
+                    'TotalGB'
+                    'ArchiveGB'
                     @{
                         Name       = 'OrganizationalUnit(CN)'
                         Expression = { $AzureADHash.$($_.UserPrincipalName).'OrganizationalUnit(CN)' }
@@ -739,10 +740,10 @@ function Get-365Info {
                         Expression = { $AzureADHash.$($_.UserPrincipalName).DistinguishedName }
                     }
                     'MailboxGB'
-                    'ArchiveGB'
                     'DeletedGB'
-                    'TotalGB'
+                    'ArchiveStatus'
                     'Notes'
+                    'BitTitanLicense'
                 ) | Export-Csv $MSP_BulkFile @ExportCSVSplat
                 $ExcelSplat = @{
                     Path                    = (Join-Path $TenantPath 'Batches.xlsx')

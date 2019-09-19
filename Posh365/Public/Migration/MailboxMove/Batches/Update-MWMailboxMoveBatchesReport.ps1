@@ -5,6 +5,11 @@ function Update-MWMailboxMoveBatchesReport {
 
     .DESCRIPTION
     Updates Batches.xlsx with most recent data
+    When you re-run "Get-365Info -ExchangeOnline -CreateMSPCompleteBulkFile" to get latest mailbox report you will be given batches.csv. Ignore the xslx file you also get.
+    use the -NewCsvFile to identify the batches.csv
+    the -ReportPath parameter is where this function will provide the up to date Batches.xlsx file you can then upload to SharePoint (replacing the existing file)
+
+    This function retains all the data that has been entered by you or the customer while giving you all new mailboxes and removing any mailboxes no longer found in the source tenant.
 
     .PARAMETER SharePointURL
     Sharepoint url ex. https://fabrikam.sharepoint.com/sites/Contoso
@@ -14,8 +19,7 @@ function Update-MWMailboxMoveBatchesReport {
     ex. "Batchex.xlsx"
 
     .PARAMETER NewCsvFile
-    Path to csv of mailboxes. Typically EXO_Mailboxes.csv when you run Get-365Info
-    This would be a new Csv of existing mailboxes that you want to update with BatchNames from the current excel on the SharePoint Team Site
+    Use a new batches.csv file
 
     .PARAMETER Tenant
     This is the tenant domain - where you are migrating to.
@@ -70,11 +74,13 @@ function Update-MWMailboxMoveBatchesReport {
         foreach ($Current in $CurrentList) {
             $CurrentHash.Add($Current.UserPrincipalName, @{
                     'Migrate'             = $Current.Migrate
+                    'ArchiveOnly'         = $Current.ArchiveOnly
                     'DeploymentPro'       = $Current.DeploymentPro
                     'LicenseGroup'        = $Current.LicenseGroup
-                    'DeploymentProEmail'  = $Current.DeploymentProEmail
+                    'DeploymentProMethod' = $Current.DeploymentProMethod
                     'Notes'               = $Current.Notes
-                    'CustomTargetAddress' = $Current.CustomTargetAddress
+                    'TargetMailboxInUse'  = $Current.TargetMailboxInUse
+                    'BitTitanLicense'     = $Current.BitTitanLicense
                 }
             )
         }
@@ -86,24 +92,29 @@ function Update-MWMailboxMoveBatchesReport {
                 Expression = { $CurrentHash.$($_.UserPrincipalName).Migrate }
             }
             @{
+                Name       = 'ArchiveOnly'
+                Expression = { $CurrentHash.$($_.UserPrincipalName).ArchiveOnly }
+            }
+            @{
                 Name       = 'DeploymentPro'
                 Expression = { $CurrentHash.$($_.UserPrincipalName).DeploymentPro }
+            }
+            @{
+                Name       = 'DeploymentProMethod'
+                Expression = { $CurrentHash.$($_.UserPrincipalName).DeploymentProMethod }
             }
             @{
                 Name       = 'LicenseGroup'
                 Expression = { $CurrentHash.$($_.UserPrincipalName).LicenseGroup }
             }
-            @{
-                Name       = 'DeploymentProEmail'
-                Expression = { $CurrentHash.$($_.UserPrincipalName).DeploymentProEmail }
-            }
             'DirSyncEnabled'
             @{
-                Name       = 'CustomTargetAddress'
-                Expression = { $CurrentHash.$($_.UserPrincipalName).CustomTargetAddress }
+                Name       = 'TargetMailboxInUse'
+                Expression = { $CurrentHash.$($_.UserPrincipalName).TargetMailboxInUse }
             }
             'RecipientTypeDetails'
-            'ArchiveStatus'
+            'TotalGB'
+            'ArchiveGB'
             'OrganizationalUnit(CN)'
             'SourcePrimary'
             'SourceTenantAddress'
@@ -115,12 +126,15 @@ function Update-MWMailboxMoveBatchesReport {
             'OnPremisesSecurityIdentifier'
             'DistinguishedName'
             'MailboxGB'
-            'ArchiveGB'
             'DeletedGB'
-            'TotalGB'
+            'ArchiveStatus'
             @{
                 Name       = 'Notes'
                 Expression = { $CurrentHash.$($_.UserPrincipalName).Notes }
+            }
+            @{
+                Name       = 'BitTitanLicense'
+                Expression = { $CurrentHash.$($_.UserPrincipalName).BitTitanLicense }
             }
         )
         $ExcelSplat = @{

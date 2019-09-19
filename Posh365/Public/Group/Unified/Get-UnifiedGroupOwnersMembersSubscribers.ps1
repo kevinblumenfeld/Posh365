@@ -6,6 +6,10 @@
         Get-UnifiedGroup -ResultSize Unlimited | Select-Object @(
             'DisplayName'
             @{
+                Name       = 'EmailAddresses'
+                Expression = { @($_.EmailAddresses) -ne '' -join '|' }
+            }
+            @{
                 Name       = 'Members'
                 Expression = { @((Get-UnifiedGroupLinks -Identity $_.Identity -LinkType Members).primarysmtpaddress) -ne '' -join '|' }
             }

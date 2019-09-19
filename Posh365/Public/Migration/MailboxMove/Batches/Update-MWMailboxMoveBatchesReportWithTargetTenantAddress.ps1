@@ -5,6 +5,7 @@ function Update-MWMailboxMoveBatchesReportWithTargetTenantAddress {
 
     .DESCRIPTION
     Updates Batches.xlsx with Target Tenant Address
+    You provide the SharePoint path to the current excel (that you want updated with the Target Tenant addresses) and this will output a fresh Batches.xlsx
 
     .PARAMETER SharePointURL
     Sharepoint url ex. https://fabrikam.sharepoint.com/sites/Contoso
@@ -13,16 +14,20 @@ function Update-MWMailboxMoveBatchesReportWithTargetTenantAddress {
     Excel file found in "Shared Documents" of SharePoint site specified in SharePointURL
     ex. "Batchex.xlsx"
 
-    .PARAMETER NewCsvFile
-    Path to csv of mailboxes.  In discovery it is typically EXO_Mailboxes.csv
-
     .PARAMETER Tenant
     This is the tenant domain - where you are migrating to.
     Example if tenant is contoso.mail.onmicrosoft.com use: Contoso
 
+    .PARAMETER ReportPath
+    Output path where a new and updated Batches.xlsx will be output
+
     .EXAMPLE
     This uses batches.xlsx stored in the teams "General" folder.
-    Update-MWMailboxMoveBatchesReport -SharePointURL 'https://fabrikam.sharepoint.com/sites/365migration' -ExcelFile 'General\batches.xlsx' -NewCsvFile "C:\Scripts\Batches.csv" -Tenant contoso -ReportPath C:\Scripts
+    Update-MWMailboxMoveBatchesReport -SharePointURL 'https://fabrikam.sharepoint.com/sites/365migration' -ExcelFile 'General\batches.xlsx' -Tenant contoso -ReportPath C:\Scripts
+
+    .EXAMPLE
+    This uses batches.xlsx stored in the root of the SharePoint documents (sometimes called Shared Documents) folder.
+    Update-MWMailboxMoveBatchesReport -SharePointURL 'https://fabrikam.sharepoint.com/sites/365migration' -ExcelFile 'batches.xlsx' -Tenant contoso -ReportPath C:\Scripts
 
     .NOTES
     General notes
@@ -75,23 +80,25 @@ function Update-MWMailboxMoveBatchesReportWithTargetTenantAddress {
         $Future = Import-SharePointExcel @SharePointSplat | Select-Object @(
             'DisplayName'
             'Migrate'
+            'ArchiveOnly'
             'DeploymentPro'
+            'DeploymentProMethod'
             'LicenseGroup'
-            'DeploymentProEmail'
             'DirSyncEnabled'
-            'CustomTargetAddress'
+            'TargetMailboxInUse'
             'RecipientTypeDetails'
-            'ArchiveStatus'
+            'TotalGB'
+            'ArchiveGB'
             'OrganizationalUnit(CN)'
             'SourcePrimary'
             'SourceTenantAddress'
             @{
                 Name       = 'TargetTenantAddress'
-                Expression = { if ($_.CustomTargetAddress -ne $True) { $AzureSIDHash.$($_.OnPremisesSecurityIdentifier).TargetTenantAddress } else { $_.TargetTenantAddress } }
+                Expression = { if ($_.TargetMailboxInUse -ne $True) { $AzureSIDHash.$($_.OnPremisesSecurityIdentifier).TargetTenantAddress } else { $_.TargetTenantAddress } }
             }
             @{
                 Name       = 'TargetPrimary'
-                Expression = { if ($_.CustomTargetAddress -ne $True) { $AzureSIDHash.$($_.OnPremisesSecurityIdentifier).TargetPrimary } else { $_.TargetPrimary } }
+                Expression = { if ($_.TargetMailboxInUse -ne $True) { $AzureSIDHash.$($_.OnPremisesSecurityIdentifier).TargetPrimary } else { $_.TargetPrimary } }
             }
             'FirstName'
             'LastName'
@@ -99,10 +106,10 @@ function Update-MWMailboxMoveBatchesReportWithTargetTenantAddress {
             'OnPremisesSecurityIdentifier'
             'DistinguishedName'
             'MailboxGB'
-            'ArchiveGB'
             'DeletedGB'
-            'TotalGB'
+            'ArchiveStatus'
             'Notes'
+            'BitTitanLicense'
         )
         $ExcelSplat = @{
             Path                    = (Join-Path $ReportPath 'Batches.xlsx')
