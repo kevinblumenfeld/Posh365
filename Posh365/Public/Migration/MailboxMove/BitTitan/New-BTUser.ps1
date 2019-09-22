@@ -13,7 +13,6 @@ function New-BTUser {
     Excel file found in "Shared Documents" of SharePoint site specified in SharePointURL
     ex. "Batchex.xlsx"
 
-
     .PARAMETER MailboxCSV
     Path to csv of mailboxes. Minimum headers required are: BatchName, UserPrincipalName
 
