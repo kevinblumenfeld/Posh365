@@ -19,10 +19,10 @@ Install-Module Posh365 -Force -Scope CurrentUser
 ## Function Examples
 _Syntax_: https://github.com/kevinblumenfeld/Posh365Demo
 
-##Connect
+### Connect
 * **Connect-CloudMFA** Connect to EXO, MSOnline, AzureAD, SharePoint, Compliance.
 
-##Migrate
+### Migrate
 * **New-MailboxMove** Creates new move requests
 * **Get-MailboxMove** Gets current move requests.
 * **Set-MailboxMove** Set move requests.
@@ -30,11 +30,11 @@ _Syntax_: https://github.com/kevinblumenfeld/Posh365Demo
 * **Resume-MailboxMove** Resumes move requests.
 * **Remove-MailboxMove** Removes move requests.
 
-##Report
+### Report
 * **Get-MailboxMoveStatistic** Gets move request statistics.
 * **Get-MailboxMoveReport** Gets full move request report.
 
-##License
+### License
 * **Set-MailboxMoveLicense** Licenses users via AzureAD.
 * **Get-MailboxMoveLicense** Reports on user licenses.
 * **Get-MailboxMoveLicenseCount** Reports on a tenant's skus and options.
