@@ -5,6 +5,6 @@ function Invoke-GetBTUser {
 
     )
     end {
-        Get-BT_CustomerEndUser -Ticket $BitTitanTicket -RetrieveAll
+        Get-BT_CustomerEndUser -Ticket $BitTic -IsDeleted:$false -RetrieveAll:$true
     }
 }

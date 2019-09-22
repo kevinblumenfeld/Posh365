@@ -14,8 +14,13 @@ function Get-ScheduleDecision {
             OutputMode = 'Single '
         }
 
-        $DateChoice = 0..14 | ForEach-Object { [DateTime]::Now.Date.AddDays($_).ToString("M/d") } | Out-GridView @OGVDate
-        $TimeChoice = 1..12 | ForEach-Object { "${_}AM", "${_}PM" } | Sort-Object { [DateTime]$_ } | Out-GridView @OGVTime
+        $DateChoice = 0..30 | ForEach-Object { [DateTime]::Now.Date.AddDays($_).ToString("M/d") } | Out-GridView @OGVDate
+        $TimeChoice = 1..12 | ForEach-Object {
+            for ($i = 0; $i -lt 60; $i = $i + 10) {
+                '{0}:{1:d2}AM' -f $_, $i
+                '{0}:{1:d2}PM' -f $_, $i
+            }
+        } | Sort-Object { [DateTime]$_ } | Out-GridView @OGVTime
 
         $TimeandDate = (([DateTime]$DateChoice) + ([DateTime]$TimeChoice).TimeOfDay).ToUniversalTime()
         $TimeandDate

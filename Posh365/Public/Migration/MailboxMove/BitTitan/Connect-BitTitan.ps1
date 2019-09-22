@@ -19,7 +19,7 @@ function Connect-BitTitan {
         if ( $Email ) {
             $EmailAddress = $Email
         }
-        if ($SkipModuleCheck ) {
+        if (-not $SkipModuleCheck ) {
             if (-not (Get-Module -Name BitTitanManagement -ListAvailable).version.build -eq 85) {
                 Install-Module -Name BitTitanManagement -RequiredVersion 0.0.85 -Force -Scope CurrentUser
                 Import-Module -Name BitTitanManagement -Version 0.0.85 -Force
@@ -63,6 +63,7 @@ function Connect-BitTitan {
         }
         Write-Host "Obtaining BitTitan Ticket" -ForegroundColor White
         try {
+            # Gets ticket without org
             Get-BTTicket -CredFile $CredFile -ErrorAction Stop
             Write-Host "Successfully obtained BitTitan Ticket" -ForegroundColor Green
         }
@@ -70,6 +71,7 @@ function Connect-BitTitan {
             Write-Host "Could not obtain BitTitan Ticket" -ForegroundColor Red
             $_.Exception.Message
         }
+        # Enters Customer
         Enter-BTCustomer
         Write-Host "To switch projects type:" -NoNewline -ForegroundColor Yellow
         Write-Host " Enter-BTCustomer " -ForegroundColor Green -NoNewline

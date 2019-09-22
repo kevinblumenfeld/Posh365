@@ -1,10 +1,10 @@
 function Set-MWMailboxMove {
     <#
     .SYNOPSIS
-    Create New "Mailbox Moves" with Migration Wiz from Source Tenant to Target Tenant
+    Sets "Mailbox Moves" for Migration Wiz
 
     .DESCRIPTION
-    Create New "Mailbox Moves" with Migration Wiz from Source Tenant to Target Tenant
+    Sets "Mailbox Moves" for Migration Wiz
 
     .PARAMETER SharePointURL
     Sharepoint url ex. https://fabrikam.sharepoint.com/sites/Contoso
@@ -12,12 +12,8 @@ function Set-MWMailboxMove {
     .PARAMETER ExcelFile
     Excel file found in "Shared Documents" of SharePoint site specified in SharePointURL
 
-
     .PARAMETER MailboxCSV
     Path to csv of mailboxes. Minimum headers required are: BatchName, UserPrincipalName
-
-    .EXAMPLE
-    Set-MWMailboxMove -MailboxCSV C:\Scripts\testbatches.csv -TargetEmailSuffix fabrikam.com
 
     .EXAMPLE
     Set-MWMailboxMove -SharePointURL 'https://contoso.sharepoint.com/sites/o365-fabrikam/' -ExcelFile 'Batches.xlsx'

@@ -28,7 +28,7 @@ function Import-BTSharePointExcelDecision {
         Connect-SharePointPNP -Url $SharePointURL
         $TrimmedExcelFile = [regex]::matches($ExcelFile, "[^\/]*$")[0].Value
         $ExcelURL = "Shared Documents/{0}" -f ($ExcelFile).TrimStart('/')
-        $TempExcel = '{0}_{1}' -f $BitTitanTicket.OrganizationId.Guid, $TrimmedExcelFile
+        $TempExcel = '{0}_{1}' -f $BitTic.OrganizationId.Guid, $TrimmedExcelFile
         $TempExcelPath = Join-Path -Path $ENV:TEMP $TempExcel
         Get-PnPFile -Url $ExcelURL -Path $Env:TEMP -Filename $TempExcel -AsFile -Force
 

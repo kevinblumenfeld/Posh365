@@ -11,11 +11,11 @@ function Get-BTTicket {
     end {
         switch ($true) {
             { $OrganizationId } {
-                $Script:BitTitanTicket = Get-BT_Ticket -Ticket $BitTitanTicket -OrganizationId $OrganizationId -SetDefault
+                $Script:BitTic = Get-BT_Ticket -Ticket $BitTic -OrganizationId $OrganizationId -SetDefault
             }
             Default {
                 [System.Management.Automation.PSCredential]$Credential = Import-Clixml -Path $CredFile
-                $Script:BitTitanTicket = Get-BT_Ticket -Credentials $Credential -ServiceType BitTitan -SetDefault
+                $Script:BitTic = Get-BT_Ticket -Credentials $Credential -ServiceType BitTitan -SetDefault
             }
         }
     }

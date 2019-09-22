@@ -10,12 +10,13 @@ function Invoke-NewBTUser {
     process {
         foreach ($User in $UserList) {
             $Param = @{
-                Ticket              = $BitTitanTicket
+                Ticket              = $BitTic
                 PrimaryEmailAddress = $User.SourcePrimary
             }
             switch ($User) {
                 { $_.FirstName } { $Param.Add('FirstName', $User.FirstName) }
                 { $_.LastName } { $Param.Add('LastName', $User.LastName) }
+                { $_.DisplayName } { $Param.Add('DisplayName', $User.DisplayName) }
                 { $_.UserPrincipalName } { $Param.Add('UserPrincipalName', $User.UserPrincipalName) }
                 Default { }
             }
