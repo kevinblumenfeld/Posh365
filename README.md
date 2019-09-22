@@ -21,6 +21,7 @@ _Syntax_: https://github.com/kevinblumenfeld/Posh365Demo
 
 ###Connect
 * **Connect-CloudMFA** Connect to EXO, MSOnline, AzureAD, SharePoint, Compliance.
+
 ###Migrate
 * **New-MailboxMove** Creates new move requests
 * **Get-MailboxMove** Gets current move requests.
@@ -28,9 +29,11 @@ _Syntax_: https://github.com/kevinblumenfeld/Posh365Demo
 * **Suspend-MailboxMove** Suspends move requests.
 * **Resume-MailboxMove** Resumes move requests.
 * **Remove-MailboxMove** Removes move requests.
+
 ###Report
 * **Get-MailboxMoveStatistic** Gets move request statistics.
 * **Get-MailboxMoveReport** Gets full move request report.
+
 ###License
 * **Set-MailboxMoveLicense** Licenses users via AzureAD.
 * **Get-MailboxMoveLicense** Reports on user licenses.
