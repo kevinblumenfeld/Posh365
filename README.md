@@ -29,6 +29,7 @@ _Syntax_: https://github.com/kevinblumenfeld/Posh365Demo
 * **Suspend-MailboxMove** Suspends move requests.
 * **Resume-MailboxMove** Resumes move requests.
 * **Remove-MailboxMove** Removes move requests.
+* **Complete-MailboxMove** Complete move requests.
 
 ### Report
 * **Get-MailboxMoveStatistics** Gets move request statistics.
