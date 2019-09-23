@@ -31,7 +31,7 @@ _Syntax_: https://github.com/kevinblumenfeld/Posh365Demo
 * **Remove-MailboxMove** Removes move requests.
 
 ### Report
-* **Get-MailboxMoveStatistic** Gets move request statistics.
+* **Get-MailboxMoveStatistics** Gets move request statistics.
 * **Get-MailboxMoveReport** Gets full move request report.
 
 ### License
