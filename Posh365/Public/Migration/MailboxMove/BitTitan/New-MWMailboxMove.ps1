@@ -17,6 +17,12 @@ function New-MWMailboxMove {
     .PARAMETER MailboxCSV
     Path to csv of mailboxes. Minimum headers required are: BatchName, UserPrincipalName
 
+    .PARAMETER UseTenantAddressAsSource
+    Use the user@domain.onmicrosoft.com (tenant address) as the source email address
+
+    .PARAMETER UseTargetPrimaryAsTarget
+    Use the primarysmtpaddress in the target tenant.  Primarily used for 365 to 365 where the domain name changes
+
     .EXAMPLE
     New-MWMailboxMove -MailboxCSV C:\Scripts\testbatches.csv -TargetEmailSuffix fabrikam.com
 
@@ -50,11 +56,12 @@ function New-MWMailboxMove {
 
         [Parameter()]
         [switch]
-        $UseTenantAddressAsSource
+        $UseTenantAddressAsSource,
 
-        # [Parameter()]
-        # [ValidateNotNullOrEmpty()]
-        # $TargetEmailSuffix
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [switch]
+        $UseTargetPrimaryAsTarget
     )
     end {
         switch ($PSCmdlet.ParameterSetName) {
@@ -71,8 +78,8 @@ function New-MWMailboxMove {
         }
         if ($UserChoice -ne 'Quit' ) {
             $Sync = @{
-                # TargetEmailSuffix = $TargetEmailSuffix
                 UseTenantAddressAsSource = $UseTenantAddressAsSource
+                UseTargetPrimaryAsTarget = $UseTargetPrimaryAsTarget
             }
             $UserChoice | Invoke-NewMWMailboxMove @Sync | Out-GridView -Title "Results of MigrationWiz New Mailbox Move"
         }

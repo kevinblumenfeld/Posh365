@@ -7,10 +7,12 @@ function Invoke-NewMWMailboxMove {
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [switch]
-        $UseTenantAddressAsSource
+        $UseTenantAddressAsSource,
 
-        # [Parameter()]
-        # $TargetEmailSuffix
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [switch]
+        $UseTargetPrimaryAsTarget
     )
     begin {
 
@@ -18,9 +20,8 @@ function Invoke-NewMWMailboxMove {
     process {
         foreach ($User in $UserList) {
             $Param = @{
-                Ticket             = $MigWizTicket
-                ImportEmailAddress = $User.TargetTenantAddress
-                ConnectorId        = $MWProject.Id
+                Ticket      = $MigWizTicket
+                ConnectorId = $MWProject.Id
             }
             if ($UseTenantAddressAsSource) {
                 $Param.Add('ExportEmailAddress', $User.SourceTenantAddress)
@@ -28,12 +29,13 @@ function Invoke-NewMWMailboxMove {
             else {
                 $Param.Add('ExportEmailAddress', $User.SourcePrimary)
             }
-            <#
-            switch ($User) {
-                { $_.SourceTenantAddress } { $Param.Add('ImportEmailAddress', $User.TargetTenantAddress) }
-                { Default } { $Param.Add('ImportEmailAddress', '{0}@{1}' -f (($User.PrimarySmtpAddress -split '@')[0], $TargetEmailSuffix)) }
+            if ($UseTargetPrimaryAsTarget) {
+                $Param.Add('ImportEmailAddress', $User.TargetPrimary)
             }
-            #>
+            else {
+                $Param.Add('ImportEmailAddress', $User.TargetTenantAddress)
+            }
+
             if ($Param.ExportEmailAddress) {
                 try {
                     $Result = Add-MW_Mailbox @Param -WarningAction SilentlyContinue -ErrorAction Stop
