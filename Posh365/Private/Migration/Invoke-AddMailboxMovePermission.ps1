@@ -10,9 +10,9 @@ function Invoke-AddMailboxMovePermission {
             switch ($Permission.Location) {
                 { $_ -in @('Calendar', 'Inbox', 'SentItems', 'Contacts') } {
                     $StatSplat = @{
-                        Identity    = $Mailbox.PrimarySMTPAddress
                         ErrorAction = 'SilentlyContinue'
                         FolderScope = $Permission.Location
+                        Identity    = $Mailbox.PrimarySMTPAddress
                     }
                     $Location = (($Permission.PrimarySMTPAddress) + ':\' + (Get-MailboxFolderStatistics @StatSplat | Select-Object -First 1).Name)
                     $FolderPermSplat = @{
@@ -170,4 +170,3 @@ function Invoke-AddMailboxMovePermission {
 
     }
 }
-

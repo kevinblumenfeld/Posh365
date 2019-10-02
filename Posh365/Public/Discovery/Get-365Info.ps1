@@ -721,6 +721,17 @@ function Get-365Info {
                         Name       = 'SourceTenantAddress'
                         Expression = { [regex]::matches(@(($_.EmailAddresses).split('|')), "(?<=(smtp|SMTP):)[^@]+@[^.]+?\.onmicrosoft\.com")[0].Value }
                     }
+                    @{
+                        Name       = 'RecipientMappingRequired'
+                        Expression = {
+                            if (
+                                ([regex]::matches(@(($_.EmailAddresses).split('|')), "(?<=(smtp|SMTP):)[^@]+@[^.]+?\.onmicrosoft\.com")[0].Value).split('@')[0] -ne
+                                ($_.PrimarySmtpAddress).split('@')[0]
+                            ) {
+                                'RecipientMapping="{0}->{1}"' -f [regex]::matches(@(($_.EmailAddresses).split('|')), "(?<=(smtp|SMTP):)[^@]+@[^.]+?\.onmicrosoft\.com")[0].Value, $_.PrimarySmtpAddress
+                            }
+                        }
+                    }
                     'TargetTenantAddress'
                     'TargetPrimary'
                     @{
