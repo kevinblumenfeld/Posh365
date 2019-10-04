@@ -178,7 +178,7 @@ function Get-EXOMailbox {
         }
         else {
             if (-not $ArchivesOnly) {
-                Write-Verbose "Gathering Mailbox Report"
+                Write-Verbose "Gathering All Mailboxes Initially"
                 $MailboxList = Get-Mailbox -ResultSize unlimited
                 Write-Host "`nTotal Mailboxes Found: $($MailboxList.count)" -ForegroundColor Green
 
@@ -200,6 +200,7 @@ function Get-EXOMailbox {
                 if ($ConfirmCount -eq 'n' -or $ConfirmCount -eq 'y') {
                     $StatsHash = @{ }
                     foreach ($Mailbox in $MailboxList) {
+                        Write-Host "Mailbox:`t$($Mailbox.DisplayName)" -ForegroundColor White
                         $Stat = $Mailbox | Get-ExchangeMailboxStatistics
                         if ($Stat) {
                             $StatsHash.Add(($Stat.PrimarySmtpAddress), @{

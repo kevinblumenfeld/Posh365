@@ -1,11 +1,12 @@
-Function Test-MailboxMove {
+function Set-MailboxMoveConvertToShared {
     <#
     .SYNOPSIS
-    Test Mailbox Moves
+    Sets Office 365 Mailbox to Shared post migration
+    Either CSV or Excel file from SharePoint can be used
 
     .DESCRIPTION
-    Test Mailbox Moves prior to migrating.. RESULT column says if pass or fails
-    be aware this will fail if primarysmtpaddress does not match UPN.  However, you can still see individual test results.
+    Sets Office 365 Mailbox to Shared post migration
+    Either CSV or Excel file from SharePoint can be used
 
     .PARAMETER SharePointURL
     Sharepoint url ex. https://fabrikam.sharepoint.com/sites/Contoso
@@ -13,12 +14,16 @@ Function Test-MailboxMove {
     .PARAMETER ExcelFile
     Excel file found in "Shared Documents" of SharePoint site specified in SharePointURL
     ex. "Batchex.xlsx"
+    Minimum headers required are: BatchName, UserPrincipalName
 
     .PARAMETER MailboxCSV
-    If using a csv instead of sharepoint url excel file
+    Path to csv of mailboxes. Minimum headers required are: BatchName, UserPrincipalName
 
     .EXAMPLE
-    Test-MailboxMove -SharePointURL 'https://contoso.sharepoint.com/sites/fabrikam' -ExcelFile 'Batches.xlsx'
+    Set-MailboxMoveConvertToShared -MailboxCSV c:\scripts\batches.csv
+
+    .EXAMPLE
+    Set-MailboxMoveConvertToShared -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx'
 
     .NOTES
     General notes
@@ -48,19 +53,14 @@ Function Test-MailboxMove {
                     SharePointURL = $SharePointURL
                     ExcelFile     = $ExcelFile
                 }
-                $UserChoice = Import-SharePointExcelDecision @SharePointSplat
+                Invoke-SetMailboxMoveConvertToShared @SharePointSplat | Out-GridView -Title "Results of Set Mailbox to Shared"
             }
             'CSV' {
-                $UserChoice = Import-MailboxCsvDecision -MailboxCSV $MailboxCSV
+                $CSVSplat = @{
+                    MailboxCSV = $MailboxCSV
+                }
+                Invoke-SetMailboxMoveConvertToShared @CSVSplat | Out-GridView -Title "Results of Set Mailbox to Shared"
             }
-        }
-        if ($UserChoice -ne 'Quit' ) {
-            $TestSelect = @(
-                'OrganizationalUnit', 'MailboxType', 'DisplayName', 'Result', 'AccountDisabled'
-                'UpnMatchesPrimarySmtp', 'RoutingAddressValid', 'IsDirSynced', 'EmailAddressesValid'
-                'MailboxExists', 'ErrorType', 'ErrorValue', 'UserPrincipalName'
-            )
-            Invoke-TestMailboxMove -UserList $UserChoice | Select-Object $TestSelect | Out-GridView -Title "Results of Test Mailbox Move"
         }
     }
 }

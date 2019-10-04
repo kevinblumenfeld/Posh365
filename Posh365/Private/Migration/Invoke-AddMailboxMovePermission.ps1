@@ -3,7 +3,12 @@ function Invoke-AddMailboxMovePermission {
     param (
         [Parameter(Mandatory, ValueFromPipeline)]
         [ValidateNotNullOrEmpty()]
-        $PermissionList
+        $PermissionList,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [switch]
+        $AutoMap
     )
     process {
         foreach ($Permission in $PermissionList) {
@@ -57,7 +62,7 @@ function Invoke-AddMailboxMovePermission {
                                 Identity      = $Permission.PrimarySMTPAddress
                                 User          = $Permission.GrantedSMTP
                                 AccessRights  = 'FullAccess'
-                                AutoMapping   = $false
+                                AutoMapping   = $AutoMap
                                 ErrorAction   = 'Stop'
                                 WarningAction = 'Stop'
                             }
