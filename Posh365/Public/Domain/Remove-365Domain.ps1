@@ -184,14 +184,15 @@
             $i = 1
             $Total = $MsolUser.count
             ForEach ($CurMsoluser in $MsolUser) {
-                if ($CurMsoluser.UserPrincipalName -notlike $RoutingDomain) {
-                    $MsolProxyAddress = $CurMsoluser.UserPrincipalName.Split("@")[0] + $DomainSuffix
+                if ($CurMsoluser.UserPrincipalName -notmatch $RoutingDomain) {
+                    $MsolProxyAddress = '{0}@{1}' -f $CurMsoluser.UserPrincipalName.Split("@")[0], $DomainSuffix
                     try {
-                        Set-MsolUserPrincipalName -UserPrincipalName $($CurMsoluser.UserPrincipalName) -NewUserPrincipalName $MsolProxyAddress -ErrorAction Stop
+                        Set-MsolUserPrincipalName -ObjectId $($CurMsoluser.ObjectId).ToString() -NewUserPrincipalName $MsolProxyAddress -ErrorAction Stop
                         Write-HostProgress -Message "$($CurMsoluser.UserPrincipalName)" -Status "Success" -Total $Total -Count $i
                     }
                     catch {
                         Write-HostProgress -Message "$($CurMsoluser.UserPrincipalName)" -Status "Failed" -Total $Total -Count $i
+                        $_
                     }
                     Start-Sleep -Seconds 2
                 }
@@ -232,13 +233,14 @@
             $Total = $Mailbox.count
             ForEach ($CurMailbox in $Mailbox) {
                 if ($CurMailbox.PrimarySmtpAddress -notlike $RoutingDomain) {
-                    $NewPrimary = $CurMailbox.PrimarySmtpAddress.Split("@")[0] + $DomainSuffix
+                    $NewPrimary = '{0}@{1}' -f $CurMailbox.PrimarySmtpAddress.Split("@")[0], $DomainSuffix
                     try {
                         Set-Mailbox -Identity $($CurMailbox.PrimarySmtpAddress) -WindowsEmailAddress $NewPrimary -ErrorAction Stop
                         Write-HostProgress -Message "$($CurMailbox.PrimarySmtpAddress): $NewPrimary" -Status "Success" -Total $Total -Count $i
                     }
                     catch {
                         Write-HostProgress -Message "$($CurMailbox.PrimarySmtpAddress): $NewPrimary" -Status "Failed" -Total $Total -Count $i
+                        $_.Exception.Message
                     }
                     Start-Sleep -Seconds 2
                 }
@@ -278,13 +280,14 @@
             $Total = $MailUser.Count
             ForEach ($CurMailUser in $MailUser) {
                 if ($CurMailUser.PrimarySmtpAddress -notlike $RoutingDomain) {
-                    $MailUsrPrimary = $CurMailUser.PrimarySmtpAddress.Split("@")[0] + $DomainSuffix
+                    $MailUsrPrimary = '{0}@{1}' -f $CurMailUser.PrimarySmtpAddress.Split("@")[0], $DomainSuffix
                     Try {
                         Set-MailUser -Identity $($CurMailUser.PrimarySmtpAddress) -WindowsEmailAddress $MailUsrPrimary -ErrorAction Stop
                         Write-HostProgress -Message "$($CurMailUser.PrimarySmtpAddress)" -Status "Success" -Total $Total -Count $i
                     }
                     catch {
                         Write-HostProgress -Message "$($CurMailUser.PrimarySmtpAddress)" -Status "Failed" -Total $Total -Count $i
+                        $_.Exception.Message
                     }
                     Start-Sleep -Seconds 2
                 }
@@ -333,6 +336,7 @@
                             }
                             catch {
                                 Write-HostProgress -Message "`t`tRemoving $CurProxyAddress " -Status "Failed" -Total $Total -Count $i
+                                $_.Exception.Message
                             }
                             Start-Sleep -Seconds 2
                         }
@@ -382,6 +386,7 @@
                         }
                         catch {
                             Write-HostProgress -Message "`t`tRemoving $CurMailProxy" -Status "Failed" -Total $Total -Count $i
+                            $_.Exception.Message
                         }
                         Start-Sleep -Seconds 2
                     }
@@ -402,13 +407,14 @@
 
         ForEach ($CurDistributionGroup in $DistributionGroup) {
             if ($CurDistributionGroup.PrimarySmtpAddress -notlike $RoutingDomain) {
-                $NewDLPrimary = $CurDistributionGroup.PrimarySmtpAddress.Split("@")[0] + $DomainSuffix
+                $NewDLPrimary = '{0}@{1}' -f $CurDistributionGroup.PrimarySmtpAddress.Split("@")[0], $DomainSuffix
                 try {
                     Set-DistributionGroup -Identity $($CurDistributionGroup.PrimarySmtpAddress) -PrimarySmtpAddress $NewDLPrimary -ErrorAction Stop
                     Write-HostProgress -Message "$($CurDistributionGroup.PrimarySmtpAddress)" -Status "Success" -Total $Total -Count $i
                 }
                 catch {
                     Write-HostProgress -Message "$($CurDistributionGroup.PrimarySmtpAddress)" -Status "Failed" -Total $Total -Count $i
+                    $_.Exception.Message
                 }
                 Start-Sleep -Seconds 2
             }
@@ -429,7 +435,7 @@
 
         ForEach ($CurUnifiedGroup in $UnifiedGroup) {
             if ($CurUnifiedGroup.PrimarySmtpAddress -notlike $RoutingDomain) {
-                $NewUGPrimary = $CurUnifiedGroup.PrimarySmtpAddress.Split("@")[0] + $DomainSuffix
+                $NewUGPrimary = '{0}@{1}' -f $CurUnifiedGroup.PrimarySmtpAddress.Split("@")[0], $DomainSuffix
 
                 try {
                     Set-UnifiedGroup -Identity $($CurUnifiedGroup.PrimarySmtpAddress) -PrimarySmtpAddress $NewUGPrimary -ErrorAction Stop
@@ -437,6 +443,7 @@
                 }
                 catch {
                     Write-HostProgress -Message "$($CurUnifiedGroup.PrimarySmtpAddress)" -Status "Failed" -Total $Total -Count $i
+                    $_.Exception.Message
                 }
                 Start-Sleep -Seconds 2
             }
@@ -467,6 +474,7 @@
                     }
                     catch {
                         Write-HostProgress -Message "t`tRemoving $CurProxyUGAddress" -Status "Failed" -Total $Total -Count $i
+                        $_.Exception.Message
                     }
                     Start-Sleep -Seconds 2
                 }
@@ -493,6 +501,7 @@
                     }
                     catch {
                         Write-HostProgress -Message "t`tRemoving $CurProxyDLAddress" -Status "Failed" -Total $Total -Count $i
+                        $_.Exception.Message
                     }
                     Start-Sleep -Seconds 2
                 }

@@ -161,7 +161,8 @@ function Invoke-SetCloudLicense {
             "STANDARDPACK_FACULTY"                             = "STANDARDPACK_FACULTY";
             "Visio Pro for Office 365"                         = "VISIOCLIENT";
             "Yammer Enterprise"                                = "YAMMER_ENTERPRISE";
-            "Yammer Midsize"                                   = "YAMMER_MIDSIZE"
+            "Yammer Midsize"                                   = "YAMMER_MIDSIZE";
+            "Microsoft 365 Business"                           = "SPB"
         }
 
         $f2uOpt = @{

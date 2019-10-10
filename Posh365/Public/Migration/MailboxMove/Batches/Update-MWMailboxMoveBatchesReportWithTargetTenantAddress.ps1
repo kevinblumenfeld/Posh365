@@ -18,6 +18,10 @@ function Update-MWMailboxMoveBatchesReportWithTargetTenantAddress {
     .PARAMETER ReportPath
     Output path where a new and updated Batches.xlsx will be output
 
+    .PARAMETER OverrideTargetMailboxInUse
+    Ignores column TargetMailboxInUse and always attempts to use onpremisesSecurityIdentifier to populate both target addresses.
+    This will overwrite any value that exists, however, the original batches file will not be modified at all.
+
     .EXAMPLE
     This uses batches.xlsx stored in the teams "General" folder.
     Update-MWMailboxMoveBatchesReport -SharePointURL 'https://fabrikam.sharepoint.com/sites/365migration' -ExcelFile 'General\batches.xlsx' -ReportPath C:\Scripts
@@ -44,7 +48,12 @@ function Update-MWMailboxMoveBatchesReportWithTargetTenantAddress {
 
         [Parameter(Mandatory)]
         [string]
-        $ReportPath
+        $ReportPath,
+
+        [Parameter()]
+        [switch]
+        $OverrideTargetMailboxInUse
+
     )
     end {
         New-Item -ItemType Directory -Path $ReportPath -ErrorAction SilentlyContinue
@@ -82,11 +91,11 @@ function Update-MWMailboxMoveBatchesReportWithTargetTenantAddress {
             'SourceTenantAddress'
             @{
                 Name       = 'TargetTenantAddress'
-                Expression = { if ($_.TargetMailboxInUse -ne $True) { $AzureSIDHash.$($_.OnPremisesSecurityIdentifier).TargetTenantAddress } else { $_.TargetTenantAddress } }
+                Expression = { if ($_.TargetMailboxInUse -ne $true -or $OverrideTargetMailboxInUse) { $AzureSIDHash[$($_.OnPremisesSecurityIdentifier)].TargetTenantAddress } else { $_.TargetTenantAddress } }
             }
             @{
                 Name       = 'TargetPrimary'
-                Expression = { if ($_.TargetMailboxInUse -ne $True) { $AzureSIDHash.$($_.OnPremisesSecurityIdentifier).TargetPrimary } else { $_.TargetPrimary } }
+                Expression = { if ($_.TargetMailboxInUse -ne $true -or $OverrideTargetMailboxInUse) { $AzureSIDHash[$($_.OnPremisesSecurityIdentifier)].TargetPrimary } else { $_.TargetPrimary } }
             }
             'FirstName'
             'LastName'

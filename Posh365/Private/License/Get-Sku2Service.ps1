@@ -98,7 +98,8 @@
         "STANDARDPACK_FACULTY"               = "STANDARDPACK_FACULTY";
         "VISIOCLIENT"                        = "Visio Pro for Office 365";
         "YAMMER_ENTERPRISE"                  = "Yammer Enterprise";
-        "YAMMER_MIDSIZE"                     = "Yammer Midsize"
+        "YAMMER_MIDSIZE"                     = "Yammer Midsize";
+        "SPB"                                = "Microsoft 365 Business"
     }
     $u2fOpt = @{
         "FLOW_P2_VIRAL"                  = "Flow Free"
@@ -231,7 +232,7 @@
                 Else {
                     $sku2service['Service'] = $plan
                 }
-                $sku2service['Remaining'] = (($sku.prepaidunits.enabled) - ($sku.prepaidunits.enabled - $sku.consumedunits))
+                $sku2service['Consumed'] = (($sku.prepaidunits.enabled) - ($sku.prepaidunits.enabled - $sku.consumedunits))
                 $sku2service['Total'] = ($sku.prepaidunits.enabled)
                 $resultArray += [psCustomObject]$sku2service
             }
@@ -255,7 +256,7 @@
                     $sku2service['FriendlyService'] = $plan
                 }
                 $sku2service['Service'] = $plan
-                $sku2service['Remaining'] = (($sku.prepaidunits.enabled) - ($sku.prepaidunits.enabled - $sku.consumedunits))
+                $sku2service['Consumed'] = (($sku.prepaidunits.enabled) - ($sku.prepaidunits.enabled - $sku.consumedunits))
                 $sku2service['Total'] = ($sku.prepaidunits.enabled)
                 $resultArray += [psCustomObject]$sku2service
             }
@@ -267,7 +268,7 @@
             foreach ($plan in $sku.serviceplans.serviceplanname) {
                 $sku2service['Sku'] = $sku.SkuPartNumber
                 $sku2service['Service'] = $plan
-                $sku2service['Remaining'] = (($sku.prepaidunits.enabled) - ($sku.prepaidunits.enabled - $sku.consumedunits))
+                $sku2service['Consumed'] = (($sku.prepaidunits.enabled) - ($sku.prepaidunits.enabled - $sku.consumedunits))
                 $sku2service['Total'] = ($sku.prepaidunits.enabled)
                 $resultArray += [psCustomObject]$sku2service
             }

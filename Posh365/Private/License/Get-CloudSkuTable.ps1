@@ -121,7 +121,8 @@ function Get-CloudSkuTable {
             "STANDARDPACK_FACULTY"               = "STANDARDPACK_FACULTY";
             "VISIOCLIENT"                        = "Visio Pro for Office 365";
             "YAMMER_ENTERPRISE"                  = "Yammer Enterprise";
-            "YAMMER_MIDSIZE"                     = "Yammer Midsize"
+            "YAMMER_MIDSIZE"                     = "Yammer Midsize";
+            "SPB"                                = "Microsoft 365 Business"
         }
         $u2fOpt = @{
             "FLOW_P2_VIRAL"                  = "Flow Free"

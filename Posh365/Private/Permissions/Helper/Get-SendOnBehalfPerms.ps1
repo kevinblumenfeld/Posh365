@@ -41,9 +41,9 @@ function Get-SendOnBehalfPerms {
                 Object             = $Mailbox.DisplayName
                 UserPrincipalName  = $Mailbox.UserPrincipalName
                 PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
-                Granted            = $Display -join '|'
-                GrantedUPN         = $UPN -join '|'
-                GrantedSMTP        = $SMTP -join '|'
+                Granted            = @($Display) -ne '' -join '|'
+                GrantedUPN         = @($UPN) -ne '' -join '|'
+                GrantedSMTP        = @($SMTP) -ne '' -join '|'
                 Checking           = $GrantedSOB
                 TypeDetails        = $ADHashType."$($ADHashCN["$GrantedSOB"].msExchRecipientTypeDetails)"
                 DisplayType        = $ADHashDisplay."$($ADHashCN["$GrantedSOB"].msExchRecipientDisplayType)"

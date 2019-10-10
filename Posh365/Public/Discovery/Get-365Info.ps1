@@ -78,6 +78,10 @@ function Get-365Info {
 
         [Parameter()]
         [switch]
+        $SkipRecipientsReport,
+
+        [Parameter()]
+        [switch]
         $CreateMSPCompleteBulkFile
     )
     end {
@@ -525,8 +529,10 @@ function Get-365Info {
 
                 $DirSyncCount | Export-Csv $EXO_DirSyncCount @ExportCSVSplat
 
-                Write-Verbose "Gathering Recipients"
-                Get-365Recipient -DetailedReport | Export-Csv $EXO_Recipients_Detailed @ExportCSVSplat
+                if (-not $SkipRecipientsReport) {
+                    Write-Verbose "Gathering Recipients"
+                    Get-365Recipient -DetailedReport | Export-Csv $EXO_Recipients_Detailed @ExportCSVSplat
+                }
                 $RecipientsDetails = Import-Csv $EXO_Recipients_Detailed | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' }
                 $RecipientsDetails | Sort-Object DisplayName | Select-Object $EXORecipientProperties | Export-Csv $EXO_Recipients @ExportCSVSplat
 

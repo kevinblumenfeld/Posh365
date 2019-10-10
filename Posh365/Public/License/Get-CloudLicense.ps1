@@ -183,7 +183,8 @@
             "STANDARDPACK_FACULTY"               = "STANDARDPACK_FACULTY";
             "VISIOCLIENT"                        = "Visio Pro for Office 365";
             "YAMMER_ENTERPRISE"                  = "Yammer Enterprise";
-            "YAMMER_MIDSIZE"                     = "Yammer Midsize"
+            "YAMMER_MIDSIZE"                     = "Yammer Midsize";
+            "SPB"                                = "Microsoft 365 Business"
         }
 
         # The Output will be written to this file in the current working directory
