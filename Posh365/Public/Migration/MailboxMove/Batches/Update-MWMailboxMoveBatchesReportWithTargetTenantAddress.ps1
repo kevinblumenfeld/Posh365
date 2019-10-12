@@ -65,12 +65,14 @@ function Update-MWMailboxMoveBatchesReportWithTargetTenantAddress {
         $AzureSIDHash = @{ }
         (Get-AzureADUser -All:$true).where( { $_.OnPremisesSecurityIdentifier }).foreach{
             $SID = $_.OnPremisesSecurityIdentifier
+            $TargetUPN = $_.UserPrincipalName
             $TargetTenantAddress = [regex]::matches(@(($_.ProxyAddresses) -split '\|'), "(?<=(smtp|SMTP):)[^@]+@[^.]+?\.onmicrosoft\.com")[0].Value
             $TargetPrimary = ($_.ProxyAddresses -cmatch 'SMTP:' -split ':')[1]
             if ($SID -and ($TargetTenantAddress -or $TargetPrimary)) {
                 $AzureSIDHash.Add($SID, @{
-                        TargetTenantAddress = $TargetTenantAddress
-                        TargetPrimary       = $TargetPrimary
+                        TargetTenantAddress     = $TargetTenantAddress
+                        TargetPrimary           = $TargetPrimary
+                        TargetUserPrincipalName = $TargetUPN
                     })
             }
         }
@@ -96,6 +98,10 @@ function Update-MWMailboxMoveBatchesReportWithTargetTenantAddress {
             @{
                 Name       = 'TargetPrimary'
                 Expression = { if ($_.TargetMailboxInUse -ne $true -or $OverrideTargetMailboxInUse) { $AzureSIDHash[$($_.OnPremisesSecurityIdentifier)].TargetPrimary } else { $_.TargetPrimary } }
+            }
+            @{
+                Name       = 'TargetUserPrincipalName'
+                Expression = { if ($_.TargetMailboxInUse -ne $true -or $OverrideTargetMailboxInUse) { $AzureSIDHash[$($_.OnPremisesSecurityIdentifier)].TargetUserPrincipalName } else { $_.TargetUserPrincipalName } }
             }
             'FirstName'
             'LastName'

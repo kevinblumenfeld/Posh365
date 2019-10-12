@@ -16,9 +16,10 @@
         SearchScope = 'Subtree'
     }
     Get-ADGroup @GroupParams | ForEach-Object {
+        write-host "GROUP $($_.Name)" -ForegroundColor Green
         $GroupMemberHash.Add( ($DomainNameHash.($_.distinguishedname -replace '^.+?DC=' -replace ',DC=', '.')) + "\" + $_.samaccountname, @{
                 SID     = $_.SID
-                MEMBERS = @((@(Get-ADGroupMember -Identity $_.SID -Recursive) -ne '').foreach{ $UserGroupHash[$_.ObjectGuid] }) -ne '' -join '|'
+                MEMBERS = @(Get-ADGroupMember -Identity $_.SID -Recursive) -ne '' | foreach-object { $_.ObjectGuid }
             } )
     }
     $GroupMemberHash

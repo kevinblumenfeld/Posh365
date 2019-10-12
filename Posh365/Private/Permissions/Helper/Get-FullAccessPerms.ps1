@@ -19,7 +19,15 @@ function Get-FullAccessPerms {
 
         [parameter()]
         [hashtable]
-        $ADHashDisplay
+        $ADHashDisplay,
+
+        [parameter()]
+        [hashtable]
+        $UserGroupHash,
+
+        [parameter()]
+        [hashtable]
+        $GroupMemberHash
     )
     begin {
 
@@ -34,18 +42,37 @@ function Get-FullAccessPerms {
                 !$_.user.tostring().startswith('NT AUTHORITY\SELF') -and
                 !$_.Deny
             } | ForEach-Object {
-                Write-Verbose "Has Full Access:`t$($_.User)"
-                New-Object -TypeName psobject -property @{
-                    Object             = $ADHashDN["$ADUser"].DisplayName
-                    UserPrincipalName  = $ADHashDN["$ADUser"].UserPrincipalName
-                    PrimarySMTPAddress = $ADHashDN["$ADUser"].PrimarySMTPAddress
-                    Granted            = $ADHash["$($_.User)"].DisplayName
-                    GrantedUPN         = $ADHash["$($_.User)"].UserPrincipalName
-                    GrantedSMTP        = $ADHash["$($_.User)"].PrimarySMTPAddress
-                    Checking           = $_.User
-                    TypeDetails        = $ADHashType."$($ADHash["$($_.User)"].msExchRecipientTypeDetails)"
-                    DisplayType        = $ADHashDisplay."$($ADHash["$($_.User)"].msExchRecipientDisplayType)"
-                    Permission         = "FullAccess"
+                $HasPerm = $_.User
+                if ($GroupMemberHash[$HasPerm].Members -and
+                    $ADHashDisplay."$($ADHash["$HasPerm"].msExchRecipientDisplayType)" -match 'group') {
+                    foreach ($Member in @($GroupMemberHash[$HasPerm].Members)) {
+                        New-Object -TypeName psobject -property @{
+                            Object             = $ADHashDN["$ADUser"].DisplayName
+                            UserPrincipalName  = $ADHashDN["$ADUser"].UserPrincipalName
+                            PrimarySMTPAddress = $ADHashDN["$ADUser"].PrimarySMTPAddress
+                            Granted            = $UserGroupHash[$Member].DisplayName
+                            GrantedUPN         = $UserGroupHash[$Member].UserPrincipalName
+                            GrantedSMTP        = $UserGroupHash[$Member].PrimarySMTPAddress
+                            Checking           = $HasPerm
+                            TypeDetails        = "GroupMember"
+                            DisplayType        = $ADHashDisplay."$($ADHash["$HasPerm"].msExchRecipientDisplayType)"
+                            Permission         = "FullAccess"
+                        }
+                    }
+                }
+                elseif ( $ADHash["$HasPerm"].objectClass -notmatch 'group') {
+                    New-Object -TypeName psobject -property @{
+                        Object             = $ADHashDN["$ADUser"].DisplayName
+                        UserPrincipalName  = $ADHashDN["$ADUser"].UserPrincipalName
+                        PrimarySMTPAddress = $ADHashDN["$ADUser"].PrimarySMTPAddress
+                        Granted            = $ADHash["$HasPerm"].DisplayName
+                        GrantedUPN         = $ADHash["$HasPerm"].UserPrincipalName
+                        GrantedSMTP        = $ADHash["$HasPerm"].PrimarySMTPAddress
+                        Checking           = $_.User
+                        TypeDetails        = $ADHashType."$($ADHash["$HasPerm"].msExchRecipientTypeDetails)"
+                        DisplayType        = $ADHashDisplay."$($ADHash["$HasPerm"].msExchRecipientDisplayType)"
+                        Permission         = "FullAccess"
+                    }
                 }
             }
         }

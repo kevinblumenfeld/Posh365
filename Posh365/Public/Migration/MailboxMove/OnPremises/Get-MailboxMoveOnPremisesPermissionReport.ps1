@@ -52,12 +52,23 @@
         $DomainNameHash = Get-DomainNameHash
         Write-Verbose "Importing Active Directory Users and Groups that have at least one proxy address"
 
-        $ADUserList = Get-ADUsersandGroupsWithProxyAddress -DomainNameHash $DomainNameHash
+        $ADUserList = Get-ADUsersAndGroups -DomainNameHash $DomainNameHash
+        $UserGroupHash = @{ }
+        $ADUserList | ForEach-Object { $usergrouphash.Add($_.ObjectGuid, @{
+                    'PrimarySmtpAddress' = $_.PrimarySmtpAddress
+                    'DisplayName'        = $_.DisplayName
+                    'UserPrincipalName'  = $_.UserPrincipalName
+                }) }
+
+        $GroupMemberHash = Get-ADGroupMemberHash -DomainNameHash $DomainNameHash -UserGroupHash $UserGroupHash
+
         Write-Verbose "Retrieving all Exchange Mailboxes"
         $MailboxList = Get-Mailbox -ResultSize unlimited
         if ($DelegateSplat.Values -contains $false) {
             $DelegateSplat.Add('MailboxList', $MailboxList)
             $DelegateSplat.Add('ADUserList', $ADUserList)
+            $DelegateSplat.Add('UserGroupHash', $UserGroupHash)
+            $DelegateSplat.Add('GroupMemberHash', $GroupMemberHash)
             Get-MailboxMoveMailboxPermission @DelegateSplat | Export-Csv (Join-Path $ReportPath 'MailboxPermissions.csv') -NoTypeInformation -Encoding UTF8
             $MailboxFile = Join-Path $ReportPath 'MailboxPermissions.csv'
         }

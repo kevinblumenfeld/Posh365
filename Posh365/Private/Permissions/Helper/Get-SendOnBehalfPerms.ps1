@@ -18,7 +18,15 @@ function Get-SendOnBehalfPerms {
 
         [parameter()]
         [hashtable]
-        $ADHashDisplay
+        $ADHashDisplay,
+
+        [parameter()]
+        [hashtable]
+        $UserGroupHash,
+
+        [parameter()]
+        [hashtable]
+        $GroupMemberHash
     )
     begin {
 
@@ -26,28 +34,42 @@ function Get-SendOnBehalfPerms {
     process {
         foreach ($Mailbox in $MailboxList) {
             Write-Verbose "Inspecting: `t $Mailbox"
-            $Display = New-Object System.Collections.Generic.List[string]
-            $UPN = New-Object System.Collections.Generic.List[string]
-            $SMTP = New-Object System.Collections.Generic.List[string]
-            foreach ($GrantedSOB in $Mailbox.GrantSendOnBehalfTo) {
-                $DisplayName = $ADHashCN["$GrantedSOB"].DisplayName
-                $Display.Add($ADHashCN["$GrantedSOB"].DisplayName)
-                $UPN.Add($ADHashCN["$GrantedSOB"].UserPrincipalName)
-                $SMTP.Add($ADHashCN["$GrantedSOB"].PrimarySMTPAddress)
-                Write-Verbose "Has Send On Behalf DN: `t $DisplayName"
-                Write-Verbose "                   CN: `t $GrantedSOB"
-            }
-            New-Object -TypeName psobject -property @{
-                Object             = $Mailbox.DisplayName
-                UserPrincipalName  = $Mailbox.UserPrincipalName
-                PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
-                Granted            = @($Display) -ne '' -join '|'
-                GrantedUPN         = @($UPN) -ne '' -join '|'
-                GrantedSMTP        = @($SMTP) -ne '' -join '|'
-                Checking           = $GrantedSOB
-                TypeDetails        = $ADHashType."$($ADHashCN["$GrantedSOB"].msExchRecipientTypeDetails)"
-                DisplayType        = $ADHashDisplay."$($ADHashCN["$GrantedSOB"].msExchRecipientDisplayType)"
-                Permission         = "SendOnBehalf"
+
+            foreach ($HasPerm in @($Mailbox.GrantSendOnBehalfTo)) {
+                $Logon = $ADHashCN.$HasPerm.logon
+                if ($GroupMemberHash.$Logon.Members -and
+                    $ADHashDisplay."$($ADHashCN["$HasPerm"].msExchRecipientDisplayType)" -match 'group') {
+                    foreach ($Member in @($GroupMemberHash.$Logon.Members)) {
+                        Write-Verbose "  Member: `t $Member"
+                        New-Object -TypeName psobject -property @{
+                            Object             = $Mailbox.DisplayName
+                            UserPrincipalName  = $Mailbox.UserPrincipalName
+                            PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
+                            Granted            = $UserGroupHash[$Member].DisplayName
+                            GrantedUPN         = $UserGroupHash[$Member].UserPrincipalName
+                            GrantedSMTP        = $UserGroupHash[$Member].PrimarySMTPAddress
+                            Checking           = $ADHashCN.$HasPerm.DisplayName
+                            TypeDetails        = "GroupMember"
+                            DisplayType        = $ADHashDisplay."$($ADHashCN["$HasPerm"].msExchRecipientDisplayType)"
+                            Permission         = "SendOnBehalf"
+                        }
+                    }
+                }
+                elseif ( $ADHash["$HasPerm"].objectClass -notmatch 'group') {
+                    Write-Verbose "  CN: `t $HasPerm"
+                    New-Object -TypeName psobject -property @{
+                        Object             = $Mailbox.DisplayName
+                        UserPrincipalName  = $Mailbox.UserPrincipalName
+                        PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
+                        Granted            = $ADHashCN["$HasPerm"].DisplayName
+                        GrantedUPN         = $ADHashCN["$HasPerm"].UserPrincipalName
+                        GrantedSMTP        = $ADHashCN["$HasPerm"].PrimarySMTPAddress
+                        Checking           = $ADHashCN.$HasPerm.DisplayName
+                        TypeDetails        = $ADHashType."$($ADHashCN["$HasPerm"].msExchRecipientTypeDetails)"
+                        DisplayType        = $ADHashDisplay."$($ADHashCN["$HasPerm"].msExchRecipientDisplayType)"
+                        Permission         = "SendOnBehalf"
+                    }
+                }
             }
         }
     }

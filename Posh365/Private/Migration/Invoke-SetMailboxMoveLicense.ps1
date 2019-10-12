@@ -48,7 +48,13 @@ function Invoke-SetMailboxMoveLicense {
 
         [Parameter()]
         [switch]
-        $NoBatch
+        $NoBatch,
+
+        [Parameter()]
+        [switch]
+        $UseTargetUserPrincipalNameColumn
+
+
     )
     end {
         switch ($PSCmdlet.ParameterSetName) {
@@ -74,7 +80,13 @@ function Invoke-SetMailboxMoveLicense {
             foreach ($License in $LicenseDecision.Options) {
                 $LicenseOptions.Add($License, $true)
             }
-            ($UserChoice).UserPrincipalName | Set-CloudLicense @LicenseOptions | Out-GridView -Title "Results of Set Mailbox Move License"
+            if ($UseTargetUserPrincipalNameColumn) {
+                ($UserChoice).TargetUserPrincipalName | Set-CloudLicense @LicenseOptions | Out-GridView -Title "Results of Set Mailbox Move License (using TargetUserPrincipalName column)"
+            }
+            else {
+                ($UserChoice).UserPrincipalName | Set-CloudLicense @LicenseOptions | Out-GridView -Title "Results of Set Mailbox Move License"
+            }
+
         }
     }
 }

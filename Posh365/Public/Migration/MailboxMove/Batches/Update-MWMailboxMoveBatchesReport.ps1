@@ -107,6 +107,7 @@ function Update-MWMailboxMoveBatchesReport {
             'SourceTenantAddress'
             'TargetTenantAddress'
             'TargetPrimary'
+            'TargetUserPrincipalName'
             'FirstName'
             'LastName'
             'UserPrincipalName'

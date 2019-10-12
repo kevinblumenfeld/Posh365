@@ -14,6 +14,8 @@
                 PrimarySMTPAddress         = $ADUser.PrimarySMTPAddress
                 msExchRecipientTypeDetails = $ADUser.msExchRecipientTypeDetails
                 msExchRecipientDisplayType = $ADUser.msExchRecipientDisplayType
+                Objectguid                 = $ADUser.Objectguid
+                objectClass                = $ADUser.objectClass
             }
         }
     }

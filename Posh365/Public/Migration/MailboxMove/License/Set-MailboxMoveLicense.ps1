@@ -44,22 +44,28 @@ function Set-MailboxMoveLicense {
         [Parameter(Mandatory, ParameterSetName = 'CSV')]
         [ValidateNotNullOrEmpty()]
         [string]
-        $MailboxCSV
+        $MailboxCSV,
+
+        [Parameter()]
+        [switch]
+        $UseTargetUserPrincipalNameColumn
     )
     end {
         switch ($PSCmdlet.ParameterSetName) {
             'SharePoint' {
                 $SharePointSplat = @{
-                    SharePointURL = $SharePointURL
-                    ExcelFile     = $ExcelFile
-                    NoBatch       = $true
+                    SharePointURL                    = $SharePointURL
+                    ExcelFile                        = $ExcelFile
+                    NoBatch                          = $true
+                    UseTargetUserPrincipalNameColumn = $UseTargetUserPrincipalNameColumn
                 }
                 Invoke-SetMailboxMoveLicense @SharePointSplat
             }
             'CSV' {
                 $CSVSplat = @{
-                    MailboxCSV = $MailboxCSV
-                    NoBatch    = $true
+                    MailboxCSV                       = $MailboxCSV
+                    NoBatch                          = $true
+                    UseTargetUserPrincipalNameColumn = $UseTargetUserPrincipalNameColumn
                 }
                 Invoke-SetMailboxMoveLicense @CSVSplat
             }

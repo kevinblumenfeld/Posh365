@@ -740,6 +740,7 @@ function Get-365Info {
                     }
                     'TargetTenantAddress'
                     'TargetPrimary'
+                    'TargetUserPrincipalName'
                     @{
                         Name       = 'FirstName'
                         Expression = { $MsolHash.$($_.UserPrincipalName).FirstName }

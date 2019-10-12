@@ -26,30 +26,58 @@
 
         [parameter()]
         [hashtable]
-        $ADHashDisplay
+        $ADHashDisplay,
+
+        [parameter()]
+        [hashtable]
+        $UserGroupHash,
+
+        [parameter()]
+        [hashtable]
+        $GroupMemberHash
     )
     process {
-        foreach ($DN in $DistinguishedName) {
-            Write-Verbose "Inspecting:`t $DN"
-            Get-ADPermission $DN | Where-Object {
+        foreach ($ADUser in $DistinguishedName) {
+            Write-Verbose "Inspecting:`t $ADUser"
+            Get-ADPermission $ADUser | Where-Object {
                 $_.ExtendedRights -like "*Send-As*" -and
                 ($_.IsInherited -eq $false) -and
                 !($_.User -like "NT AUTHORITY\SELF") -and
                 !($_.User.tostring().startswith('S-1-5-21-')) -and
                 !$_.Deny
             } | ForEach-Object {
-                Write-Verbose "Has Send As:`t $($_.User)"
-                New-Object -TypeName psobject -property @{
-                    Object             = $ADHashDN["$DN"].DisplayName
-                    UserPrincipalName  = $ADHashDN["$DN"].UserPrincipalName
-                    PrimarySMTPAddress = $ADHashDN["$DN"].PrimarySMTPAddress
-                    Granted            = $ADHash["$($_.User)"].DisplayName
-                    GrantedUPN         = $ADHash["$($_.User)"].UserPrincipalName
-                    GrantedSMTP        = $ADHash["$($_.User)"].PrimarySMTPAddress
-                    Checking           = $_.User
-                    TypeDetails        = $ADHashType."$($ADHash["$($_.User)"].msExchRecipientTypeDetails)"
-                    DisplayType        = $ADHashDisplay."$($ADHash["$($_.User)"].msExchRecipientDisplayType)"
-                    Permission         = "SendAs"
+                $HasPerm = $_.User
+                if ($GroupMemberHash[$HasPerm].Members -and
+                    $ADHashDisplay."$($ADHash["$HasPerm"].msExchRecipientDisplayType)" -match 'group') {
+                    foreach ($Member in @($GroupMemberHash[$HasPerm].Members)) {
+                        New-Object -TypeName psobject -property @{
+                            Object             = $ADHashDN["$ADUser"].DisplayName
+                            UserPrincipalName  = $ADHashDN["$ADUser"].UserPrincipalName
+                            PrimarySMTPAddress = $ADHashDN["$ADUser"].PrimarySMTPAddress
+                            Granted            = $UserGroupHash[$Member].DisplayName
+                            GrantedUPN         = $UserGroupHash[$Member].UserPrincipalName
+                            GrantedSMTP        = $UserGroupHash[$Member].PrimarySMTPAddress
+                            Checking           = $HasPerm
+                            TypeDetails        = "GroupMember"
+                            DisplayType        = $ADHashDisplay."$($ADHash["$HasPerm"].msExchRecipientDisplayType)"
+                            Permission         = "SendAs"
+                        }
+                    }
+                }
+                elseif ( $ADHash["$HasPerm"].objectClass -notmatch 'group') {
+                    Write-Verbose "Has Send As:`t $($HasPerm)"
+                    New-Object -TypeName psobject -property @{
+                        Object             = $ADHashDN["$ADUser"].DisplayName
+                        UserPrincipalName  = $ADHashDN["$ADUser"].UserPrincipalName
+                        PrimarySMTPAddress = $ADHashDN["$ADUser"].PrimarySMTPAddress
+                        Granted            = $ADHash["$($HasPerm)"].DisplayName
+                        GrantedUPN         = $ADHash["$($HasPerm)"].UserPrincipalName
+                        GrantedSMTP        = $ADHash["$($HasPerm)"].PrimarySMTPAddress
+                        Checking           = $HasPerm
+                        TypeDetails        = $ADHashType."$($ADHash["$($HasPerm)"].msExchRecipientTypeDetails)"
+                        DisplayType        = $ADHashDisplay."$($ADHash["$($HasPerm)"].msExchRecipientDisplayType)"
+                        Permission         = "SendAs"
+                    }
                 }
             }
         }

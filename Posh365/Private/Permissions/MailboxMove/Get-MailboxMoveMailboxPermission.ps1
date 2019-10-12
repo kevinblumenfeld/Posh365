@@ -25,7 +25,15 @@
 
         [parameter()]
         [hashtable]
-        $ADHashDisplay
+        $ADHashDisplay,
+
+        [parameter()]
+        [hashtable]
+        $UserGroupHash,
+
+        [parameter()]
+        [hashtable]
+        $GroupMemberHash
     )
     end {
         Write-Verbose "Caching hashtable. LogonName as Key and Values of DisplayName & UPN"
@@ -44,16 +52,20 @@
             'GrantedSMTP', 'Checking', 'TypeDetails', 'DisplayType', 'Permission'
         )
         $ParamSplat = @{
-            ADHashDN      = $ADHashDN
-            ADHash        = $ADHash
-            ADHashType    = $ADHashType
-            ADHashDisplay = $ADHashDisplay
+            ADHashDN        = $ADHashDN
+            ADHash          = $ADHash
+            ADHashType      = $ADHashType
+            ADHashDisplay   = $ADHashDisplay
+            UserGroupHash   = $UserGroupHash
+            GroupMemberHash = $GroupMemberHash
         }
         $ParamSOBSplat = @{
-            ADHashCN      = $ADHashCN
-            ADHashDN      = $ADHashDN
-            ADHashType    = $ADHashType
-            ADHashDisplay = $ADHashDisplay
+            ADHashCN        = $ADHashCN
+            ADHashDN        = $ADHashDN
+            ADHashType      = $ADHashType
+            ADHashDisplay   = $ADHashDisplay
+            UserGroupHash   = $UserGroupHash
+            GroupMemberHash = $GroupMemberHash
         }
         if (-not $SkipSendAs) {
             Write-Verbose "Getting SendAs permissions for each mailbox and writing to file"
