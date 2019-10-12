@@ -14,7 +14,15 @@ function Get-MailboxFolderPerms {
 
         [parameter()]
         [hashtable]
-        $ADHashDisplay
+        $ADHashDisplay,
+
+        [parameter()]
+        [hashtable]
+        $UserGroupHash,
+
+        [parameter()]
+        [hashtable]
+        $GroupMemberHash
     )
     begin {
 
@@ -60,17 +68,39 @@ function Get-MailboxFolderPerms {
             }
             If ($InboxAccessList) {
                 Foreach ($InboxAccess in $InboxAccessList) {
-                    New-Object -TypeName psobject -property @{
-                        Object             = $Mailbox.DisplayName
-                        UserPrincipalName  = $Mailbox.UserPrincipalName
-                        PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
-                        Folder             = 'INBOX'
-                        AccessRights       = ($InboxAccess.AccessRights) -join ','
-                        Granted            = $InboxAccess.User
-                        GrantedUPN         = $ADHashDisplayName."$($InboxAccess.User)".UserPrincipalName
-                        GrantedSMTP        = $ADHashDisplayName."$($InboxAccess.User)".PrimarySMTPAddress
-                        TypeDetails        = $ADHashType."$($ADHashDisplayName."$($InboxAccess.User)".msExchRecipientTypeDetails)"
-                        DisplayType        = $ADHashDisplay."$($ADHashDisplayName."$($InboxAccess.User)".msExchRecipientDisplayType)"
+                    $Logon = $ADHashDisplayName[$InboxAccess.User].logon
+                    $DisplayType = $ADHashDisplayName[$InboxAccess.User].msExchRecipientDisplayType
+                    if ($GroupMemberHash[$Logon].Members -and
+                        $ADHashDisplay["$DisplayType"] -match 'group') {
+                        foreach ($Member in @($GroupMemberHash.$Logon.Members)) {
+                            Write-Verbose "  Member:`t$Member"
+                            New-Object -TypeName psobject -property @{
+                                Object             = $Mailbox.DisplayName
+                                UserPrincipalName  = $Mailbox.UserPrincipalName
+                                PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
+                                Folder             = 'INBOX'
+                                AccessRights       = ($InboxAccess.AccessRights) -join ','
+                                Granted            = $UserGroupHash[$Member].DisplayName
+                                GrantedUPN         = $UserGroupHash[$Member].UserPrincipalName
+                                GrantedSMTP        = $UserGroupHash[$Member].PrimarySMTPAddress
+                                TypeDetails        = "GroupMember"
+                                DisplayType        = $ADHashDisplay."$($ADHashDisplayName."$($InboxAccess.User)".msExchRecipientDisplayType)"
+                            }
+                        }
+                    }
+                    elseif ( $ADHashDisplayName[$InboxAccess.User].objectClass -notmatch 'group') {
+                        New-Object -TypeName psobject -property @{
+                            Object             = $Mailbox.DisplayName
+                            UserPrincipalName  = $Mailbox.UserPrincipalName
+                            PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
+                            Folder             = 'INBOX'
+                            AccessRights       = ($InboxAccess.AccessRights) -join ','
+                            Granted            = $InboxAccess.User
+                            GrantedUPN         = $ADHashDisplayName."$($InboxAccess.User)".UserPrincipalName
+                            GrantedSMTP        = $ADHashDisplayName."$($InboxAccess.User)".PrimarySMTPAddress
+                            TypeDetails        = $ADHashType."$($ADHashDisplayName."$($InboxAccess.User)".msExchRecipientTypeDetails)"
+                            DisplayType        = $ADHashDisplay."$($ADHashDisplayName."$($InboxAccess.User)".msExchRecipientDisplayType)"
+                        }
                     }
                 }
             }

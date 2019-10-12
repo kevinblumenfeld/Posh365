@@ -27,6 +27,9 @@
             ADHashDisplayName = $ADHashDisplayName
             ADHashType        = $ADHashType
             ADHashDisplay     = $ADHashDisplay
+            UserGroupHash     = $UserGroupHash
+            GroupMemberHash   = $GroupMemberHash
+
         }
         Write-Verbose "Getting Folder Permissions for each mailbox and writing to file"
         $MailboxList | Get-MailboxFolderPerms @FolderPermSplat | Select-Object $FolderSelect
