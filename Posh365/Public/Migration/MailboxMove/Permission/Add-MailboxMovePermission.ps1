@@ -42,15 +42,18 @@ function Add-MailboxMovePermission {
     )
     end {
 
-        $SetPermSplat = @{'PassThru' = $true }
-        $AddPerm = @{'AutoMap' = $AutoMap }
+        $GetPermSplat = @{
+            'PassThru'        = $true
+            'IncludeMigrated' = $true
+        }
+        $AddPermSplat = @{'AutoMap' = $AutoMap }
         switch ($PSBoundParameters.Keys) {
-            'SharePointURL' { $SetPermSplat.Add('SharePointURL', $SharePointURL) }
-            'ExcelFile' { $SetPermSplat.Add('ExcelFile', $ExcelFile) }
+            'SharePointURL' { $GetPermSplat.Add('SharePointURL', $SharePointURL) }
+            'ExcelFile' { $GetPermSplat.Add('ExcelFile', $ExcelFile) }
             Default { }
         }
-        $PermissionList = Get-MailboxMovePermission @SetPermSplat
-        $PermissionList | Invoke-AddMailboxMovePermission @AddPerm | Out-GridView -Title 'Mailbox move permission add results'
+        $PermissionList = Get-MailboxMovePermission @GetPermSplat
+        $PermissionList | Invoke-AddMailboxMovePermission @AddPermSplat | Out-GridView -Title 'Mailbox move permission add results'
     }
 }
 

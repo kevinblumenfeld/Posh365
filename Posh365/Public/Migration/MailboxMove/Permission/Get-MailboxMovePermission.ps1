@@ -111,4 +111,3 @@ function Get-MailboxMovePermission {
         }
     }
 }
-#Get-MailboxMovePermission -SharePointURL 'https://corebtstest.sharepoint.com/sites/mkevin' -ExcelFile 'Batches.xlsx'
