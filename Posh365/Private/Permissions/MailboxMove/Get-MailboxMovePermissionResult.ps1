@@ -11,6 +11,10 @@ function Get-MailboxMovePermissionResult {
         [string]
         $ExcelFile,
 
+        [Parameter()]
+        [switch]
+        $IncludeMigrated,
+
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         $UserChoiceRegex,
@@ -22,6 +26,9 @@ function Get-MailboxMovePermissionResult {
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         $DirectionChoice,
+
+        [Parameter()]
+        $BatchHash,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -43,7 +50,13 @@ function Get-MailboxMovePermissionResult {
                 DirectionChoice   = $DirectionChoice
                 MailboxPermission = $MailboxPermission
             }
-            Get-MailboxMoveDelegateResult @DelegateResult | Select-Object @(
+            Get-MailboxMoveDelegateResult @DelegateResult | Where-Object {
+                $BatchHash[$_.PrimarySmtpAddress].isMigrated -ne (-not $IncludeMigrated) -and $BatchHash[$_.GrantedSMTP].isMigrated -ne (-not $IncludeMigrated)
+            } | Select-Object @(
+                @{
+                    Name       = 'BatchName'
+                    Expression = { $BatchHash[$_.PrimarySmtpAddress].BatchName }
+                }
                 @{
                     Name       = 'Location'
                     Expression = { 'Mailbox' }
@@ -56,6 +69,10 @@ function Get-MailboxMovePermissionResult {
                 @{
                     Name       = 'Type'
                     Expression = 'DisplayType'
+                }
+                @{
+                    Name       = 'GrantedBatch'
+                    Expression = { $BatchHash[$_.GrantedSMTP].BatchName }
                 }
             )
         }
@@ -78,7 +95,13 @@ function Get-MailboxMovePermissionResult {
             else {
                 $FolderOrRights = 'AccessRights'
             }
-            Get-MailboxMoveFolderResult @FolderResult | Select-Object @(
+            Get-MailboxMoveFolderResult @FolderResult | Where-Object {
+                $BatchHash[$_.PrimarySmtpAddress].isMigrated -ne (-not $IncludeMigrated) -and $BatchHash[$_.GrantedSMTP].isMigrated -ne (-not $IncludeMigrated)
+            } | Select-Object @(
+                @{
+                    Name       = 'BatchName'
+                    Expression = { $BatchHash[$_.PrimarySmtpAddress].BatchName }
+                }
                 @{
                     Name       = 'Location'
                     Expression = 'Folder'
@@ -94,6 +117,10 @@ function Get-MailboxMovePermissionResult {
                 @{
                     Name       = 'Type'
                     Expression = 'DisplayType'
+                }
+                @{
+                    Name       = 'GrantedBatch'
+                    Expression = { $BatchHash[$_.GrantedSMTP].BatchName }
                 }
             )
         }

@@ -41,6 +41,14 @@ function Get-MailboxMovePermission {
         [string]
         $ExcelFile,
 
+        [Parameter(ParameterSetName = 'SharePoint')]
+        [switch]
+        $IncludeMigrated,
+
+        [Parameter(ParameterSetName = 'SharePoint')]
+        [switch]
+        $SkipBatchesLookup,
+
         [Parameter()]
         [switch]
         $Remove,
@@ -59,12 +67,23 @@ function Get-MailboxMovePermission {
                     NoConfirmation = $true
                 }
                 $UserChoice = Import-SharePointExcelDecision @SharePointSplat
+                $BatchHash = @{ }
+                if (-not $SkipBatchesLookup) {
+                    Import-SharePointExcel -SharePointURL $SharePointURL -ExcelFile $ExcelFile | ForEach-Object {
+                        if (-not $BatchHash.ContainsKey($_.PrimarySMTPAddress)) {
+                            $BatchHash.Add($_.PrimarySMTPAddress, @{
+                                    BatchName  = $_.BatchName
+                                    IsMigrated = $_.IsMigrated
+                                })
+                        }
+                    }
+                }
             }
             'CSV' {
                 $UserChoice = Import-MailboxCsvDecision -MailboxCSV $MailboxCSV
             }
         }
-        $UserChoiceRegex = ($UserChoice.UserPrincipalName | ForEach-Object { [Regex]::Escape($_) }) -join '|'
+        $UserChoiceRegex = ($UserChoice.PrimarySMTPAddress | ForEach-Object { [Regex]::Escape($_) }) -join '|'
         $PermissionChoice = Get-PermissionDecision
         $DirectionChoice = Get-PermissionDirectionDecision
 
@@ -78,6 +97,12 @@ function Get-MailboxMovePermission {
         if ($Remove) {
             $PermissionResult.Add('Remove', $true)
         }
+        if ($BatchHash) {
+            $PermissionResult.Add('BatchHash', $BatchHash)
+        }
+        if ($IncludeMigrated) {
+            $PermissionResult.Add('IncludeMigrated', $IncludeMigrated)
+        }
         if ($PassThru) {
             Get-MailboxMovePermissionResult @PermissionResult | Out-GridView -Title "Permission Results" -OutputMode Multiple
         }
@@ -86,4 +111,4 @@ function Get-MailboxMovePermission {
         }
     }
 }
-
+#Get-MailboxMovePermission -SharePointURL 'https://corebtstest.sharepoint.com/sites/mkevin' -ExcelFile 'Batches.xlsx'

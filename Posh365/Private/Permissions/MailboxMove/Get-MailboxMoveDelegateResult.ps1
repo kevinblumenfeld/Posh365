@@ -20,11 +20,11 @@ function Get-MailboxMoveDelegateResult {
 
         $OrElements = foreach ($Direction in $DirectionChoice.Options) {
             if ($Direction -match 'delegates') {
-                '$_.Userprincipalname -match $UserChoiceRegex'
+                '$_.PrimarySMTPAddress -match $UserChoiceRegex'
             }
 
             if ($Direction -match 'delegated') {
-                '$_.GrantedUPN -match $UserChoiceRegex'
+                '$_.GrantedSMTP -match $UserChoiceRegex'
             }
         }
         $AndElements = '$_.Permission -match $MailboxPermissionRegex'

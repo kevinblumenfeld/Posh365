@@ -1,4 +1,4 @@
-﻿Function Get-ADHashCN {
+﻿function Get-ADHashCN {
     param (
         [parameter(ValueFromPipeline = $true)]
         $ADUserList
