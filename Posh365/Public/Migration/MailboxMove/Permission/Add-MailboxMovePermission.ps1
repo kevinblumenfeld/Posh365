@@ -43,8 +43,9 @@ function Add-MailboxMovePermission {
     end {
 
         $GetPermSplat = @{
-            'PassThru'        = $true
-            'IncludeMigrated' = $true
+            'PassThru'         = $true
+            'IncludeMigrated'  = $true
+            'UseApplyFunction' = $true
         }
         $AddPermSplat = @{'AutoMap' = $AutoMap }
         switch ($PSBoundParameters.Keys) {

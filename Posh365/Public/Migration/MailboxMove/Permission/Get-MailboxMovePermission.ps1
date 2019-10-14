@@ -41,13 +41,17 @@ function Get-MailboxMovePermission {
         [string]
         $ExcelFile,
 
-        [Parameter(ParameterSetName = 'SharePoint')]
+        [Parameter()]
         [switch]
         $IncludeMigrated,
 
-        [Parameter(ParameterSetName = 'SharePoint')]
+        [Parameter()]
         [switch]
         $SkipBatchesLookup,
+
+        [Parameter()]
+        [switch]
+        $UseApplyFunction,
 
         [Parameter()]
         [switch]
@@ -102,6 +106,10 @@ function Get-MailboxMovePermission {
         }
         if ($IncludeMigrated) {
             $PermissionResult.Add('IncludeMigrated', $IncludeMigrated)
+        }
+        if ($UseApplyFunction) {
+            Get-MailboxMoveApplyPermissionResult @PermissionResult | Out-GridView -Title "Choose which permissions to apply" -OutputMode Multiple
+            return
         }
         if ($PassThru) {
             Get-MailboxMovePermissionResult @PermissionResult | Out-GridView -Title "Permission Results" -OutputMode Multiple
