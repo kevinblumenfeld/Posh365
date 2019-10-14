@@ -10,7 +10,7 @@
     $dc = ([System.DirectoryServices.ActiveDirectory.GlobalCatalog]::FindOne($context, [System.DirectoryServices.ActiveDirectory.LocatorOptions]'ForceRediscovery, WriteableRequired')).name
     $GroupMemberHash = @{ }
     $GroupParams = @{
-        Filter      = '*'
+        LDAPFilter  = "(!(SamAccountName=Domain Computers))"
         Server      = ($dc + ':3268')
         SearchBase  = (Get-ADRootDSE).rootdomainnamingcontext
         SearchScope = 'Subtree'
