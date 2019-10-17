@@ -63,7 +63,7 @@
         $GroupMemberHash = Get-ADGroupMemberHash -DomainNameHash $DomainNameHash -UserGroupHash $UserGroupHash
 
         Write-Verbose "Retrieving all Exchange Mailboxes"
-        $MailboxList = Get-Mailbox -ResultSize unlimited
+        $MailboxList = Get-Mailbox -ResultSize Unlimited -IgnoreDefaultScope
         if ($DelegateSplat.Values -contains $false) {
             $DelegateSplat.Add('MailboxList', $MailboxList)
             $DelegateSplat.Add('ADUserList', $ADUserList)
