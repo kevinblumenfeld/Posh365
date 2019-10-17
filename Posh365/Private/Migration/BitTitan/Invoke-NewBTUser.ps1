@@ -24,7 +24,7 @@ function Invoke-NewBTUser {
                 try {
                     $Result = Add-BT_CustomerEndUser @Param -WarningAction SilentlyContinue -ErrorAction Stop
                     [PSCustomObject]@{
-                        'DisplayName'        = '{0} {1}' -f $_.FirstName, $_.LastName
+                        'DisplayName'        = '{0} {1}' -f $Result.FirstName, $Result.LastName
                         'PrimarySmtpAddress' = $Result.PrimaryEmailAddress
                         'UserPrincipalName'  = $Result.UserPrincipalName
                         'Result'             = 'SUCCESS'
@@ -36,9 +36,9 @@ function Invoke-NewBTUser {
                 }
                 catch {
                     [PSCustomObject]@{
-                        'DisplayName'        = '{0} {1}' -f $_.FirstName, $_.LastName
-                        'PrimarySmtpAddress' = $Result.PrimaryEmailAddress
-                        'UserPrincipalName'  = $Result.UserPrincipalName
+                        'DisplayName'        = '{0} {1}' -f $User.FirstName, $User.LastName
+                        'PrimarySmtpAddress' = $User.PrimaryEmailAddress
+                        'UserPrincipalName'  = $User.UserPrincipalName
                         'Result'             = 'FAILED'
                         'Log'                = $_.Exception.Message
                         'Action'             = 'NEW'
