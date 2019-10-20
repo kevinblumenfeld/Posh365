@@ -35,7 +35,7 @@ function Invoke-SetDeploymentProSchedule {
                         CustomerId              = $CustomerId.Id
                         ProductSkuId            = '6D8A5E88-2116-497B-874F-38663EF0EBE8'
                         UserPrimaryEmail        = $Schedule.PrimaryEmailAddress
-                        DestinationEmailAddress = $Schedule.UserPrincipalName
+                        DestinationEmailAddress = $Schedule.PrimaryEmailAddress
                         Environment             = 'BT'
                         StartTime               = ($DateTimeUTC).ToString('o')
                         ErrorAction             = 'Stop'
@@ -46,7 +46,7 @@ function Invoke-SetDeploymentProSchedule {
                         'DateTimeUTC'         = $DateTimeUTC
                         'DateTimeLOCAL'       = $DateTimeUTC.ToLocalTime()
                         'PrimaryEmailAddress' = $Schedule.PrimaryEmailAddress
-                        'UserPrincipalName'   = $Schedule.UserPrincipalName
+                        'UserPrincipalName'   = $Schedule.PrimaryEmailAddress
                         'Result'              = 'SUCCESS'
                         'Log'                 = 'SUCCESS'
                         'Action'              = 'SCHEDULE'
@@ -61,7 +61,7 @@ function Invoke-SetDeploymentProSchedule {
                         'DateTimeUTC'         = $DateTimeUTC
                         'DateTimeLOCAL'       = $DateTimeUTC.ToLocalTime()
                         'PrimaryEmailAddress' = $Schedule.PrimaryEmailAddress
-                        'UserPrincipalName'   = $Schedule.UserPrincipalName
+                        'UserPrincipalName'   = $Schedule.PrimaryEmailAddress
                         'Result'              = 'FAILED'
                         'Log'                 = $_.Exception.Message
                         'Action'              = 'SCHEDULE'

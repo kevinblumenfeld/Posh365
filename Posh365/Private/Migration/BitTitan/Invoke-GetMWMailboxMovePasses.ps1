@@ -22,6 +22,10 @@ function Invoke-GetMWMailboxMovePasses {
                     Name       = 'FolderFilter'
                     Expression = { $Mailbox.FolderFilter }
                 }
+                @{
+                    Name       = 'NumberOfDays'
+                    Expression = { if ($_.Type -ne 'Verification') { (New-TimeSpan -Start $_.ItemEndDate -End (Get-Date)).Days } }
+                }
                 'ItemTypes'
                 'StartDate'
                 'CompleteDate'

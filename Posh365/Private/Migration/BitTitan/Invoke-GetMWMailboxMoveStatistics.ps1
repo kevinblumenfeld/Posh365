@@ -47,6 +47,10 @@ function Invoke-GetMWMailboxMoveStatistics {
                     Name       = 'CreateDateLocal'
                     Expression = { (($_.CreateDate).ToLocalTime()) }
                 }
+                @{
+                    Name       = 'Id'
+                    Expression = { $Mailbox.Id }
+                }
             )
         }
     }
