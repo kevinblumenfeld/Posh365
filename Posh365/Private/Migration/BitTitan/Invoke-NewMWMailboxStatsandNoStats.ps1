@@ -10,7 +10,7 @@ function Invoke-NewMWMailboxStatsandNoStats {
     }
     process {
         foreach ($Mailbox in $MailboxList) {
-            $Stat = Get-MW_MailboxStat -MailboxID $Mailbox.Id
+            $Stat = Get-MW_MailboxStat -MailboxID $Mailbox.Id -RetrieveAll:$true
             if ($Stat) {
                 $Stat | Select-Object @(
                     @{

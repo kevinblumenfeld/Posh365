@@ -5,6 +5,6 @@ function Get-MWMailboxConnector {
 
     )
     end {
-        Get-MW_MailboxConnector -Ticket $MigWizTicket
+        Get-MW_MailboxConnector -Ticket $MigWizTicket -RetrieveAll:$true
     }
 }

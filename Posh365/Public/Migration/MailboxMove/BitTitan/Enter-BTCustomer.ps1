@@ -12,7 +12,7 @@ function Enter-BTCustomer {
         if ($CustomerChoice) {
             Write-Host "CompanyName: $($CustomerChoice.CompanyName)"
             $Script:BitTic = Get-BT_Ticket -Ticket $BitTic -OrganizationId $CustomerChoice.OrganizationId -Environment BT
-            $Script:CustomerId = Get-BT_Customer -Ticket $BitTic
+            $Script:CustomerId = Get-BT_Customer -Ticket $BitTic -RetrieveAll:$true
             $host.ui.RawUI.WindowTitle = "BitTitan Project: *** $($CustomerChoice.CompanyName) ***"
         }
         else {

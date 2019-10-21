@@ -10,7 +10,7 @@ function Invoke-GetMWMailboxMoveStatistics {
     }
     process {
         foreach ($Mailbox in $MailboxList) {
-            Get-MW_MailboxStat -MailboxID $Mailbox.Id | Select-Object @(
+            Get-MW_MailboxStat -MailboxID $Mailbox.Id -RetrieveAll:$true | Select-Object @(
                 @{
                     Name       = 'Source'
                     Expression = { $Mailbox.ExportEmailAddress }

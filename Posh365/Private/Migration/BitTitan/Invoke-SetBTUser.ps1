@@ -14,6 +14,7 @@ function Invoke-SetBTUser {
                 PrimaryEmailAddress = $User.SourcePrimary
                 WarningAction       = 'SilentlyContinue'
                 ErrorAction         = 'Stop'
+                RetrieveAll         = $true
             }
             $Set = @{
                 WarningAction = 'SilentlyContinue'

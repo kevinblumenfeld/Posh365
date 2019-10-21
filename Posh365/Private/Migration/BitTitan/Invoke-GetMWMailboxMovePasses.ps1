@@ -7,7 +7,7 @@ function Invoke-GetMWMailboxMovePasses {
     )
     process {
         foreach ($Mailbox in $MailboxList) {
-            Get-MW_MailboxMigration -MailboxId $Mailbox.Id | Select-Object @(
+            Get-MW_MailboxMigration -MailboxId $Mailbox.Id -RetrieveAll | Select-Object @(
                 @{
                     Name       = 'Source'
                     Expression = { $Mailbox.Source }

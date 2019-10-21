@@ -5,6 +5,6 @@ function Invoke-GetMWMailboxMove {
 
     )
     end {
-        Get-MW_Mailbox -Ticket $MigWizTicket -ConnectorId $MWProject.Id
+        Get-MW_Mailbox -Ticket $MigWizTicket -ConnectorId $MWProject.Id -RetrieveAll:$true
     }
 }

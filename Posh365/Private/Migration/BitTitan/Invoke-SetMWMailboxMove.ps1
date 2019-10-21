@@ -37,7 +37,7 @@ function Invoke-SetMWMailboxMove {
             }
             if ($GetParam.ExportEmailAddress) {
                 try {
-                    $GetMailbox = Get-MW_Mailbox @GetParam -WarningAction SilentlyContinue -ErrorAction Stop
+                    $GetMailbox = Get-MW_Mailbox @GetParam -WarningAction SilentlyContinue -ErrorAction Stop -RetrieveAll:$true
                     [PSCustomObject]@{
                         'DisplayName' = $User.DisplayName
                         'Source'      = $GetMailbox.ExportEmailAddress

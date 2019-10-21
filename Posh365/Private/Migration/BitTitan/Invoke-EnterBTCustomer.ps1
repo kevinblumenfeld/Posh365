@@ -5,6 +5,6 @@ function Invoke-EnterBTCustomer {
 
     )
     end {
-        Get-BT_Customer -RetrieveAll -IsArchived:$False -SortBy_Updated_Descending
+        Get-BT_Customer -RetrieveAll:$true -IsArchived:$False -SortBy_Updated_Descending
     }
 }

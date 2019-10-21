@@ -24,6 +24,7 @@ function Invoke-GetDeploymentProStatistics {
             Ticket      = $BitTic
             Environment = 'BT'
             IsDeleted   = $false
+            RetrieveAll = $true
         }
         if (-not $AllModules) { $DevUserSplat.Add('ModuleName', 'OutlookConfigurator') }
     }
