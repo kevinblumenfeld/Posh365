@@ -98,24 +98,19 @@ function Get-MailboxMovePermission {
             PermissionChoice = $PermissionChoice
             DirectionChoice  = $DirectionChoice
         }
-        if ($Remove) {
-            $PermissionResult.Add('Remove', $true)
-        }
-        if ($BatchHash) {
-            $PermissionResult.Add('BatchHash', $BatchHash)
-        }
-        if ($IncludeMigrated) {
-            $PermissionResult.Add('IncludeMigrated', $IncludeMigrated)
-        }
-        if ($UseApplyFunction) {
-            Get-MailboxMoveApplyPermissionResult @PermissionResult | Out-GridView -Title "Choose which permissions to apply" -OutputMode Multiple
-            return
-        }
-        if ($PassThru) {
-            Get-MailboxMovePermissionResult @PermissionResult | Out-GridView -Title "Permission Results" -OutputMode Multiple
-        }
-        else {
-            Get-MailboxMovePermissionResult @PermissionResult | Out-GridView -Title "Permission Results"
+        switch ($true) {
+            { $BatchHash } { $PermissionResult.Add('BatchHash', $BatchHash) }
+            $Remove { $PermissionResult.Add('Remove', $true) }
+            $IncludeMigrated { $PermissionResult.Add('IncludeMigrated', $IncludeMigrated) }
+            $UseApplyFunction {
+                Get-MailboxMoveApplyPermissionResult @PermissionResult | Out-GridView -Title "Choose which permissions to apply" -OutputMode Multiple
+                return
+            }
+            $PassThru { Get-MailboxMovePermissionResult @PermissionResult | Out-GridView -Title "Permission Results" -OutputMode Multiple }
+            { -not $PassThru -and -not $Link -and -not $UseApplyFunction } {
+                Get-MailboxMovePermissionResult @PermissionResult | Out-GridView -Title "Permission Results"
+            }
+            Default { }
         }
     }
 }
