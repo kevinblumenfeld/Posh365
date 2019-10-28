@@ -19,7 +19,7 @@ function Get-MailboxMovePermissionLink {
     Minimum headers required are: BatchName, UserPrincipalName
 
     .EXAMPLE
-    Get-MailboxMovePermission -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx'
+    Get-MailboxMovePermissionLink -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx'
 
     .NOTES
     General notes
