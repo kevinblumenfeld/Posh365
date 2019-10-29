@@ -41,18 +41,21 @@ function Get-MailboxMovePermissionBatchDecision {
         if (-not $UserChoice.PrimarySMTPAddress) {
             break
         }
-        if (-not ($PermissionChoice = Get-PermissionDecisionBatch)) {
-            break
+        switch ($PermissionChoice = Get-PermissionDecisionBatch) {
+            { $PermissionChoice.Options.Contains('AddToBatch') -and $PermissionChoice.Options.Count -ne 1 } {
+                do {
+                    $PermissionChoice = Get-PermissionDecisionBatch
+                } until ($PermissionChoice.Options.Contains('AddToBatch') -and $PermissionChoice.Options.Count -eq 1 -or
+                    -not $PermissionChoice.Options.Contains('AddToBatch') -and $PermissionChoice.Options.Count -gt 0)
+            }
+            { $PermissionChoice.Options.Contains('AddToBatch') -and $PermissionChoice.Options.Count -eq 1 } {
+                Update-MailboxMovePermissionBatchHelper -UserChoice $UserChoice -BatchLink $BatchLink -UserInputBatch $UserInputBatch | OGV
+                return
+            }
+            { $PermissionChoice.Option.Count -lt 1 } { return }
+            Default { }
         }
-        if ($PermissionChoice.PSObject.Properties.match('AddToBatch') -and $PermissionChoice.Count -ne 1) {
-            do {
-                $PermissionChoice = Get-PermissionDecisionBatch
-            } until (-not ($PermissionChoice -contains 'AddToBatch' -and $PermissionChoice.Count -gt 1) -or $PermissionChoice -notcontains 'AddToBatch')
-        }
-        if ($PermissionChoice -contains 'AddToBatch' -and $UserChoice) {
-            Update-MailboxMovePermissionBatchHelper -UserChoice $UserChoice -BatchLink $BatchLink -UserInputBatch $UserInputBatch
-            break
-        }
+
         if (-not ($DirectionChoice = Get-PermissionDirectionDecision)) {
             break
         }
