@@ -27,7 +27,7 @@ function Update-MailboxMovePermissionBatchHelper {
         $BatchLink | Select-Object -ExcludeProperty BatchName -Property @(
             @{
                 Name       = "BatchName"
-                Expression = { if ($_.PrimarySmtpAddress -in $UserChoice) {
+                Expression = { if ($_.PrimarySmtpAddress -in $UserChoice.PrimarySmtpAddress) {
                         $UserInputBatch
                     }
                     else { $_.BatchName }

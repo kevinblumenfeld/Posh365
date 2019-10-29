@@ -41,19 +41,37 @@ function Get-MailboxMovePermissionBatchDecision {
         if (-not $UserChoice.PrimarySMTPAddress) {
             break
         }
-        switch ($PermissionChoice = Get-PermissionDecisionBatch) {
-            { $PermissionChoice.Options.Contains('AddToBatch') -and $PermissionChoice.Options.Count -ne 1 } {
+        if ($PermissionChoice = Get-PermissionDecisionBatch) {
+            if ($PermissionChoice.Options.Contains('AddToBatch') -and $PermissionChoice.Options.Count -ne 1 ) {
                 do {
                     $PermissionChoice = Get-PermissionDecisionBatch
                 } until ($PermissionChoice.Options.Contains('AddToBatch') -and $PermissionChoice.Options.Count -eq 1 -or
                     -not $PermissionChoice.Options.Contains('AddToBatch') -and $PermissionChoice.Options.Count -gt 0)
             }
-            { $PermissionChoice.Options.Contains('AddToBatch') -and $PermissionChoice.Options.Count -eq 1 } {
-                Update-MailboxMovePermissionBatchHelper -UserChoice $UserChoice -BatchLink $BatchLink -UserInputBatch $UserInputBatch | OGV
-                return
+            if ($PermissionChoice.Options.Contains('AddToBatch') -and $PermissionChoice.Options.Count -eq 1) {
+                $ReportPath = [Environment]::GetFolderPath("Desktop")
+                Update-MailboxMovePermissionBatchHelper -UserChoice $UserChoice -BatchLink $BatchLink -UserInputBatch $UserInputBatch |
+                Export-Csv -Path (Join-Path $ReportPath Batches.csv) -NoTypeInformation
+
+                $ExcelSplat = @{
+                    Path                    = (Join-Path $ReportPath 'Batches.xlsx')
+                    TableStyle              = 'Medium2'
+                    FreezeTopRowFirstColumn = $true
+                    AutoSize                = $true
+                    BoldTopRow              = $true
+                    ClearSheet              = $true
+                    WorksheetName           = 'Batches'
+                    ErrorAction             = 'stop'
+                }
+                try {
+                    $BatchesFile = Join-Path $ReportPath 'Batches.csv'
+                    $BatchesFile | Where-Object { $_ } | ForEach-Object { Import-Csv $_ | Export-Excel @ExcelSplat }
+                }
+                catch {
+                    $_.Exception.Message
+                }
+                break
             }
-            { $PermissionChoice.Option.Count -lt 1 } { return }
-            Default { }
         }
 
         if (-not ($DirectionChoice = Get-PermissionDirectionDecision)) {
