@@ -32,7 +32,8 @@ function Import-SharePointExcelDecision {
         try {
             Get-PnPFile -Url $ExcelURL -Path $Env:TEMP -Filename $TempExcel -AsFile -Force -ErrorAction Stop
             $ExcelSplat = @{
-                Path = $TempExcelPath
+                Path        = $TempExcelPath
+                ErrorAction = 'Stop'
             }
             if ($WorksheetName) {
                 $ExcelSplat.Add('WorksheetName' , $WorksheetName)
@@ -42,7 +43,7 @@ function Import-SharePointExcelDecision {
         }
         catch {
             Write-Host "Error getting file from SharePoint"
-            $_.Exception.Message
+            $_
         }
         finally {
             Remove-Item -Path $TempExcelPath -Force -Confirm:$false -ErrorAction SilentlyContinue
