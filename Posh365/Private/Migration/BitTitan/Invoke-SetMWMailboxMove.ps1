@@ -26,12 +26,12 @@ function Invoke-SetMWMailboxMove {
             $SetParam = @{ }
             switch ($true) {
                 $SwapSourcePrimaryWithSourceTenant {
-                    $GetParam.Add('ExportEmailAddress', $User.SourcePrimary)
+                    $GetParam.Add('ExportEmailAddress', $User.PrimarySmtpAddress)
                     $SetParam.Add('ExportEmailAddress', $User.SourceTenantAddress)
                 }
                 $SwapSourceTenantWithSourcePrimary {
                     $GetParam.Add('ExportEmailAddress', $User.SourceTenantAddress)
-                    $SetParam.Add('ExportEmailAddress', $User.SourcePrimary)
+                    $SetParam.Add('ExportEmailAddress', $User.PrimarySmtpAddress)
                 }
                 Default { }
             }

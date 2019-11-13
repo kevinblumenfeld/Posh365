@@ -64,8 +64,8 @@ function Convert-MWMailboxMovePermissionAddresses {
         }
         $BatchHash = @{ }
         foreach ($Item in Import-SharePointExcel @SharePointSplat) {
-            if ( $Item.SourcePrimary -and $Item.TargetPrimary -and -not $BatchHash.ContainsKey($Item.SourcePrimary)) {
-                $BatchHash.Add($Item.SourcePrimary, $Item.TargetPrimary)
+            if ( $Item.PrimarySmtpAddress -and $Item.TargetPrimary -and -not $BatchHash.ContainsKey($Item.PrimarySmtpAddress)) {
+                $BatchHash.Add($Item.PrimarySmtpAddress, $Item.TargetPrimary)
             }
         }
         $SharePointMailboxPerm = @{
@@ -79,12 +79,12 @@ function Convert-MWMailboxMovePermissionAddresses {
         switch ($WorksheetName) {
             Mailbox {
                 Import-SharePointExcel @SharePointMailboxPerm | ForEach-Object {
-                    if ($_.ObjectPrimarySMTP -and $_.GrantedPrimarySMTP -and $BatchHash.ContainsKey($_.ObjectPrimarySMTP) -and $BatchHash.ContainsKey($_.GrantedPrimarySMTP) ) {
+                    if ($_.PrimarySmtpAddress -and $_.GrantedSMTP -and $BatchHash.ContainsKey($_.PrimarySmtpAddress) -and $BatchHash.ContainsKey($_.GrantedSMTP) ) {
                         [PSCustomObject]@{
                             Object               = $_.Object
-                            ObjectPrimarySMTP    = $BatchHash.($_.ObjectPrimarySMTP)
+                            PrimarySmtpAddress   = $BatchHash.($_.PrimarySmtpAddress)
                             Granted              = $_.Granted
-                            GrantedPrimarySMTP   = $BatchHash.($_.GrantedPrimarySMTP)
+                            GrantedSMTP          = $BatchHash.($_.GrantedSMTP)
                             RecipientTypeDetails = $_.RecipientTypeDetails
                             Permission           = $_.Permission
                         }
@@ -93,15 +93,15 @@ function Convert-MWMailboxMovePermissionAddresses {
             }
             Folder {
                 Import-SharePointExcel @SharePointMailboxPerm | ForEach-Object {
-                    if ($_.ObjectPrimarySMTP -and $_.GrantedPrimarySMTP -and $BatchHash.ContainsKey($_.ObjectPrimarySMTP) -and $BatchHash.ContainsKey($_.GrantedPrimarySMTP) ) {
+                    if ($_.PrimarySmtpAddress -and $_.GrantedSMTP -and $BatchHash.ContainsKey($_.PrimarySmtpAddress) -and $BatchHash.ContainsKey($_.GrantedSMTP) ) {
                         [PSCustomObject]@{
                             Object             = $_.Object
                             UserPrincipalName  = $_.UserPrincipalName
-                            ObjectPrimarySMTP  = $BatchHash.($_.ObjectPrimarySMTP)
+                            PrimarySmtpAddress = $BatchHash.($_.PrimarySmtpAddress)
                             Folder             = $_.Folder
                             AccessRights       = $_.AccessRights
                             Granted            = $_.Granted
-                            GrantedPrimarySMTP = $BatchHash.($_.GrantedPrimarySMTP)
+                            GrantedSMTP        = $BatchHash.($_.GrantedSMTP)
                             TypeDetails        = $_.TypeDetails
                         }
                     }

@@ -75,7 +75,7 @@ function Set-BTUser {
             }
             else {
                 $CreateNewFilter = $UserChoice | Invoke-SetBTUser | Out-GridView -Title "Results of Set BitTitan End Users" -OutputMode Multiple
-                $NewUsers = $UserChoice | Where-Object { $_.SourcePrimary -in $CreateNewFilter.PrimarySmtpAddress } | Out-GridView -OutputMode Multiple -Title "Choose which users to newly create"
+                $NewUsers = $UserChoice | Where-Object { $_.PrimarySmtpAddress -in $CreateNewFilter.PrimarySmtpAddress } | Out-GridView -OutputMode Multiple -Title "Choose which users to newly create"
                 $NewUsers | Invoke-NewBTUser | Out-GridView -Title "Results of New BitTitan End Users"
             }
         }

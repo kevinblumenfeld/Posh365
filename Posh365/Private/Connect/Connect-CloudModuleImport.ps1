@@ -4,6 +4,10 @@ function Connect-CloudModuleImport {
     (
         [Parameter()]
         [switch]
+        $EXO2,
+
+        [Parameter()]
+        [switch]
         $ExchangeOnline,
 
         [Parameter()]
@@ -44,6 +48,11 @@ function Connect-CloudModuleImport {
                         Write-Warning "Save or run the download depending on your browser prompt. If you saved the file please run it."
                         Return
                     }
+                }
+            }
+            $EXO2 {
+                if (-not ($null = Get-Module -Name ExchangeOnlineManagement -ListAvailable)) {
+                    Install-Module -Name ExchangeOnlineManagement -force -AcceptLicense
                 }
             }
             $MSOnline {

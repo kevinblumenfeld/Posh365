@@ -1,8 +1,8 @@
-function Import-EXOGroupPermissions { 
+function Import-EXOGroupPermissions {
     <#
     .SYNOPSIS
     Applies permissions to Exchange Online Groups
-    
+
     .DESCRIPTION
     Applies permissions to Exchange Online Groups
 
@@ -12,7 +12,7 @@ function Import-EXOGroupPermissions {
     #>
 
     [CmdletBinding()]
-    Param 
+    Param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         $Permission
@@ -26,16 +26,16 @@ function Import-EXOGroupPermissions {
             switch ( $type ) {
                 SendAs {
                     Write-Verbose "Granting $($CurPermission.Granted) $($CurPermission.Permission) permission over group: $($CurPermission.Object)"
-                    Add-RecipientPermission -Identity $CurPermission.ObjectPrimarySMTP -Trustee $CurPermission.GrantedPrimarySMTP -AccessRights SendAs -Confirm:$False
+                    Add-RecipientPermission -Identity $CurPermission.PrimarySmtpAddress -Trustee $CurPermission.GrantedSMTP -AccessRights SendAs -Confirm:$False
                 }
                 SendOnBehalf {
                     Write-Verbose "Granting $($CurPermission.Granted) $($CurPermission.Permission) permission over group: $($CurPermission.Object)"
-                    Set-DistributionGroup $CurPermission.ObjectPrimarySMTP -GrantSendOnBehalfTo $CurPermission.GrantedPrimarySMTP -Confirm:$False
+                    Set-DistributionGroup $CurPermission.PrimarySmtpAddress -GrantSendOnBehalfTo $CurPermission.GrantedSMTP -Confirm:$False
                 }
             }
         }
     }
     End {
-        
+
     }
 }

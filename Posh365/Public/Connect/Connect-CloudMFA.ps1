@@ -8,6 +8,10 @@ function Connect-CloudMFA {
 
         [Parameter()]
         [switch]
+        $EXO2,
+
+        [Parameter()]
+        [switch]
         $ExchangeOnline,
 
         [Parameter()]
@@ -57,9 +61,10 @@ function Connect-CloudMFA {
                 Connect-CloudDeleteCredential -CredFile $CredFile
                 break
             }
-            { $ExchangeOnline -or $MSOnline -or $AzureAD -or $Compliance -or $SharePoint -or $PSBoundParameters.Count -eq 1 } {
+            { $EXO2 -or $ExchangeOnline -or $MSOnline -or $AzureAD -or $Compliance -or $SharePoint -or $PSBoundParameters.Count -eq 1 } {
                 if ($null = Test-Path $CredFile) {
                     Connect-CloudMFAClip -CredFile $CredFile
+                    [System.Management.Automation.PSCredential]$Credential = Import-Clixml -Path $CredFile
                 }
                 else {
                     [System.Management.Automation.PSCredential]$Credential = Get-Credential -Message 'Enter Office 365 username and password'
@@ -78,6 +83,10 @@ function Connect-CloudMFA {
             }
             { $ExchangeOnline -or $Compliance } {
                 Connect-CloudModuleImport -ExchangeOnline
+            }
+            $EXO2 {
+                Connect-CloudModuleImport -EXO2
+                Connect-ExchangeOnline -UserPrincipalName $Credential.UserName
             }
             $ExchangeOnline {
                 Import-Module (Connect-EXOPSSession) -Global -WarningAction SilentlyContinue -DisableNameChecking

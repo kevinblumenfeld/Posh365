@@ -11,7 +11,7 @@ function Invoke-SetBTUser {
         foreach ($User in $UserList) {
             $Get = @{
                 Ticket              = $BitTic
-                PrimaryEmailAddress = $User.SourcePrimary
+                PrimaryEmailAddress = $User.PrimarySmtpAddress
                 WarningAction       = 'SilentlyContinue'
                 ErrorAction         = 'Stop'
                 RetrieveAll         = $true
@@ -49,7 +49,7 @@ function Invoke-SetBTUser {
                 catch {
                     [PSCustomObject]@{
                         'DisplayName'        = '{0} {1}' -f $User.FirstName, $User.LastName
-                        'PrimarySmtpAddress' = $User.SourcePrimary
+                        'PrimarySmtpAddress' = $User.PrimarySmtpAddress
                         'UserPrincipalName'  = $User.UserPrincipalName
                         'FirstName'          = $User.FirstName
                         'LastName'           = $User.LastName

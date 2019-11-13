@@ -45,7 +45,7 @@ function Get-EXOnlineMailbox {
     begin {
         if ($DetailedReport) {
             $CasHash = @{ }
-            $CasList = Get-CASMailbox -ResultSize Unlimited
+            $CasList = Get-EXOCASMailbox -ResultSize Unlimited
             foreach ($Cas in $CasList) {
                 $CasHash[$Cas.PrimarySmtpAddress] = @{
                     ActiveSyncEnabled = $Cas.ActiveSyncEnabled
@@ -169,17 +169,17 @@ function Get-EXOnlineMailbox {
         if ($MailboxFilter) {
             foreach ($CurMailboxFilter in $MailboxFilter) {
                 if (-not $ArchivesOnly) {
-                    Get-Mailbox -Filter $CurMailboxFilter -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
+                    Get-EXOMailbox -Filter $CurMailboxFilter -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
                 }
                 else {
-                    Get-Mailbox -Archive -Filter $CurMailboxFilter -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
+                    Get-EXOMailbox -Archive -Filter $CurMailboxFilter -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
                 }
             }
         }
         else {
             if (-not $ArchivesOnly) {
                 Write-Verbose "Gathering All Mailboxes Initially"
-                $MailboxList = Get-Mailbox -ResultSize unlimited
+                $MailboxList = Get-EXOMailbox -ResultSize unlimited
                 Write-Host "`nTotal Mailboxes Found: $($MailboxList.count)" -ForegroundColor Green
 
                 $ConfirmCount = Read-Host "Do you want to split the count?:(y/n)"
@@ -219,7 +219,7 @@ function Get-EXOnlineMailbox {
                 $MailboxList | Select-Object ($Selectproperties + $CalculatedProps)
             }
             else {
-                Get-Mailbox -Archive -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
+                Get-EXOMailbox -Archive -ResultSize unlimited | Select-Object ($Selectproperties + $CalculatedProps)
             }
         }
     }

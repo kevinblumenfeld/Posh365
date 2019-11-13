@@ -3,11 +3,11 @@ function Get-EXOSendAsPerms {
     .SYNOPSIS
     Outputs Send As permissions for each object that has permissions assigned.
     This is for Office 365
-    
+
     .EXAMPLE
-    
+
     (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-EXOSendAsPerms | Export-csv .\SA.csv -NoTypeInformation
-    
+
     #>
     [CmdletBinding()]
     Param (
@@ -25,15 +25,15 @@ function Get-EXOSendAsPerms {
 
     )
     Begin {
-        
+
 
     }
     Process {
         Write-Verbose "Inspecting: `t $_"
-        Get-RecipientPermission $_ |
-            Where-Object {
-            $_.AccessRights -like "*SendAs*" -and 
-            !$_.IsInherited -and !$_.trustee.startswith('S-1-5-21-') -and 
+        Get-EXORecipientPermission -Identity $_ -Verbose:$false |
+        Where-Object {
+            $_.AccessRights -like "*SendAs*" -and
+            !$_.IsInherited -and !$_.trustee.startswith('S-1-5-21-') -and
             !$_.trustee.startswith('NT AUTHORITY\SELF') -and !$_.trustee.startswith('NULL SID') -and
             !$_.trustee.contains('\')
         } | ForEach-Object {
@@ -51,21 +51,21 @@ function Get-EXOSendAsPerms {
                 $Type = $RecipientHash["$($_.Trustee)"].RecipientTypeDetails
             }
             if ($RecipientLiveIDHash.ContainsKey($_.Trustee)) {
-                $Trustee = $RecipientLiveIDHash["$($_.Trustee)"].Name 
+                $Trustee = $RecipientLiveIDHash["$($_.Trustee)"].Name
                 $Email = $RecipientLiveIDHash["$($_.Trustee)"].PrimarySMTPAddress
                 $Type = $RecipientLiveIDHash["$($_.Trustee)"].RecipientTypeDetails
             }
             [pscustomobject]@{
                 Object               = $_.Identity
-                ObjectPrimarySMTP    = $RecipientHash["$($_.Identity)"].PrimarySMTPAddress
+                PrimarySmtpAddress   = $RecipientHash["$($_.Identity)"].PrimarySMTPAddress
                 Granted              = $Trustee
-                GrantedPrimarySMTP   = $Email
-                RecipientTypeDetails = $Type          
+                GrantedSMTP          = $Email
+                RecipientTypeDetails = $Type
                 Permission           = "SendAs"
-            }  
+            }
         }
     }
     END {
-        
+
     }
 }

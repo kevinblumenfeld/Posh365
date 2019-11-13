@@ -2,19 +2,25 @@ function Get-EXOMailboxFolderPerms {
     [CmdletBinding()]
     Param (
         [parameter(Mandatory)]
-        $MailboxList
+        $MailboxList,
+
+        [Parameter(Mandatory)]
+        $AllRecipients
     )
+    begin {
+        $RecipientHash = $AllRecipients | Get-RecipientHash
+    }
     end {
         foreach ($Mailbox in $MailboxList) {
             Write-Verbose "Inspecting:`t $($Mailbox.DisplayName)"
             $StatSplat = @{
                 Identity = $Mailbox.UserPrincipalName
             }
-            $Calendar = (($Mailbox.UserPrincipalName) + ":\" + (Get-MailboxFolderStatistics @StatSplat -FolderScope Calendar | Select-Object -First 1).Name)
-            $Inbox = (($Mailbox.UserPrincipalName) + ":\" + (Get-MailboxFolderStatistics @StatSplat -FolderScope Inbox | Select-Object -First 1).Name)
-            $SentItems = (($Mailbox.UserPrincipalName) + ":\" + (Get-MailboxFolderStatistics @StatSplat -FolderScope SentItems | Select-Object -First 1).Name)
-            $Contacts = (($Mailbox.UserPrincipalName) + ":\" + (Get-MailboxFolderStatistics @StatSplat -FolderScope Contacts | Select-Object -First 1).Name)
-            $CalAccessList = Get-MailboxFolderPermission $Calendar | Where-Object {
+            $Calendar = (($Mailbox.UserPrincipalName) + ":\" + (@(Get-EXOMailboxFolderStatistics @StatSplat -FolderScope Calendar -Verbose:$false) | Select-Object -First 1).Name)
+            $Inbox = (($Mailbox.UserPrincipalName) + ":\" + (@(Get-EXOMailboxFolderStatistics @StatSplat -FolderScope Inbox -Verbose:$false) | Select-Object -First 1).Name)
+            $SentItems = (($Mailbox.UserPrincipalName) + ":\" + (@(Get-EXOMailboxFolderStatistics @StatSplat -FolderScope SentItems -Verbose:$false) | Select-Object -First 1).Name)
+            $Contacts = (($Mailbox.UserPrincipalName) + ":\" + (@(Get-EXOMailboxFolderStatistics @StatSplat -FolderScope Contacts -Verbose:$false) | Select-Object -First 1).Name)
+            $CalAccessList = Get-EXOMailboxFolderPermission -Identity $Calendar -Verbose:$false | Where-Object {
                 $_.User -notmatch 'Default' -and
                 $_.User -notmatch 'Anonymous' -and
                 $_.User -notlike 'NT:S-1-5*' -and
@@ -28,13 +34,13 @@ function Get-EXOMailboxFolderPerms {
                         PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
                         Folder             = 'CALENDAR'
                         AccessRights       = ($CalAccess.AccessRights) -join ','
-                        Granted            = $CalAccess.user.DisplayName
-                        GrantedSMTP        = $CalAccess.user.adrecipient.PrimarySMTPAddress
-                        TypeDetails        = $CalAccess.user.adrecipient.RecipientTypeDetails
+                        Granted            = $CalAccess.user
+                        GrantedSMTP        = $RecipientHash["$($CalAccess.user)"].PrimarySMTPAddress
+                        TypeDetails        = $RecipientHash["$($CalAccess.user)"].RecipientTypeDetails
                     }
                 }
             }
-            $InboxAccessList = Get-MailboxFolderPermission $Inbox | Where-Object {
+            $InboxAccessList = Get-EXOMailboxFolderPermission -Identity $Inbox -Verbose:$false | Where-Object {
                 $_.User -notmatch 'Default' -and
                 $_.User -notmatch 'Anonymous' -and
                 $_.User -notlike 'NT:S-1-5*' -and
@@ -48,13 +54,13 @@ function Get-EXOMailboxFolderPerms {
                         PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
                         Folder             = 'INBOX'
                         AccessRights       = ($InboxAccess.AccessRights) -join ','
-                        Granted            = $InboxAccess.user.DisplayName
-                        GrantedSMTP        = $InboxAccess.user.adrecipient.PrimarySMTPAddress
-                        TypeDetails        = $InboxAccess.user.adrecipient.RecipientTypeDetails
+                        Granted            = $InboxAccess.user
+                        GrantedSMTP        = $RecipientHash["$($InboxAccess.user)"].PrimarySMTPAddress
+                        TypeDetails        = $RecipientHash["$($InboxAccess.user)"].RecipientTypeDetails
                     }
                 }
             }
-            $SentAccessList = Get-MailboxFolderPermission $SentItems | Where-Object {
+            $SentAccessList = Get-EXOMailboxFolderPermission -Identity $SentItems -Verbose:$false | Where-Object {
                 $_.User -notmatch 'Default' -and
                 $_.User -notmatch 'Anonymous' -and
                 $_.User -notlike 'NT:S-1-5*' -and
@@ -68,13 +74,13 @@ function Get-EXOMailboxFolderPerms {
                         PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
                         Folder             = 'SENTITEMS'
                         AccessRights       = ($SentAccess.AccessRights) -join ','
-                        Granted            = $SentAccess.user.DisplayName
-                        GrantedSMTP        = $SentAccess.user.adrecipient.PrimarySMTPAddress
-                        TypeDetails        = $SentAccess.user.adrecipient.RecipientTypeDetails
+                        Granted            = $SentAccess.user
+                        GrantedSMTP        = $RecipientHash["$($SentAccess.user)"].PrimarySMTPAddress
+                        TypeDetails        = $RecipientHash["$($SentAccess.user)"].RecipientTypeDetails
                     }
                 }
             }
-            $ContactsAccessList = Get-MailboxFolderPermission $Contacts | Where-Object {
+            $ContactsAccessList = Get-EXOMailboxFolderPermission -Identity $Contacts -Verbose:$false | Where-Object {
                 $_.User -notmatch 'Default' -and
                 $_.User -notmatch 'Anonymous' -and
                 $_.User -notlike 'NT:S-1-5*' -and
@@ -88,9 +94,9 @@ function Get-EXOMailboxFolderPerms {
                         PrimarySMTPAddress = $Mailbox.PrimarySMTPAddress
                         Folder             = 'CONTACTS'
                         AccessRights       = ($ContactsAccess.AccessRights) -join ','
-                        Granted            = $ContactsAccess.user.DisplayName
-                        GrantedSMTP        = $ContactsAccess.user.adrecipient.PrimarySMTPAddress
-                        TypeDetails        = $ContactsAccess.user.adrecipient.RecipientTypeDetails
+                        Granted            = $ContactsAccess.user
+                        GrantedSMTP        = $RecipientHash["$($ContactsAccess.user)"].PrimarySMTPAddress
+                        TypeDetails        = $RecipientHash["$($ContactsAccess.user)"].RecipientTypeDetails
                     }
                 }
             }

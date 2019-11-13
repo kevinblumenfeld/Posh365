@@ -34,8 +34,8 @@ function Get-EXOFullAccessPerms {
     }
     Process {
         Write-Verbose "Inspecting: `t $_"
-        Get-MailboxPermission $_ |
-            Where-Object {
+        Get-EXOMailboxPermission -Identity $_ -Verbose:$false |
+        Where-Object {
             $_.AccessRights -like "*FullAccess*" -and
             !$_.IsInherited -and !$_.user.startswith('S-1-5-21-') -and
             !$_.user.startswith('NT AUTHORITY\SELF') -and
@@ -61,9 +61,9 @@ function Get-EXOFullAccessPerms {
             }
             [pscustomobject]@{
                 Object               = $_.Identity
-                ObjectPrimarySMTP    = $RecipientHash["$($_.Identity)"].PrimarySMTPAddress
+                PrimarySmtpAddress   = $RecipientHash["$($_.Identity)"].PrimarySMTPAddress
                 Granted              = $User
-                GrantedPrimarySMTP   = $Email
+                GrantedSMTP          = $Email
                 RecipientTypeDetails = $Type
                 Permission           = "FullAccess"
             }

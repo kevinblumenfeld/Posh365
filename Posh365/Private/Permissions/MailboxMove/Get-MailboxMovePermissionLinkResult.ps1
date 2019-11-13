@@ -66,6 +66,7 @@ function Get-MailboxMovePermissionLinkResult {
                     Name       = 'Type'
                     Expression = 'DisplayType'
                 }
+                'Checking'
                 @{
                     Name       = 'GrantedBatch'
                     Expression = { $BatchHash[$_.GrantedSMTP].BatchName }
@@ -100,6 +101,7 @@ function Get-MailboxMovePermissionLinkResult {
                     Name       = 'Type'
                     Expression = 'DisplayType'
                 }
+                'Checking'
                 @{
                     Name       = 'GrantedBatch'
                     Expression = { $BatchHash[$_.GrantedSMTP].BatchName }

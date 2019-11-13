@@ -3,11 +3,11 @@ function Get-EXOSendAsRecursePerms {
     .SYNOPSIS
     Outputs Send As permissions for each mailbox that has permissions assigned.
     This is for Office 365
-    
+
     .EXAMPLE
-    
+
     (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-EXOSendAsRecursePerms | Export-csv .\SA.csv -NoTypeInformation
-    
+
     #>
     [CmdletBinding()]
     Param (
@@ -22,21 +22,21 @@ function Get-EXOSendAsRecursePerms {
 
         [parameter()]
         [hashtable] $RecipientDNHash,
-        
+
         [parameter()]
         [hashtable] $GroupMemberHash
     )
 
     Begin {
-        
+
 
     }
     Process {
         $listGroupMembers = [System.Collections.Generic.HashSet[string]]::new()
         Get-RecipientPermission $_ |
-            Where-Object {
-            $_.AccessRights -like "*SendAs*" -and 
-            !$_.IsInherited -and !$_.identity.tostring().startswith('S-1-5-21-') -and 
+        Where-Object {
+            $_.AccessRights -like "*SendAs*" -and
+            !$_.IsInherited -and !$_.identity.tostring().startswith('S-1-5-21-') -and
             !$_.trustee.tostring().startswith('NT AUTHORITY\SELF') -and !$_.trustee.tostring().startswith('NULL SID')
         } | ForEach-Object {
             $Identity = $_.Identity
@@ -60,10 +60,10 @@ function Get-EXOSendAsRecursePerms {
                     Mailbox              = $_.Identity
                     MailboxPrimarySMTP   = $RecipientHash["$($_.Identity)"].PrimarySMTPAddress
                     Granted              = $Trustee
-                    GrantedPrimarySMTP   = $Email
-                    RecipientTypeDetails = $Type          
+                    GrantedSMTP          = $Email
+                    RecipientTypeDetails = $Type
                     Permission           = "SendAs"
-                }  
+                }
             }
         }
         if ($listGroupMembers.Count -gt 0) {
@@ -72,14 +72,14 @@ function Get-EXOSendAsRecursePerms {
                     Mailbox              = $Identity
                     MailboxPrimarySMTP   = $RecipientHash["$($Identity)"].PrimarySMTPAddress
                     Granted              = $RecipientDNHash["$CurlistGroupMember"].Name
-                    GrantedPrimarySMTP   = $RecipientDNHash["$CurlistGroupMember"].PrimarySMTPAddress
-                    RecipientTypeDetails = $Type          
+                    GrantedSMTP          = $RecipientDNHash["$CurlistGroupMember"].PrimarySMTPAddress
+                    RecipientTypeDetails = $Type
                     Permission           = "SendAs"
-                }  
+                }
             }
         }
     }
     END {
-        
+
     }
 }

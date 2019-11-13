@@ -13,7 +13,7 @@
     Creates individual reports for each permission type (unless skipped), and a report that combines all CSVs in chosen directory.
 
     Output CSVs headers:
-    "Mailbox","MailboxPrimarySMTP","Granted","GrantedPrimarySMTP","RecipientTypeDetails","Permission"
+    "Mailbox","MailboxPrimarySMTP","Granted","GrantedSMTP","RecipientTypeDetails","Permission"
 
     .PARAMETER SpecificUsersandGroups
     Parameter description
@@ -90,7 +90,7 @@
         }
     }
     end {
-        $AllMailboxDNs = ($AllRecipients | Where-Object { $_.RecipientTypeDetails -in 'UserMailbox', 'RoomMailbox', 'EquipmentMailbox', 'SharedMailbox' }).distinguishedname
+        $AllMailboxDNs = ($AllRecipients | Where-Object { $_.RecipientTypeDetails -in 'UserMailbox', 'RoomMailbox', 'EquipmentMailbox', 'SharedMailbox' }).ExternalDirectoryObjectId
 
         Write-Verbose "Caching hash tables needed"
         $RecipientHash = $AllRecipients | Get-RecipientHash

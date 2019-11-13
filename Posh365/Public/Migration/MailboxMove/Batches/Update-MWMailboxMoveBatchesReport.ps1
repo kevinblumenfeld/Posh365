@@ -103,7 +103,7 @@ function Update-MWMailboxMoveBatchesReport {
             'TotalGB'
             'ArchiveGB'
             'OrganizationalUnit(CN)'
-            'SourcePrimary'
+            'PrimarySmtpAddress'
             'SourceTenantAddress'
             'TargetTenantAddress'
             'TargetPrimary'

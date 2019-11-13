@@ -1,13 +1,10 @@
 ﻿function Remove-365Domain {
     <#
     .SYNOPSIS
-    This is a tad hacked together.. check the comment block at the very bottom of the function
+    Used to remove an Office 365 Domain
 
     .DESCRIPTION
-    Long description
-
-    .PARAMETER ExportOnly
-    Parameter description
+    Used to remove an Office 365 Domain
 
     .PARAMETER FlipMailbox
     Parameter description
@@ -53,10 +50,6 @@
     #>
 
     param (
-        [Parameter()]
-        [switch]
-        $ExportOnly,
-
         [Parameter()]
         [switch]
         $FlipMailbox,
@@ -105,59 +98,6 @@
         [string]
         $WildCardDomain
     )
-
-    if ($ExportOnly) {
-        Write-HostLog -Message "Creating`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)"
-        Write-HostLog -Message "Running discovery on user accounts"
-        $MsolUser = Get-MsolUser -All | Sort-Object -Property UserPrincipalName
-        $Mailbox = Get-Mailbox -ResultSize Unlimited | Where-Object { $_.Name -notlike "DiscoverySearchMailbox*" } | Sort-Object -Property UserPrincipalName
-        $MailUser = Get-MailUser -ResultSize Unlimited | Sort-Object -Property UserPrincipalName
-        Write-HostLog -Message "`nTotal MsolUsers Found: $($MsolUser.count)" -Status "Success"
-        Write-HostLog -Message "Total MailUsers Found: $($MailUser.count)" -Status "Success"
-        Write-HostLog -Message "Total Mailboxes Found: $($Mailbox.count)" -Status "Success"
-
-        $MsolProps = @(
-            'DisplayName', 'BlockCredential', 'UserPrincipalName', 'UserType', 'ImmutableId'
-        )
-
-        $MsolCalcProps = @(
-            @{n = "proxyAddresses" ; e = { ($_.proxyAddresses | Where-Object { $_ -ne $null }) -join '|' } }
-        )
-
-        $MailProps = @(
-            'DisplayName', 'Alias', 'LegacyExchangeDN', 'HiddenFromAddressListsEnabled', 'PrimarySmtpAddress'
-            'UserPrincipalName', 'SkuAssigned', 'LitigationHoldEnabled', 'IsDirSynced', 'AccountDisabled', 'RecipientTypeDetails'
-        )
-
-        $MailCalcProps = @(
-            @{n = "EmailAddresses" ; e = { ($_.EmailAddresses | Where-Object { $_ -ne $null }) -join '|' } }
-        )
-
-        $MsolUser | Select-Object ($MsolProps + $MsolCalcProps) | Export-Csv ".\MsolUsers.csv" -NoTypeInformation -Encoding UTF8
-        $Mailbox | Select-Object ($MailProps + $MailCalcProps) | Export-Csv ".\Mailboxes.csv" -NoTypeInformation -Encoding UTF8
-        $MailUser | Select-Object ($MailProps + $MailCalcProps) | Export-Csv ".\MailUsers.csv" -NoTypeInformation -Encoding UTF8
-
-        Write-HostLog -Message "Exported Users, MailUsers & Mailbox details in CSV`n"
-
-        Write-HostLog -Message "Running discovery on Group accounts"
-        $DistributionGroup = Get-DistributionGroup -ResultSize unlimited
-        $UnifiedGroup = Get-UnifiedGroup -ResultSize unlimited
-        Write-HostLog -Message "`nTotal Distribution Groups Found: $($DistributionGroup.count)" -Status "Success"
-        Write-HostLog -Message "Total O365 Groups Found: $($UnifiedGroup.count)" -Status "Success"
-
-        $GroupProps = @(
-            'DisplayName', 'BlockCredential', 'UserPrincipalName', 'UserType', 'ImmutableId'
-        )
-
-        $GroupCalcProps = @(
-            @{n = "EmailAddresses" ; e = { ($_.EmailAddresses | Where-Object { $_ -ne $null }) -join '|' } }
-        )
-
-        $DistributionGroup | Select-Object ($GroupProps + $GroupCalcProps) | Export-Csv ".\DistributionGroups.csv" -NoTypeInformation
-        $UnifiedGroup | Select-Object ($GroupProps + $GroupCalcProps) | Export-Csv ".\O365Groups.csv" -NoTypeInformation
-        Write-HostLog -Message "Exported Distribution Groups & O365 Groups details in CSV`n"
-    }
-
     if ($FlipUPN) {
         $MsolUser = Get-MsolUser -All | Sort-Object -Property UserPrincipalName
         Write-HostLog -Message "`nTotal MsolUsers Found: $($MsolUser.count)" -Status "Success"

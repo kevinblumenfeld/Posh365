@@ -125,6 +125,7 @@ function Get-365Info {
             'DisplayName', 'Alias', 'GroupType', 'IsDirSynced', 'PrimarySmtpAddress', 'RecipientTypeDetails'
             'WindowsEmailAddress', 'AcceptMessagesOnlyFromSendersOrMembers', 'RequireSenderAuthenticationEnabled'
             'ManagedBy', 'EmailAddresses', 'x500', 'Name', 'membersName', 'membersSMTP', 'Identity', 'ExchangeObjectId'
+            'LegacyExchangeDN'
         )
         $EXOMailboxProperties = @(
             'DisplayName', 'Office', 'RecipientTypeDetails', 'AccountDisabled', 'IsDirSynced', 'MailboxGB'
@@ -468,7 +469,7 @@ function Get-365Info {
 
                 if (-not $SkipMailboxReport) {
                     Write-Verbose "Gathering Exchange Online Mailboxes"
-                    Get-EXOnlineMailbox -DetailedReport | Export-Csv $EXO_Mailboxes_Detailed @ExportCSVSplat
+                    Get-EXOnlineMailbox -DetailedReport | Export-Csv $EXO_Mailboxes_Detailed @ExportCSVSplat -Append
                 }
                 $MailboxDetails = Import-Csv $EXO_Mailboxes_Detailed | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' }
                 $MailboxDetails | Select-Object $EXOMailboxProperties | Sort-Object DisplayName | Export-Csv $EXO_Mailboxes @ExportCSVSplat
@@ -594,13 +595,15 @@ function Get-365Info {
                 'EXO_FullAccess.csv', 'EXO_SendOnBehalf.csv', 'EXO_SendAs.csv' | ForEach-Object {
                     Import-Csv (Join-Path $DetailedTenantPath $_) -ErrorAction SilentlyContinue | Where-Object { $_ } |
                     Export-Csv $EXO_Permissions -NoTypeInformation -Append }
-
-                Write-Verbose "Gathering Distribution Group Delegate Permissions"
-                Get-EXODGPerms $DetailedTenantPath
+                <#
+               Write-Verbose "Gathering Distribution Group Delegate Permissions"
+                 Get-EXODGPerms $DetailedTenantPath
 
                 'EXO_DGSendOnBehalf.csv', 'EXO_DGSendAs.csv' | ForEach-Object {
                     Import-Csv (Join-Path $DetailedTenantPath $_) -ErrorAction SilentlyContinue | Where-Object { $_ } |
                     Export-Csv $EXO_PermissionsDG -NoTypeInformation -Append }
+
+                #>
 
             }
             { $FolderPermissionReport } {
@@ -624,7 +627,9 @@ function Get-365Info {
                     $MailboxDetails = $MailboxDetails[$StartNumber..$EndNumber]
                 }
                 if ($ConfirmCount -eq 'n' -or $ConfirmCount -eq 'y') {
-                    Get-EXOMailboxFolderPerms -MailboxList $MailboxDetails | Export-Csv $EXO_FolderPermissions @ExportCSVSplat -Append
+                    $AllRecipients = Get-Recipient -ResultSize Unlimited
+                    Get-EXOMailboxFolderPerms -MailboxList $MailboxDetails -AllRecipients $AllRecipients |
+                    Export-Csv $EXO_FolderPermissions @ExportCSVSplat -Append
                 }
             }
 
@@ -719,10 +724,7 @@ function Get-365Info {
                         Name       = 'OrganizationalUnit(CN)'
                         Expression = { $AzureADHash.$($_.UserPrincipalName).'OrganizationalUnit(CN)' }
                     }
-                    @{
-                        Name       = 'SourcePrimary'
-                        Expression = 'PrimarySmtpAddress'
-                    }
+                    'PrimarySmtpAddress'
                     @{
                         Name       = 'SourceTenantAddress'
                         Expression = { [regex]::matches(@(($_.EmailAddresses).split('|')), "(?<=(smtp|SMTP):)[^@]+@[^.]+?\.onmicrosoft\.com")[0].Value }

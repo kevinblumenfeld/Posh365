@@ -23,12 +23,12 @@ function Get-BTUserDecision {
                 Title      = 'Choose Batch(es)'
                 OutputMode = 'Multiple'
             }
-            $DomainChoice = @($DecisionObject | Select-Object -ExpandProperty SourcePrimary) -replace '^(.*?)\@', '' | Select-Object -Unique | Out-GridView @OGVBatch
+            $DomainChoice = @($DecisionObject | Select-Object -ExpandProperty PrimarySmtpAddress) -replace '^(.*?)\@', '' | Select-Object -Unique | Out-GridView @OGVBatch
             $OGVUser = @{
                 Title      = 'Choose User(s)'
                 OutputMode = 'Multiple'
             }
-            $UserChoice = $DecisionObject | Where-Object { $_.SourcePrimary -match ($DomainChoice -join '|') } | Out-GridView @OGVUser
+            $UserChoice = $DecisionObject | Where-Object { $_.PrimarySmtpAddress -match ($DomainChoice -join '|') } | Out-GridView @OGVUser
         }
         else {
             if (-not $NoBatch) {

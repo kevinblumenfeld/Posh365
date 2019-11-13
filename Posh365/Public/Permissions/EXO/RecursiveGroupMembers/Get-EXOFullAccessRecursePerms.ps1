@@ -36,7 +36,7 @@ function Get-EXOFullAccessRecursePerms {
     Process {
         $listGroupMembers = [System.Collections.Generic.HashSet[string]]::new()
         Get-MailboxPermission $_ |
-            Where-Object {
+        Where-Object {
             $_.AccessRights -like "*FullAccess*" -and
             !$_.IsInherited -and !$_.user.tostring().startswith('S-1-5-21-') -and
             !$_.user.tostring().startswith('NT AUTHORITY\SELF')
@@ -62,7 +62,7 @@ function Get-EXOFullAccessRecursePerms {
                     Mailbox              = $_.Identity
                     MailboxPrimarySMTP   = $RecipientHash["$($_.Identity)"].PrimarySMTPAddress
                     Granted              = $User
-                    GrantedPrimarySMTP   = $Email
+                    GrantedSMTP          = $Email
                     RecipientTypeDetails = $Type
                     Permission           = "FullAccess"
                 }
@@ -74,7 +74,7 @@ function Get-EXOFullAccessRecursePerms {
                     Mailbox              = $Identity
                     MailboxPrimarySMTP   = $RecipientHash["$Identity"].PrimarySMTPAddress
                     Granted              = $RecipientDNHash["$CurlistGroupMember"].Name
-                    GrantedPrimarySMTP   = $RecipientDNHash["$CurlistGroupMember"].PrimarySMTPAddress
+                    GrantedSMTP          = $RecipientDNHash["$CurlistGroupMember"].PrimarySMTPAddress
                     RecipientTypeDetails = $Type
                     Permission           = "FullAccess"
                 }

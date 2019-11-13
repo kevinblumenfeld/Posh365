@@ -27,7 +27,7 @@ function Invoke-NewMWMailboxMove {
                 $Param.Add('ExportEmailAddress', $User.SourceTenantAddress)
             }
             else {
-                $Param.Add('ExportEmailAddress', $User.SourcePrimary)
+                $Param.Add('ExportEmailAddress', $User.PrimarySmtpAddress)
             }
             if ($UseTargetPrimaryAsTarget) {
                 $Param.Add('ImportEmailAddress', $User.TargetPrimary)

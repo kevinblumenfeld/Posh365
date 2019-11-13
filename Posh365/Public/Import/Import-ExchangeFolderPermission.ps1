@@ -1,4 +1,4 @@
-function Import-ExchangeFolderPermission { 
+function Import-ExchangeFolderPermission {
     <#
     .SYNOPSIS
     Import Folder Permissions from a CSV via the pipeline
@@ -19,7 +19,7 @@ function Import-ExchangeFolderPermission {
 
     .EXAMPLE
     Import-Csv c:\scripts\FolderPerms.csv | Import-ExchangeFolderPermission -Verbose
-    
+
     .EXAMPLE
     Import-Csv c:\scripts\FolderPerms.csv | Import-ExchangeFolderPermission -Domain "fabrikam.com" -NewDomain "contoso.com" -Verbose
 
@@ -39,7 +39,7 @@ function Import-ExchangeFolderPermission {
         $Row
     )
     begin {
-        
+
         $CurrentErrorActionPref = $ErrorActionPreference
         $ErrorActionPreference = 'Stop'
 
@@ -61,12 +61,12 @@ function Import-ExchangeFolderPermission {
     }
     process {
         foreach ($CurRow in $Row) {
-            
+
             $Right = ""
             $Folder = $CurRow.Folder
             $User = $CurRow.User
-            $Right = [String[]]($CurRow.DetailLevel -split ";" | ForEach-Object ToString)
-            
+            $Right = [String[]]($CurRow.DetailLevel -split [regex]::Escape('|') | ForEach-Object ToString)
+
             if ($Domain) {
                 $User = $User | ForEach-Object {
                     $_ -replace ([Regex]::Escape($Domain), $NewDomain)
@@ -76,7 +76,7 @@ function Import-ExchangeFolderPermission {
             if (($Folder -and $User -and $AccessRights) -and ($AccessRights -notlike "NT:S-*")) {
 
                 try {
-                    
+
                     $AddMailboxFolderPermission = @{
 
                         Identity     = $Folder
@@ -84,23 +84,23 @@ function Import-ExchangeFolderPermission {
                         AccessRights = $Right
                         Confirm      = $False
                         ErrorAction  = 'Stop'
-    
+
                     }
-                        
+
                     Add-MailboxFolderPermission @AddMailboxFolderPermission
 
                     Write-Verbose "$Folder Access Rights $Right for User $User"
 
-                    $Folder + "," + $Right + "," + $User + "," + 'SUCCESS' | 
-                        Out-file $Log -Encoding UTF8 -Append
+                    $Folder + "," + $Right + "," + $User + "," + 'SUCCESS' |
+                    Out-file $Log -Encoding UTF8 -Append
                 }
                 catch {
 
                     Write-Verbose "$Folder FAILED OR ALREADY EXITS Access Rights $Right for User $User"
                     $WhyFailed = $_.Exception.Message
-                    
-                    $Folder + "," + $Right + "," + $User + "," + $WhyFailed | 
-                        Out-file $Log -Encoding UTF8 -Append
+
+                    $Folder + "," + $Right + "," + $User + "," + $WhyFailed |
+                    Out-file $Log -Encoding UTF8 -Append
                 }
             }
             else {

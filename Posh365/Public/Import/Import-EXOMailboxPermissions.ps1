@@ -1,8 +1,8 @@
-function Import-EXOMailboxPermissions { 
+function Import-EXOMailboxPermissions {
     <#
     .SYNOPSIS
     Applies permissions to Exchange Online Mailboxes
-    
+
     .DESCRIPTION
     Applies permissions to Exchange Online Mailboxes Full Access will automap the mailbox
     In other words, Outlook automatically opens the mailbox where the user is assigned Full Access permission.
@@ -13,7 +13,7 @@ function Import-EXOMailboxPermissions {
     #>
 
     [CmdletBinding()]
-    Param 
+    Param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         $Permission
@@ -27,20 +27,20 @@ function Import-EXOMailboxPermissions {
             switch ( $type ) {
                 SendAs {
                     Write-Verbose "Granting $($CurPermission.Granted) $($CurPermission.Permission) permission over $($CurPermission.Object)"
-                    Add-RecipientPermission -Identity $CurPermission.ObjectPrimarySMTP -Trustee $CurPermission.GrantedPrimarySMTP -AccessRights SendAs -Confirm:$False
+                    Add-RecipientPermission -Identity $CurPermission.PrimarySmtpAddress -Trustee $CurPermission.GrantedSMTP -AccessRights SendAs -Confirm:$False
                 }
                 SendOnBehalf {
                     Write-Verbose "Granting $($CurPermission.Granted) $($CurPermission.Permission) permission over $($CurPermission.Object)"
-                    Set-Mailbox $CurPermission.ObjectPrimarySMTP -GrantSendOnBehalfTo $CurPermission.GrantedPrimarySMTP -Confirm:$False
+                    Set-Mailbox $CurPermission.PrimarySmtpAddress -GrantSendOnBehalfTo $CurPermission.GrantedSMTP -Confirm:$False
                 }
                 FullAccess {
                     Write-Verbose "Granting $($CurPermission.Granted) $($CurPermission.Permission) permission over $($CurPermission.Mailbox)"
-                    Add-MailboxPermission -Identity $CurPermission.ObjectPrimarySMTP -User $CurPermission.GrantedPrimarySMTP -AccessRights FullAccess -InheritanceType All -Confirm:$False
+                    Add-MailboxPermission -Identity $CurPermission.PrimarySmtpAddress -User $CurPermission.GrantedSMTP -AccessRights FullAccess -InheritanceType All -Confirm:$False
                 }
             }
         }
     }
     End {
-        
+
     }
 }

@@ -3,11 +3,11 @@ function Get-EXOSendOnBehalfPerms {
     .SYNOPSIS
     Outputs Send On Behalf permissions for each object that has permissions assigned.
     This is for Office 365
-    
+
     .EXAMPLE
-    
+
     (Get-Mailbox -ResultSize unlimited | Select -expandproperty distinguishedname) | Get-EXOSendOnBehalfPerms | Export-csv .\SendOB.csv -NoTypeInformation
-    
+
     #>
     [CmdletBinding()]
     Param (
@@ -24,16 +24,16 @@ function Get-EXOSendOnBehalfPerms {
         [hashtable] $RecipientDNHash
     )
     Begin {
-        
+
 
     }
     Process {
         $SendOB = $_
-        Write-Verbose "Inspecting: `t $_"
-        (Get-Mailbox $_ -erroraction silentlycontinue).GrantSendOnBehalfTo | where-object {$_ -ne $null} | ForEach-Object {
+        Write-Host "Inspecting: `t $_"
+        (Get-EXOMailbox -Identity $_ -Verbose:$false).GrantSendOnBehalfTo | where-object { $_ -ne $null } | ForEach-Object {
             $CurGranted = $_
             $Type = $null
-            Write-Verbose "Has Send On Behalf: `t $CurGranted"
+            Write-Host "Has Send On Behalf: `t $CurGranted"
             if ($RecipientMailHash.ContainsKey($_)) {
                 $CurGranted = $RecipientMailHash[$_].Name
                 $Type = $RecipientMailHash[$_].RecipientTypeDetails
@@ -45,15 +45,15 @@ function Get-EXOSendOnBehalfPerms {
             }
             [pscustomobject]@{
                 Object               = $RecipientDNHash["$SendOB"].Name
-                ObjectPrimarySMTP    = $RecipientDNHash["$SendOB"].PrimarySMTPAddress
+                PrimarySmtpAddress   = $RecipientDNHash["$SendOB"].PrimarySMTPAddress
                 Granted              = $CurGranted
-                GrantedPrimarySMTP   = $Email
-                RecipientTypeDetails = $Type          
+                GrantedSMTP          = $Email
+                RecipientTypeDetails = $Type
                 Permission           = "SendOnBehalf"
-            }  
+            }
         }
     }
     END {
-        
+
     }
 }

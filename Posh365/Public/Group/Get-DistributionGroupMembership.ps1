@@ -33,9 +33,10 @@ function Get-DistributionGroupMembership {
         if (-not $processed) {
             $Processed = @()
         }
-    }    
+    }
     process {
         foreach ($CurIdentity in $Identity) {
+            $Item = $_
             if (-not $PSCmdlet.ShouldProcess($CurIdentity)) {
                 continue
             }
@@ -53,11 +54,21 @@ function Get-DistributionGroupMembership {
             $Processed += $Recipient.PrimarySmtpAddress
             $Results = @()
             $Filter = "members -eq '{0}'" -f $Recipient.DistinguishedName
-            Get-Group -ResultSize Unlimited -filter $Filter | 
-                Where-Object {$_.WindowsEmailAddress -notin $Processed} |
-                ForEach-Object {
+            Get-Group -ResultSize Unlimited -filter $Filter |
+            Where-Object { $_.WindowsEmailAddress -notin $Processed } |
+            ForEach-Object {
                 if ($_.RecipientTypeDetails -notin 'NonUniversalGroup', 'GroupMailbox', 'RoleGroup') {
-                    $_
+                    [PSCustomObject]@{
+                        Email                   = $Item
+                        PrimarySmtpAddress      = $Recipient.PrimarySmtpAddress
+                        ContactType             = $Recipient.RecipientTypeDetails
+                        RecipientTypeDetails    = $_.RecipientTypeDetails
+                        Group                   = $_.DisplayName
+                        GroupPrimarySmtpAddress = $_.WindowsEmailAddress
+                        Guid                    = ($_.Guid).Guid.ToString()
+                        GroupType               = $_.GroupType
+                    }
+                    # $_
                     $Results += $_
                 }
             }
