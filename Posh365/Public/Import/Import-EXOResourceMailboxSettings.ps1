@@ -22,43 +22,44 @@ function Import-EXOResourceMailboxSettings {
         $ResourceMailbox,
 
         [Parameter(Mandatory = $false)]
-        [switch] $SkipConversionToResourceMailbox
+        [switch]
+        $SkipConversionToResourceMailbox
     )
     Begin {
 
     }
     Process {
-        ForEach ($CurResourceMailbox in $ResourceMailbox) {
+        ForEach ($Resource in $ResourceMailbox) {
             $sethash = @{
-                Identity                            = $CurResourceMailbox.Identity
-                AdditionalResponse                  = $CurResourceMailbox.AdditionalResponse
-                AddAdditionalResponse               = [bool]::Parse($CurResourceMailbox.AddAdditionalResponse)
-                AddNewRequestsTentatively           = [bool]::Parse($CurResourceMailbox.AddNewRequestsTentatively)
-                AddOrganizerToSubject               = [bool]::Parse($CurResourceMailbox.AddOrganizerToSubject)
-                AllBookInPolicy                     = [bool]::Parse($CurResourceMailbox.AllBookInPolicy)
-                AllowConflicts                      = [bool]::Parse($CurResourceMailbox.AllowConflicts)
-                AllowRecurringMeetings              = [bool]::Parse($CurResourceMailbox.AllowRecurringMeetings)
-                AllRequestInPolicy                  = [bool]::Parse($CurResourceMailbox.AllRequestInPolicy)
-                AllRequestOutOfPolicy               = [bool]::Parse($CurResourceMailbox.AllRequestOutOfPolicy)
-                DeleteAttachments                   = [bool]::Parse($CurResourceMailbox.DeleteAttachments)
-                DeleteComments                      = [bool]::Parse($CurResourceMailbox.DeleteComments)
-                DeleteNonCalendarItems              = [bool]::Parse($CurResourceMailbox.DeleteNonCalendarItems)
-                DeleteSubject                       = [bool]::Parse($CurResourceMailbox.DeleteSubject)
-                EnableResponseDetails               = [bool]::Parse($CurResourceMailbox.EnableResponseDetails)
-                EnforceSchedulingHorizon            = [bool]::Parse($CurResourceMailbox.EnforceSchedulingHorizon)
-                ForwardRequestsToDelegates          = [bool]::Parse($CurResourceMailbox.ForwardRequestsToDelegates)
-                OrganizerInfo                       = [bool]::Parse($CurResourceMailbox.OrganizerInfo)
-                ProcessExternalMeetingMessages      = [bool]::Parse($CurResourceMailbox.ProcessExternalMeetingMessages)
-                RemoveForwardedMeetingNotifications = [bool]::Parse($CurResourceMailbox.RemoveForwardedMeetingNotifications)
-                RemoveOldMeetingMessages            = [bool]::Parse($CurResourceMailbox.RemoveOldMeetingMessages)
-                RemovePrivateProperty               = [bool]::Parse($CurResourceMailbox.RemovePrivateProperty)
-                ScheduleOnlyDuringWorkHours         = [bool]::Parse($CurResourceMailbox.ScheduleOnlyDuringWorkHours)
-                TentativePendingApproval            = [bool]::Parse($CurResourceMailbox.TentativePendingApproval)
-                BookingWindowInDays                 = $CurResourceMailbox.BookingWindowInDays
-                ConflictPercentageAllowed           = $CurResourceMailbox.ConflictPercentageAllowed
-                MaximumConflictInstances            = $CurResourceMailbox.MaximumConflictInstances
-                MaximumDurationInMinutes            = $CurResourceMailbox.MaximumDurationInMinutes
-                AutomateProcessing                  = $CurResourceMailbox.AutomateProcessing
+                Identity                            = $Resource.Identity
+                AdditionalResponse                  = $Resource.AdditionalResponse
+                AddAdditionalResponse               = [bool]::Parse($Resource.AddAdditionalResponse)
+                AddNewRequestsTentatively           = [bool]::Parse($Resource.AddNewRequestsTentatively)
+                AddOrganizerToSubject               = [bool]::Parse($Resource.AddOrganizerToSubject)
+                AllBookInPolicy                     = [bool]::Parse($Resource.AllBookInPolicy)
+                AllowConflicts                      = [bool]::Parse($Resource.AllowConflicts)
+                AllowRecurringMeetings              = [bool]::Parse($Resource.AllowRecurringMeetings)
+                AllRequestInPolicy                  = [bool]::Parse($Resource.AllRequestInPolicy)
+                AllRequestOutOfPolicy               = [bool]::Parse($Resource.AllRequestOutOfPolicy)
+                DeleteAttachments                   = [bool]::Parse($Resource.DeleteAttachments)
+                DeleteComments                      = [bool]::Parse($Resource.DeleteComments)
+                DeleteNonCalendarItems              = [bool]::Parse($Resource.DeleteNonCalendarItems)
+                DeleteSubject                       = [bool]::Parse($Resource.DeleteSubject)
+                EnableResponseDetails               = [bool]::Parse($Resource.EnableResponseDetails)
+                EnforceSchedulingHorizon            = [bool]::Parse($Resource.EnforceSchedulingHorizon)
+                ForwardRequestsToDelegates          = [bool]::Parse($Resource.ForwardRequestsToDelegates)
+                OrganizerInfo                       = [bool]::Parse($Resource.OrganizerInfo)
+                ProcessExternalMeetingMessages      = [bool]::Parse($Resource.ProcessExternalMeetingMessages)
+                RemoveForwardedMeetingNotifications = [bool]::Parse($Resource.RemoveForwardedMeetingNotifications)
+                RemoveOldMeetingMessages            = [bool]::Parse($Resource.RemoveOldMeetingMessages)
+                RemovePrivateProperty               = [bool]::Parse($Resource.RemovePrivateProperty)
+                ScheduleOnlyDuringWorkHours         = [bool]::Parse($Resource.ScheduleOnlyDuringWorkHours)
+                TentativePendingApproval            = [bool]::Parse($Resource.TentativePendingApproval)
+                BookingWindowInDays                 = $Resource.BookingWindowInDays
+                ConflictPercentageAllowed           = $Resource.ConflictPercentageAllowed
+                MaximumConflictInstances            = $Resource.MaximumConflictInstances
+                MaximumDurationInMinutes            = $Resource.MaximumDurationInMinutes
+                AutomateProcessing                  = $Resource.AutomateProcessing
             }
             $setparams = @{ }
             ForEach ($h in $sethash.keys) {
@@ -67,7 +68,7 @@ function Import-EXOResourceMailboxSettings {
                 }
             }
 
-            $type = $CurResourceMailbox.RecipientTypeDetails
+            $type = $Resource.RecipientTypeDetails
             $convertType = @{ }
             switch ( $type ) {
                 RoomMailbox {
@@ -78,39 +79,23 @@ function Import-EXOResourceMailboxSettings {
                 }
             }
 
-            if (! $SkipConversionToResourceMailbox) {
-                Set-Mailbox -Identity $CurResourceMailbox.Identity @convertType
+            if (-not $SkipConversionToResourceMailbox) {
+                Set-Mailbox -Identity $Resource.Identity @convertType
             }
-            Write-Verbose "Resource Mailbox: `t $($CurResourceMailbox.Identity)"
+            Write-Verbose "Resource Mailbox: `t $($Resource.Identity)"
             Set-CalendarProcessing @setparams
 
-            if ($CurResourceMailbox.ResourceDelegates) {
-                $ResourceDelegateArray = [System.Collections.Generic.List[PSObject]]::new()
-                $CurResourceMailbox.ResourceDelegates -split [regex]::Escape('|') | ForEach-Object {
-                    $ResourceDelegateArray.Add($_)
-                }
-                Set-CalendarProcessing -Identity $CurResourceMailbox.Identity -ResourceDelegates $ResourceDelegateArray
+            if ($Resource.ResourceDelegates) {
+                Set-CalendarProcessing -Identity $Resource.Identity -ResourceDelegates ($Resource.ResourceDelegates -split [regex]::Escape('|'))
             }
-            if ($CurResourceMailbox.BookInPolicy) {
-                $BookInPolicyArray = [System.Collections.Generic.List[PSObject]]::new()
-                $CurResourceMailbox.BookInPolicy -split [regex]::Escape('|') | ForEach-Object {
-                    $BookInPolicyArray.Add($_)
-                }
-                Set-CalendarProcessing -Identity $CurResourceMailbox.Identity -BookInPolicy $BookInPolicyArray
+            if ($Resource.BookInPolicy) {
+                Set-CalendarProcessing -Identity $Resource.Identity -BookInPolicy $Resource.BookInPolicy -split [regex]::Escape('|')
             }
-            if ($CurResourceMailbox.RequestInPolicy) {
-                $RequestInPolicyArray = [System.Collections.Generic.List[PSObject]]::new()
-                $CurResourceMailbox.RequestInPolicy -split [regex]::Escape('|') | ForEach-Object {
-                    $RequestInPolicyArray.Add($_)
-                }
-                Set-CalendarProcessing -Identity $CurResourceMailbox.Identity -RequestInPolicy $RequestInPolicyArray
+            if ($Resource.RequestInPolicy) {
+                Set-CalendarProcessing -Identity $Resource.Identity -RequestInPolicy ($Resource.RequestInPolicy -split [regex]::Escape('|'))
             }
-            if ($CurResourceMailbox.RequestOutOfPolicy) {
-                $RequestOutOfPolicyArray = [System.Collections.Generic.List[PSObject]]::new()
-                $CurResourceMailbox.RequestOutOfPolicy -split [regex]::Escape('|') | ForEach-Object {
-                    $RequestOutOfPolicyArray.Add($_)
-                }
-                Set-CalendarProcessing -Identity $CurResourceMailbox.Identity -RequestOutOfPolicy $RequestOutOfPolicyArray
+            if ($Resource.RequestOutOfPolicy) {
+                Set-CalendarProcessing -Identity $Resource.Identity -RequestOutOfPolicy ($Resource.RequestOutOfPolicy -split [regex]::Escape('|'))
             }
         }
     }
