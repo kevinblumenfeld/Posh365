@@ -81,7 +81,7 @@ function Get-EXOResourceMailbox {
                         PrimarySmtpAddress                  = $Resource.PrimarySmtpAddress
                         Alias                               = $Resource.Alias
                         TotalGB                             = $Resource.TotalGB
-                        ResourceDelegates                   = $Cal.ResourceDelegates
+                        ResourceDelegates                   = @($Cal.ResourceDelegates) -ne '' -join '|'
                         MaximumDurationInMinutes            = $Cal.MaximumDurationInMinutes
                         AutomateProcessing                  = $Cal.AutomateProcessing
                         MailboxOwnerId                      = $Cal.MailboxOwnerId
@@ -113,9 +113,9 @@ function Get-EXOResourceMailbox {
                         ScheduleOnlyDuringWorkHours         = $Cal.ScheduleOnlyDuringWorkHours
                         TentativePendingApproval            = $Cal.TentativePendingApproval
                         ObjectState                         = $Cal.ObjectState
-                        BookInPolicy                        = $Cal.BookInPolicy
-                        RequestInPolicy                     = $Cal.RequestInPolicy
-                        RequestOutOfPolicy                  = $Cal.RequestOutOfPolicy
+                        BookInPolicy                        = @($Cal.BookInPolicy) -ne '' -join '|'
+                        RequestInPolicy                     = @($Cal.RequestInPolicy) -ne '' -join '|'
+                        RequestOutOfPolicy                  = @($Cal.RequestOutOfPolicy) -ne '' -join '|'
                     }
                 }
             }
