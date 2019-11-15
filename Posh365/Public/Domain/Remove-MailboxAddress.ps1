@@ -48,7 +48,7 @@ function Remove-MailboxAddress {
         foreach ($Remove in $RemoveList) {
             try {
                 Write-Host "$($Remove.DisplayName)" -ForegroundColor White
-                Get-EXOMailbox -Identity $Remove.Guid | Set-Mailbox -EmailAddresses @{Remove = @($Remove.EmailList) }
+                Get-EXOMailbox -Identity $Remove.Guid.ToString() | Set-Mailbox -EmailAddresses @{Remove = @($Remove.EmailList) }
                 Write-Host "$($Remove.DisplayName) Removed" -ForegroundColor Green
                 [PSCustomObject]@{
                     Action             = "REMOVEEMAILS"

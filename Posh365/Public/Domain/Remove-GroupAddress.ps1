@@ -48,7 +48,7 @@ function Remove-GroupAddress {
         foreach ($Remove in $RemoveList) {
             try {
                 Write-Host "$($Remove.DisplayName)" -ForegroundColor White
-                Get-DistributionGroup -Identity $Remove.Guid | Set-DistributionGroup -EmailAddresses @{Remove = @($Remove.EmailList) }
+                Get-DistributionGroup -Identity $Remove.Guid.ToString() | Set-DistributionGroup -EmailAddresses @{Remove = @($Remove.EmailList) }
                 Write-Host "$($Remove.DisplayName) Removed" -ForegroundColor Green
                 [PSCustomObject]@{
                     Action             = "REMOVEEMAILS"
