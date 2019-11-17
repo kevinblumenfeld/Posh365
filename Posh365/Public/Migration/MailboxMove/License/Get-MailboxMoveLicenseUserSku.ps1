@@ -3,6 +3,8 @@ function Get-MailboxMoveLicenseUserSku {
     .SYNOPSIS
     Reports on a user or users Office 365 enabled Sku
     Either All, All Licensed, SearchString or Sharepoint can be used for input
+    By default, results are displayed in Out-GridView, unless -ExportToExcel switch is used
+    Excel is saved as UserSkus.xlsx to desktop
 
     .DESCRIPTION
     Reports on a user or users Office 365 enabled Sku
@@ -31,8 +33,45 @@ function Get-MailboxMoveLicenseUserSku {
     User2 License2
     User3 License1
 
+    .PARAMETER ExportToExcel
+    Export Results to a xlsx file on the desktop named UserSkus.xlsx
+    If a file is already named this on the desktop it will be overwritten with the new data
+
     .EXAMPLE
-    An example
+    Get-MailboxMoveLicenseUserSku -All
+
+    .EXAMPLE
+    Get-MailboxMoveLicenseUserSku -All -ExportToExcel
+
+    .EXAMPLE
+    Get-MailboxMoveLicenseUserSku -All -OnePerLine
+
+    .EXAMPLE
+    Get-MailboxMoveLicenseUserSku -All -OnePerLine -ExportToExcel
+
+    .EXAMPLE
+    Get-MailboxMoveLicenseUserSku -AllLicensedOnly
+
+    .EXAMPLE
+    Get-MailboxMoveLicenseUserSku -AllLicensedOnly -ExportToExcel
+
+    .EXAMPLE
+    Get-MailboxMoveLicenseUserSku -AllLicensedOnly -OnePerLine
+
+    .EXAMPLE
+    Get-MailboxMoveLicenseUserSku -AllLicensedOnly -OnePerLine -ExportToExcel
+
+    .EXAMPLE
+    Get-MailboxMoveLicenseUserSku -SearchString Mike
+
+    .EXAMPLE
+    Get-MailboxMoveLicenseUserSku -SearchString Mike -ExportToExcel
+
+    .EXAMPLE
+    Get-MailboxMoveLicenseUserSku -SearchString Mike -OnePerLine
+
+    .EXAMPLE
+    Get-MailboxMoveLicenseUserSku -SearchString Mike -OnePerLine -ExportToExcel
 
     .NOTES
     General notes
