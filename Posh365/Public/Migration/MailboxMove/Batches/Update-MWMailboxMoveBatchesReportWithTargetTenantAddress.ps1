@@ -13,7 +13,7 @@ function Update-MWMailboxMoveBatchesReportWithTargetTenantAddress {
 
     .PARAMETER ExcelFile
     Excel file found in "Shared Documents" of SharePoint site specified in SharePointURL
-    ex. "Batchex.xlsx"
+    ex. "Batches.xlsx"
 
     .PARAMETER ReportPath
     Output path where a new and updated Batches.xlsx will be output

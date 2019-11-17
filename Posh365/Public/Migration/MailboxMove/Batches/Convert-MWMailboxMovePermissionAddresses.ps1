@@ -11,7 +11,7 @@ function Convert-MWMailboxMovePermissionAddresses {
 
     .PARAMETER ExcelFile
     Excel file found in "Shared Documents" of SharePoint site specified in SharePointURL
-    ex. "Batchex.xlsx"
+    ex. "Batches.xlsx"
 
     .PARAMETER ExcelPermissionsFile
     Also found in the SharePoint document repository. This is the excel file with the source tenant addresses (that need to be converted to target tenant)

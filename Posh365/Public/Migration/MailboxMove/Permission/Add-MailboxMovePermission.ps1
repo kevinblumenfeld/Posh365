@@ -11,7 +11,7 @@ function Add-MailboxMovePermission {
 
     .PARAMETER ExcelFile
     Excel file found in "Shared Documents" of SharePoint site specified in SharePointURL
-    ex. "Batchex.xlsx"
+    ex. "Batches.xlsx"
 
     .PARAMETER AutoMap
     Use to set AutoMapping to $true.  Will only have an effect on Full Access permissions.

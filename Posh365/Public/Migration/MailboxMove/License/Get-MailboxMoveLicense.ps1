@@ -17,7 +17,7 @@ function Get-MailboxMoveLicense {
 
     .PARAMETER ExcelFile
     Excel file found in "Shared Documents" of SharePoint site specified in SharePointURL
-    ex. "Batchex.xlsx"
+    ex. "Batches.xlsx"
     Minimum headers required are: BatchName, UserPrincipalName
 
     .PARAMETER MailboxCSV

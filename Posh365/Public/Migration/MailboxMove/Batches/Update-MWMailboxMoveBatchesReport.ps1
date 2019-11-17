@@ -16,7 +16,7 @@ function Update-MWMailboxMoveBatchesReport {
 
     .PARAMETER ExcelFile
     Excel file found in "Shared Documents" of SharePoint site specified in SharePointURL
-    ex. "Batchex.xlsx"
+    ex. "Batches.xlsx"
 
     .PARAMETER NewCsvFile
     Use a new batches.csv file

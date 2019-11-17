@@ -12,7 +12,7 @@ Function Test-MailboxMove {
 
     .PARAMETER ExcelFile
     Excel file found in "Shared Documents" of SharePoint site specified in SharePointURL
-    ex. "Batchex.xlsx"
+    ex. "Batches.xlsx"
 
     .PARAMETER MailboxCSV
     If using a csv instead of sharepoint url excel file
