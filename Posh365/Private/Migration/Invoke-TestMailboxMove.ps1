@@ -16,7 +16,7 @@ function Invoke-TestMailboxMove {
             }
             $ErrorValue = [System.Collections.Generic.List[string]]::New()
             try {
-                $MailUser = Get-MailUser -Identity $User.UserPrincipalName -ErrorAction Stop
+                $MailUser = Get-MailUser -Identity $User.PrimarySmtpAddress -ErrorAction Stop
                 $PreFlightHash.Add('MailboxType', $User.RecipientTypeDetails)
                 $BadEmail = [System.Collections.Generic.List[string]]::New()
                 foreach ($Email in $MailUser.EmailAddresses) {
@@ -56,7 +56,7 @@ function Invoke-TestMailboxMove {
                 }
             }
             catch {
-                if ($Mailbox = Get-Mailbox -Identity $User.UserPrincipalName -ErrorAction silentlycontinue) {
+                if ($Mailbox = Get-Mailbox -Identity $User.PrimarySmtpAddress -ErrorAction silentlycontinue) {
                     $PreFlightHash.Add('MailboxType', $Mailbox.RecipientTypeDetails)
                     $PreFlightHash.Add('AccountDisabled', $Mailbox.AccountDisabled)
                     $PreFlightHash.Add('IsDirSynced', $Mailbox.IsDirSynced)
