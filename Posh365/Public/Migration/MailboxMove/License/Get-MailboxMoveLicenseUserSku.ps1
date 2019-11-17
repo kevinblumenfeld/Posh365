@@ -2,23 +2,23 @@ function Get-MailboxMoveLicenseUserSku {
     <#
     .SYNOPSIS
     Reports on a user or users Office 365 enabled Sku
-    Either All, All Licensed, SearchString or Sharepoint can be used for input
+    Either All, All Licensed, SearchString or SharePoint can be used for input
     By default, results are displayed in Out-GridView, unless -ExportToExcel switch is used
     Excel is saved as UserSkus.xlsx to desktop
 
     .DESCRIPTION
     Reports on a user or users Office 365 enabled Sku
-    Either All, All Licensed, SearchString or Sharepoint can be used for input
+    Either All, All Licensed, SearchString or SharePoint can be used for input
 
     .PARAMETER SharePointURL
-    Sharepoint url ex. https://fabrikam.sharepoint.com/sites/Contoso
+    SharePoint url ex. https://fabrikam.sharepoint.com/sites/Contoso
 
     .PARAMETER ExcelFile
     Excel file found in "Shared Documents" of SharePoint site specified in SharePointURL
-    ex. "Batchex.xlsx"
+    ex. "Batches.xlsx"
 
     .PARAMETER All
-    All AzureAd Users and their licence(s) or lackthereof
+    All AzureAd Users and their licence(s) or lack thereof
 
     .PARAMETER AllLicensedOnly
     All licensed AzureAD Users
@@ -143,7 +143,7 @@ function Get-MailboxMoveLicenseUserSku {
                     $Splat.Add('SharePoint', $true)
                     $Splat.Add('UserChoice', $UserChoice)
                     if (-not $ExportToExcel) {
-                        Invoke-GetMailboxMoveLicenseUserSku @Splat | Out-GridView -Title "Report of user skus"
+                        Invoke-GetMailboxMoveLicenseUserSku @Splat | Out-GridView -Title "Report of user sku's"
                     }
                     else {
                         Invoke-GetMailboxMoveLicenseUserSku @Splat | Export-Excel @ExcelSplat
@@ -162,7 +162,7 @@ function Get-MailboxMoveLicenseUserSku {
                     $Splat.Add('UserChoice', $UserChoice)
                 }
                 if (-not $ExportToExcel) {
-                    Invoke-GetMailboxMoveLicenseUserSku @Splat | Out-GridView -Title "Report of user skus"
+                    Invoke-GetMailboxMoveLicenseUserSku @Splat | Out-GridView -Title "Report of user sku's"
                 }
                 else {
                     Invoke-GetMailboxMoveLicenseUserSku @Splat | Export-Excel @ExcelSplat
@@ -173,7 +173,7 @@ function Get-MailboxMoveLicenseUserSku {
                 $Splat.Add('SearchString', $true)
                 $Splat.Add('UserChoice', $UserChoice)
                 if (-not $ExportToExcel) {
-                    Invoke-GetMailboxMoveLicenseUserSku @Splat | Out-GridView -Title "Report of user skus"
+                    Invoke-GetMailboxMoveLicenseUserSku @Splat | Out-GridView -Title "Report of user sku's"
                 }
                 else {
                     Invoke-GetMailboxMoveLicenseUserSku @Splat | Export-Excel @ExcelSplat
