@@ -34,19 +34,22 @@
     Parameter description
 
     .PARAMETER RoutingDomain
-    For example: "*@contoso.onmicrosoft.com"
+    For example: "contoso.onmicrosoft.com"
 
     .PARAMETER DomainSuffix
-    For example: "@contoso.onmicrosoft.com"
+    For example: "contoso.onmicrosoft.com"
 
     .PARAMETER WildCardDomain
     For example: "*.onmicrosoft.com"
 
     .EXAMPLE
-    An example
+    Remove-365Domain -FlipUPN -RoutingDomain 'contoso.onmicrosoft.com' -DomainSuffix 'contoso.onmicrosoft.com' -WildCardDomain "*.onmicrosoft.com"
+
+    .EXAMPLE
+    Remove-365Domain -FlipMailbox -RoutingDomain 'contoso.onmicrosoft.com' -DomainSuffix 'contoso.onmicrosoft.com' -WildCardDomain "*.onmicrosoft.com"
 
     .NOTES
-    General notes
+    For removal of secondary proxy addresses use Remove-MailboxAddress, Remove-GroupAddress and Remove-UnifiedGroupAddress. each has proper PS help.
     #>
 
     param (

@@ -114,11 +114,19 @@ function Get-MailboxMoveLicenseUserSku {
         [Parameter(ParameterSetName = 'All')]
         [Parameter(ParameterSetName = 'AllLicensedOnly')]
         [switch]
-        $ExportToExcel
+        $ExportToExcel,
+
+        [Parameter(ParameterSetName = 'SharePoint')]
+        [Parameter(ParameterSetName = 'SearchString')]
+        [Parameter(ParameterSetName = 'All')]
+        [Parameter(ParameterSetName = 'AllLicensedOnly')]
+        [switch]
+        $IncludeRecipientType
     )
     end {
         $Splat = @{
-            OnePerLine = $OnePerLine
+            OnePerLine           = $OnePerLine
+            IncludeRecipientType = $IncludeRecipientType
         }
         if ($ExportToExcel) {
             $ExcelSplat = @{

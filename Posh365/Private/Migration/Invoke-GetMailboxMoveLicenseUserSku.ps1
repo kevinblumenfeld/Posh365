@@ -23,9 +23,16 @@ function Invoke-GetMailboxMoveLicenseUserSku {
         $SearchString,
 
         [switch]
-        $OnePerLine
+        $OnePerLine,
+
+        [switch]
+        $IncludeRecipientType
     )
     end {
+        if ($IncludeRecipientType) {
+            Invoke-GetMailboxMoveLicenseUserSkuWithType @PSBoundParameters
+            return
+        }
         $PlanList = Get-AzureADSubscribedSku
         $SkuHash = @{ }
         $PlanList | ForEach-Object {
@@ -35,24 +42,42 @@ function Invoke-GetMailboxMoveLicenseUserSku {
                 if ($UserChoice -ne 'Quit' ) {
                     if (-not $OnePerLine) {
                         foreach ($User in $UserChoice) {
-                            $SkuList = (Get-AzureADUser -Filter "mail eq '$($User.PrimarySmtpAddress)' or UserPrincipalName eq '$($User.UserPrincipalName)'").AssignedLicenses.SkuID
-                            [PSCustomObject]@{
-                                DisplayName        = $User.DisplayName
-                                PrimarySmtpAddress = $User.PrimarySmtpAddress
-                                UserPrincipalName  = $User.UserPrincipalName
-                                Sku                = @(($SkuList) -ne '' | ForEach-Object { $SkuHash[$_] }) -ne '' -join '|'
+                            if ($SkuList = (Get-AzureADUser -Filter "mail eq '$($User.PrimarySmtpAddress)' or UserPrincipalName eq '$($User.UserPrincipalName)'").AssignedLicenses.SkuID) {
+                                [PSCustomObject]@{
+                                    DisplayName        = $User.DisplayName
+                                    PrimarySmtpAddress = $User.PrimarySmtpAddress
+                                    UserPrincipalName  = $User.UserPrincipalName
+                                    Sku                = @(($SkuList) -ne '' | ForEach-Object { $SkuHash[$_] }) -ne '' -join '|'
+                                }
+                            }
+                            else {
+                                [PSCustomObject]@{
+                                    DisplayName        = $User.DisplayName
+                                    PrimarySmtpAddress = $User.PrimarySmtpAddress
+                                    UserPrincipalName  = $User.UserPrincipalName
+                                    Sku                = 'UNLICENSED'
+                                }
                             }
                         }
                     }
                     else {
                         foreach ($User in $UserChoice) {
-                            $SkuList = (Get-AzureADUser -Filter "mail eq '$($User.PrimarySmtpAddress)' or UserPrincipalName eq '$($User.UserPrincipalName)'").AssignedLicenses.SkuID
-                            foreach ($Sku in $SkuList) {
+                            if ($SkuList = (Get-AzureADUser -Filter "mail eq '$($User.PrimarySmtpAddress)' or UserPrincipalName eq '$($User.UserPrincipalName)'").AssignedLicenses.SkuID) {
+                                foreach ($Sku in $SkuList) {
+                                    [PSCustomObject]@{
+                                        DisplayName        = $User.DisplayName
+                                        PrimarySmtpAddress = $User.PrimarySmtpAddress
+                                        UserPrincipalName  = $User.UserPrincipalName
+                                        Sku                = $SkuHash[$Sku]
+                                    }
+                                }
+                            }
+                            else {
                                 [PSCustomObject]@{
                                     DisplayName        = $User.DisplayName
                                     PrimarySmtpAddress = $User.PrimarySmtpAddress
                                     UserPrincipalName  = $User.UserPrincipalName
-                                    Sku                = $SkuHash[$Sku]
+                                    Sku                = 'UNLICENSED'
                                 }
                             }
                         }
@@ -62,12 +87,21 @@ function Invoke-GetMailboxMoveLicenseUserSku {
             $All {
                 if ($OnePerLine) {
                     foreach ($User in $UserChoice) {
+                        if ($User.AssignedLicenses.SkuID) { }
                         foreach ($Sku in $User.AssignedLicenses.SkuID) {
                             [PSCustomObject]@{
                                 DisplayName        = $User.DisplayName
                                 PrimarySmtpAddress = [regex]::Matches("$($User.ProxyAddresses)", "(?<=SMTP:)[^ ]*").value
                                 UserPrincipalName  = $User.UserPrincipalName
                                 Sku                = $SkuHash[$Sku]
+                            }
+                        }
+                        else {
+                            [PSCustomObject]@{
+                                DisplayName        = $User.DisplayName
+                                PrimarySmtpAddress = [regex]::Matches("$($User.ProxyAddresses)", "(?<=SMTP:)[^ ]*").value
+                                UserPrincipalName  = $User.UserPrincipalName
+                                Sku                = 'UNLICENSED'
                             }
                         }
                     }
@@ -110,12 +144,22 @@ function Invoke-GetMailboxMoveLicenseUserSku {
             $SearchString {
                 if ($OnePerLine) {
                     foreach ($User in $UserChoice) {
-                        foreach ($Sku in $User.AssignedLicenses.SkuID) {
+                        if ($User.AssignedLicenses.SkuID) {
+                            foreach ($Sku in $User.AssignedLicenses.SkuID) {
+                                [PSCustomObject]@{
+                                    DisplayName        = $User.DisplayName
+                                    PrimarySmtpAddress = [regex]::Matches("$($User.ProxyAddresses)", "(?<=SMTP:)[^ ]*").value
+                                    UserPrincipalName  = $User.UserPrincipalName
+                                    Sku                = $SkuHash[$Sku]
+                                }
+                            }
+                        }
+                        else {
                             [PSCustomObject]@{
                                 DisplayName        = $User.DisplayName
                                 PrimarySmtpAddress = [regex]::Matches("$($User.ProxyAddresses)", "(?<=SMTP:)[^ ]*").value
                                 UserPrincipalName  = $User.UserPrincipalName
-                                Sku                = $SkuHash[$Sku]
+                                Sku                = 'UNLICENSED'
                             }
                         }
                     }
