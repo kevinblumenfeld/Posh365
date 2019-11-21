@@ -117,7 +117,7 @@ function Invoke-GetMailboxMoveLicenseUserSkuWithType {
                             RecipientTypeDetails = $Type
                             PrimarySmtpAddress   = $PrimarySmtpAddress
                             UserPrincipalName    = $User.UserPrincipalName
-                            Sku                  = @(@($User.AssignedLicenses.SkuID -ne '') | ForEach-Object { $SkuHash[$_] }) -ne '' -join '|'
+                            Sku                  = @(@($User.AssignedLicenses -ne '') | ForEach-Object { $SkuHash["$($_.SkuID)"] }) -ne '' -join '|'
                         }
                     }
                 }
@@ -151,7 +151,7 @@ function Invoke-GetMailboxMoveLicenseUserSkuWithType {
                             RecipientTypeDetails = $Type
                             PrimarySmtpAddress   = $PrimarySmtpAddress
                             UserPrincipalName    = $User.UserPrincipalName
-                            Sku                  = @($User.AssignedLicenses.SkuID | ForEach-Object { $SkuHash[$_] }) -ne '' -join '|'
+                            Sku                  = @(@($User.AssignedLicenses -ne '') | ForEach-Object { $SkuHash["$($_.SkuID)"] }) -ne '' -join '|'
                         }
                     }
                 }
@@ -196,7 +196,7 @@ function Invoke-GetMailboxMoveLicenseUserSkuWithType {
                             RecipientTypeDetails = $Type
                             PrimarySmtpAddress   = $PrimarySmtpAddress
                             UserPrincipalName    = $User.UserPrincipalName
-                            Sku                  = @($User.AssignedLicenses.SkuID | ForEach-Object { $SkuHash[$_] }) -ne '' -join '|'
+                            Sku                  = @(@($User.AssignedLicenses -ne '') | ForEach-Object { $SkuHash["$($_.SkuID)"] }) -ne '' -join '|'
                         }
                     }
                 }

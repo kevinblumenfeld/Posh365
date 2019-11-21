@@ -47,7 +47,7 @@ function Invoke-GetMailboxMoveLicenseUserSku {
                                     DisplayName        = $User.DisplayName
                                     PrimarySmtpAddress = $User.PrimarySmtpAddress
                                     UserPrincipalName  = $User.UserPrincipalName
-                                    Sku                = @(($SkuList) -ne '' | ForEach-Object { $SkuHash[$_] }) -ne '' -join '|'
+                                    Sku                = @(($SkuList) -ne '' | ForEach-Object { $SkuHash["$($_)"] }) -ne '' -join '|'
                                 }
                             }
                             else {
@@ -68,7 +68,7 @@ function Invoke-GetMailboxMoveLicenseUserSku {
                                         DisplayName        = $User.DisplayName
                                         PrimarySmtpAddress = $User.PrimarySmtpAddress
                                         UserPrincipalName  = $User.UserPrincipalName
-                                        Sku                = $SkuHash[$Sku]
+                                        Sku                = $SkuHash["$Sku"]
                                     }
                                 }
                             }
@@ -93,7 +93,7 @@ function Invoke-GetMailboxMoveLicenseUserSku {
                                 DisplayName        = $User.DisplayName
                                 PrimarySmtpAddress = [regex]::Matches("$($User.ProxyAddresses)", "(?<=SMTP:)[^ ]*").value
                                 UserPrincipalName  = $User.UserPrincipalName
-                                Sku                = $SkuHash[$Sku]
+                                Sku                = $SkuHash["$Sku"]
                             }
                         }
                         else {
@@ -112,7 +112,7 @@ function Invoke-GetMailboxMoveLicenseUserSku {
                             DisplayName        = $User.DisplayName
                             PrimarySmtpAddress = [regex]::Matches("$($User.ProxyAddresses)", "(?<=SMTP:)[^ ]*").value
                             UserPrincipalName  = $User.UserPrincipalName
-                            Sku                = @(@($User.AssignedLicenses.SkuID -ne '') | ForEach-Object { $SkuHash[$_] }) -ne '' -join '|'
+                            Sku                = @(@($User.AssignedLicenses -ne '') | ForEach-Object { $SkuHash["$($_.SkuID)"] }) -ne '' -join '|'
                         }
                     }
                 }
@@ -125,7 +125,7 @@ function Invoke-GetMailboxMoveLicenseUserSku {
                                 DisplayName        = $User.DisplayName
                                 PrimarySmtpAddress = [regex]::Matches("$($User.ProxyAddresses)", "(?<=SMTP:)[^ ]*").value
                                 UserPrincipalName  = $User.UserPrincipalName
-                                Sku                = $SkuHash[$Sku]
+                                Sku                = $SkuHash["$Sku"]
                             }
                         }
                     }
@@ -136,7 +136,7 @@ function Invoke-GetMailboxMoveLicenseUserSku {
                             DisplayName        = $User.DisplayName
                             PrimarySmtpAddress = [regex]::Matches("$($User.ProxyAddresses)", "(?<=SMTP:)[^ ]*").value
                             UserPrincipalName  = $User.UserPrincipalName
-                            Sku                = @($User.AssignedLicenses.SkuID | ForEach-Object { $SkuHash[$_] }) -ne '' -join '|'
+                            Sku                = @(@($User.AssignedLicenses -ne '') | ForEach-Object { $SkuHash["$($_.SkuID)"] }) -ne '' -join '|'
                         }
                     }
                 }
@@ -150,7 +150,7 @@ function Invoke-GetMailboxMoveLicenseUserSku {
                                     DisplayName        = $User.DisplayName
                                     PrimarySmtpAddress = [regex]::Matches("$($User.ProxyAddresses)", "(?<=SMTP:)[^ ]*").value
                                     UserPrincipalName  = $User.UserPrincipalName
-                                    Sku                = $SkuHash[$Sku]
+                                    Sku                = $SkuHash["$Sku"]
                                 }
                             }
                         }
@@ -170,7 +170,7 @@ function Invoke-GetMailboxMoveLicenseUserSku {
                             DisplayName        = $User.DisplayName
                             PrimarySmtpAddress = [regex]::Matches("$($User.ProxyAddresses)", "(?<=SMTP:)[^ ]*").value
                             UserPrincipalName  = $User.UserPrincipalName
-                            Sku                = @($User.AssignedLicenses.SkuID | ForEach-Object { $SkuHash[$_] }) -ne '' -join '|'
+                            Sku                = @(@($User.AssignedLicenses -ne '') | ForEach-Object { $SkuHash["$($_.SkuID)"] }) -ne '' -join '|'
                         }
                     }
                 }
