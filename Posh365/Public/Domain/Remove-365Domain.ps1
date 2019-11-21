@@ -1,10 +1,12 @@
 ﻿function Remove-365Domain {
     <#
     .SYNOPSIS
-    Used to remove an Office 365 Domain
+    Used to remove an Office 365 Domain by flipping Primaries and UPNs to onmicrosoft addresses
+    For removal of secondary proxy addresses use Remove-MailboxAddress, Remove-GroupAddress and Remove-UnifiedGroupAddress
+    Each has proper PS help.
 
     .DESCRIPTION
-    Used to remove an Office 365 Domain
+    Used to remove an Office 365 Domain by flipping Primaries and UPNs to onmicrosoft addresses
 
     .PARAMETER FlipMailbox
     Parameter description
