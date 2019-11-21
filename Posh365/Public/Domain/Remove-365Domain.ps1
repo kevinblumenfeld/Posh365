@@ -21,18 +21,6 @@
     .PARAMETER FlipUGPrimary
     Parameter description
 
-    .PARAMETER RemoveMailUserProxy
-    Parameter description
-
-    .PARAMETER RemoveMbxProxy
-    Parameter description
-
-    .PARAMETER RemoveUGProxy
-    Parameter description
-
-    .PARAMETER RemoveDLProxy
-    Parameter description
-
     .PARAMETER RoutingDomain
     For example: "contoso.onmicrosoft.com"
 
@@ -73,6 +61,20 @@
         [switch]
         $FlipUGPrimary,
 
+        [Parameter(Mandatory)]
+        [string]
+        $RoutingDomain,
+
+        [Parameter(Mandatory)]
+        [string]
+        $DomainSuffix,
+
+        [Parameter(Mandatory)]
+        [string]
+        $WildCardDomain
+
+        <#
+
         [Parameter()]
         [switch]
         $RemoveMailUserProxy,
@@ -87,19 +89,9 @@
 
         [Parameter()]
         [switch]
-        $RemoveDLProxy,
+        $RemoveDLProxy
 
-        [Parameter(Mandatory)]
-        [string]
-        $RoutingDomain,
-
-        [Parameter(Mandatory)]
-        [string]
-        $DomainSuffix,
-
-        [Parameter(Mandatory)]
-        [string]
-        $WildCardDomain
+        #>
     )
     if ($FlipUPN) {
         $MsolUser = Get-MsolUser -All | Sort-Object -Property UserPrincipalName
@@ -124,8 +116,10 @@
         }
 
         if ($ConfirmCount -eq 'n' -or $ConfirmCount -eq 'y') {
+
             $i = 1
             $Total = $MsolUser.count
+
             ForEach ($CurMsoluser in $MsolUser) {
                 if ($CurMsoluser.UserPrincipalName -notmatch $RoutingDomain) {
                     $MsolProxyAddress = '{0}@{1}' -f $CurMsoluser.UserPrincipalName.Split("@")[0], $DomainSuffix
@@ -149,7 +143,7 @@
     }
 
     if ($FlipMailbox) {
-        $Mailbox = Get-Mailbox -ResultSize Unlimited | Sort-Object -Property UserPrincipalName
+        $Mailbox = Get-EXOMailbox -ResultSize Unlimited | Sort-Object -Property UserPrincipalName
         Write-HostProgress -Message "`nTotal Mailboxes Found: $($Mailbox.count)" -Status "Success" -Total $Total -Count $i
 
         $ConfirmCount = Read-Host "Do you want to split the count?:(y/n)"
@@ -172,8 +166,10 @@
 
         }
         if ($ConfirmCount -eq 'n' -or $ConfirmCount -eq 'y') {
+
             $i = 1
             $Total = $Mailbox.count
+
             ForEach ($CurMailbox in $Mailbox) {
                 if ($CurMailbox.PrimarySmtpAddress -notlike $RoutingDomain) {
                     $NewPrimary = '{0}@{1}' -f $CurMailbox.PrimarySmtpAddress.Split("@")[0], $DomainSuffix
@@ -219,8 +215,10 @@
             $MailUser = $MailUser[$StartNumber..$EndNumber]
         }
         if ($ConfirmCount -eq 'n' -or $ConfirmCount -eq 'y') {
+
             $i = 1
             $Total = $MailUser.Count
+
             ForEach ($CurMailUser in $MailUser) {
                 if ($CurMailUser.PrimarySmtpAddress -notlike $RoutingDomain) {
                     $MailUsrPrimary = '{0}@{1}' -f $CurMailUser.PrimarySmtpAddress.Split("@")[0], $DomainSuffix
@@ -242,9 +240,9 @@
         }
         Write-HostLog -Message "`nMailUsers Completed`n"
     }
-
+    <#
     if ($RemoveMbxProxy) {
-        $Mailbox = Get-Mailbox -ResultSize Unlimited | Sort-Object -Property UserPrincipalName
+        $Mailbox = Get-EXOMailbox -ResultSize Unlimited | Sort-Object -Property UserPrincipalName
         Write-HostLog -Message "`nTotal Mailboxes Found: $($Mailbox.count)" -Status "Success"
 
         $ConfirmCount = Read-Host "Do you want to split the count?:(y/n)"
@@ -265,6 +263,7 @@
             $Mailbox = $Mailbox[$StartNumber..$EndNumber]
 
             if ($ConfirmCount -eq 'n' -or $ConfirmCount -eq 'y') {
+
                 $i = 1
                 $Total = $Mailbox.Count
 
@@ -340,7 +339,7 @@
         }
         Write-HostLog -Message "`nProxies removed from MailUsers`n"
     }
-
+#>
     if ($FlipDLPrimary) {
         $DistributionGroup = Get-DistributionGroup -ResultSize unlimited | Sort-Object -Property PrimarySmtpAddress
         Write-HostLog -Message "`nTotal Distribution Groups Found: $($DistributionGroup.count)" -Status "Success"
@@ -397,7 +396,7 @@
         }
         Write-HostLog -Message "`nFlipping Primary for O365 Groups is Complete`n" -Status "Success"
     }
-
+    <#
     if ($RemoveUGProxy) {
         $UnifiedGroup = Get-UnifiedGroup -ResultSize unlimited | Sort-Object -Property PrimarySmtpAddress
         Write-HostLog -Message "`nTotal O365 Groups Found: $($UnifiedGroup.count)" -Status "Success"
@@ -430,6 +429,8 @@
     if ($RemoveDLProxy) {
         $DistributionGroup = Get-DistributionGroup -ResultSize unlimited | Sort-Object -Property PrimarySmtpAddress
         Write-HostLog -Message "`nTotal Distribution Groups Found: $($DistributionGroup.count)" -Status "Success"
+
+        $i = 1
         $Total = $DistributionGroup.Count
 
         ForEach ($CurDistributionGroup in $DistributionGroup) {
@@ -453,11 +454,11 @@
         }
         Write-HostLog -Message "`nProxies removal task from Distribution Groups is Complete`n" -Status "Success"
     }
-
+#>
 }
 
 <#
-$mailboxList = Get-Mailbox -ResultSize unlimited
+$mailboxList = Get-EXOMailbox -ResultSize unlimited
 
 foreach ($Mailbox in $mailboxList) {
     Write-Host "Mailbox: $($Mailbox.DisplayName)"
