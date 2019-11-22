@@ -72,6 +72,10 @@ function Export-PoshExcel {
         [string]
         $Color = 'Blue',
 
+        [Parameter(ParameterSetName = 'ObjectInput')]
+        [string]
+        $WorkSheetName,
+
         [Parameter(Mandatory, ParameterSetName = 'ObjectInput', ValueFromPipeline)]
         [Object[]]
         $ObjectInput
@@ -96,6 +100,7 @@ function Export-PoshExcel {
             FreezeTopRowFirstColumn = $true
             AutoSize                = $true
             BoldTopRow              = $false
+
             ErrorAction             = 'SilentlyContinue'
         }
     }
@@ -121,6 +126,9 @@ function Export-PoshExcel {
     end {
         switch ($PSCmdlet.ParameterSetName) {
             'ObjectInput' {
+                if ($WorkSheetName) {
+                    $ExcelSplat.Add('WorksheetName', $WorkSheetName)
+                }
                 $PipelineObject | Export-Excel @ExcelSplat
             }
         }
