@@ -13,9 +13,8 @@ function Export-PoshExcel {
     .PARAMETER InputDirectory
     The directory that contains the csv's
 
-    .PARAMETER InputFile
-    The csv if only using one csv and not directory
-    Cannot be used with InputDirectory parameter
+    .PARAMETER ObjectInput
+    This is used to pipe to an Excel file any object the same way you would traditionally pipe to Export-Csv
 
     .PARAMETER OutputDirectory
     The directory where the Excel file will be created
@@ -31,10 +30,13 @@ function Export-PoshExcel {
     Options are Grey, Blue, Orange, LtGrey, Gold, LtBlue, or Green
 
     .EXAMPLE
-    Export-PoshExcel -InputDirectory C:\Users\Kevin\Desktop\temp -OutputDirectory C:\Scripts\ -ExcelFilename Test.xlsx -Recurse -Color Blue
+    Export-PoshExcel -InputDirectory C:\Users\Kevin\Desktop\temp -OutputDirectory C:\Scripts\ -ExcelFilename Test.xlsx -Recurse
 
     .EXAMPLE
-    Export-PoshExcel -InputFile C:\Users\Kevin\Desktop\test.csv -OutputDirectory C:\Scripts\ -ExcelFilename Test.xlsx -Color Blue
+    Get-Process | Export-PoshExcel -OutputDirectory C:\Scripts\ -ExcelFilename Process.xlsx -Color Green
+
+    .EXAMPLE
+    Import-Csv c:\scripts\allusers.csv | Export-PoshExcel -OutputDirectory C:\Scripts\ -ExcelFilename Process.xlsx -Color Green
 
     .NOTES
     The Excel file, by default, will have these features
@@ -55,34 +57,34 @@ function Export-PoshExcel {
         [string]
         $InputDirectory,
 
-        [Parameter(Mandatory, ParameterSetName = 'FileInput')]
-        [ValidateScript( { Test-Path -PathType Leaf -Path $_ })]
-        [string]
-        $InputFile,
+        [Parameter(Mandatory, ParameterSetName = 'ObjectInput', ValueFromPipeline)]
+        [Object[]]
+        $ObjectInput,
 
         [Parameter(Mandatory, ParameterSetName = 'DirectoryInput')]
-        [Parameter(Mandatory, ParameterSetName = 'FileInput')]
+        [Parameter(Mandatory, ParameterSetName = 'ObjectInput')]
         [ValidateScript( { Test-Path -PathType Container -Path $_ })]
         [string]
         $OutputDirectory,
 
         [Parameter(Mandatory, ParameterSetName = 'DirectoryInput')]
-        [Parameter(Mandatory, ParameterSetName = 'FileInput')]
+        [Parameter(Mandatory, ParameterSetName = 'ObjectInput')]
         [ValidateNotNull()]
         [string]
         $ExcelFilename,
 
-        [Parameter(Mandatory, ParameterSetName = 'DirectoryInput')]
+        [Parameter(ParameterSetName = 'DirectoryInput')]
         [switch]
         $Recurse,
 
         [Parameter(ParameterSetName = 'DirectoryInput')]
-        [Parameter(ParameterSetName = 'FileInput')]
+        [Parameter(ParameterSetName = 'ObjectInput')]
         [ValidateSet('Grey', 'Blue', 'Orange', 'LtGrey', 'Gold', 'LtBlue', 'Green')]
         [string]
         $Color = 'Blue'
     )
-    end {
+    begin {
+        $PipelineObject = [System.Collections.Generic.List[PSObject]]::New()
         $ColorHash = @{
             Grey   = 'Medium1'
             Blue   = 'Medium2'
@@ -100,22 +102,32 @@ function Export-PoshExcel {
             FreezeTopRowFirstColumn = $true
             AutoSize                = $true
             BoldTopRow              = $false
-            ClearSheet              = $true
             ErrorAction             = 'SilentlyContinue'
         }
-        if ($InputFile) {
-            Get-Item $InputFile | ForEach-Object {
-                Import-Csv $_.fullname | Export-Excel @ExcelSplat -WorksheetName $_.basename
+    }
+    process {
+        switch ($PSCmdlet.ParameterSetName) {
+            'ObjectInput' {
+                foreach ($Object in $ObjectInput) {
+                    $PipelineObject.Add($Object)
+                }
+            }
+            'DirectoryInput' {
+                $GciSplat = @{
+                    Path    = $InputDirectory
+                    Filter  = '*.csv'
+                    Recurse = $Recurse
+                }
+                Get-ChildItem @GciSplat | Sort-Object BaseName -Descending | ForEach-Object {
+                    Import-Csv $_.fullname | Export-Excel @ExcelSplat -WorksheetName $_.basename
+                }
             }
         }
-        else {
-            $GciSplat = @{
-                Path    = $InputDirectory
-                Filter  = '*.csv'
-                Recurse = $Recurse
-            }
-            Get-ChildItem @GciSplat | Sort-Object BaseName -Descending | ForEach-Object {
-                Import-Csv $_.fullname | Export-Excel @ExcelSplat -WorksheetName $_.basename
+    }
+    end {
+        switch ($PSCmdlet.ParameterSetName) {
+            'ObjectInput' {
+                $PipelineObject | Export-Excel @ExcelSplat
             }
         }
         $ErrorActionPreference = $EA
