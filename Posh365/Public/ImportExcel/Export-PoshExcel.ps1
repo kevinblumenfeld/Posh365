@@ -52,26 +52,15 @@ function Export-PoshExcel {
     [CmdletBinding()]
     param (
 
-        [Parameter(Mandatory, ParameterSetName = 'DirectoryInput')]
+        [Parameter(Position = 0, Mandatory, ParameterSetName = 'DirectoryInput')]
+        [Parameter(Position = 0, Mandatory, ParameterSetName = 'ObjectInput')]
+        [string]
+        $Path,
+
+        [Parameter(Position = 1, Mandatory, ParameterSetName = 'DirectoryInput')]
         [ValidateScript( { Test-Path -PathType Container -Path $_ })]
         [string]
         $InputDirectory,
-
-        [Parameter(Mandatory, ParameterSetName = 'ObjectInput', ValueFromPipeline)]
-        [Object[]]
-        $ObjectInput,
-
-        [Parameter(Mandatory, ParameterSetName = 'DirectoryInput')]
-        [Parameter(Mandatory, ParameterSetName = 'ObjectInput')]
-        [ValidateScript( { Test-Path -PathType Container -Path $_ })]
-        [string]
-        $OutputDirectory,
-
-        [Parameter(Mandatory, ParameterSetName = 'DirectoryInput')]
-        [Parameter(Mandatory, ParameterSetName = 'ObjectInput')]
-        [ValidateNotNull()]
-        [string]
-        $ExcelFilename,
 
         [Parameter(ParameterSetName = 'DirectoryInput')]
         [switch]
@@ -81,7 +70,12 @@ function Export-PoshExcel {
         [Parameter(ParameterSetName = 'ObjectInput')]
         [ValidateSet('Grey', 'Blue', 'Orange', 'LtGrey', 'Gold', 'LtBlue', 'Green')]
         [string]
-        $Color = 'Blue'
+        $Color = 'Blue',
+
+        [Parameter(Mandatory, ParameterSetName = 'ObjectInput', ValueFromPipeline)]
+        [Object[]]
+        $ObjectInput
+
     )
     begin {
         $PipelineObject = [System.Collections.Generic.List[PSObject]]::New()
@@ -97,7 +91,7 @@ function Export-PoshExcel {
         $EA = $ErrorActionPreference
         $ErrorActionPreference = "SilentlyContinue"
         $ExcelSplat = @{
-            Path                    = (Join-Path $OutputDirectory $ExcelFilename)
+            Path                    = $Path
             TableStyle              = $ColorHash[$Color]
             FreezeTopRowFirstColumn = $true
             AutoSize                = $true
