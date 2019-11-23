@@ -100,7 +100,7 @@ function Export-PoshExcel {
             FreezeTopRowFirstColumn = $true
             AutoSize                = $true
             BoldTopRow              = $false
-
+            ClearSheet              = $true
             ErrorAction             = 'SilentlyContinue'
         }
     }
