@@ -335,7 +335,7 @@ function Get-365Info {
                 Sort-Object -Property Count -Descending | Export-Csv $MSOL_Groups_Type @ExportCSVSplat
 
             }
-            { -not $MSOnline } {
+            { -not $MSOnline -and (Test-Path $MSOL_Users_Detailed) } {
                 $MsolUserDetailedImport = Import-Csv $MSOL_Users_Detailed -ErrorAction SilentlyContinue
             }
             { $MsolUserDetailedImport } {
@@ -681,6 +681,11 @@ function Get-365Info {
                         New-ConditionalText DisplayName White Black
                         New-ConditionalText UserPrincipalName White Black
                         New-ConditionalText AccountSku White Black
+                        New-ConditionalText Success Black LightGreen
+                        New-ConditionalText PendingProvisioning Black LightGreen
+                        New-ConditionalText PendingInput Black LightGreen
+                        New-ConditionalText PendingActivation Black LightGreen
+                        New-ConditionalText Disabled
                     )
                 }
                 Import-Csv -Path (Join-Path $TenantPath 365_LicenseReport.csv) -ErrorAction SilentlyContinue | Export-Excel @Excel365Licenses

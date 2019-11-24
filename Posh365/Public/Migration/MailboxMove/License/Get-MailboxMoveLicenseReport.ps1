@@ -24,6 +24,11 @@ function Get-MailboxMoveLicenseReport {
                 New-ConditionalText DisplayName White Black
                 New-ConditionalText UserPrincipalName White Black
                 New-ConditionalText AccountSku White Black
+                New-ConditionalText Success Black LightGreen
+                New-ConditionalText PendingProvisioning Black LightGreen
+                New-ConditionalText PendingInput Black LightGreen
+                New-ConditionalText PendingActivation Black LightGreen
+                New-ConditionalText Disabled
             )
         }
         Import-Csv -Path (Join-Path $Path 365_LicenseReport.csv) | Export-Excel @Excel365Licenses
