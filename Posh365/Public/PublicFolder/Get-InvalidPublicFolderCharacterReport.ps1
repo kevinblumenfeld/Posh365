@@ -6,16 +6,12 @@ function Get-InvalidPublicFolderCharacterReport {
     .DESCRIPTION
     Export Report of Public Folders with Invalid Characters
 
-    .PARAMETER ExcludedWord
-    Don't look for this word in search for invalid characters
-
     .EXAMPLE
     Get-InvalidPublicFolderCharacterReport | Export-Csv .\PFcharReport.csv -notypeinformation -Encoding UTF8
 
     .NOTES
     General notes
     #>
-
 
     [CmdletBinding()]
     param (
@@ -32,7 +28,7 @@ function Get-InvalidPublicFolderCharacterReport {
                 $Folder.Name -like "*/*" -or
                 $Folder.Name -like '*<*' -or
                 $Folder.Name -like '*>*' -or
-                $Folder.Name -like '*–*' -or
+                $Folder.Name.ToString() -match '\u2013' -or
                 $Folder.Name -like '*_-*' -or
                 $Folder.Name -like ' *' -or
                 $Folder.Name -like '* ') {
@@ -91,6 +87,6 @@ function Get-InvalidPublicFolderCharacterReport {
             Identity      = $BadNamePF.Identity
             CreationTime  = $BadNamePF.CreationTime
         }
-        $CorrectedPF | Select FolderPath, OldFolder, NewFolder, OffendingChar, Database, Identity, CreationTime
+        $CorrectedPF | Select-Object FolderPath, OldFolder, NewFolder, OffendingChar, Database, Identity, CreationTime
     }
 }
