@@ -25,19 +25,26 @@ function Export-PoshExcel {
     Options are Grey, Blue, Orange, LtGrey, Gold, LtBlue, or Green
 
     .EXAMPLE
-    Export-PoshExcel -InputDirectory C:\Scripts\test -Path C:\Scripts\test2.xlsx
+    Export-PoshExcel -Path C:\Scripts\test.xlsx -InputDirectory C:\Scripts
 
     .EXAMPLE
-    Export-PoshExcel -InputDirectory C:\Scripts\test -Path C:\Scripts\test2.xlsx -Recurse
+    Same as above example, using positional parameters
+
+    Export-PoshExcel C:\Scripts\test.xlsx C:\Scripts
 
     .EXAMPLE
-    Get-Process | Export-PoshExcel -Path C:\Scripts\Process.xlsx -Color Green
+    Same as above example, using -Recuse to import all CSVs in the directory c:\Scripts and also its subdirectories
+
+    Export-PoshExcel C:\Scripts\test.xlsx C:\Scripts -Recurse
 
     .EXAMPLE
-    Import-Csv c:\scripts\allusers.csv | Export-PoshExcel -Path C:\scripts\AllUsers.xlsx -Color Green
+    Get-Process | Export-PoshExcel C:\Scripts\Process.xlsx -Color Green
 
     .EXAMPLE
-    Import-Csv c:\scripts\allusers.csv | Export-PoshExcel -Path C:\scripts\AllUsers.xlsx -Color Orange -WorksheetName AllUsers
+    Import-Csv c:\scripts\allusers.csv | Export-PoshExcel C:\scripts\AllUsers.xlsx -Color Green
+
+    .EXAMPLE
+    Import-Csv c:\scripts\allusers.csv | Export-PoshExcel C:\scripts\AllUsers.xlsx -Color Orange -WorksheetName AllUsers
 
     .NOTES
     The Excel file, by default, will have these features
