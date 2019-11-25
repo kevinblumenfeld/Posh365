@@ -13,14 +13,9 @@ function Export-PoshExcel {
     .PARAMETER InputDirectory
     The directory that contains the csv's
 
-    .PARAMETER ObjectInput
-    This is used to pipe to an Excel file any object the same way you would traditionally pipe to Export-Csv
-
-    .PARAMETER OutputDirectory
-    The directory where the Excel file will be created
-
-    .PARAMETER ExcelFilename
-    The name of the Excel file you would like to create
+    .PARAMETER Path
+    The full path and filename where the Excel file will be created.
+    Use .xlsx extension
 
     .PARAMETER Recurse
     Use this switch to create the excel from all csv's in a directory and also its subdirectories and so on.
@@ -30,13 +25,19 @@ function Export-PoshExcel {
     Options are Grey, Blue, Orange, LtGrey, Gold, LtBlue, or Green
 
     .EXAMPLE
-    Export-PoshExcel -InputDirectory C:\Users\Kevin\Desktop\temp -OutputDirectory C:\Scripts\ -ExcelFilename Test.xlsx -Recurse
+    Export-PoshExcel -InputDirectory C:\Scripts\test -Path C:\Scripts\test2.xlsx
 
     .EXAMPLE
-    Get-Process | Export-PoshExcel -OutputDirectory C:\Scripts\ -ExcelFilename Process.xlsx -Color Green
+    Export-PoshExcel -InputDirectory C:\Scripts\test -Path C:\Scripts\test2.xlsx -Recurse
 
     .EXAMPLE
-    Import-Csv c:\scripts\allusers.csv | Export-PoshExcel -OutputDirectory C:\Scripts\ -ExcelFilename Process.xlsx -Color Green
+    Get-Process | Export-PoshExcel -Path C:\Scripts\Process.xlsx -Color Green
+
+    .EXAMPLE
+    Import-Csv c:\scripts\allusers.csv | Export-PoshExcel -Path C:\scripts\AllUsers.xlsx -Color Green
+
+    .EXAMPLE
+    Import-Csv c:\scripts\allusers.csv | Export-PoshExcel -Path C:\scripts\AllUsers.xlsx -Color Orange -WorksheetName AllUsers
 
     .NOTES
     The Excel file, by default, will have these features
@@ -46,7 +47,6 @@ function Export-PoshExcel {
      - The top row will be bold
      - If the sheet is already there it will clear it before writing to it
      - If the sheet is not already there but the excel file is, it will add the sheet
-
     #>
 
     [CmdletBinding()]
