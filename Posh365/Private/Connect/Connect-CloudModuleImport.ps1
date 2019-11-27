@@ -51,9 +51,20 @@ function Connect-CloudModuleImport {
                 }
             }
             $EXO2 {
-                if (-not ($null = Get-Module -Name ExchangeOnlineManagement -ListAvailable)) {
-                    Install-Module -Name ExchangeOnlineManagement -force -AcceptLicense
+                if ((Get-Module -Name PowerShellGet -ListAvailable).Version.Major[0] -lt 2 ) {
+                    try {
+                        Install-Module -Name PowerShellGet -Scope CurrentUser -Force -ErrorAction Stop
+                        Write-Warning "Exchange Online v.2 module requires PowerShellGet v.2"
+                        Write-Warning "Please restart this PowerShell console and rerun the same command"
+                        return
+                    }
+                    catch {
+                        Write-Warning "Unable to install the latest version of PowerShellGet"
+                        Write-Warning "and thus unable to install the Exchange Online v.2 module"
+                        return
+                    }
                 }
+                Install-Module -Name ExchangeOnlineManagement -Scope CurrentUser -AcceptLicense -force
             }
             $MSOnline {
                 if (-not ($null = Get-Module -Name MSOnline -ListAvailable)) {

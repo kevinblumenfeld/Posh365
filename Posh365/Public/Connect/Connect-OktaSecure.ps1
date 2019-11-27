@@ -9,7 +9,7 @@ function Connect-OktaSecure {
 
     )
     if (-not (Get-Module -ListAvailable Okta.Core.Automation)) {
-        Install-Module Okta.Core.Automation -Force -SkipPublisherCheck
+        Install-Module Okta.Core.Automation -Force -SkipPublisherCheck -Scope CurrentUser
     }
     $host.ui.RawUI.WindowTitle = "OKTA Tenant: $($Tenant.ToUpper())"
     $RootPath = $env:USERPROFILE + "\ps\"

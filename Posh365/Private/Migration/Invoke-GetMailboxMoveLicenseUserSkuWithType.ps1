@@ -80,7 +80,7 @@ function Invoke-GetMailboxMoveLicenseUserSkuWithType {
             $All {
                 if ($OnePerLine) {
                     foreach ($User in $UserChoice) {
-                        if ($PrimarySmtpAddress = [regex]::Matches("$($User.ProxyAddresses)", "(?<=SMTP:)[^ ]*").value) {
+                        if ($PrimarySmtpAddress = [regex]::Matches("$($User.ProxyAddresses)", "(?<=SMTP:)[^ ]*")[0].value) {
                             $Type = $TypeHash[$PrimarySmtpAddress]
                         }
                         else { $Type = 'NoPrimarySmtp' }

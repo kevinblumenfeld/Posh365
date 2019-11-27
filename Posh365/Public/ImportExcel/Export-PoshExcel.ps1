@@ -99,8 +99,6 @@ function Export-PoshExcel {
             LtBlue = 'Medium6'
             Green  = 'Medium7'
         }
-        $EA = $ErrorActionPreference
-        $ErrorActionPreference = "SilentlyContinue"
         $ExcelSplat = @{
             Path                    = $Path
             TableStyle              = $ColorHash[$Color]
@@ -139,6 +137,5 @@ function Export-PoshExcel {
                 $PipelineObject | Export-Excel @ExcelSplat
             }
         }
-        $ErrorActionPreference = $EA
     }
 }

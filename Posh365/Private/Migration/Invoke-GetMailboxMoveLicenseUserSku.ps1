@@ -87,13 +87,14 @@ function Invoke-GetMailboxMoveLicenseUserSku {
             $All {
                 if ($OnePerLine) {
                     foreach ($User in $UserChoice) {
-                        if ($User.AssignedLicenses.SkuID) { }
-                        foreach ($Sku in $User.AssignedLicenses.SkuID) {
-                            [PSCustomObject]@{
-                                DisplayName        = $User.DisplayName
-                                PrimarySmtpAddress = [regex]::Matches("$($User.ProxyAddresses)", "(?<=SMTP:)[^ ]*").value
-                                UserPrincipalName  = $User.UserPrincipalName
-                                Sku                = $SkuHash["$Sku"]
+                        if ($User.AssignedLicenses.SkuID) {
+                            foreach ($Sku in $User.AssignedLicenses.SkuID) {
+                                [PSCustomObject]@{
+                                    DisplayName        = $User.DisplayName
+                                    PrimarySmtpAddress = [regex]::Matches("$($User.ProxyAddresses)", "(?<=SMTP:)[^ ]*").value
+                                    UserPrincipalName  = $User.UserPrincipalName
+                                    Sku                = $SkuHash["$Sku"]
+                                }
                             }
                         }
                         else {
