@@ -84,14 +84,6 @@ function Connect-CloudMFA {
             { $ExchangeOnline -or $Compliance } {
                 Connect-CloudModuleImport -ExchangeOnline
             }
-            $EXO2 {
-                $Script:RestartConsole = $null
-                Connect-CloudModuleImport -EXO2
-                if ($RestartConsole) {
-                    return
-                }
-                Connect-ExchangeOnline -UserPrincipalName $Credential.UserName
-            }
             $ExchangeOnline {
                 Import-Module (Connect-EXOPSSession) -Global -WarningAction SilentlyContinue -DisableNameChecking
                 Write-Host "Connected to Exchange Online" -ForegroundColor Green
@@ -107,14 +99,22 @@ function Connect-CloudMFA {
             }
             $AzureAD {
                 Connect-CloudModuleImport -AzureAD
-                Connect-AzureAD
-                Write-Host "Connected to Azure AD" -ForegroundColor Green
+                $ConnectAz = Connect-AzureAD
+                Write-Host ("Connected to Azure AD ({0})" -f $ConnectAz.TenantDomain) -ForegroundColor Green
             }
             $SharePoint {
                 Connect-CloudModuleImport -SharePoint
                 $SharePointAdminSite = 'https://' + $Tenant + '-admin.sharepoint.com'
                 Connect-SPOService -Url $SharePointAdminSite
                 Write-Host "Connected to SharePoint Online" -ForegroundColor Green
+            }
+            $EXO2 {
+                $Script:RestartConsole = $null
+                Connect-CloudModuleImport -EXO2
+                if ($RestartConsole) {
+                    return
+                }
+                Connect-ExchangeOnline -UserPrincipalName $Credential.UserName
             }
             default {
 
