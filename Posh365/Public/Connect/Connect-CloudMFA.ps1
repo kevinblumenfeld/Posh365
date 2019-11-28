@@ -85,7 +85,11 @@ function Connect-CloudMFA {
                 Connect-CloudModuleImport -ExchangeOnline
             }
             $EXO2 {
+                $Script:RestartConsole = $null
                 Connect-CloudModuleImport -EXO2
+                if ($RestartConsole) {
+                    return
+                }
                 Connect-ExchangeOnline -UserPrincipalName $Credential.UserName
             }
             $ExchangeOnline {
