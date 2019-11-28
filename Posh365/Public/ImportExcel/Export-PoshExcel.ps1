@@ -123,7 +123,7 @@ function Export-PoshExcel {
                     Recurse = $Recurse
                 }
                 Get-ChildItem @GciSplat | Sort-Object BaseName -Descending | ForEach-Object {
-                    Import-Csv $_.fullname | Export-Excel @ExcelSplat -WorksheetName $_.basename
+                    Import-Csv $_.fullname | Export-Excel @ExcelSplat -WorksheetName (-join $_.BaseName[0..29])
                 }
             }
         }
@@ -132,7 +132,7 @@ function Export-PoshExcel {
         switch ($PSCmdlet.ParameterSetName) {
             'ObjectInput' {
                 if ($WorkSheetName) {
-                    $ExcelSplat.Add('WorksheetName', $WorkSheetName)
+                    $ExcelSplat.Add('WorksheetName', (-join $WorkSheetName[0..29]))
                 }
                 $PipelineObject | Export-Excel @ExcelSplat
             }
