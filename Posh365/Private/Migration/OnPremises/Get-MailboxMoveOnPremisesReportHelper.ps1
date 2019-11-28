@@ -8,31 +8,31 @@
         $MailboxList = Get-Mailbox -ResultSize Unlimited -IgnoreDefaultScope
         foreach ($Mailbox in $MailboxList) {
             Write-Verbose "Mailbox`t$($Mailbox.DisplayName)"
-            $Statistic = $Mailbox | Get-ExchangeMailboxStatistics
+            $Statistic = $Mailbox | Get-OnPremExchangeMailboxStatistics
             $PSHash = @{
-                BatchName             = ''
-                DisplayName           = $Mailbox.DisplayName
-                OrganizationalUnit    = $Mailbox.OrganizationalUnit
-                IsMigrated            = ''
-                CompleteBatchOn       = ''
-                CompleteBatchonTimePT = ''
-                MailboxGB             = $Statistic.MailboxGB
-                ArchiveGB             = $Statistic.ArchiveGB
-                DeletedGB             = $Statistic.DeletedGB
-                TotalGB               = $Statistic.TotalGB
-                LastLogonTime         = $Statistic.LastLogonTime
-                ItemCount             = $Statistic.ItemCount
-                UserPrincipalName     = $Mailbox.UserPrincipalName
-                PrimarySmtpAddress    = $Mailbox.PrimarySmtpAddress
-                AddressBookPolicy     = $Mailbox.AddressBookPolicy
-                RetentionPolicy       = $Mailbox.RetentionPolicy
-                AccountDisabled       = $Mailbox.AccountDisabled
-                Alias                 = $Mailbox.Alias
-                Database              = $Mailbox.Database
-                OU                    = ($Mailbox.DistinguishedName -replace '^.+?,(?=(OU|CN)=)')
-                Office                = $Mailbox.Office
-                RecipientTypeDetails  = $Mailbox.RecipientTypeDetails
-                UMEnabled             = $Mailbox.UMEnabled
+                BatchName                  = ''
+                DisplayName                = $Mailbox.DisplayName
+                OrganizationalUnit         = $Mailbox.OrganizationalUnit
+                IsMigrated                 = ''
+                CompleteBatchOn            = ''
+                CompleteBatchonTimePT      = ''
+                MailboxGB                  = $Statistic.MailboxGB
+                ArchiveGB                  = $Statistic.ArchiveGB
+                DeletedGB                  = $Statistic.DeletedGB
+                TotalGB                    = $Statistic.TotalGB
+                LastLogonTime              = $Statistic.LastLogonTime
+                ItemCount                  = $Statistic.ItemCount
+                UserPrincipalName          = $Mailbox.UserPrincipalName
+                PrimarySmtpAddress         = $Mailbox.PrimarySmtpAddress
+                AddressBookPolicy          = $Mailbox.AddressBookPolicy
+                RetentionPolicy            = $Mailbox.RetentionPolicy
+                AccountDisabled            = $Mailbox.AccountDisabled
+                Alias                      = $Mailbox.Alias
+                Database                   = $Mailbox.Database
+                OU                         = ($Mailbox.DistinguishedName -replace '^.+?,(?=(OU|CN)=)')
+                Office                     = $Mailbox.Office
+                RecipientTypeDetails       = $Mailbox.RecipientTypeDetails
+                UMEnabled                  = $Mailbox.UMEnabled
                 DeliverToMailboxAndForward = $Mailbox.DeliverToMailboxAndForward
                 ForwardingSmtpAddress      = $Mailbox.ForwardingSmtpAddress
             }
