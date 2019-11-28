@@ -64,6 +64,9 @@ function Update-MailboxMoveBatchesReport {
                     'IsMigrated'          = $Current.IsMigrated
                     'CompleteBatchDate'   = $Current.CompleteBatchDate
                     'CompleteBatchTimePT' = $Current.CompleteBatchTimePT
+                    'LicenseGroup'        = $Current.LicenseGroup
+                    'EnableArchive'       = $Current.EnableArchive
+                    'ConvertToShared'     = $Current.ConvertToShared
                 }
             )
         }
@@ -86,6 +89,18 @@ function Update-MailboxMoveBatchesReport {
             @{
                 Name       = 'CompleteBatchTimePT'
                 Expression = { $CurrentHash.$($_.UserPrincipalName).CompleteBatchTimePT }
+            }
+            @{
+                Name       = 'LicenseGroup'
+                Expression = { $CurrentHash.$($_.UserPrincipalName).LicenseGroup }
+            }
+            @{
+                Name       = 'EnableArchive'
+                Expression = { $CurrentHash.$($_.UserPrincipalName).EnableArchive }
+            }
+            @{
+                Name       = 'ConvertToShared'
+                Expression = { $CurrentHash.$($_.UserPrincipalName).ConvertToShared }
             }
             'MailboxGB'
             'ArchiveGB'

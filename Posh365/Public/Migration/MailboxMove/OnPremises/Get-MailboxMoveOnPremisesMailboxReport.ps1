@@ -10,8 +10,9 @@
         $BatchesFile = Join-Path $ReportPath 'Batches.csv'
         $Select = @(
             'BatchName', 'DisplayName', 'OrganizationalUnit', 'IsMigrated', 'CompleteBatchDate'
-            'CompleteBatchTimePT', 'MailboxGB', 'ArchiveGB', 'DeletedGB', 'TotalGB'
-            'LastLogonTime', 'ItemCount', 'UserPrincipalName', 'PrimarySmtpAddress'
+            'CompleteBatchTimePT', 'LicenseGroup', 'EnableArchive', 'ConvertToShared'
+            'MailboxGB', 'ArchiveGB', 'DeletedGB', 'TotalGB', 'LastLogonTime'
+            'ItemCount', 'UserPrincipalName', 'PrimarySmtpAddress'
             'AddressBookPolicy', 'RetentionPolicy', 'AccountDisabled', 'Alias'
             'Database', 'OU', 'Office', 'RecipientTypeDetails', 'UMEnabled'
             'ForwardingAddress', 'ForwardingRecipientType', 'ForwardingSmtpAddress'
@@ -27,8 +28,13 @@
             BoldTopRow              = $true
             ClearSheet              = $true
             WorksheetName           = 'Batches'
-            ErrorAction             = 'SilentlyContinue'
+            ErrorAction             = 'stop'
         }
-        $BatchesFile | Where-Object { $_ } | ForEach-Object { Import-Csv $_ | Export-Excel @ExcelSplat }
+        try {
+            $BatchesFile | Where-Object { $_ } | ForEach-Object { Import-Csv $_ | Export-Excel @ExcelSplat }
+        }
+        catch {
+            $_.Exception.Message
+        }
     }
 }

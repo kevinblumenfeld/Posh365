@@ -37,7 +37,7 @@ function Import-SharePointExcel {
                 ErrorAction = 'Stop'
             }
             if ($WorksheetName) {
-                $ExcelSplat.Add('WorksheetName' , $WorksheetName)
+                $ExcelSplat.Add('WorksheetName' , (-join $WorkSheetName[0..29]))
             }
             Import-Excel @ExcelSplat
         }
