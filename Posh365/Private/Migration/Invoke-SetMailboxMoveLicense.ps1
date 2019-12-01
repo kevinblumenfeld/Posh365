@@ -74,10 +74,15 @@ function Invoke-SetMailboxMoveLicense {
             Default {
                 $WhichUsers = @{
                     OutputMode = 'Multiple'
-                    Title      = 'Change Licenses or Options by selecting users. Next click OK and options will be offered'
+                    Title      = 'Change licenses or options by selecting users. Then click OK and you will be presented options to choose from'
                 }
                 $AllAzureADUsers = Get-AzureADUser -All:$true
-                $UserChoice = Invoke-GetMailboxMoveLicenseUserSku -UserChoice $AllAzureADUsers -All | Out-GridView @WhichUsers
+                $DefaultSplat = @{
+                    UserChoice           = $AllAzureADUsers
+                    All                  = $true
+                    IncludeRecipientType = $true
+                }
+                $UserChoice = Invoke-GetMailboxMoveLicenseUserSku @DefaultSplat | Out-GridView @WhichUsers
             }
         }
         if ($UserChoice -ne 'Quit' ) {

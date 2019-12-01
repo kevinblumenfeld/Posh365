@@ -20,13 +20,22 @@ function Set-MailboxMoveLicense {
     Path to csv of mailboxes. Minimum headers required are: BatchName, UserPrincipalName
 
     .EXAMPLE
+    Set-MailboxMoveLicense
+
+    .EXAMPLE
     Set-MailboxMoveLicense -MailboxCSV c:\scripts\batches.csv
 
     .EXAMPLE
     Set-MailboxMoveLicense -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx'
 
     .NOTES
-    General notes
+    Connect with:
+
+    Connect-Cloud Contoso -EXO2 -AzureADver2
+
+    or
+
+    Connect-CloudMFA Contoso -EXO2 -AzureAD
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'PlaceHolder')]
