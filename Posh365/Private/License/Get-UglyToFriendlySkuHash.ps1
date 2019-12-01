@@ -29,6 +29,7 @@
         "RIGHTSMANAGEMENT_STANDARD_STUDENT"  = "Information Rights Management for Students"
         "INTUNE_A_VL"                        = "Intune (Volume License)"
         "MCOLITE"                            = "Lync Online (Plan 1)"
+        "FLOW_FREE"                          = "Microsoft Flow Free"
         "CRMSTORAGE"                         = "Microsoft Dynamics CRM Online Additional Storage"
         "IT_ACADEMY_AD"                      = "Microsoft Imagine Academy"
         "POWERAPPS_INDIVIDUAL_USER"          = "Microsoft PowerApps and Logic flows"
