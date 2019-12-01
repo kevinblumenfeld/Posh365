@@ -84,7 +84,7 @@ function Export-PoshExcel {
         $WorkSheetName,
 
         [Parameter(Mandatory, ParameterSetName = 'ObjectInput', ValueFromPipeline)]
-        [Object[]]
+        [PSObject[]]
         $ObjectInput
 
     )
@@ -112,9 +112,7 @@ function Export-PoshExcel {
     process {
         switch ($PSCmdlet.ParameterSetName) {
             'ObjectInput' {
-                foreach ($Object in $ObjectInput) {
-                    $PipelineObject.Add($Object)
-                }
+                $PipelineObject.AddRange($ObjectInput)
             }
             'DirectoryInput' {
                 $GciSplat = @{

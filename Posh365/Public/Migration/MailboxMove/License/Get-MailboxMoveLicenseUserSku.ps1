@@ -76,7 +76,7 @@ function Get-MailboxMoveLicenseUserSku {
     .NOTES
     General notes
     #>
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = "PlaceHolder")]
     param (
         [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
         [ValidateNotNullOrEmpty()]
@@ -187,6 +187,7 @@ function Get-MailboxMoveLicenseUserSku {
                     Invoke-GetMailboxMoveLicenseUserSku @Splat | Export-Excel @ExcelSplat
                 }
             }
+            Default { }
         }
     }
 }

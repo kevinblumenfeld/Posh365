@@ -29,7 +29,7 @@ function Set-MailboxMoveLicense {
     General notes
     #>
 
-    [CmdletBinding(DefaultParameterSetName = 'SharePoint')]
+    [CmdletBinding(DefaultParameterSetName = 'PlaceHolder')]
     param (
         [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
         [ValidateNotNullOrEmpty()]
@@ -68,6 +68,9 @@ function Set-MailboxMoveLicense {
                     UseTargetUserPrincipalNameColumn = $UseTargetUserPrincipalNameColumn
                 }
                 Invoke-SetMailboxMoveLicense @CSVSplat
+            }
+            Default {
+                Invoke-SetMailboxMoveLicense
             }
         }
     }

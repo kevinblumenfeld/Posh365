@@ -8,6 +8,10 @@ function Connect-CloudModuleImport {
 
         [Parameter()]
         [switch]
+        $Teams,
+
+        [Parameter()]
+        [switch]
         $ExchangeOnline,
 
         [Parameter()]
@@ -75,6 +79,12 @@ function Connect-CloudModuleImport {
                     }
                     Install-Module @EXOInstall
                 }
+            }
+            $Teams {
+                if (-not ($null = Get-Module -Name MicrosoftTeams -ListAvailable)) {
+                    Install-Module -Name MicrosoftTeams -Scope CurrentUser -Force
+                }
+
             }
             $MSOnline {
                 if (-not ($null = Get-Module -Name MSOnline -ListAvailable)) {

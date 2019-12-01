@@ -29,7 +29,7 @@ function Invoke-SetMailboxMoveLicense {
     General notes
     #>
 
-    [CmdletBinding(DefaultParameterSetName = 'SharePoint')]
+    [CmdletBinding(DefaultParameterSetName = 'PlaceHolder')]
     param (
         [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
         [ValidateNotNullOrEmpty()]
@@ -53,8 +53,6 @@ function Invoke-SetMailboxMoveLicense {
         [Parameter()]
         [switch]
         $UseTargetUserPrincipalNameColumn
-
-
     )
     end {
         switch ($PSCmdlet.ParameterSetName) {
@@ -73,6 +71,14 @@ function Invoke-SetMailboxMoveLicense {
                 }
                 $UserChoice = Import-MailboxCsvDecision @CSVSplat
             }
+            Default {
+                $WhichUsers = @{
+                    OutputMode = 'Multiple'
+                    Title      = 'Change Licenses or Options by selecting users. Next click OK and options will be offered'
+                }
+                $AllAzureADUsers = Get-AzureADUser -All:$true
+                $UserChoice = Invoke-GetMailboxMoveLicenseUserSku -UserChoice $AllAzureADUsers -All | Out-GridView @WhichUsers
+            }
         }
         if ($UserChoice -ne 'Quit' ) {
             $LicenseDecision = Get-LicenseDecision
@@ -86,7 +92,6 @@ function Invoke-SetMailboxMoveLicense {
             else {
                 ($UserChoice).UserPrincipalName | Set-CloudLicense @LicenseOptions | Out-GridView -Title "Results of Set Mailbox Move License"
             }
-
         }
     }
 }

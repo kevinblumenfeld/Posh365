@@ -1,12 +1,12 @@
 ﻿function Get-Sku2Service {
     Param (
-        [Parameter(Mandatory = $false)]
+        [Parameter()]
         [switch] $friendly,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter()]
         [switch] $ugly,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter()]
         [switch] $both
     )
 

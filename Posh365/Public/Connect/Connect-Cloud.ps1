@@ -109,6 +109,8 @@ function Connect-Cloud {
 
         [switch] $ExchangeOnline,
 
+        [switch] $EXO2,
+
         [switch] $MSOnline,
 
         [switch] $All365,
@@ -116,6 +118,8 @@ function Connect-Cloud {
         [switch] $Azure,
 
         [switch] $Skype,
+
+        [switch] $Teams,
 
         [switch] $SharePoint,
 
@@ -141,35 +145,35 @@ function Connect-Cloud {
     }
     Process {
         if ($DeleteCreds) {
-            Try {
+            try {
                 Remove-Item ($KeyPath + "$($Tenant).cred") -ErrorAction Stop
             }
-            Catch {
+            catch {
                 Write-Warning "While the attempt to delete credentials failed, this may be normal. Please try to connect again."
             }
-            Try {
+            try {
                 Remove-Item ($KeyPath + "$($Tenant).ucred") -ErrorAction Stop
             }
-            Catch {
+            catch {
                 break
             }
         }
         if (-not (Test-Path ($RootPath + $Tenant + "\logs\"))) {
             New-Item -ItemType Directory -Force -Path ($RootPath + $Tenant + "\logs\")
         }
-        Try {
+        try {
             Start-Transcript -ErrorAction Stop -path ($RootPath + $Tenant + "\logs\" + "transcript-" + ($(get-date -Format _yyyy-MM-dd_HH-mm-ss)) + ".txt")
         }
-        Catch {
+        catch {
             Stop-Transcript -ErrorAction SilentlyContinue
             Start-Transcript -path ($RootPath + $Tenant + "\logs\" + "transcript-" + ($(get-date -Format _yyyy-MM-dd_HH-mm-ss)) + ".txt")
         }
         # Create KeyPath Directory
         if (-not (Test-Path $KeyPath)) {
-            Try {
+            try {
                 $null = New-Item -ItemType Directory -Path $KeyPath -ErrorAction STOP
             }
-            Catch {
+            catch {
                 throw $_.Exception.Message
             }
         }
@@ -198,14 +202,15 @@ function Connect-Cloud {
                 }
             }
         }
-        if (($ExchangeOnline -or $MSOnline -or $All365 -or $Skype -or $SharePoint -or $Compliance -or $AzureADver2) -and (-not $MFA)) {
+        if (($ExchangeOnline -or $MSOnline -or $All365 -or $Skype -or
+                $SharePoint -or $Compliance -or $AzureADver2 -or $EXO2 -or $Teams) -and (-not $MFA)) {
             if (Test-Path ($KeyPath + "$($Tenant).cred")) {
                 $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).cred") | ConvertTo-SecureString
                 $UsernameString = Get-Content ($KeyPath + "$($Tenant).ucred")
-                $Credential = Try {
+                $Credential = try {
                     New-Object System.Management.Automation.PSCredential -ArgumentList $UsernameString, $PwdSecureString -ErrorAction Stop
                 }
-                Catch {
+                catch {
                     if ($_.exception.Message -match '"userName" is not valid. Change the value of the "userName" argument and run the operation again') {
                         Connect-Cloud $Tenant -DeleteCreds
                         Write-Warning "                    Bad Username                                    "
@@ -226,7 +231,7 @@ function Connect-Cloud {
                 else {
                     Connect-Cloud $Tenant -DeleteCreds
                     Write-Warning "                 No Password Present                                "
-                    Write-Warning "          Please Try your last command again...                     "
+                    Write-Warning "          Please try your last command again...                     "
                     Write-Warning "...you will be prompted to enter your Office 365 credentials again. "
                     Break
                 }
@@ -237,19 +242,19 @@ function Connect-Cloud {
             if (-not ($null = Get-Module -Name MSOnline -ListAvailable -ErrorAction Stop)) {
                 Install-Module -Name MSOnline -Scope CurrentUser -Force
             }
-            Try {
+            try {
                 $null = Get-MsolAccountSku -ErrorAction Stop
             }
-            Catch {
-                Try {
+            catch {
+                try {
                     Connect-MsolService -Credential $Credential -ErrorAction Stop
                     Write-Host "You have successfully connected to MSONLINE" -foregroundcolor "magenta" -backgroundcolor "white"
                 }
-                Catch {
+                catch {
                     if ($_.exception.Message -match "password") {
                         Connect-Cloud $Tenant -DeleteCreds
                         Write-Warning "           Bad Username or Password.                                "
-                        Write-Warning "          Please Try your last command again...                     "
+                        Write-Warning "          Please try your last command again...                     "
                         Write-Warning "...you will be prompted to enter your Office 365 credentials again. "
                         Break
 
@@ -257,7 +262,7 @@ function Connect-Cloud {
                     else {
                         Connect-Cloud $Tenant -DeleteCreds
                         Write-Warning "     There was an error connecting you to MSOnline                  "
-                        Write-Warning "          Please Try your last command again...                     "
+                        Write-Warning "          Please try your last command again...                     "
                         Write-Warning "...you will be prompted to enter your Office 365 credentials again. "
                         Break
                     }
@@ -269,10 +274,10 @@ function Connect-Cloud {
                 if (-not $EXOPrefix) {
                     # Exchange Online
                     if (-not (Get-Command Get-AcceptedDomain -ErrorAction SilentlyContinue)) {
-                        Try {
+                        try {
                             $EXOSession = New-PSSession -Name "EXO" -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell -Credential $Credential -Authentication Basic -AllowRedirection -ErrorAction Stop
                         }
-                        Catch {
+                        catch {
                             Connect-Cloud $Tenant -DeleteCreds
                             Write-Warning "There was an issue with your credentials"
                             Write-Warning "Please run the same command you just ran and try again"
@@ -284,10 +289,10 @@ function Connect-Cloud {
                 }
                 else {
                     if (-not (Get-Command Get-CloudAcceptedDomain -ErrorAction SilentlyContinue)) {
-                        Try {
+                        try {
                             $EXOSession = New-PSSession -Name "EXO" -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell -Credential $Credential -Authentication Basic -AllowRedirection -ErrorAction Stop
                         }
-                        Catch {
+                        catch {
                             Connect-Cloud $Tenant -DeleteCreds
                             Write-Warning "There was an issue with your credentials"
                             Write-Warning "Please run the same command you just ran and try again"
@@ -302,11 +307,11 @@ function Connect-Cloud {
             }
             else {
                 Import-Module -FullyQualifiedName $moduleName -Force
-                Try {
+                try {
                     Import-Module (Connect-EXOPSSession) -Global
                     Write-Host "You have successfully connected to Exchange Online (MFA)" -foregroundcolor "magenta" -backgroundcolor "white"
                 }
-                Catch [System.Management.Automation.CommandNotFoundException] {
+                catch [System.Management.Automation.CommandNotFoundException] {
                     Write-Warning "Exchange Online MFA module is required or there was an issue connecting"
                     Write-Warning "To download the Exchange Online Remote PowerShell Module for multi-factor authentication,"
                     Write-Warning "in the EAC (https://outlook.office365.com/ecp/), go to Hybrid > Setup and click the appropriate Configure button."
@@ -324,11 +329,11 @@ function Connect-Cloud {
                 if (-not $ExchangeOnline) {
                     Import-Module -FullyQualifiedName $moduleName -Force
                 }
-                Try {
+                try {
                     Import-Module (Connect-IPPSSession) -Global
                     Write-Host "You have successfully connected to the Security & Compliance Center (MFA)" -foregroundcolor "magenta" -backgroundcolor "white"
                 }
-                Catch [System.Management.Automation.CommandNotFoundException] {
+                catch [System.Management.Automation.CommandNotFoundException] {
                     Write-Warning "Exchange Online MFA module is required or there was an issue connecting"
                     Write-Warning "To download the Exchange Online Remote PowerShell Module for multi-factor authentication,"
                     Write-Warning "in the EAC (https://outlook.office365.com/ecp/), go to Hybrid > Setup and click the appropriate Configure button."
@@ -338,29 +343,29 @@ function Connect-Cloud {
         # Skype Online
         if ($Skype -or $All365) {
             if (-not $MFA) {
-                Try {
+                try {
                     $sfboSession = New-CsOnlineSession -ErrorAction Stop -Credential $Credential -OverrideAdminDomain "$Tenant.onmicrosoft.com"
                     Write-Host "You have successfully connected to Skype" -foregroundcolor "magenta" -backgroundcolor "white"
                 }
-                Catch [System.Management.Automation.CommandNotFoundException] {
+                catch [System.Management.Automation.CommandNotFoundException] {
                     Write-Warning "Skype for Business Online Module not found.  Please download and install it from here:"
                     Write-Warning "https://www.microsoft.com/en-us/download/details.aspx?id=39366"
                 }
-                Catch {
+                catch {
                     $_
                 }
                 Import-Module (Import-PSSession $sfboSession -AllowClobber) -Global | Out-Null
             }
             else {
-                Try {
+                try {
                     $sfboSession = New-CsOnlineSession -UserName $Credential.UserName -OverrideAdminDomain "$Tenant.onmicrosoft.com" -ErrorAction Stop
                     Write-Host "You have successfully connected to Skype" -foregroundcolor "magenta" -backgroundcolor "white"
                 }
-                Catch [System.Management.Automation.CommandNotFoundException] {
+                catch [System.Management.Automation.CommandNotFoundException] {
                     Write-Warning "Skype for Business Online Module not found.  Please download and install it from here:"
                     Write-Warning "https://www.microsoft.com/en-us/download/details.aspx?id=39366"
                 }
-                Catch {
+                catch {
                     $_
                 }
                 Import-Module (Import-PSSession $sfboSession -AllowClobber) -Global | Out-Null
@@ -369,28 +374,28 @@ function Connect-Cloud {
         # SharePoint Online
         if ($SharePoint -or $All365) {
             $SharePointAdminSite = 'https://' + $Tenant + '-admin.sharepoint.com'
-            Try {
+            try {
                 Import-Module Microsoft.Online.SharePoint.PowerShell -DisableNameChecking -ErrorAction Stop
             }
-            Catch {
+            catch {
                 Install-Module -Name Microsoft.Online.SharePoint.PowerShell -force
             }
             if (-not $MFA) {
-                Try {
+                try {
                     Connect-SPOService -Url $SharePointAdminSite -credential $Credential -ErrorAction stop
                     Write-Host "You have successfully connected to SharePoint" -foregroundcolor "magenta" -backgroundcolor "white"
                 }
-                Catch {
+                catch {
                     $_
                     Write-Warning "Unable to Connect to SharePoint Online."
                 }
             }
             else {
-                Try {
+                try {
                     Connect-SPOService -Url $SharePointAdminSite -ErrorAction stop
                     Write-Host "You have successfully connected to SharePoint" -foregroundcolor "magenta" -backgroundcolor "white"
                 }
-                Catch {
+                catch {
                     Write-Warning "Unable to Connect to SharePoint Online."
                     Write-Warning "verify the tenant name: $Tenant is correct"
                     Write-Warning "This was the URL attempted: https:`/`/$Tenant`-admin.sharepoint.com"
@@ -407,15 +412,15 @@ function Connect-Cloud {
                 If (-not ($null = Get-Module -Name AzureAD -ListAvailable)) {
                     Install-Module -Name AzureAD -Scope CurrentUser -Force
                 }
-                Try {
+                try {
                     $null = Get-AzureADTenantDetail -ErrorAction Stop
                 }
-                Catch {
-                    Try {
+                catch {
+                    try {
                         Connect-AzureAD -Credential $Credential -ErrorAction Stop
                         Write-Host "You have successfully connected to AzureADver2" -foregroundcolor "magenta" -backgroundcolor "white"
                     }
-                    Catch {
+                    catch {
                         if ($error[0]) {
                             Connect-Cloud $Tenant -DeleteCreds
                             Write-Warning "There was an issue with your credentials"
@@ -436,15 +441,15 @@ function Connect-Cloud {
                 If (-not ($null = Get-Module -Name AzureAD -ListAvailable)) {
                     Install-Module -Name AzureAD -Scope CurrentUser -Force
                 }
-                Try {
+                try {
                     $null = Get-AzureADTenantDetail -ErrorAction Stop
                 }
-                Catch {
-                    Try {
+                catch {
+                    try {
                         Connect-AzureAD -Credential $Credential -ErrorAction Stop
                         Write-Host "You have successfully connected to AzureADver2" -foregroundcolor "magenta" -backgroundcolor "white"
                     }
-                    Catch {
+                    catch {
                         if ($error[0]) {
                             Connect-Cloud $Tenant -DeleteCreds
                             Write-Warning "There was as issue with your credentials"
@@ -462,6 +467,18 @@ function Connect-Cloud {
                 }
             }
         }
+        if ($Teams) {
+            Connect-CloudModuleImport -Teams
+            Connect-MicrosoftTeams -Credential $Credential
+        }
+        if ($EXO2) {
+            $Script:RestartConsole = $null
+            Connect-CloudModuleImport -EXO2
+            if ($RestartConsole) {
+                return
+            }
+            Connect-ExchangeOnline -Credential $Credential
+        }
     }
     End {
     }
@@ -470,22 +487,22 @@ function Get-LAAzureConnected {
     if (-not ($null = Get-Module -Name AzureRM -ListAvailable)) {
         Install-Module -Name AzureRM -Scope CurrentUser -force
     }
-    Try {
+    try {
         $null = Get-AzureRmTenant -ErrorAction Stop
     }
-    Catch {
+    catch {
         if (-not $MFA) {
             $json = Get-ChildItem -Recurse -Include '*@*.json' -Path $KeyPath
             if ($json) {
                 Write-Host "   Select the Azure username and Click `"OK`" in lower right-hand corner" -foregroundcolor "magenta" -backgroundcolor "white"
                 Write-Host "   Otherwise, if this is the first time using this Azure username click `"Cancel`"" -foregroundcolor "magenta" -backgroundcolor "white"
-                $json = $json | select name | Out-GridView -PassThru -Title "Select Azure username or click Cancel to use another"
+                $json = $json | Select-Object name | Out-GridView -PassThru -Title "Select Azure username or click Cancel to use another"
             }
             if (-not ($json)) {
-                Try {
+                try {
                     $azLogin = Login-AzureRmAccount -ErrorAction Stop
                 }
-                Catch [System.Management.Automation.CommandNotFoundException] {
+                catch [System.Management.Automation.CommandNotFoundException] {
                     Write-Warning "Download and install PowerShell 5.1 or PowerShellGet so the AzureRM module can be automatically installed"
                     Write-Warning "https://docs.microsoft.com/en-us/powershell/azure/install-azurerm-ps?view=azurermps-4.2.0#how-to-get-powershellget"
                     Write-Warning "or download the MSI installer and install from here: https://github.com/Azure/azure-powershell/releases"
@@ -498,12 +515,12 @@ function Get-LAAzureConnected {
                 Import-AzureRmContext -Path ($KeyPath + $json.name)
             }
             Write-Host "Select Subscription and Click `"OK`" in lower right-hand corner" -foregroundcolor "magenta" -backgroundcolor "white"
-            $subscription = Get-AzureRmSubscription | Out-GridView -PassThru -Title "Choose Azure Subscription" | Select id
-            Try {
+            $subscription = Get-AzureRmSubscription | Out-GridView -PassThru -Title "Choose Azure Subscription" | Select-Object id
+            try {
                 Select-AzureRmSubscription -SubscriptionId $subscription.id -ErrorAction Stop
                 Write-Host "You have successfully connected to Azure" -foregroundcolor "magenta" -backgroundcolor "white"
             }
-            Catch {
+            catch {
                 Write-Warning "Azure credentials are invalid or expired. Authenticate again please."
                 if ($json.name) {
                     Remove-Item ($KeyPath + $json.name)
@@ -512,22 +529,22 @@ function Get-LAAzureConnected {
             }
         }
         else {
-            Try {
+            try {
                 Login-AzureRmAccount -ErrorAction Stop
             }
-            Catch [System.Management.Automation.CommandNotFoundException] {
+            catch [System.Management.Automation.CommandNotFoundException] {
                 Write-Warning "Download and install PowerShell 5.1 or PowerShellGet so the AzureRM module can be automatically installed"
                 Write-Warning "https://docs.microsoft.com/en-us/powershell/azure/install-azurerm-ps?view=azurermps-4.2.0#how-to-get-powershellget"
                 Write-Warning "or download the MSI installer and install from here: https://github.com/Azure/azure-powershell/releases"
                 Break
             }
             Write-Host "   Select Subscription and Click `"OK`" in lower right-hand corner" -foregroundcolor "magenta" -backgroundcolor "white"
-            $subscription = Get-AzureRmSubscription | Out-GridView -PassThru -Title "Choose Azure Subscription" | Select id
-            Try {
+            $subscription = Get-AzureRmSubscription | Out-GridView -PassThru -Title "Choose Azure Subscription" | Select-Object id
+            try {
                 Select-AzureRmSubscription -SubscriptionId $subscription.id -ErrorAction Stop
                 Write-Host "You have successfully connected to Azure" -foregroundcolor "magenta" -backgroundcolor "white"
             }
-            Catch {
+            catch {
                 Write-Warning "There was an error selecting your subscription ID"
             }
         }

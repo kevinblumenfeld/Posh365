@@ -28,6 +28,10 @@ function Connect-CloudMFA {
 
         [Parameter()]
         [switch]
+        $Teams,
+
+        [Parameter()]
+        [switch]
         $SharePoint,
 
         [Parameter()]
@@ -36,7 +40,6 @@ function Connect-CloudMFA {
     )
     end {
         if ($Tenant -match 'onmicrosoft') { $Tenant = $Tenant.Split(".")[0] }
-
         $host.ui.RawUI.WindowTitle = "Tenant: $($Tenant.ToUpper())"
         $PoshPath = Join-Path $Env:USERPROFILE '.Posh365'
         $TenantPath = Join-Path $PoshPath $Tenant
@@ -61,7 +64,8 @@ function Connect-CloudMFA {
                 Connect-CloudDeleteCredential -CredFile $CredFile
                 break
             }
-            { $EXO2 -or $ExchangeOnline -or $MSOnline -or $AzureAD -or $Compliance -or $SharePoint -or $PSBoundParameters.Count -eq 1 } {
+            { $EXO2 -or $ExchangeOnline -or $MSOnline -or $AzureAD -or $Compliance -or
+                $SharePoint -or $Teams -or $PSBoundParameters.Count -eq 1 } {
                 if ($null = Test-Path $CredFile) {
                     Connect-CloudMFAClip -CredFile $CredFile
                     [System.Management.Automation.PSCredential]$Credential = Import-Clixml -Path $CredFile
@@ -70,7 +74,6 @@ function Connect-CloudMFA {
                     [System.Management.Automation.PSCredential]$Credential = Get-Credential -Message 'Enter Office 365 username and password'
                     [System.Management.Automation.PSCredential]$Credential | Export-Clixml -Path $CredFile
                     [System.Management.Automation.PSCredential]$Credential = Import-Clixml -Path $CredFile
-                    Connect-CloudMFAClip -CredFile $CredFile
                 }
             }
             { $PSBoundParameters.Count -eq 1 } {
@@ -108,6 +111,10 @@ function Connect-CloudMFA {
                 Connect-SPOService -Url $SharePointAdminSite
                 Write-Host "Connected to SharePoint Online" -ForegroundColor Green
             }
+            $Teams {
+                Connect-CloudModuleImport -Teams
+                Connect-MicrosoftTeams
+            }
             $EXO2 {
                 $Script:RestartConsole = $null
                 Connect-CloudModuleImport -EXO2
@@ -116,9 +123,7 @@ function Connect-CloudMFA {
                 }
                 Connect-ExchangeOnline -UserPrincipalName $Credential.UserName
             }
-            default {
-
-            }
+            default { }
         }
         Get-RSJob -State Completed | Remove-RSJob -ErrorAction SilentlyContinue
     }
