@@ -82,23 +82,23 @@ function Connect-CloudModuleImport {
             }
             $Teams {
                 if (-not ($null = Get-Module -Name MicrosoftTeams -ListAvailable)) {
-                    Install-Module -Name MicrosoftTeams -Scope CurrentUser -Force
+                    Install-Module -Name MicrosoftTeams -Scope CurrentUser -Force -AllowClobber
                 }
 
             }
             $MSOnline {
                 if (-not ($null = Get-Module -Name MSOnline -ListAvailable)) {
-                    Install-Module -Name MSOnline -Scope CurrentUser -Force
+                    Install-Module -Name MSOnline -Scope CurrentUser -Force -AllowClobber
                 }
             }
             $AzureAD {
                 if (-not ($null = Get-Module -Name AzureAD -ListAvailable)) {
-                    Install-Module -Name AzureAD -Scope CurrentUser -Force
+                    Install-Module -Name AzureAD -Scope CurrentUser -Force -AllowClobber
                 }
             }
             $SharePoint {
                 if (-not ($null = Get-Module -Name Microsoft.Online.SharePoint.PowerShell -ListAvailable)) {
-                    Install-Module -Name Microsoft.Online.SharePoint.PowerShell -Scope CurrentUser -Force
+                    Install-Module -Name Microsoft.Online.SharePoint.PowerShell -Scope CurrentUser -Force -AllowClobber
                 }
             }
             default { }

@@ -240,7 +240,7 @@ function Connect-Cloud {
         }
         if ($MSOnline -or $All365) {
             if (-not ($null = Get-Module -Name MSOnline -ListAvailable -ErrorAction Stop)) {
-                Install-Module -Name MSOnline -Scope CurrentUser -Force
+                Install-Module -Name MSOnline -Scope CurrentUser -Force -AllowClobber
             }
             try {
                 $null = Get-MsolAccountSku -ErrorAction Stop
@@ -378,7 +378,7 @@ function Connect-Cloud {
                 Import-Module Microsoft.Online.SharePoint.PowerShell -DisableNameChecking -ErrorAction Stop
             }
             catch {
-                Install-Module -Name Microsoft.Online.SharePoint.PowerShell -force
+                Install-Module -Name Microsoft.Online.SharePoint.PowerShell -force -AllowClobber
             }
             if (-not $MFA) {
                 try {
@@ -410,7 +410,7 @@ function Connect-Cloud {
         If ($AzureADver2 -or $All365) {
             if (-not $MFA) {
                 If (-not ($null = Get-Module -Name AzureAD -ListAvailable)) {
-                    Install-Module -Name AzureAD -Scope CurrentUser -Force
+                    Install-Module -Name AzureAD -Scope CurrentUser -Force -AllowClobber
                 }
                 try {
                     $null = Get-AzureADTenantDetail -ErrorAction Stop
@@ -439,7 +439,7 @@ function Connect-Cloud {
             }
             else {
                 If (-not ($null = Get-Module -Name AzureAD -ListAvailable)) {
-                    Install-Module -Name AzureAD -Scope CurrentUser -Force
+                    Install-Module -Name AzureAD -Scope CurrentUser -Force -AllowClobber
                 }
                 try {
                     $null = Get-AzureADTenantDetail -ErrorAction Stop
@@ -485,7 +485,7 @@ function Connect-Cloud {
 }
 function Get-LAAzureConnected {
     if (-not ($null = Get-Module -Name AzureRM -ListAvailable)) {
-        Install-Module -Name AzureRM -Scope CurrentUser -force
+        Install-Module -Name AzureRM -Scope CurrentUser -force -AllowClobber
     }
     try {
         $null = Get-AzureRmTenant -ErrorAction Stop
