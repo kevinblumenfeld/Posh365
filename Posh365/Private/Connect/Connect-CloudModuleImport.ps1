@@ -55,7 +55,7 @@ function Connect-CloudModuleImport {
                 }
             }
             $EXO2 {
-                if ((Get-Module -Name PowerShellGet -ListAvailable).Version.Major[0] -lt 2 ) {
+                if (((Get-Module -Name PowerShellGet -ListAvailable).Version.Major | Sort-Object -Descending)[0] -lt 2 ) {
                     try {
                         Install-Module -Name PowerShellGet -Scope CurrentUser -Force -ErrorAction Stop -AllowClobber
                         Write-Warning "Exchange Online v.2 module requires PowerShellGet v.2"
