@@ -25,27 +25,26 @@ function Get-ExchangeOfflineAddressBook {
     [CmdletBinding()]
     param (
 
-        [Parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Mandatory = $false)]
-        [Microsoft.Exchange.Data.Directory.SystemConfiguration.OfflineAddressBook] $OAB
+        [Parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        $OABList
     )
-    Begin {
+    begin {
 
     }
-    Process {
-        foreach ($CurOAB in $OAB) {
-            $ListName = $CurOAB.AddressLists | Select -ExpandProperty Name
+    process {
+        foreach ($OAB in $OABList) {
             $OfflineAddressBook = New-Object -TypeName PSObject -Property @{
-                Name            = $CurOAB.Name
-                IsDefault       = $CurOAB.IsDefault
-                AddressLists    = ($ListName | Where {$_ -ne $null}) -join '|'
-                Identity        = $CurOAB.Identity
-                Guid            = $CurOAB.Guid
-                ExchangeVersion = $CurOAB.ExchangeVersion
+                Name            = $OAB.Name
+                IsDefault       = $OAB.IsDefault
+                AddressLists    = @($OAB.AddressLists) -ne '' -join '|'
+                Identity        = $OAB.Identity
+                Guid            = $OAB.Guid
+                ExchangeVersion = $OAB.ExchangeVersion
             }
-            $OfflineAddressBook | Select 'Name', 'IsDefault', 'AddressLists', 'Identity', 'Guid', 'ExchangeVersion'
+            $OfflineAddressBook | Select-Object 'Name', 'IsDefault', 'AddressLists', 'Identity', 'Guid', 'ExchangeVersion'
         }
     }
-    End {
+    end {
 
     }
 }

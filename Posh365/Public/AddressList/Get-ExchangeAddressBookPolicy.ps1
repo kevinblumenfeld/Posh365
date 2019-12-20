@@ -25,29 +25,31 @@ function Get-ExchangeAddressBookPolicy {
     [CmdletBinding()]
     param (
 
-        [Parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Mandatory = $false)]
-        [Microsoft.Exchange.Data.Directory.SystemConfiguration.AddressBookMailboxPolicy] $ABP
+        [Parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        $ABPList
     )
-    Begin {
+    begin {
 
     }
-    Process {
-        foreach ($CurABP in $ABP) {
-            $ListName = $CurABP.AddressLists | Select -ExpandProperty Name
+    process {
+        foreach ($ABP in $ABPList) {
             $Policy = New-Object -TypeName PSObject -Property @{
-                Name               = $CurABP.Name
-                AddressLists       = ($ListName | Where {$_ -ne $null}) -join '|'
-                GlobalAddressList  = $CurABP.GlobalAddressList
-                OfflineAddressBook = $CurABP.OfflineAddressBook
-                RoomList           = $CurABP.RoomList
-                Identity           = $CurABP.Identity
-                Guid               = $CurABP.Guid
-                ExchangeVersion    = $CurABP.ExchangeVersion
+                Name               = $ABP.Name
+                AddressLists       = @($ABP.AddressLists) -ne '' -join '|'
+                GlobalAddressList  = $ABP.GlobalAddressList
+                OfflineAddressBook = $ABP.OfflineAddressBook
+                RoomList           = $ABP.RoomList
+                Identity           = $ABP.Identity
+                Guid               = $ABP.Guid
+                ExchangeVersion    = $ABP.ExchangeVersion
             }
-            $Policy | Select 'Name', 'AddressLists', 'GlobalAddressList', 'OfflineAddressBook', 'RoomList', 'Identity', 'Guid', 'ExchangeVersion'
+            $Policy | Select-Object @(
+                'Name', 'AddressLists', 'GlobalAddressList', 'OfflineAddressBook'
+                'RoomList', 'Identity', 'Guid', 'ExchangeVersion'
+            )
         }
     }
-    End {
+    end {
 
     }
 }

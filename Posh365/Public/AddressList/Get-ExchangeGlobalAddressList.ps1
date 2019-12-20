@@ -25,50 +25,60 @@ function Get-ExchangeGlobalAddressList {
     [CmdletBinding()]
     param (
 
-        [Parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Mandatory = $false)]
-        [Microsoft.Exchange.Data.Directory.Management.GlobalAddressList] $GAL
+        [Parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        $GALList
     )
-    Begin {
+    begin {
 
     }
-    Process {
-        foreach ($CurGAL in $GAL) {
+    process {
+        foreach ($GAL in $GALList) {
             $GlobalList = New-Object -TypeName PSObject -Property @{
-                Name                         = $CurGAL.Name
-                IsDefaultGlobalAddressList   = $CurGAL.IsDefaultGlobalAddressList
-                IncludedRecipients           = $CurGAL.IncludedRecipients
-                RecipientFilterType          = $CurGAL.RecipientFilterType
-                RecipientFilterApplied       = $CurGAL.RecipientFilterApplied
-                RecipientFilter              = $CurGAL.RecipientFilter
-                LastUpdatedRecipientFilter   = $CurGAL.LastUpdatedRecipientFilter
-                ConditionalCustomAttribute1  = ($CurGAL | Where {$_.ConditionalCustomAttribute1 -ne $null}) -join '|'
-                ConditionalCustomAttribute2  = ($CurGAL | Where {$_.ConditionalCustomAttribute2 -ne $null}) -join '|'
-                ConditionalCustomAttribute3  = ($CurGAL | Where {$_.ConditionalCustomAttribute3 -ne $null}) -join '|'
-                ConditionalCustomAttribute4  = ($CurGAL | Where {$_.ConditionalCustomAttribute4 -ne $null}) -join '|'
-                ConditionalCustomAttribute5  = ($CurGAL | Where {$_.ConditionalCustomAttribute5 -ne $null}) -join '|'
-                ConditionalCustomAttribute6  = ($CurGAL | Where {$_.ConditionalCustomAttribute6 -ne $null}) -join '|'
-                ConditionalCustomAttribute7  = ($CurGAL | Where {$_.ConditionalCustomAttribute7 -ne $null}) -join '|'
-                ConditionalCustomAttribute8  = ($CurGAL | Where {$_.ConditionalCustomAttribute8 -ne $null}) -join '|'
-                ConditionalCustomAttribute9  = ($CurGAL | Where {$_.ConditionalCustomAttribute9 -ne $null}) -join '|'
-                ConditionalCustomAttribute10 = ($CurGAL | Where {$_.ConditionalCustomAttribute10 -ne $null}) -join '|'
-                ConditionalCustomAttribute11 = ($CurGAL | Where {$_.ConditionalCustomAttribute11 -ne $null}) -join '|'
-                ConditionalCustomAttribute12 = ($CurGAL | Where {$_.ConditionalCustomAttribute12 -ne $null}) -join '|'
-                ConditionalCustomAttribute13 = ($CurGAL | Where {$_.ConditionalCustomAttribute13 -ne $null}) -join '|'
-                ConditionalCustomAttribute14 = ($CurGAL | Where {$_.ConditionalCustomAttribute14 -ne $null}) -join '|'
-                ConditionalCustomAttribute15 = ($CurGAL | Where {$_.ConditionalCustomAttribute15 -ne $null}) -join '|'
-                ConditionalCompany           = ($CurGAL | Where {$_.ConditionalCompany -ne $null}) -join '|'
-                ConditionalDepartment        = ($CurGAL | Where {$_.ConditionalDepartment -ne $null}) -join '|'
-                ConditionalStateOrProvince   = ($CurGAL | Where {$_.ConditionalStateOrProvince -ne $null}) -join '|'
-                Identity                     = $CurGAL.Identity
-                Container                    = $CurGAL.Container
-                RecipientContainer           = $CurGAL.RecipientContainer
-                LdapRecipientFilter          = $CurGAL.LdapRecipientFilter
-                Guid                         = $CurGAL.Guid
+                Name                         = $GAL.Name
+                IsDefaultGlobalAddressList   = $GAL.IsDefaultGlobalAddressList
+                IncludedRecipients           = $GAL.IncludedRecipients
+                RecipientFilterType          = $GAL.RecipientFilterType
+                RecipientFilterApplied       = $GAL.RecipientFilterApplied
+                RecipientFilter              = $GAL.RecipientFilter
+                LastUpdatedRecipientFilter   = $GAL.LastUpdatedRecipientFilter
+                ConditionalCustomAttribute1  = @($GAL.ConditionalCustomAttribute1) -ne '' -join '|'
+                ConditionalCustomAttribute2  = @($GAL.ConditionalCustomAttribute1) -ne '' -join '|'
+                ConditionalCustomAttribute3  = @($GAL.ConditionalCustomAttribute1) -ne '' -join '|'
+                ConditionalCustomAttribute4  = @($GAL.ConditionalCustomAttribute1) -ne '' -join '|'
+                ConditionalCustomAttribute5  = @($GAL.ConditionalCustomAttribute1) -ne '' -join '|'
+                ConditionalCustomAttribute6  = @($GAL.ConditionalCustomAttribute1) -ne '' -join '|'
+                ConditionalCustomAttribute7  = @($GAL.ConditionalCustomAttribute1) -ne '' -join '|'
+                ConditionalCustomAttribute8  = @($GAL.ConditionalCustomAttribute1) -ne '' -join '|'
+                ConditionalCustomAttribute9  = @($GAL.ConditionalCustomAttribute1) -ne '' -join '|'
+                ConditionalCustomAttribute10 = @($GAL.ConditionalCustomAttribute1) -ne '' -join '|'
+                ConditionalCustomAttribute11 = @($GAL.ConditionalCustomAttribute1) -ne '' -join '|'
+                ConditionalCustomAttribute12 = @($GAL.ConditionalCustomAttribute1) -ne '' -join '|'
+                ConditionalCustomAttribute13 = @($GAL.ConditionalCustomAttribute1) -ne '' -join '|'
+                ConditionalCustomAttribute14 = @($GAL.ConditionalCustomAttribute1) -ne '' -join '|'
+                ConditionalCustomAttribute15 = @($GAL.ConditionalCustomAttribute1) -ne '' -join '|'
+                ConditionalCompany           = @($GAL.ConditionalCompany) -ne '' -join '|'
+                ConditionalDepartment        = @($GAL.ConditionalDepartment) -ne '' -join '|'
+                ConditionalStateOrProvince   = @($GAL.ConditionalStateOrProvince) -ne '' -join '|'
+                Identity                     = $GAL.Identity
+                Container                    = $GAL.Container
+                RecipientContainer           = $GAL.RecipientContainer
+                LdapRecipientFilter          = $GAL.LdapRecipientFilter
+                Guid                         = $GAL.Guid
             }
-            $GlobalList | Select 'DisplayName', 'IsDefaultGlobalAddressList', 'IncludedRecipients', 'RecipientFilterType', 'RecipientFilterApplied', 'RecipientFilter', 'LastUpdatedRecipientFilter', 'ConditionalCustomAttribute1', 'ConditionalCustomAttribute2', 'ConditionalCustomAttribute3', 'ConditionalCustomAttribute4', 'ConditionalCustomAttribute5', 'ConditionalCustomAttribute6', 'ConditionalCustomAttribute7', 'ConditionalCustomAttribute8', 'ConditionalCustomAttribute9', 'ConditionalCustomAttribute10', 'ConditionalCustomAttribute11', 'ConditionalCustomAttribute12', 'ConditionalCustomAttribute13', 'ConditionalCustomAttribute14', 'ConditionalCustomAttribute15', 'ConditionalCompany', 'ConditionalDepartment', 'ConditionalStateOrProvince', 'Containter', 'RecipientContainer', 'LdapRecipientFilter'
+            $GlobalList | Select-Object @(
+                'Name', 'IsDefaultGlobalAddressList', 'IncludedRecipients', 'RecipientFilterType'
+                'RecipientFilterApplied', 'RecipientFilter', 'LastUpdatedRecipientFilter'
+                'ConditionalCustomAttribute1', 'ConditionalCustomAttribute2', 'ConditionalCustomAttribute3'
+                'ConditionalCustomAttribute4', 'ConditionalCustomAttribute5', 'ConditionalCustomAttribute6'
+                'ConditionalCustomAttribute7', 'ConditionalCustomAttribute8', 'ConditionalCustomAttribute9'
+                'ConditionalCustomAttribute10', 'ConditionalCustomAttribute11', 'ConditionalCustomAttribute12'
+                'ConditionalCustomAttribute13', 'ConditionalCustomAttribute14', 'ConditionalCustomAttribute15'
+                'ConditionalCompany', 'ConditionalDepartment', 'ConditionalStateOrProvince', 'Container'
+                'RecipientContainer', 'LdapRecipientFilter'
+            )
         }
     }
-    End {
+    end {
 
     }
 }
