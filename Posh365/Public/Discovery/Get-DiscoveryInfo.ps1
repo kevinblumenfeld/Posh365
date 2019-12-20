@@ -70,11 +70,4 @@
     Get-DistributionGroup | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeDistributionGroups.xml')
     Get-ExchangeDistributionGroup -DetailedReport | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeDistributionGroups.csv')
 
-    Write-Verbose "Exporting all Exchange Distribution Groups Members to file DistributionGroupMembers.csv"
-    $allGroups | Export-CsvData -JoinType and -Match "." -FindInColumn "MembersName" -ReportPath $ExchangePath -fileName "DistributionGroupMembers.csv"
-
-    Write-Verbose "Exporting all ADUser with Inheritance Broken to InheritanceBroken.csv"
-    $allADUsers | Where-Object { $_.InheritanceBroken -eq "True" } | Select-Object DisplayName, InheritanceBroken, OU, PrimarySmtpAddress, UserPrincipalName |
-    Export-Csv (Join-Path -Path $ADPath -ChildPath "InheritanceBroken.csv") -NoTypeInformation -Encoding UTF8
-
 }
