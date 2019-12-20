@@ -41,35 +41,6 @@
         Encoding          = 'UTF8'
     }
 
-    <#
-    $DomainNameHash = Get-DomainNameHash
-
-     Write-Verbose "Retrieving Active Directory Objects that have at least one proxy address"
-    $allADObjects = Get-ADObjectsWithProxyAddress -DomainNameHash $DomainNameHash
-
-    Write-Verbose "Caching hash table. LogonName as Key and Values of DisplayName & UPN"
-    $ADHash = $allADObjects | Get-ADHash
-
-    Write-Verbose "Caching hash table for Groups. LogonName as Key and Values of DisplayName & UPN"
-    $ADHashDG = $allADObjects | Get-ADHashDG
-
-    Write-Verbose "Caching hash table. DN as Key and Values of DisplayName, UPN & LogonName"
-    $ADHashDN = $allADObjects | Get-ADHashDN
-
-    Write-Verbose "Caching hash table for Groups. DN as Key and Values of DisplayName, UPN & LogonName"
-    $ADHashDGDN = $AllADObjects | Get-ADHashDGDN
-
-    Write-Verbose "Caching hash table. CN as Key and Values of DisplayName, UPN & LogonName"
-    $ADHashCN = $allADObjects | Get-ADHashCN
-
-    Write-Verbose "Retrieving distinguishedname's of all Exchange Mailboxes"
-    $allMailboxDN = $allMailbox | Select-Object -ExpandProperty distinguishedname
-
-    Write-Verbose "Retrieving distinguishedname's of all Exchange Distribution Groups"
-    $allGroupsDN = $allGroups | Select-Object -expandproperty distinguishedname
-    #>
-
-
     Write-Verbose "Retrieving all Active Directory Users"
     Get-ADUser -Filter * -Properties * | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ADUsers.xml')
     Get-ActiveDirectoryUser -DetailedReport | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ADUsers.csv')
