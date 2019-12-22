@@ -94,9 +94,9 @@
     $Discovery = Join-Path ([Environment]::GetFolderPath("Desktop")) -ChildPath 'Discovery'
     $Detailed = Join-Path $Discovery -ChildPath 'Detailed'
     $CSV = Join-Path $Discovery -ChildPath 'CSV'
-    New-Item -ItemType Directory -Path $Discovery -ErrorAction SilentlyContinue
-    New-Item -ItemType Directory -Path $Detailed -ErrorAction SilentlyContinue
-    New-Item -ItemType Directory -Path $CSV -ErrorAction SilentlyContinue
+    $null = New-Item -ItemType Directory -Path $Discovery -ErrorAction SilentlyContinue
+    $null = New-Item -ItemType Directory -Path $Detailed -ErrorAction SilentlyContinue
+    $null = New-Item -ItemType Directory -Path $CSV -ErrorAction SilentlyContinue
 
     $CsvSplat = @{
         NoTypeInformation = $true
@@ -241,4 +241,9 @@
     }
     Get-ChildItem -Path $CSV -Filter *.csv | Sort-Object BaseName -Descending |
     ForEach-Object { Import-Csv $_.fullname | Export-Excel @ExcelSplat -WorksheetName $_.basename }
+
+    # Complete
+    Write-Verbose "Script Complete"
+    Write-Verbose "Results can be found on the Desktop in a folder named, Discovery"
+
 }
