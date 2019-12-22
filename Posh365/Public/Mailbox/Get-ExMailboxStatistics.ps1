@@ -35,14 +35,14 @@ function Get-ExMailboxStatistics {
     process {
         foreach ($Mailbox in $MailboxList) {
             if ($Mailbox.ArchiveDatabase) {
-                $ArchiveGB = Get-MailboxStatistics -ExchangeGuid ($Mailbox.Guid).ToString() -Archive -Properties LastLogonTime -Verbose:$false | Select-Object @(
+                $ArchiveGB = Get-MailboxStatistics -Identity ($Mailbox.Guid).ToString() -Archive -Verbose:$false | Select-Object @(
                     @{
                         Name       = 'ArchiveStat'
                         Expression = { [Math]::Round([Double]($_.TotalItemSize -replace '^.*\(| .+$|,') / 1GB, 4) }
                     }
                 )
             }
-            Get-MailboxStatistics -ExchangeGuid ($Mailbox.Guid).ToString() -WarningAction SilentlyContinue -Properties LastLogonTime -Verbose:$false | Select-Object @(
+            Get-MailboxStatistics -Identity ($Mailbox.Guid).ToString() -WarningAction SilentlyContinue -Verbose:$false | Select-Object @(
                 'DisplayName'
                 @{
                     Name       = 'PrimarySmtpAddress'
