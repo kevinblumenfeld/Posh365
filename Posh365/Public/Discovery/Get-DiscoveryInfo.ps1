@@ -210,20 +210,31 @@
     Write-Verbose "Retrieving Exchange Retention Polices, Tags and Links"
     Get-RetentionLinks | Select-Object $RetentionProp | Sort-Object PolicyName, TagType | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_RetentionPolicies.csv')
 
-    # Accepted Domains
+    # Exchange Accepted Domains
     Write-Verbose "Retrieving Exchange Accepted Domains"
     Get-AcceptedDomain | Select-Object $AcceptedDomainsProp | Sort-Object Name | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_AcceptedDomains.csv')
 
-    # Remote Domains
+    # Exchange Remote Domains
     Write-Verbose "Retrieving Remote Domains"
     Get-RemoteDomain | Select-Object $RemoteDomainsProp | Sort-Object DomainName | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_RemoteDomains.csv')
 
+    # Exchange Organization Config
     Write-Verbose "Retrieving Organization Config"
     (Get-OrganizationConfig).PSObject.Properties | Select-Object Name, Value | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OrganizationConfig.csv')
 
+    # Exchange Organization Relationship
     Write-Verbose "Retrieving Organization Relationship"
     Get-OrganizationRelationship | Select-Object $OrganizationRelationshipProp | Sort-Object Id | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OrganizationRelationship.csv')
 
-
-
+    $ExcelSplat = @{
+        Path                    = (Join-Path $TenantPath '365_Discovery.xlsx')
+        TableStyle              = 'Medium2'
+        FreezeTopRowFirstColumn = $true
+        AutoSize                = $true
+        BoldTopRow              = $false
+        ClearSheet              = $true
+        ErrorAction             = 'SilentlyContinue'
+    }
+    Get-ChildItem -Path $CSV -Filter *.csv | Sort-Object BaseName -Descending |
+    ForEach-Object { Import-Csv $_.fullname | Export-Excel @ExcelSplat -WorksheetName $_.basename }
 }
