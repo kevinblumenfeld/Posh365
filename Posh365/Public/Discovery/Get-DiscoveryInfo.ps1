@@ -196,15 +196,17 @@
 
     # Exchange Transport Rules
     Write-Verbose "Retrieving Exchange Transport Rules"
-    $TransportCollection = Export-TransportRuleCollection
-    Set-Content -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeTransportRules.xml') -Value $TransportCollection.FileData -Encoding Byte
-    [xml]$TRuleColList = Get-Content -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeTransportRules.xml')
     $TransportRuleReport = Get-TransportRuleReport
-    $TransportRuleReport | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeTransportRules.csv')
+    if ($TransportRuleReport) {
+        $TransportCollection = Export-TransportRuleCollection
+        Set-Content -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeTransportRules.xml') -Value $TransportCollection.FileData -Encoding Byte
+        [xml]$TRuleColList = Get-Content -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeTransportRules.xml')
+        $TransportRuleReport | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeTransportRules.csv')
 
-    $TransportHash = Get-TransportRuleHash -TransportData $TransportRuleReport
-    $TransportCsv = Convert-TransportXMLtoCSV -TRuleColList $TRuleColList -TransportHash $TransportHash
-    $TransportCsv | Sort-Object Name | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_TransportRules.csv')
+        $TransportHash = Get-TransportRuleHash -TransportData $TransportRuleReport
+        $TransportCsv = Convert-TransportXMLtoCSV -TRuleColList $TRuleColList -TransportHash $TransportHash
+        $TransportCsv | Sort-Object Name | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_TransportRules.csv')
+    }
 
     # Exchange Retention Policies
     Write-Verbose "Retrieving Exchange Retention Polices, Tags and Links"
@@ -227,7 +229,7 @@
     Get-OrganizationRelationship | Select-Object $OrganizationRelationshipProp | Sort-Object Id | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OrganizationRelationship.csv')
 
     $ExcelSplat = @{
-        Path                    = (Join-Path $TenantPath '365_Discovery.xlsx')
+        Path                    = (Join-Path $Discovery 'Discovery.xlsx')
         TableStyle              = 'Medium2'
         FreezeTopRowFirstColumn = $true
         AutoSize                = $true
