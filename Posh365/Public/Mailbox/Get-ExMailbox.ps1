@@ -44,9 +44,8 @@ function Get-ExMailbox {
     )
     begin {
         $EXOArchiveMin = @{
-            ResultSize   = 'unlimited'
-            PropertySets = @('Archive', 'Minimum')
-            Verbose      = $false
+            ResultSize = 'unlimited'
+            Verbose    = $false
         }
         if ($DetailedReport) {
             $CasHash = @{ }

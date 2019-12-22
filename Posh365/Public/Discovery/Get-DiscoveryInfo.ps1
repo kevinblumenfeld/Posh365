@@ -228,6 +228,8 @@
     Write-Verbose "Retrieving Organization Relationship"
     Get-OrganizationRelationship | Select-Object $OrganizationRelationshipProp | Sort-Object Id | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OrganizationRelationship.csv')
 
+    # Create Excel Workbook
+    Write-Verbose "Creating Excel Workbook"
     $ExcelSplat = @{
         Path                    = (Join-Path $Discovery 'Discovery.xlsx')
         TableStyle              = 'Medium2'
