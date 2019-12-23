@@ -47,8 +47,11 @@
         'ArchiveName', 'MaxReceiveSize', 'MaxSendSize', 'ActiveSyncEnabled', 'OWAEnabled', 'ECPEnabled'
         'PopEnabled', 'ImapEnabled', 'MAPIEnabled', 'EwsEnabled', 'RecipientLimits', 'AcceptMessagesOnlyFrom'
         'AcceptMessagesOnlyFromDLMembers', 'ForwardingAddress', 'ForwardingSmtpAddress', 'DeliverToMailboxAndForward'
-        'UserPrincipalName', 'PrimarySmtpAddress', 'Identity', 'AddressBookPolicy', 'Guid', 'LitigationHoldEnabled'
-        'LitigationHoldDuration', 'LitigationHoldOwner', 'InPlaceHolds', 'x500', 'EmailAddresses'
+        'UserPrincipalName', 'PrimarySmtpAddress', 'Identity', 'AddressBookPolicy', 'RetentionPolicy', 'LitigationHoldEnabled'
+        'LitigationHoldDuration', 'LitigationHoldOwner', 'InPlaceHolds', 'Guid', 'x500', 'EmailAddresses'
+    )
+    $UPNMatchProp = @(
+        'DisplayName', 'RecipientTypeDetails', 'OrganizationalUnit', 'UserPrincipalName', 'PrimarySmtpAddress', 'Guid'
     )
     $ContactProp = @(
         'DisplayName', 'OrganizationalUnit', 'PrimarySmtpAddress', 'WindowsEmailAddress', 'ExternalEmailAddress', 'EmailAddresses'
@@ -121,30 +124,60 @@
     $Mailboxes | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeMailboxes.csv')
     $Mailboxes | Select-Object $MailboxProp | Sort-Object DisplayName | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_Mailboxes.csv')
 
+    # Exchange Mailboxes Types
+    Write-Verbose "Retrieving Exchange Mailbox Types"
     $Mailboxes | Group-Object RecipientTypeDetails | Select-Object name, count | Sort-Object -Property count -Descending |
     Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_MailboxTypes.csv')
 
     Get-Mailbox -ResultSize unlimited | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeMailboxes.xml')
 
+    # Exchange Retention Policy Summary
+    Write-Verbose "Retrieving Exchange Retention Policy Summary"
+    $Mailboxes | Group-Object RetentionPolicy | Select-Object name, count | Sort-Object -Property count -Descending |
+    Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_RetentionPolicySummary.csv')
+
+    # Exchange Test UPN match PrimarySMTPAddress
+    Write-Verbose "Retrieving Exchange Mailboxes where UPN -ne PrimarySmtpAddress"
+    $Mailboxes.where{ $_.UserPrincipalName -ne $_.PrimarySmtpAddress } | Select-Object $UPNMatchProp | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_UpnNotMatch.csv')
+
+    # Exchange Server
+    Write-Verbose "Retrieving Exchange Servers"
+    Get-ExchangeServer | Select-Object Name, ServerRole, Edition, Site, AdminDisplayVersion | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_Servers.csv')
+
     # Exchange Receive Connectors
     Write-Verbose "Retrieving Exchange Receive Connectors"
-    Get-ExchangeReceiveConnector | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_ReceiveConnectors.csv')
+    $ReceiveConnectors = Get-ExchangeReceiveConnector | Sort-Object Identity
+    $ReceiveConnectors | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_ReceiveConnectors.csv')
+
+    # Exchange Receive Connector IPs
+    Write-Verbose "Retrieving Exchange Receive Connector IPs"
+    $ReceiveIPs = foreach ($RecCon in $ReceiveConnectors) {
+        $RecCon.RemoteIPRanges -split [regex]::Escape('|') | ForEach-Object {
+            [PSCustomObject]@{
+                IPRange  = $_
+                Port     = [regex]::Matches($RecCon.Bindings, "[^:]*$").value[0]
+                Identity = $RecCon.Identity
+                Enabled  = $RecCon.Enabled
+            }
+        }
+    }
+    $ReceiveIPs | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_ReceiveIPs.csv')
 
     # Exchange Send Connectors
     Write-Verbose "Retrieving Exchange Send Connectors"
     Get-ExchangeSendConnector | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_SendConnectors.csv')
 
     # Exchange Address Lists
-    Write-Verbose "Retrieving Address Lists"
+    Write-Verbose "Retrieving Exchange Address Lists"
     Get-AddressList | Get-ExchangeAddressList | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_AddressLists.csv')
 
-    Write-Verbose "Retrieving Global Address Lists"
+    Write-Verbose "Retrieving Exchange Global Address Lists"
     Get-GlobalAddressList | Get-ExchangeGlobalAddressList | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_GlobalAddressLists.csv')
 
-    Write-Verbose "Retrieving Offline Address Books"
+    Write-Verbose "Retrieving Exchange Offline Address Books"
     Get-OfflineAddressBook | Get-ExchangeOfflineAddressBook | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OfflineAddressBook.csv')
 
-    Write-Verbose "Retrieving Address Book Policies"
+    Write-Verbose "Retrieving Exchange Address Book Policies"
     Get-AddressBookPolicy | Get-ExchangeAddressBookPolicy | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_AddressBookPolicies.csv')
 
     # Exchange Distribution Groups
@@ -176,12 +209,27 @@
 
     $RecipientsWithEmails = $Recipients | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' -and $_.EmailAddresses }
 
-    Export-EmailsOnePerLine -FindInColumn EmailAddresses -RowList $RecipientsWithEmails | Sort-Object DisplayName |
-    Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_RecipientEmails.csv')
+    $RecOneEmailPerLine = Export-EmailsOnePerLine -FindInColumn EmailAddresses -RowList $RecipientsWithEmails | Sort-Object DisplayName
+    $RecOneEmailPerLine | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_RecipientEmails.csv')
+
+    # Exchange Recipient Domains and OUs
+    Write-Verbose "Retrieving Exchange Recipient Domains and OUs"
+    $RecDomain = $RecOneEmailPerLine.where{ $_.Domain } | Group-Object -Property Domain, RecipientTypeDetails -NoElement | Select-Object count, name
+    $RecDomain | Sort-Object count -Descending | Select-Object @(
+        'Count'
+        @{
+            Name       = 'Domain'
+            Expression = { $_.Name.split(',')[0] }
+        }
+        @{
+            Name       = 'RecipientType'
+            Expression = { $_.Name.split(',')[1] }
+        }
+    ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_RecipientDomains.csv')
 
     $RecOU = $Recipients | Group-Object -Property OrganizationalUnit, RecipientTypeDetails -NoElement | Select-Object count, name
 
-    $RecOUCount = $RecOU | Sort-Object count -Descending | Select-Object @(
+    $RecOU | Sort-Object count -Descending | Select-Object @(
         'Count'
         @{
             Name       = 'OrganizationalUnit'
@@ -191,8 +239,7 @@
             Name       = 'RecipientType'
             Expression = { $_.Name.split(',')[1] }
         }
-    )
-    $RecOUCount | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_RecipientOUs.csv')
+    ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_RecipientOUs.csv')
 
     Write-Verbose "Retrieving Exchange Online Resource Mailboxes and Calendar Processing"
     $ResourceMailboxes = $Mailboxes | Where-Object { $_.RecipientTypeDetails -in 'RoomMailbox', 'EquipmentMailbox' }
