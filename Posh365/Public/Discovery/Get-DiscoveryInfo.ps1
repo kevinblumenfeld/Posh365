@@ -165,7 +165,7 @@
             }
         }
     }
-    $ReceiveIPs | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_ReceiveIPs.csv')
+    $ReceiveIPs | Sort-Object IPRange, Identity -Descending | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_ReceiveIPs.csv')
 
     # Exchange Send Connectors
     Write-Verbose "Retrieving Exchange Send Connectors"
