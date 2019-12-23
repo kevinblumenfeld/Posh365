@@ -337,10 +337,10 @@
         ClearSheet              = $true
         ErrorAction             = 'SilentlyContinue'
     }
-    Get-ChildItem -Path $CSV -Filter * .csv | Sort-Object BaseName |
+    Get-ChildItem -Path $CSV -Filter *.csv | Sort-Object BaseName |
     ForEach-Object { Import-Csv $_.fullname | Export-Excel @ExcelSplat -Path (Join-Path $Discovery 'Discovery.xlsx') -WorksheetName $_.basename }
 
-    Get-ChildItem -Path $Detailed -Filter * .csv | Sort-Object BaseName |
+    Get-ChildItem -Path $Detailed -Filter *.csv | Sort-Object BaseName |
     ForEach-Object { Import-Csv $_.fullname | Export-Excel @ExcelSplat -Path (Join-Path $Detailed 'Detailed.xlsx') -WorksheetName $_.basename }
 
     # Complete
