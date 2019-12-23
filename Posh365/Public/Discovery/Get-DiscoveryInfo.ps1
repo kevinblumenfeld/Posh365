@@ -156,7 +156,7 @@
     # Exchange Receive Connector IPs
     Write-Verbose "Retrieving Exchange Receive Connector IPs"
     $ReceiveIPs = foreach ($RecCon in $ReceiveConnectors) {
-        $RecCon.RemoteIPRanges -split [regex]::Escape(' | ') | ForEach-Object {
+        $RecCon.RemoteIPRanges -split [regex]::Escape('|') | ForEach-Object {
             [PSCustomObject]@{
                 IPRange  = $_
                 Port     = [regex]::Matches($RecCon.Bindings, "[^:]*$").value[0]
@@ -223,11 +223,11 @@
         'Count'
         @{
             Name       = 'Domain'
-            Expression = { $_.Name.split(', ')[0] }
+            Expression = { $_.Name.split(',')[0] }
         }
         @{
             Name       = 'RecipientType'
-            Expression = { $_.Name.split(', ')[1] }
+            Expression = { $_.Name.split(',')[1] }
         }
     ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_RecipientDomains.csv')
 
@@ -237,11 +237,11 @@
         'Count'
         @{
             Name       = 'OrganizationalUnit'
-            Expression = { $_.Name.split(', ')[0] }
+            Expression = { $_.Name.split(',')[0] }
         }
         @{
             Name       = 'RecipientType'
-            Expression = { $_.Name.split(', ')[1] }
+            Expression = { $_.Name.split(',')[1] }
         }
     ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_RecipientOUs.csv')
 
