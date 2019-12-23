@@ -201,7 +201,7 @@
     Write-Verbose "Retrieving Exchange Recipients"
     Get-Recipient -ResultSize unlimited | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeRecipients.xml')
 
-    $Recipients = Get - 365Recipient -DetailedReport
+    $Recipients = Get-365Recipient -DetailedReport
 
     $Recipients | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeRecipients.csv')
 
