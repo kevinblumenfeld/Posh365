@@ -50,6 +50,10 @@
         'UserPrincipalName', 'PrimarySmtpAddress', 'Identity', 'AddressBookPolicy', 'RetentionPolicy', 'LitigationHoldEnabled'
         'LitigationHoldDuration', 'LitigationHoldOwner', 'InPlaceHolds', 'Guid', 'x500', 'EmailAddresses'
     )
+    $ExchangeServerProp = @(
+        'Name', 'ServerRole', 'IsHubTransportServer', 'IsClientAccessServer', 'IsMailboxServer'
+        'IsUnifiedMessagingServer', 'IsFrontendTransportServer', 'Site', 'AdminDisplayVersion'
+    )
     $UPNMatchProp = @(
         'DisplayName', 'RecipientTypeDetails', 'OrganizationalUnit', 'UserPrincipalName', 'PrimarySmtpAddress', 'Guid'
     )
@@ -142,7 +146,7 @@
 
     # Exchange Server
     Write-Verbose "Retrieving Exchange Servers"
-    Get-ExchangeServer | Select-Object Name, ServerRole, Edition, Site, AdminDisplayVersion | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_Servers.csv')
+    Get-ExchangeServer | Select-Object $ExchangeServerProp | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_Servers.csv')
 
     # Exchange Receive Connectors
     Write-Verbose "Retrieving Exchange Receive Connectors"
@@ -152,7 +156,7 @@
     # Exchange Receive Connector IPs
     Write-Verbose "Retrieving Exchange Receive Connector IPs"
     $ReceiveIPs = foreach ($RecCon in $ReceiveConnectors) {
-        $RecCon.RemoteIPRanges -split [regex]::Escape('|') | ForEach-Object {
+        $RecCon.RemoteIPRanges -split [regex]::Escape(' | ') | ForEach-Object {
             [PSCustomObject]@{
                 IPRange  = $_
                 Port     = [regex]::Matches($RecCon.Bindings, "[^:]*$").value[0]
@@ -197,7 +201,7 @@
     Write-Verbose "Retrieving Exchange Recipients"
     Get-Recipient -ResultSize unlimited | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeRecipients.xml')
 
-    $Recipients = Get-365Recipient -DetailedReport
+    $Recipients = Get - 365Recipient -DetailedReport
 
     $Recipients | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeRecipients.csv')
 
@@ -219,11 +223,11 @@
         'Count'
         @{
             Name       = 'Domain'
-            Expression = { $_.Name.split(',')[0] }
+            Expression = { $_.Name.split(', ')[0] }
         }
         @{
             Name       = 'RecipientType'
-            Expression = { $_.Name.split(',')[1] }
+            Expression = { $_.Name.split(', ')[1] }
         }
     ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_RecipientDomains.csv')
 
@@ -233,11 +237,11 @@
         'Count'
         @{
             Name       = 'OrganizationalUnit'
-            Expression = { $_.Name.split(',')[0] }
+            Expression = { $_.Name.split(', ')[0] }
         }
         @{
             Name       = 'RecipientType'
-            Expression = { $_.Name.split(',')[1] }
+            Expression = { $_.Name.split(', ')[1] }
         }
     ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_RecipientOUs.csv')
 
@@ -333,10 +337,10 @@
         ClearSheet              = $true
         ErrorAction             = 'SilentlyContinue'
     }
-    Get-ChildItem -Path $CSV -Filter *.csv | Sort-Object BaseName |
+    Get-ChildItem -Path $CSV -Filter * .csv | Sort-Object BaseName |
     ForEach-Object { Import-Csv $_.fullname | Export-Excel @ExcelSplat -Path (Join-Path $Discovery 'Discovery.xlsx') -WorksheetName $_.basename }
 
-    Get-ChildItem -Path $Detailed -Filter *.csv | Sort-Object BaseName |
+    Get-ChildItem -Path $Detailed -Filter * .csv | Sort-Object BaseName |
     ForEach-Object { Import-Csv $_.fullname | Export-Excel @ExcelSplat -Path (Join-Path $Detailed 'Detailed.xlsx') -WorksheetName $_.basename }
 
     # Complete
