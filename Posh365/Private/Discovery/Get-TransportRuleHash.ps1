@@ -6,11 +6,10 @@ function Get-TransportRuleHash {
 
     $TransportHash = @{ }
     foreach ($Transport in $TransportData) {
-        $TransportHash[$Transport.Guid] = @{
-            'Description' = $Transport.Description
-            'Priority'    = $Transport.Priority
-        }
+        $TransportHash.Add($Transport.Guid , @{
+                'Description' = $Transport.Description
+                'Priority'    = $Transport.Priority
+            })
     }
     $TransportHash
 }
-
