@@ -90,6 +90,10 @@
         'Name', 'DistinguishedName', 'Identity', 'ObjectCategory', 'WhenChanged', 'WhenCreated'
         'WhenChangedUTC', 'WhenCreatedUTC', 'Guid', 'IsValid', 'ObjectState'
     )
+    $ADUsersProp = @(
+        'DisplayName', 'OU(CN)', 'Office', 'Department', 'Company', 'Enabled'
+        'InheritanceBroken', 'UserPrincipalName', 'PrimarySmtpAddress', 'Description'
+    )
 
     $Discovery = Join-Path ([Environment]::GetFolderPath("Desktop")) -ChildPath 'Discovery'
     $Detailed = Join-Path $Discovery -ChildPath 'Detailed'
@@ -111,13 +115,13 @@
     # Exchange Mailboxes
     Write-Verbose "Retrieving Exchange Mailboxes"
     $Mailboxes = Get-EXMailbox -DetailedReport | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' }
-    $Mailboxes | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'Ex_Mailboxes.csv')
+    $Mailboxes | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeMailboxes.csv')
     $Mailboxes | Select-Object $MailboxProp | Sort-Object DisplayName | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_Mailboxes.csv')
 
     $Mailboxes | Group-Object RecipientTypeDetails | Select-Object name, count | Sort-Object -Property count -Descending |
     Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_MailboxTypes.csv')
 
-    Get-Mailbox -ResultSize unlimited | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'Ex_Mailboxes.xml')
+    Get-Mailbox -ResultSize unlimited | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeMailboxes.xml')
 
     # Exchange Receive Connectors
     Write-Verbose "Retrieving Exchange Receive Connectors"
@@ -142,9 +146,9 @@
 
     # Exchange Distribution Groups
     Write-Verbose "Retrieving Exchange Distribution Groups"
-    Get-DistributionGroup | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'Ex_DistributionGroups.xml')
+    Get-DistributionGroup | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeDistributionGroups.xml')
     $DistributionGroups = Get-ExchangeDistributionGroup -DetailedReport
-    $DistributionGroups | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'Ex_DistributionGroups.csv')
+    $DistributionGroups | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeDistributionGroups.csv')
     $DistributionGroups | Select-Object $GroupProp | Sort-Object DisplayName | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_DistributionGroup.csv')
 
     $DistributionGroups | Export-MembersOnePerLine -FindInColumn MembersName | Sort-Object DisplayName |
@@ -155,11 +159,11 @@
 
     # Exchange Recipients
     Write-Verbose "Retrieving Exchange Recipients"
-    Get-Recipient -ResultSize unlimited | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'Ex_Recipients.xml')
+    Get-Recipient -ResultSize unlimited | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeRecipients.xml')
 
     $Recipients = Get-365Recipient -DetailedReport
 
-    $Recipients | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'Ex_Recipients.csv')
+    $Recipients | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeRecipients.csv')
 
     $Recipients | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' } | Select-Object $RecipientProp | Sort-Object DisplayName |
     Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_Recipient.csv')
@@ -203,9 +207,9 @@
     $TransportRuleReport = Get-TransportRuleReport
     if ($TransportRuleReport) {
         $TransportCollection = Export-TransportRuleCollection
-        Set-Content -Path (Join-Path -Path $Detailed -ChildPath 'Ex_TransportRules.xml') -Value $TransportCollection.FileData -Encoding Byte
-        [xml]$TRuleColList = Get-Content -Path (Join-Path -Path $Detailed -ChildPath 'Ex_TransportRules.xml')
-        $TransportRuleReport | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'Ex_TransportRules.csv')
+        Set-Content -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeTransportRules.xml') -Value $TransportCollection.FileData -Encoding Byte
+        [xml]$TRuleColList = Get-Content -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeTransportRules.xml')
+        $TransportRuleReport | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeTransportRules.csv')
 
         $TransportHash = Get-TransportRuleHash -TransportData $TransportRuleReport
         $TransportCsv = Convert-TransportXMLtoCSV -TRuleColList $TRuleColList -TransportHash $TransportHash
@@ -260,12 +264,14 @@
 
     # AD User
     Write-Verbose "Retrieving Active Directory Users"
-    Get-ADUser -Filter * -Properties * | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'AD_ADUsers.xml')
-    Get-ActiveDirectoryUser -DetailedReport | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'AD_ADUsers.csv')
+    Get-ADUser -Filter * -Properties * | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ActiveDirectoryADUsers.xml')
+    $ADUsers = Get-ActiveDirectoryUser -DetailedReport
+    $ADUsers | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ActiveDirectoryADUsers.csv')
+    $ADUsers | Select-Object $ADUsersProp | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ad_ADUsers.csv')
 
     # AD Replication
     Write-Verbose "Retrieving Active Directory Replication"
-    Get-ADReplication | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'AD_DReplication.csv')
+    Get-ADReplication | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ad_Replication.csv')
 
     # Create Excel Workbook
     Write-Verbose "Creating Excel Workbook"
