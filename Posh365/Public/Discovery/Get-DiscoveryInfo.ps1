@@ -264,10 +264,10 @@
 
     # AD User
     Write-Verbose "Retrieving Active Directory Users"
-    Get-ADUser -Filter * -Properties * | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ActiveDirectoryADUsers.xml')
+    Get-ADUser -Filter * -Properties * | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ActiveDirectoryUsers.xml')
     $ADUsers = Get-ActiveDirectoryUser -DetailedReport
-    $ADUsers | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ActiveDirectoryADUsers.csv')
-    $ADUsers | Select-Object $ADUsersProp | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ad_ADUsers.csv')
+    $ADUsers | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ActiveDirectoryUsers.csv')
+    $ADUsers | Select-Object $ADUsersProp | Sort-Object 'OU(CN)', 'DisplayName' | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ad_ADUsers.csv')
 
     # AD Replication
     Write-Verbose "Retrieving Active Directory Replication"
@@ -276,7 +276,6 @@
     # Create Excel Workbook
     Write-Verbose "Creating Excel Workbook"
     $ExcelSplat = @{
-        Path                    = (Join-Path $Discovery 'Discovery.xlsx')
         TableStyle              = 'Medium2'
         FreezeTopRowFirstColumn = $true
         AutoSize                = $true
@@ -285,7 +284,10 @@
         ErrorAction             = 'SilentlyContinue'
     }
     Get-ChildItem -Path $CSV -Filter *.csv | Sort-Object BaseName |
-    ForEach-Object { Import-Csv $_.fullname | Export-Excel @ExcelSplat -WorksheetName $_.basename }
+    ForEach-Object { Import-Csv $_.fullname | Export-Excel @ExcelSplat -Path (Join-Path $Discovery 'Discovery.xlsx') -WorksheetName $_.basename }
+
+    Get-ChildItem -Path $Detailed -Filter *.csv | Sort-Object BaseName |
+    ForEach-Object { Import-Csv $_.fullname | Export-Excel @ExcelSplat -Path (Join-Path $Detailed 'Detailed.xlsx') -WorksheetName $_.basename }
 
     # Complete
     Write-Verbose "Script Complete"
