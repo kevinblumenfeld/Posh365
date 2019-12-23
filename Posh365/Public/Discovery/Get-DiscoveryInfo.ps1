@@ -29,26 +29,26 @@
     } until ($Answer -eq 'Y' -or $Answer -eq 'N')
 
     $RecipientProp = @(
-        'DisplayName', 'RecipientTypeDetails', 'Office', 'Alias', 'Identity', 'PrimarySmtpAddress'
-        'WindowsLiveID', 'LitigationHoldEnabled', 'Name', 'EmailAddresses', 'ExchangeObjectId'
+        'DisplayName', 'RecipientTypeDetails', 'OrganizationalUnit', 'Office', 'Alias', 'Identity', 'PrimarySmtpAddress'
+        'WindowsLiveID', 'LitigationHoldEnabled', 'Name', 'EmailAddresses', 'Guid'
     )
     $GroupProp = @(
-        'DisplayName', 'Alias', 'GroupType', 'IsDirSynced', 'PrimarySmtpAddress', 'RecipientTypeDetails'
+        'DisplayName', 'OrganizationalUnit', 'Alias', 'GroupType', 'IsDirSynced', 'PrimarySmtpAddress', 'RecipientTypeDetails'
         'WindowsEmailAddress', 'AcceptMessagesOnlyFromSendersOrMembers', 'RequireSenderAuthenticationEnabled'
-        'ManagedBy', 'EmailAddresses', 'x500', 'Name', 'membersName', 'membersSMTP', 'Identity', 'ExchangeObjectId'
+        'ManagedBy', 'EmailAddresses', 'x500', 'Name', 'membersName', 'membersSMTP', 'Identity', 'Guid'
         'LegacyExchangeDN'
     )
     $MailboxProp = @(
-        'DisplayName', 'Office', 'RecipientTypeDetails', 'IsDirSynced', 'MailboxGB'
+        'DisplayName', 'OrganizationalUnit', 'Office', 'RecipientTypeDetails', 'EmailAddressPolicyEnabled', 'MailboxGB'
         'ArchiveGB', 'DeletedGB', 'TotalGB', 'LastLogonTime', 'ItemCount', 'ArchiveState', 'ArchiveStatus'
         'ArchiveName', 'MaxReceiveSize', 'MaxSendSize', 'ActiveSyncEnabled', 'OWAEnabled', 'ECPEnabled'
         'PopEnabled', 'ImapEnabled', 'MAPIEnabled', 'EwsEnabled', 'RecipientLimits', 'AcceptMessagesOnlyFrom'
         'AcceptMessagesOnlyFromDLMembers', 'ForwardingAddress', 'ForwardingSmtpAddress', 'DeliverToMailboxAndForward'
         'UserPrincipalName', 'PrimarySmtpAddress', 'Identity', 'AddressBookPolicy', 'Guid', 'LitigationHoldEnabled'
-        'LitigationHoldDuration', 'LitigationHoldOwner', 'InPlaceHolds', 'x500', 'EmailAddresses', 'ExchangeObjectId'
+        'LitigationHoldDuration', 'LitigationHoldOwner', 'InPlaceHolds', 'x500', 'EmailAddresses'
     )
     $ContactProp = @(
-        'DisplayName', 'PrimarySmtpAddress', 'WindowsEmailAddress', 'ExternalEmailAddress', 'EmailAddresses'
+        'DisplayName', 'OrganizationalUnit', 'PrimarySmtpAddress', 'WindowsEmailAddress', 'ExternalEmailAddress', 'EmailAddresses'
         'RecipientTypeDetails', 'RecipientType', 'ArbitrationMailbox', 'LastExchangeChangedTime', 'MailTip'
         'EmailAddressPolicyEnabled', 'HasPicture', 'HasSpokenName', 'HiddenFromAddressListsEnabled', 'IsDirSynced'
         'IsValid', 'ModerationEnabled', 'RequireSenderAuthenticationEnabled', 'UsePreferMessageFormat', 'WhenChanged'
@@ -63,7 +63,7 @@
         'ModeratedBy', 'RejectMessagesFrom', 'RejectMessagesFromDLMembers', 'RejectMessagesFromSendersOrMembers'
         'UserCertificate', 'UserSMimeCertificate', 'ExtensionCustomAttribute1', 'ExtensionCustomAttribute2'
         'ExtensionCustomAttribute3', 'ExtensionCustomAttribute4', 'ExtensionCustomAttribute5', 'Extensions'
-        'MailTipTranslations', 'PoliciesExcluded', 'PoliciesIncluded', 'DistinguishedName', 'ExchangeObjectId'
+        'MailTipTranslations', 'PoliciesExcluded', 'PoliciesIncluded', 'DistinguishedName'
     )
     $RetentionProp = @(
         'PolicyName', 'TagType', 'TagName', 'TagAgeLimit', 'TagAction', 'TagEnabled', 'IsDefault', 'RetentionPolicyID'
@@ -78,7 +78,7 @@
         'PreferredInternetCodePageForShiftJis', 'RequiredCharsetCoverage', 'TNEFEnabled', 'LineWrapSize'
         'TrustedMailOutboundEnabled', 'TrustedMailInboundEnabled', 'UseSimpleDisplayName', 'NDRDiagnosticInfoEnabled'
         'MessageCountThreshold', 'Name', 'Identity', 'WhenChanged', 'WhenCreated', 'WhenChangedUTC', 'WhenCreatedUTC'
-        'ExchangeObjectId', 'Id', 'Guid', 'IsValid', 'ObjectState', 'DistinguishedName', 'ByteEncoderTypeFor7BitCharsets'
+        'Guid', 'Id', 'IsValid', 'ObjectState', 'DistinguishedName', 'ByteEncoderTypeFor7BitCharsets'
         'CharacterSet', 'NonMimeCharacterSet'
     )
     $OrganizationRelationshipProp = @(
@@ -88,7 +88,7 @@
         'TargetApplicationUri', 'TargetSharingEpr', 'TargetOwaURL', 'TargetAutodiscoverEpr'
         'OrganizationContact', 'Enabled', 'ArchiveAccessEnabled', 'AdminDisplayName', 'ExchangeVersion'
         'Name', 'DistinguishedName', 'Identity', 'ObjectCategory', 'WhenChanged', 'WhenCreated'
-        'WhenChangedUTC', 'WhenCreatedUTC', 'ExchangeObjectId', 'Guid', 'IsValid', 'ObjectState'
+        'WhenChangedUTC', 'WhenCreatedUTC', 'Guid', 'IsValid', 'ObjectState'
     )
 
     $Discovery = Join-Path ([Environment]::GetFolderPath("Desktop")) -ChildPath 'Discovery'
@@ -173,6 +173,22 @@
     Export-EmailsOnePerLine -FindInColumn EmailAddresses -RowList $RecipientsWithEmails | Sort-Object DisplayName |
     Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_RecipientEmails.csv')
 
+    $RecOU = $Recipients | Group-Object -Property OrganizationalUnit, RecipientTypeDetails -NoElement | Select-Object count, name
+
+    $RecOUCount = $RecOU | Sort-Object count -Descending | Select-Object @(
+        'Count'
+        @{
+            Name       = 'OrganizationalUnit'
+            Expression = { $_.Name.split(',')[0] }
+        }
+        @{
+            Name       = 'RecipientType'
+            Expression = { $_.Name.split(',')[1] }
+        }
+    )
+    $RecOUCount | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_RecipientOUs.csv')
+
+
     # Exchange Mailboxes
     Write-Verbose "Retrieving Exchange Mailboxes"
     Get-Mailbox -ResultSize unlimited | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeMailboxes.xml')
@@ -228,6 +244,29 @@
     Write-Verbose "Retrieving Organization Relationship"
     Get-OrganizationRelationship | Select-Object $OrganizationRelationshipProp | Sort-Object Id | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OrganizationRelationship.csv')
 
+    # Exchange Journal Rule
+    Write-Verbose "Retrieving Journal Rule"
+    @(
+        (Get-JournalRule).PSObject.Properties
+        (Get-TransportConfig).PSObject.Properties.where{ $_.Name -eq 'JournalingReportNdrTo' }
+    ) | Select-Object -Property @(
+        @{
+            Name       = 'Property'
+            Expression = 'Name'
+        }
+        'Value'
+    ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OrganizationConfig.csv')
+
+    # Exchange Mailboxes Email Address Policy is not enabled
+    Write-Verbose "Retrieving Mailboxes EmailAddressPolicyEnabled is False"
+    $Mailboxes.where{ -not $_.EmailAddressPolicyEnabled } | Select-Object @(
+        'DisplayName'
+        'PrimarySmtpAddress'
+        'UserPrincipalName'
+        'OrganizationalUnit'
+    ) | Sort-Object DisplayName | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_EmailAddressPolicyDisabled.csv')
+
+
     # Create Excel Workbook
     Write-Verbose "Creating Excel Workbook"
     $ExcelSplat = @{
@@ -239,11 +278,11 @@
         ClearSheet              = $true
         ErrorAction             = 'SilentlyContinue'
     }
-    Get-ChildItem -Path $CSV -Filter *.csv | Sort-Object BaseName -Descending |
+    Get-ChildItem -Path $CSV -Filter *.csv | Sort-Object BaseName |
     ForEach-Object { Import-Csv $_.fullname | Export-Excel @ExcelSplat -WorksheetName $_.basename }
 
     # Complete
     Write-Verbose "Script Complete"
     Write-Verbose "Results can be found on the Desktop in a folder named, Discovery"
-
 }
+
