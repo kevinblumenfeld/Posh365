@@ -28,6 +28,9 @@
         }
     } until ($Answer -eq 'Y' -or $Answer -eq 'N')
 
+    Write-Verbose "Setting Exchange's ADServerSettings to ViewEntireForest"
+    Set-ADServerSettings -ViewEntireForest:$True
+
     $RecipientProp = @(
         'DisplayName', 'RecipientTypeDetails', 'OrganizationalUnit', 'Office', 'Alias', 'Identity', 'PrimarySmtpAddress'
         'WindowsLiveID', 'LitigationHoldEnabled', 'Name', 'EmailAddresses', 'Guid'
