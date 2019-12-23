@@ -12,7 +12,7 @@
     )
 
     try {
-        Import-Module activedirectory -ErrorAction Stop -Verbose:$false
+        Import-Module ActiveDirectory -ErrorAction Stop -Verbose:$false
     }
     catch {
         Write-Host "This module depends on the ActiveDirectory module."
@@ -24,7 +24,7 @@
         $Answer = Read-Host "Connect to Exchange Server? (Y/N)"
         if ($Answer -eq "Y") {
             $ServerName = Read-Host "Type the name of the Exchange Server and hit enter"
-            Connect-Exchange -Server $ServerName
+            Connect-Exchange -Server $ServerName -Verbose:$false
         }
     } until ($Answer -eq 'Y' -or $Answer -eq 'N')
 
@@ -103,49 +103,48 @@
         Encoding          = 'UTF8'
     }
 
-    ##########################
-    #### ACTIVE DIRECTORY ####
-    ##########################
-
-    # AD User
-    Write-Verbose "Retrieving Active Directory Users"
-    Get-ADUser -Filter * -Properties * | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ADUsers.xml')
-    Get-ActiveDirectoryUser -DetailedReport | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ADUsers.csv')
-
-    # AD Replication
-    Write-Verbose "Retrieving Active Directory Replication"
-    Get-ADReplication | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'ADReplication.csv')
 
     ##################
     #### EXCHANGE ####
     ##################
 
+    # Exchange Mailboxes
+    Write-Verbose "Retrieving Exchange Mailboxes"
+    $Mailboxes = Get-EXMailbox -DetailedReport | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' }
+    $Mailboxes | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'Ex_Mailboxes.csv')
+    $Mailboxes | Select-Object $MailboxProp | Sort-Object DisplayName | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_Mailboxes.csv')
+
+    $Mailboxes | Group-Object RecipientTypeDetails | Select-Object name, count | Sort-Object -Property count -Descending |
+    Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_MailboxTypes.csv')
+
+    Get-Mailbox -ResultSize unlimited | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'Ex_Mailboxes.xml')
+
     # Exchange Receive Connectors
     Write-Verbose "Retrieving Exchange Receive Connectors"
-    Get-ExchangeReceiveConnector | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'ReceiveConn.csv')
+    Get-ExchangeReceiveConnector | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_ReceiveConnectors.csv')
 
     # Exchange Send Connectors
     Write-Verbose "Retrieving Exchange Send Connectors"
-    Get-ExchangeSendConnector | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'SendConn.csv')
+    Get-ExchangeSendConnector | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_SendConnectors.csv')
 
     # Exchange Address Lists
     Write-Verbose "Retrieving Address Lists"
-    Get-AddressList | Get-ExchangeAddressList | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'AddressLists.csv')
+    Get-AddressList | Get-ExchangeAddressList | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_AddressLists.csv')
 
     Write-Verbose "Retrieving Global Address Lists"
-    Get-GlobalAddressList | Get-ExchangeGlobalAddressList | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'GlobalAddressLists.csv')
+    Get-GlobalAddressList | Get-ExchangeGlobalAddressList | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_GlobalAddressLists.csv')
 
     Write-Verbose "Retrieving Offline Address Books"
-    Get-OfflineAddressBook | Get-ExchangeOfflineAddressBook | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'OfflineAddressBook.csv')
+    Get-OfflineAddressBook | Get-ExchangeOfflineAddressBook | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OfflineAddressBook.csv')
 
     Write-Verbose "Retrieving Address Book Policies"
-    Get-AddressBookPolicy | Get-ExchangeAddressBookPolicy | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'AddressBookPolicies.csv')
+    Get-AddressBookPolicy | Get-ExchangeAddressBookPolicy | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_AddressBookPolicies.csv')
 
     # Exchange Distribution Groups
     Write-Verbose "Retrieving Exchange Distribution Groups"
-    Get-DistributionGroup | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeDistributionGroups.xml')
+    Get-DistributionGroup | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'Ex_DistributionGroups.xml')
     $DistributionGroups = Get-ExchangeDistributionGroup -DetailedReport
-    $DistributionGroups | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeDistributionGroups.csv')
+    $DistributionGroups | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'Ex_DistributionGroups.csv')
     $DistributionGroups | Select-Object $GroupProp | Sort-Object DisplayName | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_DistributionGroup.csv')
 
     $DistributionGroups | Export-MembersOnePerLine -FindInColumn MembersName | Sort-Object DisplayName |
@@ -156,11 +155,11 @@
 
     # Exchange Recipients
     Write-Verbose "Retrieving Exchange Recipients"
-    Get-Recipient -ResultSize unlimited | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeRecipients.xml')
+    Get-Recipient -ResultSize unlimited | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'Ex_Recipients.xml')
 
     $Recipients = Get-365Recipient -DetailedReport
 
-    $Recipients | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeRecipients.csv')
+    $Recipients | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'Ex_Recipients.csv')
 
     $Recipients | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' } | Select-Object $RecipientProp | Sort-Object DisplayName |
     Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_Recipient.csv')
@@ -188,17 +187,6 @@
     )
     $RecOUCount | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_RecipientOUs.csv')
 
-
-    # Exchange Mailboxes
-    Write-Verbose "Retrieving Exchange Mailboxes"
-    Get-Mailbox -ResultSize unlimited | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeMailboxes.xml')
-    $Mailboxes = Get-EXMailbox -DetailedReport | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' }
-    $Mailboxes | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeMailboxes.csv')
-    $Mailboxes | Select-Object $MailboxProp | Sort-Object DisplayName | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_Mailboxes.csv')
-
-    $Mailboxes | Group-Object RecipientTypeDetails | Select-Object name, count | Sort-Object -Property count -Descending |
-    Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_MailboxTypes.csv')
-
     Write-Verbose "Retrieving Exchange Online Resource Mailboxes and Calendar Processing"
     $ResourceMailboxes = $Mailboxes | Where-Object { $_.RecipientTypeDetails -in 'RoomMailbox', 'EquipmentMailbox' }
     Get-EXOResourceMailbox -ResourceMailbox $ResourceMailboxes | Sort-Object DisplayName |
@@ -215,9 +203,9 @@
     $TransportRuleReport = Get-TransportRuleReport
     if ($TransportRuleReport) {
         $TransportCollection = Export-TransportRuleCollection
-        Set-Content -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeTransportRules.xml') -Value $TransportCollection.FileData -Encoding Byte
-        [xml]$TRuleColList = Get-Content -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeTransportRules.xml')
-        $TransportRuleReport | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeTransportRules.csv')
+        Set-Content -Path (Join-Path -Path $Detailed -ChildPath 'Ex_TransportRules.xml') -Value $TransportCollection.FileData -Encoding Byte
+        [xml]$TRuleColList = Get-Content -Path (Join-Path -Path $Detailed -ChildPath 'Ex_TransportRules.xml')
+        $TransportRuleReport | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'Ex_TransportRules.csv')
 
         $TransportHash = Get-TransportRuleHash -TransportData $TransportRuleReport
         $TransportCsv = Convert-TransportXMLtoCSV -TRuleColList $TRuleColList -TransportHash $TransportHash
@@ -255,7 +243,7 @@
             Expression = 'Name'
         }
         'Value'
-    ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OrganizationConfig.csv')
+    ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_JournalRule.csv')
 
     # Exchange Mailboxes Email Address Policy is not enabled
     Write-Verbose "Retrieving Mailboxes EmailAddressPolicyEnabled is False"
@@ -266,6 +254,18 @@
         'OrganizationalUnit'
     ) | Sort-Object DisplayName | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_EmailAddressPolicyDisabled.csv')
 
+    ##########################
+    #### ACTIVE DIRECTORY ####
+    ##########################
+
+    # AD User
+    Write-Verbose "Retrieving Active Directory Users"
+    Get-ADUser -Filter * -Properties * | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'AD_ADUsers.xml')
+    Get-ActiveDirectoryUser -DetailedReport | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'AD_ADUsers.csv')
+
+    # AD Replication
+    Write-Verbose "Retrieving Active Directory Replication"
+    Get-ADReplication | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'AD_DReplication.csv')
 
     # Create Excel Workbook
     Write-Verbose "Creating Excel Workbook"
