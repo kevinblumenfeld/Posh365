@@ -124,7 +124,7 @@
 
     # Exchange Mailboxes
     Write-Verbose "Retrieving Exchange Mailboxes"
-    $Mailboxes = Get-EXMailbox -DetailedReport | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' }
+    $Mailboxes = Get-ExMailbox -DetailedReport | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' }
     $Mailboxes | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeMailboxes.csv')
     $Mailboxes | Select-Object $MailboxProp | Sort-Object DisplayName | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_Mailboxes.csv')
 
@@ -134,6 +134,18 @@
     Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_MailboxTypes.csv')
 
     Get-Mailbox -ResultSize unlimited | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeMailboxes.xml')
+
+    # Exchange Mailbox PrimarySmtpAddress Domains
+    Write-Verbose "Retrieving Exchange Mailbox PrimarySmtpAddress Domains"
+    $Mailboxes | Select-Object @(
+        @{
+            Name       = 'PrimaryDomains'
+            Expression = { $_.PrimarySMTPAddress.split('@')[1] }
+        }
+    ) | Group-Object -Property 'PrimaryDomains' | Select-Object Count, Name | Sort-Object count -Descending |
+    Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_PrimaryDomains.csv')
+
+    $RecOU = $Recipients | Group-Object -Property OrganizationalUnit, RecipientTypeDetails -NoElement | Select-Object count, name
 
     # Exchange Retention Policy Summary
     Write-Verbose "Retrieving Exchange Retention Policy Summary"
