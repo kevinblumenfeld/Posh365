@@ -143,15 +143,13 @@
             Expression = { $_.PrimarySMTPAddress.split('@')[1] }
         }
     ) | Group-Object -Property 'PrimaryDomains' | Select-Object Count, Name | Sort-Object count -Descending
-    $PrimaryDomains = Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_PrimaryDomains.csv')
+    $PrimaryDomains | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_PrimaryDomains.csv')
 
     # DNS Security Records
     Write-Verbose "Retrieving PrimarySmtpAddress Domains DNS Mail Security Records"
     foreach ($Primary in $PrimaryDomains) {
         Get-EmailSecurityRecords -EmailDomain $Primary.Name | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Dns_{0}.csv' -f $Primary.Name)
     }
-
-    $RecOU = $Recipients | Group-Object -Property OrganizationalUnit, RecipientTypeDetails -NoElement | Select-Object count, name
 
     # Exchange Retention Policy Summary
     Write-Verbose "Retrieving Exchange Retention Policy Summary"
