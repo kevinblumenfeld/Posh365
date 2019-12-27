@@ -2,15 +2,19 @@ function Get-EmailSecurityRecords {
     <#
     .DESCRIPTION
         All credit to:
+
         AUTHOR:	 Daniel Streefkerk
         WWW:	 https://daniel.streefkerkonline.com
         Twitter: @dstreefkerk
 
-        This function that he put together is amazing.
+        This function that he put together is amazing!!
+        Please check out his blog - also fantastic.
 
-        I removed ordered type and used pscustomobject instead.
+        I removed [ordered] type and used [pscustomobject] instead.
 
-        Here is Daniel's description
+        I also added in kitterman spf validation and detail (if fails)
+
+        Here is Daniel's description...
 
         A quick and dirty script to be used to automate the collection of
         publicly-available email-related records
@@ -28,7 +32,7 @@ function Get-EmailSecurityRecords {
         Perform email-based reconnaissance on a single domain, or a collection of domains
 
     .PARAMETER DomainName
-        Email domain to check
+        PrimarySmtpAddress Domain to check
 
     .EXAMPLE
        Get-EmailSecurityRecords -DomainName contoso.com
