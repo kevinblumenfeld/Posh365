@@ -44,6 +44,7 @@ function Get-EmailSecurityRecords {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipeline)]
+        [ValidateNotNullOrEmpty()]
         [string[]]
         $EmailDomain
     )
@@ -52,8 +53,7 @@ function Get-EmailSecurityRecords {
     }
     process {
         foreach ($domain in $EmailDomain) {
-            Write-Verbose "Testing domain:`t$Domain"
-            if ([string]::IsNullOrEmpty($domain)) { continue }
+            Write-Verbose "Testing domain:`t$domain"
             # Attempt to find the SOA domain record, skip the domain if we can't locate one DNS
             try {
                 $null = Resolve-DnsName -Name $domain -Type SOA -ErrorAction Stop
@@ -68,7 +68,7 @@ function Get-EmailSecurityRecords {
             $dataCollection = [PSCustomObject]@{
                 DMARC                  = Resolve-DnsName -Name "_dmarc.$($domain)" -Type TXT -Server 8.8.8.8
                 MX                     = Resolve-DnsName -Name $domain -Type MX -Server 8.8.8.8
-                MTASTS                 = Get-MTASTSDetails -DomainName $domain -Server 8.8.8.8
+                MTASTS                 = Get-MTASTSDetails -DomainName $domain
                 MSOID                  = Resolve-DnsName "msoid.$($domain)" -Server 8.8.8.8
                 TXT                    = Resolve-DnsName $domain -Type TXT -Server 8.8.8.8
                 ENTERPRISEREGISTRATION = Resolve-DnsName -Name "enterpriseregistration.$domain" -Type CNAME -Server 8.8.8.8
@@ -89,7 +89,7 @@ function Get-EmailSecurityRecords {
             # Analyse the collected data
             $SPFResult = Test-SPFRecord $domain
             [PSCustomObject]@{
-                'Domain'                      = $domain;
+                'Domain'                      = $domain
                 'MX Records Exist'            = $dataCollection.mx.NameExchange.Count -gt 0
                 'MX Provider'                 = Test-MXHandler $dataCollection
                 'MX Lowest Preference'        = Get-LowestPreferenceMX $dataCollection
