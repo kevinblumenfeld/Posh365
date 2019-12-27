@@ -7,7 +7,7 @@ function Test-SPFRecord {
     $Message = Invoke-TestSPFRecord -Domain $DomainName
     $ResultHash = [ordered]@{ }
 
-    if ($message -like "*passed*") {
+    if ($message -like "*pass*") {
         $ResultHash.Add('Result', 'PASS')
     }
     else {
