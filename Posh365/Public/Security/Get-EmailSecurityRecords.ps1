@@ -114,33 +114,36 @@ function Get-EmailSecurityRecords {
             # Finish collecting data
 
             # Analyse the collected data
+            $SPFResult = Test-SPFRecord $domain
             [PSCustomObject]@{
-                'Domain'                        = $domain;
-                'MX Records Exist'              = $dataCollection.mx.NameExchange.Count -gt 0
-                'MX Provider'                   = (Test-MXHandler $dataCollection)
-                'MX (Lowest Preference)'        = (Get-LowestPreferenceMX $dataCollection)
-                'SPF Record Exists'             = (Test-SpfRecordExists $dataCollection)
-                'SPF Record'                    = (Get-SpfRecordText $dataCollection)
-                'SPF Mechanism (Mode)'          = (Get-SpfRecordMode $dataCollection)
-                'DMARC Record Exists'           = (Test-DmarcRecordExists $dataCollection)
-                'DMARC Record'                  = (Get-DmarcRecordText $dataCollection)
-                'DMARC Domain Policy (Mode)'    = (Get-DmarcPolicy $dataCollection)
-                'DMARC Subdomain Policy (Mode)' = (Get-DmarcSubdomainPolicy $dataCollection)
-                'O365 Exchange Online'          = (Test-ExchangeOnlineDomain $dataCollection)
-                'O365 Tenant Name'              = (Test-O365DomainTenantName $dataCollection)
-                'O365 DKIM Enabled'             = (Test-O365Dkim $dataCollection)
-                'O365 Federated'                = (Test-O365IsFederated $dataCollection)
-                'O365 Federation Provider'      = (Test-O365FederationProvider $dataCollection)
-                'O365 Federation Hostname'      = (Get-O365FederationHostname $dataCollection)
-                'O365 Federation Brand Name'    = $dataCollection.FEDERATION.FederationBrandName
-                'O365/AzureAD Directory ID'     = (Test-O365DirectoryID $domain)
-                'O365/AzureAD is Unmanaged'     = (Test-AADIsUnmanaged $dataCollection)
-                'MTA-STS Record Exists'         = $dataCollection.MTASTS.DNSRecord -ne $null
-                'MTA-STS Policy Mode'           = $dataCollection.MTASTS.Mode
-                'MTA-STS Allowed MX Hosts'      = $dataCollection.MTASTS.AllowedMX
-                'DNS Registrar'                 = (Test-DnsNameAdministrator $dataCollection)
-                'DNS Host'                      = (Test-DnsHostingProvider $dataCollection)
-                'DNSSEC DNSKEY Record Exists'   = $dataCollection.DNSSEC.DNSKeyExists
+                'Domain'                      = $domain;
+                'MX Records Exist'            = $dataCollection.mx.NameExchange.Count -gt 0
+                'MX Provider'                 = Test-MXHandler $dataCollection
+                'MX Lowest Preference'        = Get-LowestPreferenceMX $dataCollection
+                'SPF Record Exists'           = Test-SpfRecordExists $dataCollection
+                'SPF Record'                  = Get-SpfRecordText $dataCollection
+                'SPF Mechanism Mode'          = Get-SpfRecordMode $dataCollection
+                'SPF Validity'                = $SPFResult.Result
+                'SPF Result'                  = $SPFResult.Detail
+                'DMARC Record Exists'         = Test-DmarcRecordExists $dataCollection
+                'DMARC Record'                = Get-DmarcRecordText $dataCollection
+                'DMARC Domain Policy Mode'    = Get-DmarcPolicy $dataCollection
+                'DMARC Subdomain Policy Mode' = Get-DmarcSubdomainPolicy $dataCollection
+                'O365 Exchange Online'        = Test-ExchangeOnlineDomain $dataCollection
+                'O365 Tenant Name'            = Test-O365DomainTenantName $dataCollection
+                'O365 DKIM Enabled'           = Test-O365Dkim $dataCollection
+                'O365 Federated'              = Test-O365IsFederated $dataCollection
+                'O365 Federation Provider'    = Test-O365FederationProvider $dataCollection
+                'O365 Federation Hostname'    = Get-O365FederationHostname $dataCollection
+                'O365 Federation Brand Name'  = $dataCollection.FEDERATION.FederationBrandName
+                'O365/AzureAD Directory ID'   = Test-O365DirectoryID $domain
+                'O365/AzureAD is Unmanaged'   = Test-AADIsUnmanaged $dataCollection
+                'MTA-STS Record Exists'       = $dataCollection.MTASTS.DNSRecord -ne $null
+                'MTA-STS Policy Mode'         = $dataCollection.MTASTS.Mode
+                'MTA-STS Allowed MX Hosts'    = $dataCollection.MTASTS.AllowedMX
+                'DNS Registrar'               = Test-DnsNameAdministrator $dataCollection
+                'DNS Host'                    = Test-DnsHostingProvider $dataCollection
+                'DNSSEC DNSKEY Record Exists' = $dataCollection.DNSSEC.DNSKeyExists
                 #'ADFS Host' = (Test-AdfsFederationMetadataUrl $domain)
             }
         }

@@ -8,7 +8,7 @@ function Get-SpfRecordMode {
 
     if ($record) {
         switch -Wildcard ($record) {
-            '*-all' { $determination = "FAIL" }
+            '*-all' { $determination = "HARDFAIL" }
             '*+all' { $determination = "PASS" }
             '*~all' { $determination = "SOFTFAIL" }
             '*`?all' { $determination = "NEUTRAL" }
