@@ -52,10 +52,12 @@ function Get-EmailSecurityRecords {
     }
     process {
         foreach ($domain in $EmailDomain) {
+            Write-Verbose "Testing domain:`t$Domain"
             if ([string]::IsNullOrEmpty($domain)) { continue }
             # Attempt to find the SOA domain record, skip the domain if we can't locate one DNS
             try {
-                Resolve-DnsName -Name $domain -Type SOA -ErrorAction Stop | Out-Null
+                $null = Resolve-DnsName -Name $domain -Type SOA -ErrorAction Stop
+                Write-Verbose "Successfully located SOA record for $domain"
             }
             catch {
                 Write-Verbose "Failed to locate SOA record for $domain"
