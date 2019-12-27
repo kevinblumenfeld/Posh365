@@ -31,43 +31,10 @@ function Get-EmailSecurityRecords {
         Email domain to check
 
     .EXAMPLE
-        .\Invoke-EmailRecon.ps1 -EmailDomain "contoso.com"
-
-        Retrieve email details for the domain contoso.com
+       Get-EmailSecurityRecords -DomainName contoso.com
 
     .EXAMPLE
-        .\Invoke-EmailRecon.ps1 -EmailDomain "contoso.com",'fabrikam.com'
-
-        Retrieve email details for multiple domains
-
-    .EXAMPLE
-        .\Invoke-EmailRecon.ps1 -EmailDomain "contoso.com",'fabrikam.com' | Format-Table -AutoSize
-
-        Retrieve email details for multiple domains, and format the results in a table
-
-    .EXAMPLE
-        Get-Content C:\temp\domains.txt | .\Invoke-EmailRecon.ps1 | Format-Table -AutoSize
-
-        Get a list of domains from a text file (single domain per line), retrieve the details, and format the results into a table
-
-    .EXAMPLE
-        Get-Content C:\temp\domains.txt | .\Invoke-EmailRecon.ps1 | Export-Csv c:\temp\domains.csv -NoTypeInformation
-
-        Get a list of domains from a text file (single domain per line), retrieve the details, and export the results to a CSV file
-
-    .EXAMPLE
-        Import-Csv C:\temp\companies.csv | Select-Object -ExpandProperty Email_Domain | C:\Scripts\Invoke-EmailRecon.ps1 | Out-GridView
-
-        Get a list of domains from a CSV file that contains a column named 'Email_Domain, run our process across each one of them, and output the results to a GridView GUI control
-
-    .INPUTS
-        System.String
-
-    .OUTPUTS
-        Custom PowerShell object containing email-related information collected from public DNS records
-
-    .NOTES
-
+       (Import-Csv c:\scripts\domains.csv).DomainName | Get-EmailSecurityRecords
     #>
 
     [CmdletBinding()]
