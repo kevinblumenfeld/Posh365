@@ -148,7 +148,7 @@
     # DNS Security Records
     Write-Verbose "Retrieving PrimarySmtpAddress Domains DNS Mail Security Records"
     foreach ($Primary in $PrimaryDomains) {
-        Get-EmailSecurityRecords -EmailDomain $Primary.Name | Export-Csv @CSVSplat -Path ((Join-Path -Path $CSV -ChildPath 'Dns_{0}.csv') -f $Primary.Name)
+        (Get-EmailSecurityRecords -EmailDomain $Primary.Name).PSObject.Properties | Select-Object Name, Value | Export-Csv @CSVSplat -Path ((Join-Path -Path $CSV -ChildPath 'Dns_{0}.csv') -f $Primary.Name)
     }
 
     # Exchange Retention Policy Summary
