@@ -13,7 +13,13 @@ function Test-AdfsFederationMetadataUrl {
         $tempURL = "{0}.{1}" -f $prefix, $DomainName
 
         # Try and resolve the hostname
-        $resolved = Resolve-DnsName -Name $tempURL -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+        $ResolveSplat = @{
+            Name          = $tempURL
+            ErrorAction   = 'SilentlyContinue'
+            WarningAction = 'SilentlyContinue'
+            Server        = '8.8.8.8'
+        }
+        $resolved = Resolve-DnsName @ResolveSplat
 
         # If the hostname doesn't resolve, skip to the next one
         if ($resolved -eq $null) { continue }

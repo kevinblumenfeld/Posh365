@@ -9,6 +9,7 @@ function Get-DNSSECDetails {
         Type          = 'DNSKEY'
         ErrorAction   = 'SilentlyContinue'
         WarningAction = 'SilentlyContinue'
+        Server        = '8.8.8.8'
     }
     $dnskey_dnsrecord = Resolve-DnsName @ResolveSplat | Where-Object { $_.Type -eq 'DNSKEY' }
     $dnskey_exists = (($dnskey_dnsrecord | Measure-Object | Select-Object -ExpandProperty Count) -gt 0)

@@ -4,7 +4,14 @@ function Get-MTASTSDetails {
         [Parameter()]
         $DomainName
     )
-    $mtasts_dnsrecord = Resolve-DnsName -Name "_mta-sts.$DomainName" -Type TXT -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+    $ResolveSplat = @{
+        Name          = "_mta-sts.$DomainName"
+        Type          = 'TXT'
+        ErrorAction   = 'SilentlyContinue'
+        WarningAction = 'SilentlyContinue'
+        Server        = '8.8.8.8'
+    }
+    $mtasts_dnsrecord = Resolve-DnsName @ResolveSplat
     $mtasts_policy = $null
 
     # If we don't detect an MTA-STS DNS record, return

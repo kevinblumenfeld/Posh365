@@ -64,18 +64,18 @@ function Get-EmailSecurityRecords {
             # Collect data
             $ErrorActionPreference = 'SilentlyContinue'
             $dataCollection = [PSCustomObject]@{
-                DMARC                  = Resolve-DnsName -Name "_dmarc.$($domain)" -Type TXT
-                MX                     = Resolve-DnsName -Name $domain -Type MX
-                MTASTS                 = Get-MTASTSDetails -DomainName $domain
-                MSOID                  = Resolve-DnsName "msoid.$($domain)"
-                TXT                    = Resolve-DnsName $domain -Type TXT
-                ENTERPRISEREGISTRATION = Resolve-DnsName -Name "enterpriseregistration.$domain" -Type CNAME
-                AUTODISCOVER           = Resolve-DnsName -Name "autodiscover.$domain" -Type CNAME
-                SOA                    = Resolve-DnsName -Type SOA -Name $domain
-                NS                     = Resolve-DnsName $domain -Type NS
+                DMARC                  = Resolve-DnsName -Name "_dmarc.$($domain)" -Type TXT -Server 8.8.8.8
+                MX                     = Resolve-DnsName -Name $domain -Type MX -Server 8.8.8.8
+                MTASTS                 = Get-MTASTSDetails -DomainName $domain -Server 8.8.8.8
+                MSOID                  = Resolve-DnsName "msoid.$($domain)" -Server 8.8.8.8
+                TXT                    = Resolve-DnsName $domain -Type TXT -Server 8.8.8.8
+                ENTERPRISEREGISTRATION = Resolve-DnsName -Name "enterpriseregistration.$domain" -Type CNAME -Server 8.8.8.8
+                AUTODISCOVER           = Resolve-DnsName -Name "autodiscover.$domain" -Type CNAME -Server 8.8.8.8
+                SOA                    = Resolve-DnsName -Type SOA -Name $domain -Server 8.8.8.8
+                NS                     = Resolve-DnsName $domain -Type NS -Server 8.8.8.8
                 O365DKIM               = [PSCustomObject]@{
-                    SELECTOR1 = Resolve-DnsName "selector1._domainkey.$domain" -Type CNAME
-                    SELECTOR2 = Resolve-DnsName "selector2._domainkey.$domain" -Type CNAME
+                    SELECTOR1 = Resolve-DnsName "selector1._domainkey.$domain" -Type CNAME -Server 8.8.8.8
+                    SELECTOR2 = Resolve-DnsName "selector2._domainkey.$domain" -Type CNAME -Server 8.8.8.8
                 }
                 FEDERATION             = Get-DomainFederationDataFromO365 -DomainName $domain
                 DNSSEC                 = Get-DNSSECDetails -DomainName $domain
