@@ -50,10 +50,6 @@
         'UserPrincipalName', 'PrimarySmtpAddress', 'Identity', 'AddressBookPolicy', 'RetentionPolicy', 'LitigationHoldEnabled'
         'LitigationHoldDuration', 'LitigationHoldOwner', 'InPlaceHolds', 'Guid', 'x500', 'EmailAddresses'
     )
-    $ExchangeServerProp = @(
-        'Name', 'ServerRole', 'IsHubTransportServer', 'IsClientAccessServer', 'IsMailboxServer'
-        'IsUnifiedMessagingServer', 'IsFrontendTransportServer', 'Site', 'AdminDisplayVersion'
-    )
     $UPNMatchProp = @(
         'DisplayName', 'RecipientTypeDetails', 'OrganizationalUnit', 'UserPrincipalName', 'PrimarySmtpAddress', 'Guid'
     )
@@ -162,7 +158,24 @@
 
     # Exchange Server
     Write-Verbose "Retrieving Exchange Servers"
-    Get-ExchangeServer | Select-Object $ExchangeServerProp | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_Servers.csv')
+    $ExServerList = Get-ExchangeServer
+    $ExServerObject = foreach ($ExServer in $ExServerList) {
+        $ExPing = Test-NetConnection -ComputerName $ExServer
+        [PSCustomObject]@{
+            Name                      = $ExServer.Name
+            ServerRole                = $ExServer.ServerRole
+            Site                      = [regex]::Matches("$($ExServer.Site)", "[^/]*$").value[0]
+            IP                        = $ExPing.RemoteAddress
+            PingSucceeded             = $ExPing.PingSucceeded
+            IsHubTransportServer      = $ExServer.IsHubTransportServer
+            IsClientAccessServer      = $ExServer.IsClientAccessServer
+            IsMailboxServer           = $ExServer.IsMailboxServer
+            IsUnifiedMessagingServer  = $ExServer.IsUnifiedMessagingServer
+            IsFrontendTransportServer = $ExServer.IsFrontendTransportServer
+            AdminDisplayVersion       = $ExServer.AdminDisplayVersion
+        }
+    }
+    $ExServerObject | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_Servers.csv')
 
     # Exchange Receive Connectors
     Write-Verbose "Retrieving Exchange Receive Connectors"
@@ -186,6 +199,10 @@
     # Exchange Send Connectors
     Write-Verbose "Retrieving Exchange Send Connectors"
     Get-ExchangeSendConnector | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_SendConnectors.csv')
+
+    # Exchange Email Address Policies
+    Write-Verbose "Retrieving Exchange Email Address Policies"
+    Get-ExEmailAddressPolicy | Sort-Object Priority | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_EmailAddressPolicy.csv')
 
     # Exchange Address Lists
     Write-Verbose "Retrieving Exchange Address Lists"
@@ -234,7 +251,7 @@
 
     # Exchange Recipient Domains and OUs
     Write-Verbose "Retrieving Exchange Recipient Domains and OUs"
-    $RecDomain = $RecOneEmailPerLine.where{ $_.Domain } | Group-Object -Property Domain, RecipientTypeDetails -NoElement | Select-Object count, name
+    $RecDomain = $RecOneEmailPerLine.where( { $_.Domain }) | Group-Object -Property Domain, RecipientTypeDetails -NoElement | Select-Object count, name
     $RecDomain | Sort-Object count -Descending | Select-Object @(
         'Count'
         @{
@@ -271,6 +288,26 @@
     Get-MailContact -ResultSize unlimited | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeMailContacts.xml')
     Get-EXOMailContact | Select-Object $ContactProp | Sort-Object DisplayName |
     Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_MailContacts.csv')
+
+    # Exchange DLP Policies
+    Write-Verbose "Retrieving Exchange DLP Policies"
+    Get-DLPPolicy | Select-Object @(
+        'Name'
+        'State'
+        'Mode'
+        'Description'
+        'PublisherName'
+        @{
+            Name       = 'Keywords'
+            Expression = { @($_.Keywords) -ne '' -join '|' }
+        }
+        'ContentVersion'
+        'WhenChanged'
+        'Identity'
+        'Guid'
+        'ExchangeVersion'
+        'MaximumSupportedExchangeObjectVersion'
+    ) | Sort-Object Name | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_DataLossProtection.csv')
 
     # Exchange Transport Rules
     Write-Verbose "Retrieving Exchange Transport Rules"
@@ -310,7 +347,7 @@
     Write-Verbose "Retrieving Journal Rule"
     @(
         (Get-JournalRule).PSObject.Properties
-        (Get-TransportConfig).PSObject.Properties.where{ $_.Name -eq 'JournalingReportNdrTo' }
+        (Get-TransportConfig).PSObject.Properties.where( { $_.Name -eq 'JournalingReportNdrTo' })
     ) | Select-Object -Property @(
         @{
             Name       = 'Property'
@@ -321,7 +358,7 @@
 
     # Exchange Mailboxes Email Address Policy is not enabled
     Write-Verbose "Retrieving Mailboxes EmailAddressPolicyEnabled is False"
-    $Mailboxes.where{ -not $_.EmailAddressPolicyEnabled } | Select-Object @(
+    $Mailboxes.where( { -not $_.EmailAddressPolicyEnabled }) | Select-Object @(
         'DisplayName'
         'PrimarySmtpAddress'
         'UserPrincipalName'
@@ -353,10 +390,10 @@
         ClearSheet              = $true
         ErrorAction             = 'SilentlyContinue'
     }
-    Get-ChildItem -Path $CSV -Filter *.csv | Sort-Object BaseName |
+    Get-ChildItem -Path $CSV -Filter "*.csv" | Sort-Object BaseName |
     ForEach-Object { Import-Csv $_.fullname | Export-Excel @ExcelSplat -Path (Join-Path $Discovery 'Discovery.xlsx') -WorksheetName $_.basename }
 
-    Get-ChildItem -Path $Detailed -Filter *.csv | Sort-Object BaseName |
+    Get-ChildItem -Path $Detailed -Filter "*.csv" | Sort-Object BaseName |
     ForEach-Object { Import-Csv $_.fullname | Export-Excel @ExcelSplat -Path (Join-Path $Detailed 'Detailed.xlsx') -WorksheetName $_.basename }
 
     # Complete

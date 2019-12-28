@@ -39,15 +39,18 @@ function Connect-Exchange {
     )
 
     $CredFile = Join-Path $Env:USERPROFILE ConnectExchange.xml
-    if ($DeleteExchangeCreds) { Remove-Item $CredFile -Force }
+    if ($DeleteExchangeCreds) {
+        Remove-Item $CredFile -Force
+        return
+    }
 
     if (-not ($null = Test-Path $CredFile)) {
         [System.Management.Automation.PSCredential]$Credential = Get-Credential -Message 'Enter on-premises Exchange username and password'
-        [System.Management.Automation.PSCredential]$Credential | Export-CliXml -Path $CredFile
-        [System.Management.Automation.PSCredential]$Credential = Import-CliXml -Path $CredFile
+        [System.Management.Automation.PSCredential]$Credential | Export-Clixml -Path $CredFile
+        [System.Management.Automation.PSCredential]$Credential = Import-Clixml -Path $CredFile
     }
     else {
-        [System.Management.Automation.PSCredential]$Credential = Import-CliXml -Path $CredFile
+        [System.Management.Automation.PSCredential]$Credential = Import-Clixml -Path $CredFile
     }
     $SessionSplat = @{
         Name              = "OnPremExchange"
