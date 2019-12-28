@@ -24,6 +24,7 @@ function Get-ExchangeSendConnector {
         }
         Get-SendConnector | Select-Object @(
             'Name'
+            'Enabled'
             'ConnectorType'
             'DNSRoutingEnabled'
             'TlsDomain'
@@ -55,7 +56,6 @@ function Get-ExchangeSendConnector {
             'Fqdn'
             'RequireTLS'
             'RequireOorg'
-            'Enabled'
             'ProtocolLoggingLevel'
             'SmartHostAuthMechanism'
             'AuthenticationCredential'
