@@ -60,11 +60,11 @@ function Get-OfficeEndpoints {
 
                 $EndpointObject = Import-Csv $EndpointCsv
 
-                if ($EndpointObject.tcpPorts) {
+                if ($EndpointObject.tcpPorts -match "\d" ) {
                     $tcp = ($EndpointObject | Select-Object tcpPorts -Unique) -match "\d" |
                     Out-GridView -OutputMode Multiple -Title 'Choose TCP Ports to include in report'
                 }
-                if ($EndpointObject.udpPorts) {
+                if ($EndpointObject.udpPorts -match "\d" ) {
                     $udp = ($EndpointObject | Select-Object udpPorts -Unique) -match "\d" |
                     Out-GridView -OutputMode Multiple -Title 'Choose UDP Ports to include in report'
                 }
