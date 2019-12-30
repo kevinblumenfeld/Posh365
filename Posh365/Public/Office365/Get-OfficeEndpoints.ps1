@@ -21,12 +21,23 @@ function Get-OfficeEndpoints {
 
         [Parameter()]
         [switch]
+        $Dedupe,
+
+        [Parameter()]
+        [switch]
         $OutputToConsole
     )
     end {
         if ($OutputToConsole) {
-            Invoke-GetOfficeEndpoints @PSBoundParameters
+            $EndpointObject = Invoke-GetOfficeEndpoints @PSBoundParameters
+            if ($Dedupe) {
+                $EndpointObject | Select-Object -Property * -ExcludeProperty ID -Unique
+            }
+            else {
+                $EndpointObject
+            }
         }
+        # NOT OUTPUT CONSOLE
         else {
             $PoshDesktop = Join-Path ([Environment]::GetFolderPath("Desktop")) -ChildPath 'Posh365'
             $EndpointPath = Join-Path -Path $PoshDesktop -ChildPath 'Endpoints'
@@ -42,7 +53,31 @@ function Get-OfficeEndpoints {
                 $null = New-Item $PoshDesktop @ItemSplat
                 $null = New-Item $EndpointPath @ItemSplat
             }
-            Invoke-GetOfficeEndpoints @PSBoundParameters | Export-Csv -Path $EndpointCsv -NoTypeInformation
+
+            Invoke-GetOfficeEndpoints @PSBoundParameters | Export-Csv -Path $EndpointCsv
+
+            if ($DateChoice.Choice -eq 'InitialList') {
+
+                $EndpointObject = Import-Csv $EndpointCsv
+
+                if ($EndpointObject.tcpPorts) {
+                    $tcp = ($EndpointObject | Select-Object tcpPorts -Unique) -match "\d" |
+                    Out-GridView -OutputMode Multiple -Title 'Choose TCP Ports to include in report'
+                }
+                if ($EndpointObject.udpPorts) {
+                    $udp = ($EndpointObject | Select-Object udpPorts -Unique) -match "\d" |
+                    Out-GridView -OutputMode Multiple -Title 'Choose UDP Ports to include in report'
+                }
+                if ($Dedupe) {
+                    $EndpointObject.where( { $_.tcpPorts -in $tcp.tcpPorts -or $_.udpPorts -in $udp.udpPorts }) |
+                    Select-Object -Property * -ExcludeProperty ID -Unique | Export-Csv -Path $EndpointCsv -NoTypeInformation
+                }
+                else {
+                    $EndpointObject.where( { $_.tcpPorts -in $tcp.tcpPorts -or $_.udpPorts -in $udp.udpPorts }) |
+                    Export-Csv -Path $EndpointCsv -NoTypeInformation
+                }
+            }
+
             Write-Verbose "Creating Excel Workbook"
             $ExcelSplat = @{
                 TableStyle              = 'Medium2'

@@ -21,8 +21,11 @@ function Invoke-GetOfficeEndpoints {
 
         [Parameter()]
         [switch]
+        $Dedupe,
+
+        [Parameter()]
+        [switch]
         $OutputToConsole
-        # Placeholder
     )
     end {
         if ($Services -match 'All') {
@@ -127,18 +130,8 @@ function Invoke-GetOfficeEndpoints {
                 Write-Warning "Please run again and choose a selection for each menu"
                 return
             }
-            $ServicesType = @('All', 'Common', 'Exchange', 'SharePoint', 'Skype')
-            $Services = ($ServicesType | ForEach-Object {
-                    [PSCustomObject]@{
-                        Service = $_
-                    }
-                } | Out-GridView -OutputMode Multiple -Title "Choose one or more services").Service
-            if ($Services -match 'All') { $Services = @('Exchange', 'SharePoint', 'Skype') }
-            if (-not $Services) {
-                Write-Warning "Please run again and choose a selection for each menu"
-                return
-            }
 
+            # Get all points in time when changes have occurred with Microsoft Endpoints
             $VersionArray = [System.Collections.Generic.List[string]]::new()
             $VersionArray.Add('InitialList')
             $MenuRestSplat = @{
@@ -150,47 +143,53 @@ function Invoke-GetOfficeEndpoints {
 
             $VersionList = Invoke-RestMethod @MenuRestSplat
             $VersionList.Versions | ForEach-Object { $VersionArray.Add($_) }
-            $DateChoice = $VersionArray | ForEach-Object {
+            $Script:DateChoice = $VersionArray | ForEach-Object {
                 [PSCustomObject]@{
                     Choice = $_
                 }
-            } | Out-GridView -OutputMode Single -Title "Choose initial list (for initial setup) or changes since particular date"
-
+            } | Out-GridView -OutputMode Single -Title "Choose initial list (for initial setup) or changes since a particular date"
+            # End user selection of initial list or date of changes
             if (-not $DateChoice) {
                 Write-Warning "Please run again and make a selection"
                 return
             }
             if ($DateChoice.Choice -eq 'InitialList') {
-                foreach ($Item in $Services) {
-                    Invoke-GetOfficeEndpoints -Instance $TenantChoice -Services $Item
+                $ServicesType = @('All', 'Common', 'Exchange', 'SharePoint', 'Skype')
+                $Services = ($ServicesType | ForEach-Object {
+                        [PSCustomObject]@{
+                            Service = $_
+                        }
+                    } | Out-GridView -OutputMode Multiple -Title "Choose one or more services").Service
+                if ($Services -match 'All') { $Services = @('Exchange', 'SharePoint', 'Skype') }
+                if (-not $Services) {
+                    Write-Warning "Please run again and choose a selection for each menu"
+                    return
                 }
+                Invoke-GetOfficeEndpoints -Instance $TenantChoice -Services $Services -IncludeURLs:$IncludeURLs
             }
             else {
-                foreach ($Service in $Services) {
-                    $ChangeSplat = @{
-                        Uri           = 'https://endpoints.office.com/changes/{0}/{1}?ServiceAreas={2}&clientRequestId={3}' -f $TenantChoice, $DateChoice.Choice, $Service, [GUID]::NewGuid().Guid
-                        Method        = 'GET'
-                        ErrorAction   = 'Stop'
-                        WarningAction = 'SilentlyContinue'
+                $ChangeSplat = @{
+                    Uri           = 'https://endpoints.office.com/changes/{0}/{1}?singleVersion&ClientRequestId={2}' -f $TenantChoice, $DateChoice.Choice, [GUID]::NewGuid().Guid
+                    Method        = 'GET'
+                    ErrorAction   = 'Stop'
+                    WarningAction = 'SilentlyContinue'
+                }
+                $ChangeList = Invoke-RestMethod @ChangeSplat
+                foreach ($Change in $ChangeList) {
+                    if ($Change.Add.ips) { $ItemList = $Change.Add.ips }
+                    if ($Change.Remove.ips) { $ItemList = $Change.Remove.ips }
+                    if ($IncludeURLs) {
+                        if ($Change.Add.urls) { $ItemList = $Change.Add.urls }
+                        if ($Change.Remove.urls) { $ItemList = $Change.Remove.urls }
                     }
-                    $ChangeList = Invoke-RestMethod @ChangeSplat
-                    foreach ($Change in $ChangeList) {
-                        if ($Change.Add.ips) { $ItemList = $Change.Add.ips }
-                        if ($Change.Remove.ips) { $ItemList = $Change.Remove.ips }
-                        if ($IncludeURLs) {
-                            if ($Change.Add.urls) { $ItemList = $Change.Add.urls }
-                            if ($Change.Remove.urls) { $ItemList = $Change.Remove.urls }
-                        }
-                        foreach ($Item in $ItemList) {
-                            [PSCustomObject]@{
-                                id            = $Change.id
-                                endpointsetid = $Change.endpointsetid
-                                disposition   = $Change.disposition
-                                version       = $Change.version
-                                impact        = $Change.impact
-                                serviceArea   = $Service
-                                item          = $Item
-                            }
+                    foreach ($Item in $ItemList) {
+                        [PSCustomObject]@{
+                            id            = $Change.id
+                            endpointsetid = $Change.endpointsetid
+                            disposition   = $Change.disposition
+                            version       = $Change.version
+                            impact        = $Change.impact
+                            item          = $Item
                         }
                     }
                 }
