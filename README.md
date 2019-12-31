@@ -41,3 +41,6 @@ _Syntax_: https://github.com/kevinblumenfeld/Posh365Demo
 * **Get-MailboxMoveLicenseCount** Reports on a tenant's skus and options.
 * **Get-MailboxMoveLicenseReport** Reports on each user's assigned skus and options.
 
+### Office365 Endpoints
+* **Get-OfficeEndpoints** URLs and IPs, initial and "changes since"
+
