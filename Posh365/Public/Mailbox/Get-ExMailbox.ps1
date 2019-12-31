@@ -52,6 +52,7 @@ function Get-ExMailbox {
             $CasList = Get-CasMailbox -ResultSize Unlimited -Verbose:$false
             foreach ($Cas in $CasList) {
                 $CasHash[$Cas.PrimarySmtpAddress] = @{
+                    MapiHttpEnabled   = $Cas.MapiHttpEnabled
                     ActiveSyncEnabled = $Cas.ActiveSyncEnabled
                     OWAEnabled        = $Cas.OWAEnabled
                     ECPEnabled        = $Cas.ECPEnabled
@@ -98,6 +99,7 @@ function Get-ExMailbox {
                 @{n = "TotalGB" ; e = { $StatsHash.($_.PrimarySmtpAddress).TotalGB } }
                 @{n = "LastLogonTime" ; e = { $StatsHash.($_.PrimarySmtpAddress).LastLogonTime } }
                 @{n = "ItemCount" ; e = { $StatsHash.($_.PrimarySmtpAddress).ItemCount } }
+                @{n = "MapiHttpEnabled" ; e = { $CasHash.($_.PrimarySmtpAddress).MapiHttpEnabled } }
                 @{n = "ActiveSyncEnabled" ; e = { $CasHash.($_.PrimarySmtpAddress).ActiveSyncEnabled } }
                 @{n = "OWAEnabled" ; e = { $CasHash.($_.PrimarySmtpAddress).OWAEnabled } }
                 @{n = "ECPEnabled" ; e = { $CasHash.($_.PrimarySmtpAddress).ECPEnabled } }

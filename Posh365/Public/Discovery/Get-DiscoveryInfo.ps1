@@ -445,23 +445,23 @@
     Get-AcceptedDomain | Select-Object $AcceptedDomainsProp | Sort-Object Name | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_AcceptedDomains.csv')
 
     # Exchange Remote Domains
-    Write-Verbose "Retrieving Remote Domains"
+    Write-Verbose "Retrieving Exchange Remote Domains"
     Get-RemoteDomain | Select-Object $RemoteDomainsProp | Sort-Object DomainName | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_RemoteDomains.csv')
 
     # Exchange Organization Config
-    Write-Verbose "Retrieving Organization Config"
+    Write-Verbose "Retrieving Exchange Organization Config"
     (Get-OrganizationConfig).PSObject.Properties | Select-Object Name, Value | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OrganizationConfig.csv')
 
     # Exchange Organization Relationship
-    Write-Verbose "Retrieving Organization Relationship"
+    Write-Verbose "Retrieving Exchange Organization Relationship"
     Get-OrganizationRelationship | Select-Object $OrganizationRelationshipProp | Sort-Object Id | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OrganizationRelationship.csv')
 
     # Exchange ActiveSync Device Access Rules
-    Write-Verbose "Retrieving ActiveSync Device Access Rules"
+    Write-Verbose "Retrieving Exchange ActiveSync Device Access Rules"
     Get-ActiveSyncDeviceAccessRule | Select-Object $ActiveSyncRule | Sort-Object Name | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_ActiveSyncRules.csv')
 
     # Exchange Journal Rule
-    Write-Verbose "Retrieving Journal Rule"
+    Write-Verbose "Retrieving Exchange Journal Rule"
     @(
         (Get-JournalRule).PSObject.Properties
         (Get-TransportConfig).PSObject.Properties.where( { $_.Name -eq 'JournalingReportNdrTo' })
@@ -474,7 +474,7 @@
     ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_JournalRule.csv')
 
     # Exchange Mailboxes Email Address Policy is not enabled
-    Write-Verbose "Retrieving Mailboxes EmailAddressPolicyEnabled is False"
+    Write-Verbose "Retrieving Exchange Mailboxes EmailAddressPolicyEnabled is False"
     $Mailboxes.where( { -not $_.EmailAddressPolicyEnabled }) | Select-Object @(
         'DisplayName'
         'PrimarySmtpAddress'
@@ -483,7 +483,7 @@
     ) | Sort-Object DisplayName | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_EmailAddressPolicyDisabled.csv')
 
     # Exchange Public Folders
-    Write-Verbose "Retrieving Public Folders"
+    Write-Verbose "Retrieving Exchange Public Folders"
     $EA = $global:ErrorActionPreference
     $global:ErrorActionPreference = 'Stop'
     try {
