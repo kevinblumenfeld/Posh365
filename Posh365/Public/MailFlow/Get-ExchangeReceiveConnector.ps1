@@ -28,7 +28,7 @@ function Get-ExchangeReceiveConnector {
             'Enabled'
             @{
                 Name       = 'Port'
-                Expression = [regex]::Matches($_.Bindings, "[^:]*$").value[0]
+                Expression = { [regex]::Matches($_.Bindings, "[^:]*$").value[0] }
             }
             @{
                 Name       = 'RemoteIPRanges'
