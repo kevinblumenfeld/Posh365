@@ -230,8 +230,8 @@
     $Mailboxes.where{ $_.UserPrincipalName -ne $_.PrimarySmtpAddress } | Select-Object $UPNMatchProp | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_UpnNotMatch.csv')
 
     # Exchange Server
-    $Global:PP = $ProgressPreference
-    $Global:ProgressPreference = 'SilentlyContinue'
+    $PP = $global:ProgressPreference
+    $global:ProgressPreference = 'SilentlyContinue'
     Write-Verbose "Retrieving Exchange Servers"
     $ExServerList = Get-ExchangeServer
     $ExServerObject = foreach ($ExServer in $ExServerList) {
@@ -266,7 +266,7 @@
         'count'
         @{
             Name       = 'Max'
-            Expression = { '{0},{1}' -f ($_.Maxreceivesize).split('(')[0].trim(), ($_.MaxSendSize).split('(')[0].trim() }
+            Expression = { ($_.MaxMessageSize).split('(')[0].trim() }
         }
         @{
             Name       = 'Name'
@@ -301,7 +301,7 @@
         'count'
         @{
             Name       = 'Max'
-            Expression = { '{0},{1}' -f ($_.Maxreceivesize).split('(')[0].trim(), ($_.MaxSendSize).split('(')[0].trim() }
+            Expression = { ($_.MaxMessageSize).split('(')[0].trim() }
         }
         @{
             Name       = 'Name'
@@ -477,15 +477,15 @@
 
     # Exchange Public Folders
     Write-Verbose "Retrieving Public Folders"
-    $EA = $ErrorActionPreference
-    $ErrorActionPreference = 'Stop'
+    $EA = $global:ErrorActionPreference
+    $global:ErrorActionPreference = 'Stop'
     try {
         Get-EXOPublicFolder | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_PublicFolders.csv')
     }
     catch {
         Write-Host "$($_.Exception.Message)" -ForegroundColor DarkCyan
     }
-    $ErrorActionPreference = $EA
+    $global:ErrorActionPreference = $EA
     ##########################
     #### ACTIVE DIRECTORY ####
     ##########################
