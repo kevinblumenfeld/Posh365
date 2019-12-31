@@ -128,7 +128,7 @@
     $Mailboxes | Group-Object MaxReceiveSize, RecipientTypeDetails -NoElement | Select-Object @(
         @{
             Name       = 'Type'
-            Expression = { 'Mailbox' }
+            Expression = { 'MaxReceiveSize' }
         }
         'count'
         @{
@@ -145,7 +145,7 @@
     $Mailboxes | Group-Object MaxSendSize, RecipientTypeDetails -NoElement | Select-Object @(
         @{
             Name       = 'Type'
-            Expression = { 'Mailbox' }
+            Expression = { 'MaxSendSize' }
         }
         'count'
         @{
@@ -251,12 +251,29 @@
         }
     }
     $ExServerObject | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_Servers.csv')
-    $ProgressPreference = $PP
+    $ProgressPreference = 'SilentlyContinue'
 
     # Exchange Receive Connectors
     Write-Verbose "Retrieving Exchange Receive Connectors"
     $ReceiveConnectors = Get-ExchangeReceiveConnector | Sort-Object Identity
     $ReceiveConnectors | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_ReceiveConnectors.csv')
+
+    $ReceiveConnectors | Select-Object @(
+        @{
+            Name       = 'Type'
+            Expression = { 'ReceiveConnector' }
+        }
+        'count'
+        @{
+            Name       = 'Max'
+            Expression = { '{0},{1}' -f ($_.Maxreceivesize).split('(')[0].trim(), ($_.MaxSendSize).split('(')[0].trim() }
+        }
+        @{
+            Name       = 'Name'
+            Expression = { 'ReceiveConnector' }
+        }
+    ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_MessageLimits.csv') -Append
+
 
     # Exchange Receive Connector IPs
     Write-Verbose "Retrieving Exchange Receive Connector IPs"
@@ -274,7 +291,24 @@
 
     # Exchange Send Connectors
     Write-Verbose "Retrieving Exchange Send Connectors"
-    Get-ExchangeSendConnector | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_SendConnectors.csv')
+    $SendConnectors = Get-ExchangeSendConnector
+    $SendConnectors | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_SendConnectors.csv')
+    $SendConnectors | Select-Object @(
+        @{
+            Name       = 'Type'
+            Expression = { 'SendConnector' }
+        }
+        'count'
+        @{
+            Name       = 'Max'
+            Expression = { '{0},{1}' -f ($_.Maxreceivesize).split('(')[0].trim(), ($_.MaxSendSize).split('(')[0].trim() }
+        }
+        @{
+            Name       = 'Name'
+            Expression = { 'SendConnector' }
+        }
+    ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_MessageLimits.csv') -Append
+
 
     # Exchange Email Address Policies
     Write-Verbose "Retrieving Exchange Email Address Policies"
