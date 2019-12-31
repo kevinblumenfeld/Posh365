@@ -44,7 +44,7 @@
     $MailboxProp = @(
         'DisplayName', 'OrganizationalUnit', 'Office', 'RecipientTypeDetails', 'EmailAddressPolicyEnabled', 'MailboxGB'
         'ArchiveGB', 'DeletedGB', 'TotalGB', 'LastLogonTime', 'ItemCount', 'ArchiveState', 'ArchiveStatus'
-        'ArchiveName', 'MaxReceiveSize', 'MaxSendSize', 'ActiveSyncEnabled', 'OWAEnabled', 'ECPEnabled'
+        'ArchiveName', 'MaxReceiveSize', 'MaxSendSize', 'MapiHttpEnabled', 'ActiveSyncEnabled', 'OWAEnabled', 'ECPEnabled'
         'PopEnabled', 'ImapEnabled', 'MAPIEnabled', 'EwsEnabled', 'RecipientLimits', 'AcceptMessagesOnlyFrom'
         'AcceptMessagesOnlyFromDLMembers', 'ForwardingAddress', 'ForwardingSmtpAddress', 'DeliverToMailboxAndForward'
         'UserPrincipalName', 'PrimarySmtpAddress', 'Identity', 'AddressBookPolicy', 'RetentionPolicy', 'LitigationHoldEnabled'
