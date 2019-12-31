@@ -25,10 +25,10 @@ function Get-ExchangeSendConnector {
         Get-SendConnector | Select-Object @(
             'Name'
             'Enabled'
-            'ConnectorType'
-            'DNSRoutingEnabled'
-            'TlsDomain'
-            'TlsAuthLevel'
+            @{
+                Name       = 'SourceTransportServers'
+                Expression = { @($_.SourceTransportServers) -ne '' -join '|' }
+            }
             @{
                 Name       = 'SmartHosts'
                 Expression = { @($_.SmartHosts) -ne '' -join '|' }
@@ -37,13 +37,13 @@ function Get-ExchangeSendConnector {
                 Name       = 'AddressSpaces'
                 Expression = { @($_.AddressSpaces) -ne '' -join '|' }
             }
+            'MaxMessageSize'
+            'DNSRoutingEnabled'
+            'TlsDomain'
+            'TlsAuthLevel'
             @{
                 Name       = 'ConnectedDomains'
                 Expression = { @($_.ConnectedDomains) -ne '' -join '|' }
-            }
-            @{
-                Name       = 'SourceTransportServers'
-                Expression = { @($_.SourceTransportServers) -ne '' -join '|' }
             }
             'Port'
             'TlsCertificateName'
@@ -72,6 +72,7 @@ function Get-ExchangeSendConnector {
             'WhenCreated'
             'Id'
             'IsValid'
+            'Guid'
         )
     }
     Process {

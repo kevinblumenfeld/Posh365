@@ -27,15 +27,21 @@ function Get-ExchangeReceiveConnector {
             'Server'
             'Enabled'
             @{
+                Name       = 'Port'
+                Expression = [regex]::Matches($RecCon.Bindings, "[^:]*$").value[0]
+            }
+            @{
                 Name       = 'RemoteIPRanges'
                 Expression = { @($_.RemoteIPRanges) -ne '' -join '|' }
             }
+            'PermissionGroups'
+            'AuthMechanism'
+            'MaxMessageSize'
+            'Guid'
             @{
                 Name       = 'Bindings'
                 Expression = { @($_.Bindings) -ne '' -join '|' }
             }
-            'PermissionGroups'
-            'AuthMechanism'
         )
     }
     Process {

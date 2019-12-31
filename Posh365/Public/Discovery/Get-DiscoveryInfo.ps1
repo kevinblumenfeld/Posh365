@@ -124,6 +124,78 @@
     $Mailboxes | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeMailboxes.csv')
     $Mailboxes | Select-Object $MailboxProp | Sort-Object DisplayName | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_Mailboxes.csv')
 
+    $Mailboxes | Group-Object MaxReceiveSize, RecipientTypeDetails -NoElement | Select-Object @(
+        @{
+            Name       = 'Type'
+            Expression = { 'Mailbox' }
+        }
+        'count'
+        @{
+            Name       = 'MaxReceiveSize'
+            Expression = { ($_.Name.split(',')[0]).split('(')[0] }
+        }
+        @{
+            Name       = 'Name'
+            Expression = { [regex]::Matches($($_.Name), "[^,]*$").value[0] }
+        }
+    ) | Sort-Object count -Descending | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_MessageLimits.csv') -Append
+
+
+    $Mailboxes | Group-Object MaxSendSize, RecipientTypeDetails -NoElement | Select-Object @(
+        @{
+            Name       = 'Type'
+            Expression = { 'Mailbox' }
+        }
+        'count'
+        @{
+            Name       = 'MaxSendSize'
+            Expression = { ($_.Name.split(',')[0]).split('(')[0] }
+        }
+        @{
+            Name       = 'Name'
+            Expression = { [regex]::Matches($($_.Name), "[^,]*$").value[0] }
+        }
+    ) | Sort-Object count -Descending | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_MessageLimits.csv') -Append
+
+
+    Get-TransportRule | Where-Object { $_.MessageSizeOver -or $_.AttachmentSizeOver } | Select-Object @(
+        @{
+            Name       = 'Type'
+            Expression = { 'TransportRule' }
+        }
+        'count'
+        @{
+            Name       = 'Max'
+            Expression = { if ($_.MessageSizeOver -and $_.AttachmentSizeOver) {
+                    '{0},{1}' -f ($_.MessageSizeOver).split('(')[0].trim(), ($_.AttachmentSizeOver).split('(')[0].trim()
+                }
+                elseif ($_.MessageSizeOver) { '{0}' -f ($_.MessageSizeOver).split('(')[0].trim() }
+                else { '{0}' -f ($_.AttachmentSizeOver).split('(')[0].trim() }
+            }
+        }
+        @{
+            Name       = 'Name'
+            Expression = { $_.Name }
+        }
+    ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_MessageLimits.csv') -Append
+
+    Get-TransportConfig | Select-Object @(
+        @{
+            Name       = 'Type'
+            Expression = { 'TransportConfig' }
+        }
+        'count'
+        @{
+            Name       = 'Max'
+            Expression = { '{0},{1}' -f ($_.Maxreceivesize).split('(')[0].trim(), ($_.MaxSendSize).split('(')[0].trim() }
+        }
+        @{
+            Name       = 'Type'
+            Expression = { 'TransportConfig' }
+        }
+    ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_MessageLimits.csv') -Append
+
+
     # Exchange Mailboxes Types
     Write-Verbose "Retrieving Exchange Mailbox Types"
     $Mailboxes | Group-Object RecipientTypeDetails | Select-Object name, count | Sort-Object -Property count -Descending |
@@ -364,6 +436,10 @@
         'UserPrincipalName'
         'OrganizationalUnit'
     ) | Sort-Object DisplayName | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_EmailAddressPolicyDisabled.csv')
+
+    # Exchange Public Folders
+    Write-Verbose "Retrieving Public Folders"
+    Get-EXOPublicFolder | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_PublicFolders.csv')
 
     ##########################
     #### ACTIVE DIRECTORY ####
