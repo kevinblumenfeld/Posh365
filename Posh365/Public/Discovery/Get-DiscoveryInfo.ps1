@@ -270,7 +270,7 @@
         }
         @{
             Name       = 'Name'
-            Expression = { 'ReceiveConnector' }
+            Expression = { $_.Identity }
         }
     ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_MessageLimits.csv') -Append
 
@@ -305,7 +305,7 @@
         }
         @{
             Name       = 'Name'
-            Expression = { 'SendConnector' }
+            Expression = { $_.Name }
         }
     ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_MessageLimits.csv') -Append
 
