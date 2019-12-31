@@ -124,6 +124,7 @@
     $Mailboxes | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeMailboxes.csv')
     $Mailboxes | Select-Object $MailboxProp | Sort-Object DisplayName | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_Mailboxes.csv')
 
+    Remove-Item -Path (Join-Path -Path $CSV -ChildPath 'Ex_MessageLimits.csv') -Force -ErrorAction SilentlyContinue
     $Mailboxes | Group-Object MaxReceiveSize, RecipientTypeDetails -NoElement | Select-Object @(
         @{
             Name       = 'Type'
