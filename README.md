@@ -44,3 +44,4 @@ _Syntax_: https://github.com/kevinblumenfeld/Posh365Demo
 ### Office365 Endpoints
 * **Get-OfficeEndpoints** URLs and IPs, initial and "changes since"
 
+![ME3V6nNhwV](https://user-images.githubusercontent.com/28877715/71635906-fcb6a980-2bf6-11ea-927e-03c9bda8f2a4.gif)
