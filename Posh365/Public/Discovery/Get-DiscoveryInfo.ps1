@@ -131,7 +131,7 @@
         }
         'count'
         @{
-            Name       = 'MaxReceiveSize'
+            Name       = 'Max'
             Expression = { ($_.Name.split(',')[0]).split('(')[0] }
         }
         @{
@@ -148,7 +148,7 @@
         }
         'count'
         @{
-            Name       = 'MaxSendSize'
+            Name       = 'Max'
             Expression = { ($_.Name.split(',')[0]).split('(')[0] }
         }
         @{
@@ -190,7 +190,7 @@
             Expression = { '{0},{1}' -f ($_.Maxreceivesize).split('(')[0].trim(), ($_.MaxSendSize).split('(')[0].trim() }
         }
         @{
-            Name       = 'Type'
+            Name       = 'Name'
             Expression = { 'TransportConfig' }
         }
     ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_MessageLimits.csv') -Append
@@ -439,8 +439,15 @@
 
     # Exchange Public Folders
     Write-Verbose "Retrieving Public Folders"
-    Get-EXOPublicFolder | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_PublicFolders.csv')
-
+    $EA = $ErrorActionPreference
+    $ErrorActionPreference = 'Stop'
+    try {
+        Get-EXOPublicFolder | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_PublicFolders.csv')
+    }
+    catch {
+        $_.Exception.Message
+    }
+    $ErrorActionPreference = $EA
     ##########################
     #### ACTIVE DIRECTORY ####
     ##########################
