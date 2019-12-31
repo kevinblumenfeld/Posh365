@@ -230,8 +230,8 @@
     $Mailboxes.where{ $_.UserPrincipalName -ne $_.PrimarySmtpAddress } | Select-Object $UPNMatchProp | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_UpnNotMatch.csv')
 
     # Exchange Server
-    $PP = $ProgressPreference
-    $ProgressPreference = 'SilentlyContinue'
+    $Global:PP = $ProgressPreference
+    $Global:ProgressPreference = 'SilentlyContinue'
     Write-Verbose "Retrieving Exchange Servers"
     $ExServerList = Get-ExchangeServer
     $ExServerObject = foreach ($ExServer in $ExServerList) {
@@ -251,7 +251,7 @@
         }
     }
     $ExServerObject | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_Servers.csv')
-    $ProgressPreference = 'SilentlyContinue'
+    $Global:ProgressPreference = $PP
 
     # Exchange Receive Connectors
     Write-Verbose "Retrieving Exchange Receive Connectors"
