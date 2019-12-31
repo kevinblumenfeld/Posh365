@@ -96,6 +96,9 @@
         'Name', 'DistinguishedName', 'Identity', 'ObjectCategory', 'WhenChanged', 'WhenCreated'
         'WhenChangedUTC', 'WhenCreatedUTC', 'Guid', 'IsValid', 'ObjectState'
     )
+    $ActiveSyncRule = @(
+        'Name', 'AccessLevel', 'QueryString', 'WhenCreated', 'WhenChanged', 'Guid'
+    )
     $ADUsersProp = @(
         'DisplayName', 'OU(CN)', 'Office', 'Department', 'Company', 'Enabled'
         'InheritanceBroken', 'UserPrincipalName', 'PrimarySmtpAddress', 'Description'
@@ -452,6 +455,10 @@
     # Exchange Organization Relationship
     Write-Verbose "Retrieving Organization Relationship"
     Get-OrganizationRelationship | Select-Object $OrganizationRelationshipProp | Sort-Object Id | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OrganizationRelationship.csv')
+
+    # Exchange ActiveSync Device Access Rules
+    Write-Verbose "Retrieving ActiveSync Device Access Rules"
+    Get-ActiveSyncDeviceAccessRule | Select-Object $ActiveSyncRule | Sort-Object Name | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_ActiveSyncRules.csv')
 
     # Exchange Journal Rule
     Write-Verbose "Retrieving Journal Rule"
