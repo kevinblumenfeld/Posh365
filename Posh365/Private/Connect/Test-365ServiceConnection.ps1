@@ -24,21 +24,37 @@ function Test-365ServiceConnection {
         switch ($true) {
             $ExchangeOnline {
                 $tenantEX = (Get-AcceptedDomain).where( { $_.Default }).domainname.split('.')[0]
-                if ($tenantEX) { $tenant = $tenantEX } else { $ConnectHash.Add('EXO2', $true) }
+                if ($tenantEX) {
+                    $tenant = $tenantEX
+                    $ConnectHash.Remove('EXO2', $true)
+                }
+                else { $ConnectHash.Add('EXO2', $true) }
             }
             $AzureAD {
-                $tenantAZ = ((Get-AzureADTenantDetail -ErrorAction SilentlyContinue).verifiedDomains | Where-Object { $_.initial -eq "$true" }).name.split(".")[0]
-                if ($tenantAZ) { $tenant = $tenantAZ } else { $ConnectHash.Add('AzureAD', $true) }
+                $tenantAZ = ((Get-AzureADTenantDetail).verifiedDomains | Where-Object { $_.initial -eq "$true" }).name.split(".")[0]
+                if ($tenantAZ) {
+                    $tenant = $tenantAZ
+                    $ConnectHash.Remove('AzureAD', $true)
+                }
+                else { $ConnectHash.Add('AzureAD', $true) }
 
             }
             $MSOnline {
-                $tenantMS = (Get-MsolDomain -ErrorAction SilentlyContinue).where( { $_.IsInitial }).name.split('.')[0]
-                if ($tenantMS) { $tenant = $tenantMS } else { $ConnectHash.Add('MSOnline', $true) }
+                $tenantMS = (Get-MsolDomain).where( { $_.IsInitial }).name.split('.')[0]
+                if ($tenantMS) {
+                    $tenant = $tenantMS
+                    $ConnectHash.Remove('MSOnline', $true)
+                }
+                else { $ConnectHash.Add('MSOnline', $true) }
 
             }
             $Compliance {
                 $tenantCO = (Get-Group | Select-Object -First 1).organizationalunit.replace('.onmicrosoft.com/Configuration', '').split('/')[2]
-                if ($tenantCO) { $tenant = $tenantCO } else { $ConnectHash.Add('Compliance', $true) }
+                if ($tenantCO) {
+                    $tenant = $tenantCO
+                    $ConnectHash.Remove('Compliance', $true)
+                }
+                else { $ConnectHash.Add('Compliance', $true) }
             }
             Default { $tenant }
         }
