@@ -1,9 +1,10 @@
-﻿Function Get-DiscoveryInfo {
+﻿function Get-DiscoveryOnPrem {
     <#
     .SYNOPSIS
-    On-Premises Active Directory discovery
+    On-Premises Active Directory and Exchange Discovery
 
     .EXAMPLE
+    Get-DiscoveryOnPrem -Verbose
 
     #>
     [CmdletBinding(SupportsShouldProcess = $true)]
