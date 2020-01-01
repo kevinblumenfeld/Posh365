@@ -24,10 +24,6 @@ function Get-365Info {
         [string]
         $Tenant,
 
-        [Parameter(Mandatory)]
-        [string]
-        $Path,
-
         [Parameter()]
         [switch]
         $Compliance,
@@ -82,18 +78,66 @@ function Get-365Info {
 
         [Parameter()]
         [switch]
-        $CreateMSPCompleteBulkFile
+        $CreateBitTitanFile
     )
     end {
-        $TenantPath = Join-Path $Path $Tenant
-        $DetailedTenantPath = Join-Path  $TenantPath 'Detailed'
-        $ItemSplat = @{
-            Type        = 'Directory'
-            Force       = $true
-            ErrorAction = 'SilentlyContinue'
+        if ($PSBoundParameters.Count -eq '1') {
+            $Menu = @(
+                'ExchangeOnline', 'MSOnline', 'AzureAD', 'LicensingReport'
+                'LicensingReport','PermissionsReport','FolderPermissionReport'
+                'Compliance', 'CreateExcel','CreateBitTitanFile'
+            ) | ForEach-Object {
+                [PSCustomObject]@{
+                    DiscoveryItems = $_
+                }
+            } | Out-GridView -OutputMode Single -Title 'Choose Service(s) to Discover. Then click OK'
         }
-        $null = New-Item @ItemSplat -Path $TenantPath
-        $null = New-Item @ItemSplat -Path $DetailedTenantPath
+        $EA = $ErrorActionPreference
+        $ErrorActionPreference = 'SilentlyContinue'
+        $ConnectHash = @{ }
+        # Create Test-365ServiceConnection
+        $tenantEX = (Get-AcceptedDomain).where( { $_.Default }).domainname.split('.')[0]
+        $tenantAZ = ((Get-AzureADTenantDetail -ErrorAction SilentlyContinue).verifiedDomains | Where-Object { $_.initial -eq "$true" }).name.split(".")[0]
+        $tenantMS = (Get-MsolDomain -ErrorAction SilentlyContinue).where( { $_.IsInitial }).name.split('.')[0]
+        $tenantCO = (Get-Group | Select-Object -First 1).organizationalunit.replace('.onmicrosoft.com/Configuration', '').split('/')[2]
+        $ErrorActionPreference = $EA
+
+        if ($LicensingReport -or $PermissionsReport -or $FolderPermissionReport -or $ExchangeOnline) {
+            if ($tenantEX) { $Tenant = $TenantEX } else { $ConnectHash.Add('EXO2', $true) }
+        }
+        if ($AzureAD) {
+            if ($tenantAZ) { $Tenant = $tenantAZ } else { $ConnectHash.Add('AzureAD', $true) }
+        }
+        if ($MSOnline) {
+            if ($tenantMS) { $Tenant = $tenantMS } else { $ConnectHash.Add('MSOnline', $true) }
+        }
+        if ($Compliance) {
+            if ($tenantCO) { $Tenant = $tenantCO } else { $ConnectHash.Add('Compliance', $true) }
+        }
+        $ConnectionType = 'Connect without MFA', 'Connect with MFA' | ForEach-Object {
+            [PSCustomObject]@{
+                ConnectionType = $_
+            }
+        } | Out-GridView -OutputMode Single -Title ('We will connect you to {0}' -f ($ConnectHash.keys -join ', '))
+        if ($ConnectHash.Count) {
+            $ConnectHash.Add('Tenant', $tenant)
+            if ($ConnectionType.ConnectionType -like "*without*") {
+                Connect-Cloud @ConnectHash
+            }
+            else {
+                Connect-CloudMFA @ConnectHash
+            }
+        }
+
+        $PoshPath = Join-Path ([Environment]::GetFolderPath("Desktop")) -ChildPath 'Posh365'
+        $DiscoPath = Join-Path $PoshPath -ChildPath 'Discovery'
+        $TenantPath = Join-Path $DiscoPath -ChildPath $Tenant
+        $Detailed = Join-Path $TenantPath -ChildPath 'Detailed'
+        $CSV = Join-Path $TenantPath -ChildPath 'CSV'
+        $null = New-Item -ItemType Directory -Path $DiscoPath -ErrorAction SilentlyContinue
+        $null = New-Item -ItemType Directory -Path $TenantPath -ErrorAction SilentlyContinue
+        $null = New-Item -ItemType Directory -Path $Detailed -ErrorAction SilentlyContinue
+        $null = New-Item -ItemType Directory -Path $CSV -ErrorAction SilentlyContinue
 
         $ExportCSVSplat = @{
             NoTypeInformation = $true
@@ -205,76 +249,76 @@ function Get-365Info {
             'ExchangeVersion', 'DistinguishedName', 'ObjectCategory', 'ObjectClass', 'WhenChanged', 'WhenCreated', 'WhenChangedUTC'
             'WhenCreatedUTC', 'ExchangeObjectId', 'OriginatingServer', 'ObjectState'
         )
-        $MSOL_Spn = (Join-Path $TenantPath 'MSOL_Spn.csv')
-        $MSOL_Upn = (Join-Path $TenantPath 'MSOL_Upn.csv')
-        $MSOL_Users = (Join-Path $TenantPath 'MSOL_Users.csv')
-        $MSOL_MFAUsers = (Join-Path $TenantPath 'MSOL_MFAUsers.csv')
-        $MSOL_Roles = (Join-Path $TenantPath 'MSOL_Roles.csv')
-        $MSOL_Groups = (Join-Path $TenantPath 'MSOL_Groups.csv')
-        $MSOL_Groups_Type = (Join-Path $TenantPath 'MSOL_GroupTypes.csv')
-        $MSOL_Users_Detailed = (Join-Path $DetailedTenantPath 'MSOL_Users_Detailed.csv')
+        $MSOL_Spn = (Join-Path $CSV 'MSOL_Spn.csv')
+        $MSOL_Upn = (Join-Path $CSV 'MSOL_Upn.csv')
+        $MSOL_Users = (Join-Path $CSV 'MSOL_Users.csv')
+        $MSOL_MFAUsers = (Join-Path $CSV 'MSOL_MFAUsers.csv')
+        $MSOL_Roles = (Join-Path $CSV 'MSOL_Roles.csv')
+        $MSOL_Groups = (Join-Path $CSV 'MSOL_Groups.csv')
+        $MSOL_Groups_Type = (Join-Path $CSV 'MSOL_GroupTypes.csv')
+        $MSOL_Users_Detailed = (Join-Path $Detailed 'MSOL_Users_Detailed.csv')
 
-        $AzureAD_Roles = (Join-Path $TenantPath 'AzureAD_Roles.csv')
-        $AzureAD_Users = (Join-Path $DetailedTenantPath 'AzureAD_Users.csv')
-        $AzureAD_Guests = (Join-Path $DetailedTenantPath 'AzureAD_Guests.csv')
-        $AzureAD_Devices = (Join-Path $TenantPath 'AzureAD_Devices.csv')
+        $AzureAD_Roles = (Join-Path $CSV 'AzureAD_Roles.csv')
+        $AzureAD_Users = (Join-Path $Detailed 'AzureAD_Users.csv')
+        $AzureAD_Guests = (Join-Path $Detailed 'AzureAD_Guests.csv')
+        $AzureAD_Devices = (Join-Path $CSV 'AzureAD_Devices.csv')
 
-        $EXO_TransportRules_Detailed = (Join-Path $DetailedTenantPath 'EXO_TransportRules_Detailed.csv')
-        $EXO_TransportRuleCollection = (Join-Path $DetailedTenantPath 'EXO_TransportRuleCollection.xml')
-        $EXO_TransportRules = (Join-Path $TenantPath 'EXO_TransportRules.csv')
-        $EXO_OutboundConnectors = (Join-Path $TenantPath 'EXO_OutboundConnectors.csv')
-        $EXO_InboundConnectors = (Join-Path $TenantPath 'EXO_InboundConnectors.csv')
-        $EXO_Roles = (Join-Path $TenantPath 'EXO_Roles.csv')
-        $EXO_Contacts = (Join-Path $TenantPath 'EXO_Contacts.csv')
-        $EXO_ContactsSync = (Join-Path $DetailedTenantPath 'EXO_ContactsSync.csv')
-        $EXO_Recipients = (Join-Path $TenantPath 'EXO_Recipients.csv')
-        $EXO_RecipientTypes = (Join-Path $TenantPath 'EXO_RecipientTypes.csv')
-        $EXO_RecipientEmails = (Join-Path $TenantPath 'EXO_RecipientEmails.csv')
-        $EXO_RecipientDomains = (Join-Path $TenantPath 'EXO_RecipientDomains.csv')
-        $EXO_Groups = (Join-Path $TenantPath 'EXO_Groups.csv')
-        $EXO_GroupsSync = (Join-Path $DetailedTenantPath 'EXO_GroupsSync.csv')
-        $EXO_GroupMembers = (Join-Path $TenantPath 'EXO_GroupMembers.csv')
-        $EXO_GroupMembersSMTP = (Join-Path $TenantPath 'EXO_GroupMembersSMTP.csv')
-        $EXO_Mailboxes = (Join-Path $TenantPath 'EXO_Mailboxes.csv')
-        $EXO_MailboxTypes = (Join-Path $TenantPath 'EXO_MailboxTypes.csv')
-        $EXO_Emails = (Join-Path $TenantPath 'EXO_Emails.csv')
-        $EXO_Domains = (Join-Path $TenantPath 'EXO_Domains.csv')
-        $EXO_MailboxesSync = (Join-Path $DetailedTenantPath 'EXO_MailboxesSync.csv')
-        $EXO_ResourceMailboxes = (Join-Path $TenantPath 'EXO_ResourceMailboxes.csv')
-        $EXO_RetentionPolicies = (Join-Path $TenantPath 'EXO_RetentionPolicies.csv')
-        $EXO_AcceptedDomains = (Join-Path $TenantPath 'EXO_AcceptedDomains.csv')
-        $EXO_RemoteDomains = (Join-Path $TenantPath 'EXO_RemoteDomains.csv')
-        $EXO_OrganizationConfig = (Join-Path $TenantPath 'EXO_OrganizationConfig.csv')
-        $EXO_OrganizationRelationship = (Join-Path $TenantPath 'EXO_OrganizationRelationship.csv')
-        $EXO_Recipients_Detailed = (Join-Path $DetailedTenantPath 'EXO_Recipients_Detailed.csv')
-        $EXO_Groups_Detailed = (Join-Path $DetailedTenantPath 'EXO_Groups_Detailed.csv')
-        $EXO_Mailboxes_Detailed = (Join-Path $DetailedTenantPath 'EXO_Mailboxes_Detailed.csv')
-        $EXO_Permissions = (Join-Path $TenantPath 'EXO_Permissions.csv')
-        $EXO_FolderPermissions = (Join-Path $TenantPath 'EXO_FolderPermissions.csv')
-        $EXO_PermissionsDG = (Join-Path $TenantPath 'EXO_DGPermissions.csv')
-        $EXO_DirSyncCount = (Join-Path $TenantPath 'EXO_DirSyncCount.csv')
-        $EXO_AllRecipientEmails = (Join-Path $DetailedTenantPath 'EXO_AllRecipientEmails.csv')
-        $365_AllEmails = (Join-Path $TenantPath '365_AllEmails.csv')
-        # $EXO_UniqueEmails = (Join-Path $DetailedTenantPath 'EXO_UniqueEmails.csv')
+        $EXO_TransportRules_Detailed = (Join-Path $Detailed 'EXO_TransportRules_Detailed.csv')
+        $EXO_TransportRuleCollection = (Join-Path $Detailed 'EXO_TransportRuleCollection.xml')
+        $EXO_TransportRules = (Join-Path $CSV 'EXO_TransportRules.csv')
+        $EXO_OutboundConnectors = (Join-Path $CSV 'EXO_OutboundConnectors.csv')
+        $EXO_InboundConnectors = (Join-Path $CSV 'EXO_InboundConnectors.csv')
+        $EXO_Roles = (Join-Path $CSV 'EXO_Roles.csv')
+        $EXO_Contacts = (Join-Path $CSV 'EXO_Contacts.csv')
+        $EXO_ContactsSync = (Join-Path $Detailed 'EXO_ContactsSync.csv')
+        $EXO_Recipients = (Join-Path $CSV 'EXO_Recipients.csv')
+        $EXO_RecipientTypes = (Join-Path $CSV 'EXO_RecipientTypes.csv')
+        $EXO_RecipientEmails = (Join-Path $CSV 'EXO_RecipientEmails.csv')
+        $EXO_RecipientDomains = (Join-Path $CSV 'EXO_RecipientDomains.csv')
+        $EXO_Groups = (Join-Path $CSV 'EXO_Groups.csv')
+        $EXO_GroupsSync = (Join-Path $Detailed 'EXO_GroupsSync.csv')
+        $EXO_GroupMembers = (Join-Path $CSV 'EXO_GroupMembers.csv')
+        $EXO_GroupMembersSMTP = (Join-Path $CSV 'EXO_GroupMembersSMTP.csv')
+        $EXO_Mailboxes = (Join-Path $CSV 'EXO_Mailboxes.csv')
+        $EXO_MailboxTypes = (Join-Path $CSV 'EXO_MailboxTypes.csv')
+        $EXO_Emails = (Join-Path $CSV 'EXO_Emails.csv')
+        $EXO_Domains = (Join-Path $CSV 'EXO_Domains.csv')
+        $EXO_MailboxesSync = (Join-Path $Detailed 'EXO_MailboxesSync.csv')
+        $EXO_ResourceMailboxes = (Join-Path $CSV 'EXO_ResourceMailboxes.csv')
+        $EXO_RetentionPolicies = (Join-Path $CSV 'EXO_RetentionPolicies.csv')
+        $EXO_AcceptedDomains = (Join-Path $CSV 'EXO_AcceptedDomains.csv')
+        $EXO_RemoteDomains = (Join-Path $CSV 'EXO_RemoteDomains.csv')
+        $EXO_OrganizationConfig = (Join-Path $CSV 'EXO_OrganizationConfig.csv')
+        $EXO_OrganizationRelationship = (Join-Path $CSV 'EXO_OrganizationRelationship.csv')
+        $EXO_Recipients_Detailed = (Join-Path $Detailed 'EXO_Recipients_Detailed.csv')
+        $EXO_Groups_Detailed = (Join-Path $Detailed 'EXO_Groups_Detailed.csv')
+        $EXO_Mailboxes_Detailed = (Join-Path $Detailed 'EXO_Mailboxes_Detailed.csv')
+        $EXO_Permissions = (Join-Path $CSV 'EXO_Permissions.csv')
+        $EXO_FolderPermissions = (Join-Path $CSV 'EXO_FolderPermissions.csv')
+        $EXO_PermissionsDG = (Join-Path $CSV 'EXO_DGPermissions.csv')
+        $EXO_DirSyncCount = (Join-Path $CSV 'EXO_DirSyncCount.csv')
+        $EXO_AllRecipientEmails = (Join-Path $Detailed 'EXO_AllRecipientEmails.csv')
+        $365_AllEmails = (Join-Path $CSV '365_AllEmails.csv')
+        # $EXO_UniqueEmails = (Join-Path $Detailed 'EXO_UniqueEmails.csv')
 
-        $EOP_ConnectionFilters = (Join-Path $TenantPath 'EOP_ConnectionFilters.csv')
-        $EOP_ContentPolicy = (Join-Path $TenantPath 'EOP_ContentPolicy.csv')
-        $EOP_ContentRule = (Join-Path $TenantPath 'EOP_ContentRules.csv')
-        $EOP_OutboundSpamPolicy = (Join-Path $TenantPath 'EOP_OutboundSpamPolicy.csv')
-        $EOP_OutboundSpamRule = (Join-Path $TenantPath 'EOP_OutboundSpamRules.csv')
-        $EOP_OutboundSpamPolicy = (Join-Path $TenantPath 'EOP_OutboundSpamPolicy.csv')
+        $EOP_ConnectionFilters = (Join-Path $CSV 'EOP_ConnectionFilters.csv')
+        $EOP_ContentPolicy = (Join-Path $CSV 'EOP_ContentPolicy.csv')
+        $EOP_ContentRule = (Join-Path $CSV 'EOP_ContentRules.csv')
+        $EOP_OutboundSpamPolicy = (Join-Path $CSV 'EOP_OutboundSpamPolicy.csv')
+        $EOP_OutboundSpamRule = (Join-Path $CSV 'EOP_OutboundSpamRules.csv')
+        $EOP_OutboundSpamPolicy = (Join-Path $CSV 'EOP_OutboundSpamPolicy.csv')
 
-        $Compliance_Roles = (Join-Path $TenantPath 'Compliance_Roles.csv')
-        $Compliance_DLPPolicies = (Join-Path $TenantPath 'Compliance_DLPPolicies.csv')
-        $Compliance_RetentionPolicies = (Join-Path $TenantPath 'Compliance_RetentionPolicies.csv')
-        $Compliance_AlertPolicies = (Join-Path $TenantPath 'Compliance_AlertPolicies.csv')
+        $Compliance_Roles = (Join-Path $CSV 'Compliance_Roles.csv')
+        $Compliance_DLPPolicies = (Join-Path $CSV 'Compliance_DLPPolicies.csv')
+        $Compliance_RetentionPolicies = (Join-Path $CSV 'Compliance_RetentionPolicies.csv')
+        $Compliance_AlertPolicies = (Join-Path $CSV 'Compliance_AlertPolicies.csv')
 
-        $365_UnifiedGroups = (Join-Path $TenantPath '365_UnifiedGroups.csv')
-        $365_UnifiedGroupReport = (Join-Path $TenantPath '365_UnifiedGroupReport.csv')
-        $365_Sku = (Join-Path $TenantPath '365_Skus.csv')
-        $365_LicenseOptions = (Join-Path $TenantPath '365_LicenseOptions.csv')
+        $365_UnifiedGroups = (Join-Path $CSV '365_UnifiedGroups.csv')
+        $365_UnifiedGroupReport = (Join-Path $CSV '365_UnifiedGroupReport.csv')
+        $365_Sku = (Join-Path $CSV '365_Skus.csv')
+        $365_LicenseOptions = (Join-Path $CSV '365_LicenseOptions.csv')
 
-        $MSP_BulkFile = (Join-Path $TenantPath 'Batches.csv')
+        $MSP_BulkFile = (Join-Path $CSV 'Batches.csv')
 
         switch ($true) {
             { $MSOnline } {
@@ -342,7 +386,6 @@ function Get-365Info {
                 $MFAHash = Get-MsolUserMFAHash -MsolUserList $MsolUserDetailedImport
             }
             { $AzureAD } {
-
                 Write-Verbose "Gathering AzureAD Roles"
                 If ($MFAHash) {
                     Get-AzureADRoleReport -MFAHash $MFAHash | Export-Csv $AzureAD_Roles @ExportCSVSplat
@@ -513,7 +556,7 @@ function Get-365Info {
                 $OnePerExoEmail | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' -and $_.Domain -and $_.Domain -notmatch "SPO_" } |
                 Group-Object domain | Select-Object name, count | Sort-Object -Property count -Descending | Export-Csv $EXO_Domains @ExportCSVSplat
 
-                $DirSyncCount = Get-ChildItem $DetailedTenantPath -Filter *sync.csv | ForEach-Object {
+                $DirSyncCount = Get-ChildItem $Detailed -Filter *sync.csv | ForEach-Object {
                     $BaseName = $_.BaseName
                     Import-Csv $_.FullName | Select-Object @(
                         @{
@@ -583,24 +626,24 @@ function Get-365Info {
             }
             { $LicensingReport } {
                 Write-Verbose "Gathering Office 365 Licenses"
-                Get-CloudLicense -Path $DetailedTenantPath
-                $ColumnList = (Get-Content (Join-Path $DetailedTenantPath 365_Licenses.csv) | ForEach-Object { $_.split(',').count } | Sort-Object -Descending)[0]
-                Import-Csv -Path (Join-Path $DetailedTenantPath 365_Licenses.csv) -Header (1..$ColumnList | ForEach-Object { "Column$_" }) |
-                Export-Csv -Path (Join-Path $TenantPath 365_LicenseReport.csv) -NoTypeInformation
+                Get-CloudLicense -Path $Detailed
+                $ColumnList = (Get-Content (Join-Path $Detailed 365_Licenses.csv) | ForEach-Object { $_.split(',').count } | Sort-Object -Descending)[0]
+                Import-Csv -Path (Join-Path $Detailed 365_Licenses.csv) -Header (1..$ColumnList | ForEach-Object { "Column$_" }) |
+                Export-Csv -Path (Join-Path $CSV 365_LicenseReport.csv) -NoTypeInformation
             }
             { $PermissionsReport } {
                 Write-Verbose "Gathering Mailbox Delegate Permissions"
-                Get-EXOMailboxPerms -Path $DetailedTenantPath
+                Get-EXOMailboxPerms -Path $Detailed
 
                 'EXO_FullAccess.csv', 'EXO_SendOnBehalf.csv', 'EXO_SendAs.csv' | ForEach-Object {
-                    Import-Csv (Join-Path $DetailedTenantPath $_) -ErrorAction SilentlyContinue | Where-Object { $_ } |
+                    Import-Csv (Join-Path $Detailed $_) -ErrorAction SilentlyContinue | Where-Object { $_ } |
                     Export-Csv $EXO_Permissions -NoTypeInformation -Append }
                 <#
                Write-Verbose "Gathering Distribution Group Delegate Permissions"
-                 Get-EXODGPerms $DetailedTenantPath
+                 Get-EXODGPerms $Detailed
 
                 'EXO_DGSendOnBehalf.csv', 'EXO_DGSendAs.csv' | ForEach-Object {
-                    Import-Csv (Join-Path $DetailedTenantPath $_) -ErrorAction SilentlyContinue | Where-Object { $_ } |
+                    Import-Csv (Join-Path $Detailed $_) -ErrorAction SilentlyContinue | Where-Object { $_ } |
                     Export-Csv $EXO_PermissionsDG -NoTypeInformation -Append }
 
                 #>
@@ -632,7 +675,6 @@ function Get-365Info {
                     Export-Csv $EXO_FolderPermissions @ExportCSVSplat -Append
                 }
             }
-
             { $Compliance } {
                 Write-Verbose "Gathering Security and Compliance Roles"
                 if ($MFAHash) {
@@ -665,7 +707,7 @@ function Get-365Info {
                     ClearSheet              = $true
                     ErrorAction             = 'SilentlyContinue'
                 }
-                Get-ChildItem $TenantPath -Filter *.csv | Where-Object { $_.BaseName -ne '365_LicenseReport' } | Sort-Object BaseName -Descending |
+                Get-ChildItem $CSV -Filter "*.csv" | Where-Object { $_.BaseName -ne '365_LicenseReport' } | Sort-Object BaseName -Descending |
                 ForEach-Object { Import-Csv $_.fullname | Export-Excel @ExcelSplat -WorksheetName $_.basename }
 
                 $Excel365Licenses = @{
@@ -688,10 +730,10 @@ function Get-365Info {
                         New-ConditionalText Disabled
                     )
                 }
-                Import-Csv -Path (Join-Path $TenantPath 365_LicenseReport.csv) -ErrorAction SilentlyContinue | Export-Excel @Excel365Licenses
+                Import-Csv -Path (Join-Path $CSV 365_LicenseReport.csv) -ErrorAction SilentlyContinue | Export-Excel @Excel365Licenses
                 $ErrorActionPreference = $EA
             }
-            { $CreateMSPCompleteBulkFile } {
+            { $CreateBitTitanFile } {
                 $MsolHash = @{ }
                 Import-Csv $MSOL_Users | ForEach-Object {
                     $MsolHash.Add($_.UserPrincipalName, @{

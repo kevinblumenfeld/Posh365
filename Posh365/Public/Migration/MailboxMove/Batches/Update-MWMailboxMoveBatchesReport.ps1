@@ -5,7 +5,7 @@ function Update-MWMailboxMoveBatchesReport {
 
     .DESCRIPTION
     Updates Batches.xlsx with most recent data
-    When you re-run "Get-365Info -ExchangeOnline -CreateMSPCompleteBulkFile" to get latest mailbox report you will be given batches.csv. Ignore the xslx file you also get.
+    When you re-run "Get-365Info -ExchangeOnline -CreateBitTitanFile" to get latest mailbox report you will be given batches.csv. Ignore the xslx file you also get.
     use the -NewCsvFile to identify the batches.csv
     the -ReportPath parameter is where this function will provide the up to date Batches.xlsx file you can then upload to SharePoint (replacing the existing file)
 

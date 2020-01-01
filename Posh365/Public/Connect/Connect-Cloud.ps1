@@ -104,34 +104,62 @@ function Connect-Cloud {
     [CmdletBinding(SupportsShouldProcess = $true)]
     Param
     (
-        [parameter(Position = 0, Mandatory = $true)]
-        [string] $Tenant,
+        [Parameter(Position = 0, Mandatory)]
+        [string]
+        $Tenant,
 
-        [switch] $ExchangeOnline,
+        [Parameter()]
+        [switch]
+        $ExchangeOnline,
 
-        [switch] $EXO2,
+        [Parameter()]
+        [switch]
+        $EXO2,
 
-        [switch] $MSOnline,
+        [Parameter()]
+        [switch]
+        $MSOnline,
 
-        [switch] $All365,
+        [Parameter()]
+        [switch]
+        $All365,
 
-        [switch] $Azure,
+        [Parameter()]
+        [switch]
+        $Azure,
 
-        [switch] $Skype,
+        [Parameter()]
+        [switch]
+        $Skype,
 
-        [switch] $Teams,
+        [Parameter()]
+        [switch]
+        $Teams,
 
-        [switch] $SharePoint,
+        [Parameter()]
+        [switch]
+        $SharePoint,
 
-        [switch] $Compliance,
+        [Parameter()]
+        [switch]
+        $Compliance,
 
-        [switch] $AzureADver2,
+        [Parameter()]
+        [Alias('AzureADver2')]
+        [switch]
+        $AzureAD,
 
-        [switch] $MFA,
+        [Parameter()]
+        [switch]
+        $MFA,
 
-        [switch] $DeleteCreds,
+        [Parameter()]
+        [switch]
+        $DeleteCreds,
 
-        [switch] $EXOPrefix
+        [Parameter()]
+        [switch]
+        $EXOPrefix
     )
 
     Begin {
@@ -162,11 +190,11 @@ function Connect-Cloud {
             New-Item -ItemType Directory -Force -Path ($RootPath + $Tenant + "\logs\")
         }
         try {
-            Start-Transcript -ErrorAction Stop -path ($RootPath + $Tenant + "\logs\" + "transcript-" + ($(get-date -Format _yyyy-MM-dd_HH-mm-ss)) + ".txt")
+            Start-Transcript -ErrorAction Stop -path ($RootPath + $Tenant + "\logs\" + "transcript-" + ($(Get-Date -Format _yyyy-MM-dd_HH-mm-ss)) + ".txt")
         }
         catch {
             Stop-Transcript -ErrorAction SilentlyContinue
-            Start-Transcript -path ($RootPath + $Tenant + "\logs\" + "transcript-" + ($(get-date -Format _yyyy-MM-dd_HH-mm-ss)) + ".txt")
+            Start-Transcript -path ($RootPath + $Tenant + "\logs\" + "transcript-" + ($(Get-Date -Format _yyyy-MM-dd_HH-mm-ss)) + ".txt")
         }
         # Create KeyPath Directory
         if (-not (Test-Path $KeyPath)) {
