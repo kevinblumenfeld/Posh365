@@ -81,43 +81,44 @@ function Get-365Info {
         $CreateBitTitanFile
     )
     end {
-        $builtinParameters = @('ErrorAction','WarningAction','Verbose','ErrorVariable','WarningVariable','OutVariable','OutBuffer','Debug')
         if (($PSBoundParameters -notmatch 'Verbose').Count -eq '1') {
             $Menu = @(
                 'ExchangeOnline', 'MSOnline', 'AzureAD', 'LicensingReport'
-                'LicensingReport', 'PermissionsReport', 'FolderPermissionReport'
-                'Compliance', 'CreateExcel', 'CreateBitTitanFile'
+                'PermissionsReport', 'FolderPermissionReport', 'Compliance'
+                'CreateExcel', 'CreateBitTitanFile'
             ) | ForEach-Object {
                 [PSCustomObject]@{
                     DiscoveryItems = $_
                 }
             } | Out-GridView -OutputMode Multiple -Title 'Choose Service(s) to Discover. Then click OK'
+            if (-not $Menu) {
+                return
+            }
         }
-        if (-not $Menu) {
-            return
-        }
+
         $Script:ConnectHash = @{ }
         $ConnectHash.Add('Tenant', $tenant)
-        do {
-            $TenantName = switch ($Menu.DiscoveryItems) {
-                'ExchangeOnline' { Test-365ServiceConnection -Exchange }
-                'AzureAD' { Test-365ServiceConnection -AzureAD }
-                'MSOnline' { Test-365ServiceConnection -MSOnline }
-                'Compliance' { Test-365ServiceConnection -Compliance }
-                Default {
-                    $ConnectionType = 'Connect without MFA', 'Connect with MFA' | ForEach-Object {
-                        [PSCustomObject]@{
-                            ConnectionType = $_
-                        }
-                    } | Out-GridView -OutputMode Single -Title ('We will connect you to {0}' -f ($ConnectHash.keys -join ', '))
-                    if ($ConnectionType.ConnectionType -like "*without*") {
-                        Connect-Cloud @ConnectHash
-                    }
-                    else {
-                        Connect-CloudMFA @ConnectHash
-                    }
-                }
+        if ($Menu.DiscoveryItems -match 'ExchangeOnline' ) { $ConnectHash.Add('EXO2', $true) }
+        if ($Menu.DiscoveryItems -match 'AzureAD' ) { $ConnectHash.Add('AzureAD', $true) }
+        if ($Menu.DiscoveryItems -match 'MSOnline' ) { $ConnectHash.Add('MSOnline', $true) }
+        if ($Menu.DiscoveryItems -match 'Compliance' ) { $ConnectHash.Add('Compliance', $true) }
+        $ConnectionType = 'Connect without MFA', 'Connect with MFA' | ForEach-Object {
+            [PSCustomObject]@{
+                ConnectionType = $_
             }
+        } | Out-GridView -OutputMode Single -Title ('We will connect you to {0}' -f ($ConnectHash.keys -join ', '))
+        if ($ConnectionType.ConnectionType -like "*without*") {
+            Connect-Cloud @ConnectHash -Verbose:$false
+        }
+        elseif ($ConnectionType.ConnectionType -like "*with MFA*") {
+            Connect-CloudMFA @ConnectHash -Verbose:$false
+        }
+
+        do {
+            if ($Menu.DiscoveryItems -match 'ExchangeOnline' ) { $TenantName = Test-365ServiceConnection -ExchangeOnline }
+            if ($Menu.DiscoveryItems -match 'AzureAD' ) { $TenantName = Test-365ServiceConnection -AzureAD }
+            if ($Menu.DiscoveryItems -match 'MSOnline' ) { $TenantName = Test-365ServiceConnection -MSOnline }
+            if ($Menu.DiscoveryItems -match 'Compliance' ) { $TenantName = Test-365ServiceConnection -Compliance }
         } until ($TenantName)
 
         $PoshPath = Join-Path ([Environment]::GetFolderPath("Desktop")) -ChildPath 'Posh365'
@@ -125,11 +126,12 @@ function Get-365Info {
         $TenantPath = Join-Path $DiscoPath -ChildPath $TenantName
         $Detailed = Join-Path $TenantPath -ChildPath 'Detailed'
         $CSV = Join-Path $TenantPath -ChildPath 'CSV'
-        $null = New-Item -ItemType Directory -Path $DiscoPath -ErrorAction SilentlyContinue
-        $null = New-Item -ItemType Directory -Path $TenantPath -ErrorAction SilentlyContinue
-        $null = New-Item -ItemType Directory -Path $Detailed -ErrorAction SilentlyContinue
-        $null = New-Item -ItemType Directory -Path $CSV -ErrorAction SilentlyContinue
+        $null = New-Item -ItemType Directory -Path $DiscoPath  -ErrorAction SilentlyContinue
+        $null = New-Item -ItemType Directory -Path $TenantPath  -ErrorAction SilentlyContinue
+        $null = New-Item -ItemType Directory -Path $Detailed  -ErrorAction SilentlyContinue
+        $null = New-Item -ItemType Directory -Path $CSV  -ErrorAction SilentlyContinue
 
+        #region
         $ExportCSVSplat = @{
             NoTypeInformation = $true
             Encoding          = 'UTF8'
@@ -310,9 +312,9 @@ function Get-365Info {
         $365_LicenseOptions = (Join-Path $CSV '365_LicenseOptions.csv')
 
         $MSP_BulkFile = (Join-Path $CSV 'Batches.csv')
-
+        #endregion
         switch ($true) {
-            { $MSOnline } {
+            { $menu.DiscoveryItems -contains 'MSOnline' -or $MSOnline } {
                 Write-Verbose "Gathering Internal Domains Matching Azure AD Service Principal Names"
                 Get-DomainMatchingServicePrincipal | Export-Csv $MSOL_Spn @ExportCSVSplat
 
@@ -370,13 +372,13 @@ function Get-365Info {
                 Sort-Object -Property Count -Descending | Export-Csv $MSOL_Groups_Type @ExportCSVSplat
 
             }
-            { -not $MSOnline -and (Test-Path $MSOL_Users_Detailed) } {
+            { ($menu.DiscoveryItems -notcontains 'MSOnline' -or -not $MSOnline) -and (Test-Path $MSOL_Users_Detailed) } {
                 $MsolUserDetailedImport = Import-Csv $MSOL_Users_Detailed -ErrorAction SilentlyContinue
             }
             { $MsolUserDetailedImport } {
                 $MFAHash = Get-MsolUserMFAHash -MsolUserList $MsolUserDetailedImport
             }
-            { $AzureAD } {
+            { $menu.DiscoveryItems -contains 'AzureAD' -or $AzureAD } {
                 Write-Verbose "Gathering AzureAD Roles"
                 If ($MFAHash) {
                     Get-AzureADRoleReport -MFAHash $MFAHash | Export-Csv $AzureAD_Roles @ExportCSVSplat
@@ -408,7 +410,7 @@ function Get-365Info {
                 ) | Export-Csv $365_LicenseOptions @ExportCSVSplat
 
             }
-            { $ExchangeOnline } {
+            { $menu.DiscoveryItems -contains 'ExchangeOnline' -or $ExchangeOnline } {
                 $EA = $ErrorActionPreference
                 $ErrorActionPreference = "SilentlyContinue"
                 Write-Verbose "Gathering Exchange Transport Rules"

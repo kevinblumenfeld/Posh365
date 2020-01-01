@@ -231,7 +231,7 @@ function Connect-Cloud {
             }
         }
         if (($ExchangeOnline -or $MSOnline -or $All365 -or $Skype -or
-                $SharePoint -or $Compliance -or $AzureADver2 -or $EXO2 -or $Teams) -and (-not $MFA)) {
+                $SharePoint -or $Compliance -or $AzureADver2 -or $AzureAD -or $EXO2 -or $Teams) -and (-not $MFA)) {
             if (Test-Path ($KeyPath + "$($Tenant).cred")) {
                 $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).cred") | ConvertTo-SecureString
                 $UsernameString = Get-Content ($KeyPath + "$($Tenant).ucred")
@@ -275,7 +275,7 @@ function Connect-Cloud {
             }
             catch {
                 try {
-                    Connect-MsolService -Credential $Credential -ErrorAction Stop
+                    Connect-MsolService -Credential $Credential -ErrorAction Stop -Verbose:$false
                     Write-Host "You have successfully connected to MSONLINE" -foregroundcolor "magenta" -backgroundcolor "white"
                 }
                 catch {
@@ -435,7 +435,7 @@ function Connect-Cloud {
             Get-LAAzureConnected
         }
         # Azure AD
-        If ($AzureADver2 -or $All365) {
+        If ($AzureAD -or $AzureADver2 -or $All365) {
             if (-not $MFA) {
                 If (-not ($null = Get-Module -Name AzureAD -ListAvailable)) {
                     Install-Module -Name AzureAD -Scope CurrentUser -Force -AllowClobber
