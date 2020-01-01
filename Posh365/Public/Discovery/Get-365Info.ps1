@@ -81,57 +81,48 @@ function Get-365Info {
         $CreateBitTitanFile
     )
     end {
-        if ($PSBoundParameters.Count -eq '1') {
+        $builtinParameters = @('ErrorAction','WarningAction','Verbose','ErrorVariable','WarningVariable','OutVariable','OutBuffer','Debug')
+        if (($PSBoundParameters -notmatch 'Verbose').Count -eq '1') {
             $Menu = @(
                 'ExchangeOnline', 'MSOnline', 'AzureAD', 'LicensingReport'
-                'LicensingReport','PermissionsReport','FolderPermissionReport'
-                'Compliance', 'CreateExcel','CreateBitTitanFile'
+                'LicensingReport', 'PermissionsReport', 'FolderPermissionReport'
+                'Compliance', 'CreateExcel', 'CreateBitTitanFile'
             ) | ForEach-Object {
                 [PSCustomObject]@{
                     DiscoveryItems = $_
                 }
-            } | Out-GridView -OutputMode Single -Title 'Choose Service(s) to Discover. Then click OK'
+            } | Out-GridView -OutputMode Multiple -Title 'Choose Service(s) to Discover. Then click OK'
         }
-        $EA = $ErrorActionPreference
-        $ErrorActionPreference = 'SilentlyContinue'
-        $ConnectHash = @{ }
-        # Create Test-365ServiceConnection
-        $tenantEX = (Get-AcceptedDomain).where( { $_.Default }).domainname.split('.')[0]
-        $tenantAZ = ((Get-AzureADTenantDetail -ErrorAction SilentlyContinue).verifiedDomains | Where-Object { $_.initial -eq "$true" }).name.split(".")[0]
-        $tenantMS = (Get-MsolDomain -ErrorAction SilentlyContinue).where( { $_.IsInitial }).name.split('.')[0]
-        $tenantCO = (Get-Group | Select-Object -First 1).organizationalunit.replace('.onmicrosoft.com/Configuration', '').split('/')[2]
-        $ErrorActionPreference = $EA
-
-        if ($LicensingReport -or $PermissionsReport -or $FolderPermissionReport -or $ExchangeOnline) {
-            if ($tenantEX) { $Tenant = $TenantEX } else { $ConnectHash.Add('EXO2', $true) }
+        if (-not $Menu) {
+            return
         }
-        if ($AzureAD) {
-            if ($tenantAZ) { $Tenant = $tenantAZ } else { $ConnectHash.Add('AzureAD', $true) }
-        }
-        if ($MSOnline) {
-            if ($tenantMS) { $Tenant = $tenantMS } else { $ConnectHash.Add('MSOnline', $true) }
-        }
-        if ($Compliance) {
-            if ($tenantCO) { $Tenant = $tenantCO } else { $ConnectHash.Add('Compliance', $true) }
-        }
-        $ConnectionType = 'Connect without MFA', 'Connect with MFA' | ForEach-Object {
-            [PSCustomObject]@{
-                ConnectionType = $_
+        $Script:ConnectHash = @{ }
+        $ConnectHash.Add('Tenant', $tenant)
+        do {
+            $TenantName = switch ($Menu.DiscoveryItems) {
+                'ExchangeOnline' { Test-365ServiceConnection -Exchange }
+                'AzureAD' { Test-365ServiceConnection -AzureAD }
+                'MSOnline' { Test-365ServiceConnection -MSOnline }
+                'Compliance' { Test-365ServiceConnection -Compliance }
+                Default {
+                    $ConnectionType = 'Connect without MFA', 'Connect with MFA' | ForEach-Object {
+                        [PSCustomObject]@{
+                            ConnectionType = $_
+                        }
+                    } | Out-GridView -OutputMode Single -Title ('We will connect you to {0}' -f ($ConnectHash.keys -join ', '))
+                    if ($ConnectionType.ConnectionType -like "*without*") {
+                        Connect-Cloud @ConnectHash
+                    }
+                    else {
+                        Connect-CloudMFA @ConnectHash
+                    }
+                }
             }
-        } | Out-GridView -OutputMode Single -Title ('We will connect you to {0}' -f ($ConnectHash.keys -join ', '))
-        if ($ConnectHash.Count) {
-            $ConnectHash.Add('Tenant', $tenant)
-            if ($ConnectionType.ConnectionType -like "*without*") {
-                Connect-Cloud @ConnectHash
-            }
-            else {
-                Connect-CloudMFA @ConnectHash
-            }
-        }
+        } until ($TenantName)
 
         $PoshPath = Join-Path ([Environment]::GetFolderPath("Desktop")) -ChildPath 'Posh365'
         $DiscoPath = Join-Path $PoshPath -ChildPath 'Discovery'
-        $TenantPath = Join-Path $DiscoPath -ChildPath $Tenant
+        $TenantPath = Join-Path $DiscoPath -ChildPath $TenantName
         $Detailed = Join-Path $TenantPath -ChildPath 'Detailed'
         $CSV = Join-Path $TenantPath -ChildPath 'CSV'
         $null = New-Item -ItemType Directory -Path $DiscoPath -ErrorAction SilentlyContinue
