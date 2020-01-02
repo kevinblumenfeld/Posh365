@@ -98,15 +98,15 @@ function Get-365Info {
 
         $Script:ConnectHash = @{ }
         $ConnectHash.Add('Tenant', $tenant)
-        if ($Menu.DiscoveryItems -match 'ExchangeOnline' ) { $ConnectHash.Add('EXO2', $true) }
-        if ($Menu.DiscoveryItems -match 'AzureAD' ) { $ConnectHash.Add('AzureAD', $true) }
+        if ($Menu.DiscoveryItems -match 'ExchangeOnline|Permission' ) { $ConnectHash.Add('EXO2', $true) }
+        if ($Menu.DiscoveryItems -match 'AzureAD|LicensingReport' ) { $ConnectHash.Add('AzureAD', $true) }
         if ($Menu.DiscoveryItems -match 'MSOnline' ) { $ConnectHash.Add('MSOnline', $true) }
         if ($Menu.DiscoveryItems -match 'Compliance' ) { $ConnectHash.Add('Compliance', $true) }
-        $ConnectionType = 'Connect without MFA', 'Connect with MFA' | ForEach-Object {
+        $ConnectionType = 'Connect without MFA', 'Connect with MFA','I am already connected' | ForEach-Object {
             [PSCustomObject]@{
                 ConnectionType = $_
             }
-        } | Out-GridView -OutputMode Single -Title ('We will connect you to {0}' -f ($ConnectHash.keys -join ', '))
+        } | Out-GridView -OutputMode Single -Title ('We can connect you to {0}' -f ($ConnectHash.keys -join ', '))
         if ($ConnectionType.ConnectionType -like "*without*") {
             Connect-Cloud @ConnectHash -Verbose:$false
         }
@@ -115,8 +115,8 @@ function Get-365Info {
         }
 
         do {
-            if ($Menu.DiscoveryItems -match 'ExchangeOnline' ) { $TenantName = Test-365ServiceConnection -ExchangeOnline }
-            if ($Menu.DiscoveryItems -match 'AzureAD' ) { $TenantName = Test-365ServiceConnection -AzureAD }
+            if ($Menu.DiscoveryItems -match 'ExchangeOnline|Permission' ) { $TenantName = Test-365ServiceConnection -ExchangeOnline }
+            if ($Menu.DiscoveryItems -match 'AzureAD|LicensingReport' ) { $TenantName = Test-365ServiceConnection -AzureAD }
             if ($Menu.DiscoveryItems -match 'MSOnline' ) { $TenantName = Test-365ServiceConnection -MSOnline }
             if ($Menu.DiscoveryItems -match 'Compliance' ) { $TenantName = Test-365ServiceConnection -Compliance }
         } until ($TenantName)
@@ -405,7 +405,7 @@ function Get-365Info {
                     'Group1'
                     'Sku'
                     'Service'
-                    'Remaining'
+                    'Consumed'
                     'Total'
                 ) | Export-Csv $365_LicenseOptions @ExportCSVSplat
 
@@ -617,14 +617,14 @@ function Get-365Info {
 
                 $ErrorActionPreference = $EA
             }
-            { $LicensingReport } {
+             { $menu.DiscoveryItems -contains 'LicensingReport' -or  $LicensingReport } {
                 Write-Verbose "Gathering Office 365 Licenses"
                 Get-CloudLicense -Path $Detailed
                 $ColumnList = (Get-Content (Join-Path $Detailed 365_Licenses.csv) | ForEach-Object { $_.split(',').count } | Sort-Object -Descending)[0]
                 Import-Csv -Path (Join-Path $Detailed 365_Licenses.csv) -Header (1..$ColumnList | ForEach-Object { "Column$_" }) |
                 Export-Csv -Path (Join-Path $CSV 365_LicenseReport.csv) -NoTypeInformation
             }
-            { $PermissionsReport } {
+             { $menu.DiscoveryItems -contains 'PermissionsReport' -or  $PermissionsReport } {
                 Write-Verbose "Gathering Mailbox Delegate Permissions"
                 Get-EXOMailboxPerms -Path $Detailed
 
@@ -642,7 +642,7 @@ function Get-365Info {
                 #>
 
             }
-            { $FolderPermissionReport } {
+             { $menu.DiscoveryItems -contains 'FolderPermissionReport' -or  $FolderPermissionReport } {
                 Write-Verbose "Gathering Folder Permissions"
                 $MailboxDetails = Import-Csv $EXO_Mailboxes_Detailed | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' }
                 Write-Host "`nTotal Mailboxes Found: $($MailboxDetails.count)" -ForegroundColor Green
@@ -668,7 +668,7 @@ function Get-365Info {
                     Export-Csv $EXO_FolderPermissions @ExportCSVSplat -Append
                 }
             }
-            { $Compliance } {
+             { $menu.DiscoveryItems -contains 'Compliance' -or  $Compliance } {
                 Write-Verbose "Gathering Security and Compliance Roles"
                 if ($MFAHash) {
                     Get-ComplianceRoleReport -MFAHash $MFAHash | Export-Csv $Compliance_Roles @ExportCSVSplat
@@ -688,7 +688,7 @@ function Get-365Info {
                 Get-ProtectionAlert | Select-Object $ComplianceAlertPoliciesProperties |
                 Export-Csv $Compliance_AlertPolicies @ExportCSVSplat
             }
-            { $CreateExcel } {
+             { $menu.DiscoveryItems -contains 'CreateExcel' -or  $CreateExcel } {
                 $EA = $ErrorActionPreference
                 $ErrorActionPreference = "SilentlyContinue"
                 $ExcelSplat = @{
@@ -726,7 +726,7 @@ function Get-365Info {
                 Import-Csv -Path (Join-Path $CSV 365_LicenseReport.csv) -ErrorAction SilentlyContinue | Export-Excel @Excel365Licenses
                 $ErrorActionPreference = $EA
             }
-            { $CreateBitTitanFile } {
+             { $menu.DiscoveryItems -contains 'CreateBitTitanFile' -or  $CreateBitTitanFile } {
                 $MsolHash = @{ }
                 Import-Csv $MSOL_Users | ForEach-Object {
                     $MsolHash.Add($_.UserPrincipalName, @{
