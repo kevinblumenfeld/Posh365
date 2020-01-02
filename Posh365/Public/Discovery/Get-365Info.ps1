@@ -1,4 +1,4 @@
-function Get-365Info {
+function Get-DiscoveryOffice365 {
     <#
     .SYNOPSIS
     Controller function for gathering information from an Office 365 tenant
@@ -12,10 +12,10 @@ function Get-365Info {
     The filters can be adjusted to anything supported by the -Filter parameter (OPath filters)
 
     .EXAMPLE
-    Get-365Info -Tenant CONTOSO -Verbose
+    Get-DiscoveryOffice365 -Tenant CONTOSO -Verbose
 
     .EXAMPLE
-    Get-365Info -Tenant CONTOSO -Filtered -Verbose
+    Get-DiscoveryOffice365 -Tenant CONTOSO -Filtered -Verbose
 
     #>
     [CmdletBinding()]
