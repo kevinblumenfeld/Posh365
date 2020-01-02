@@ -1,4 +1,4 @@
-function Get-AzureReport {
+function Get-DiscoveryAzure {
     param (
         [Parameter(Mandatory)]
         [string] $Tenant,
@@ -35,6 +35,6 @@ function Get-AzureReport {
         }
     }
     if (-not $SaveContext) {
-        Get-AzureRmContext  | Remove-AzureRmContext
+        Get-AzureRmContext | Remove-AzureRmContext
     }
 }
