@@ -10,40 +10,34 @@ function Get-DiscoveryOkta {
     The name that describes the tenant..
     for example: Contoso  could be used for contoso.okta.com
 
-    .PARAMETER ReportPath
-    Where the reports should be saved. There will be a folder created if it doesnt already exist
-    Under this folder a folder named the "tenant" will also be created.  Here you will find the reports.
-
     .EXAMPLE
-    Get-DiscoveryOkta -Tenant Contoso -ReportPath C:\Scripts\Okta -Verbose
+    Get-DiscoveryOkta -Tenant Contoso -Verbose
 
     .NOTES
     Use the verbose switch to see progress
     #>
     Param (
-
         [Parameter(Mandatory)]
-        [string] $Tenant,
-
-        [Parameter(Mandatory)]
-        [string] $ReportPath
-
+        [string] $Tenant
     )
 
-    $TenantPath = Join-Path -Path $ReportPath -ChildPath $Tenant
+    $PoshPath = Join-Path ([Environment]::GetFolderPath("Desktop")) -ChildPath 'Posh365'
+    $DiscoPath = Join-Path $PoshPath -ChildPath 'Discovery'
+    $TenantPath = Join-Path $DiscoPath -ChildPath $TenantName
+    $Detailed = Join-Path $TenantPath -ChildPath 'Okta'
 
-    if (-not (Test-Path $TenantPath)) {
-        New-Item -ItemType Directory -Force -Path $TenantPath
-    }
+    $null = New-Item -ItemType Directory -Path $DiscoPath  -ErrorAction SilentlyContinue
+    $null = New-Item -ItemType Directory -Path $TenantPath  -ErrorAction SilentlyContinue
+    $null = New-Item -ItemType Directory -Path $Detailed  -ErrorAction SilentlyContinue
 
-    $OktaUser = (Join-Path $TenantPath "$Tenant-Okta_User.csv")
-    $OktaUserGroupMembership = (Join-Path $TenantPath "$Tenant-Okta_UserGroupMembership.csv")
-    $OktaGroup = (Join-Path $TenantPath "$Tenant-Okta_Group.csv")
-    $OktaGroupMember = (Join-Path $TenantPath "$Tenant-Okta_GroupMember.csv")
-    $OktaApp = (Join-Path $TenantPath "$Tenant-Okta_App.csv")
-    $OktaUserApp = (Join-Path $TenantPath "$Tenant-Okta_UserApp.csv")
-    $OktaAppGroup = (Join-Path $TenantPath "$Tenant-Okta_AppGroup.csv")
-    $OktaPolicy = (Join-Path $TenantPath "$Tenant-Policy.csv")
+    $OktaUser = (Join-Path $Detailed "Okta_User.csv")
+    $OktaUserGroupMembership = (Join-Path $Detailed "Okta_UserGroupMembership.csv")
+    $OktaGroup = (Join-Path $Detailed "Okta_Group.csv")
+    $OktaGroupMember = (Join-Path $Detailed "Okta_GroupMember.csv")
+    $OktaApp = (Join-Path $Detailed "Okta_App.csv")
+    $OktaUserApp = (Join-Path $Detailed "Okta_UserApp.csv")
+    $OktaAppGroup = (Join-Path $Detailed "Okta_AppGroup.csv")
+    $OktaPolicy = (Join-Path $Detailed "Policy.csv")
 
     Write-Verbose "Discovering`tOKTA Users"
     Get-OktaUserReport | Export-Csv $OktaUser -NoTypeInformation -Encoding UTF8
@@ -68,4 +62,20 @@ function Get-DiscoveryOkta {
 
     Write-Verbose "Discovering`tOKTA Policies"
     Get-OktaPolicyReport | Export-Csv $OktaPolicy -NoTypeInformation -Encoding UTF8
+
+    $ExcelSplat = @{
+        Path                    = (Join-Path $TenantPath 'Okta_Discovery.xlsx')
+        TableStyle              = 'Medium2'
+        FreezeTopRowFirstColumn = $true
+        AutoSize                = $true
+        BoldTopRow              = $false
+        ClearSheet              = $true
+        ErrorAction             = 'SilentlyContinue'
+    }
+    Get-ChildItem $Detailed -Filter "*.csv" | Sort-Object BaseName -Descending |
+    ForEach-Object { Import-Csv $_.fullname | Export-Excel @ExcelSplat -WorksheetName $_.basename }
+
+    # Complete
+    Write-Verbose "Script Complete"
+    Write-Verbose "Results can be found on the Desktop in a folder named, Discovery"
 }
