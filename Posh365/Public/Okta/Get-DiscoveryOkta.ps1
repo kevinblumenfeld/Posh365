@@ -23,7 +23,7 @@ function Get-DiscoveryOkta {
 
     $PoshPath = Join-Path ([Environment]::GetFolderPath("Desktop")) -ChildPath 'Posh365'
     $DiscoPath = Join-Path $PoshPath -ChildPath 'Discovery'
-    $TenantPath = Join-Path $DiscoPath -ChildPath $TenantName
+    $TenantPath = Join-Path $DiscoPath -ChildPath $Tenant
     $Detailed = Join-Path $TenantPath -ChildPath 'Okta'
 
     $null = New-Item -ItemType Directory -Path $DiscoPath  -ErrorAction SilentlyContinue
