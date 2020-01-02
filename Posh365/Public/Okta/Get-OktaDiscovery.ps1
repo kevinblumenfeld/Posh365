@@ -1,4 +1,4 @@
-function Get-OktaDiscovery {
+function Get-DiscoveryOkta {
     <#
     .SYNOPSIS
     Runs the Okta Discovery Scripts
@@ -15,7 +15,7 @@ function Get-OktaDiscovery {
     Under this folder a folder named the "tenant" will also be created.  Here you will find the reports.
 
     .EXAMPLE
-    Get-OktaDiscovery -Tenant Contoso -ReportPath C:\Scripts\Okta -Verbose
+    Get-DiscoveryOkta -Tenant Contoso -ReportPath C:\Scripts\Okta -Verbose
 
     .NOTES
     Use the verbose switch to see progress
