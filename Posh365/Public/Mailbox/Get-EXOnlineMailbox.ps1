@@ -48,9 +48,14 @@ function Get-EXOnlineMailbox {
             PropertySets = @('Archive', 'Minimum')
             Verbose      = $false
         }
+        $EXOFull = @{
+            ResultSize   = 'unlimited'
+            PropertySets = @('All')
+            Verbose      = $false
+        }
         if ($DetailedReport) {
             $CasHash = @{ }
-            $CasList = Get-EXOCASMailbox -ResultSize Unlimited -Verbose:$false
+            $CasList = Get-EXOCasMailbox -ResultSize Unlimited -Verbose:$false
             foreach ($Cas in $CasList) {
                 $CasHash[$Cas.PrimarySmtpAddress] = @{
                     ActiveSyncEnabled = $Cas.ActiveSyncEnabled
@@ -174,7 +179,7 @@ function Get-EXOnlineMailbox {
         if ($MailboxFilter) {
             foreach ($CurMailboxFilter in $MailboxFilter) {
                 if (-not $ArchivesOnly) {
-                    Get-EXOMailbox -Filter $CurMailboxFilter @EXOArchiveMin | Select-Object ($Selectproperties + $CalculatedProps)
+                    Get-EXOMailbox -Filter $CurMailboxFilter @EXOFull | Select-Object ($Selectproperties + $CalculatedProps)
                 }
                 else {
                     Get-EXOMailbox -Archive -Filter $CurMailboxFilter @EXOArchiveMin | Select-Object ($Selectproperties + $CalculatedProps)
@@ -184,7 +189,7 @@ function Get-EXOnlineMailbox {
         else {
             if (-not $ArchivesOnly) {
                 Write-Verbose "Gathering All Mailboxes Initially"
-                $MailboxList = Get-EXOMailbox @EXOArchiveMin
+                $MailboxList = Get-EXOMailbox @EXOFull
                 Write-Host "`nTotal Mailboxes Found: $($MailboxList.count)" -ForegroundColor Green
 
                 $ConfirmCount = Read-Host "Do you want to split the count?:(y/n)"
