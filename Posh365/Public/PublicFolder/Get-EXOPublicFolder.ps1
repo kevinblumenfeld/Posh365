@@ -3,8 +3,6 @@ function Get-EXOPublicFolder {
 
     )
     end {
-        $EA = $ErrorActionPreference
-        $ErrorActionPreference = 'SilentlyContinue'
         $FolderList = Get-PublicFolder -Recurse -Resultsize unlimited
         foreach ($Folder in $FolderList) {
             $FolderStatsList = Get-PublicFolderStatistics $Folder.Identity
@@ -37,6 +35,5 @@ function Get-EXOPublicFolder {
                 }
             }
         }
-        $ErrorActionPreference = $EA
     }
 }

@@ -21,6 +21,10 @@
                 Name       = 'Owners'
                 Expression = { @((Get-UnifiedGroupLinks -Identity $_.Identity -LinkType Owners).primarysmtpaddress) -ne '' -join '|' }
             }
+            @{
+                Name       = 'x500'
+                Expression = { 'x500:{0}' -f $_.LegacyExchangeDN }
+            }
             'ExchangeObjectId'
         )
     }

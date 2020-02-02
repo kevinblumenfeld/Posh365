@@ -102,7 +102,7 @@ function Get-DiscoveryOffice365 {
         if ($Menu.DiscoveryItems -match 'AzureAD|LicensingReport' ) { $ConnectHash.Add('AzureAD', $true) }
         if ($Menu.DiscoveryItems -match 'MSOnline' ) { $ConnectHash.Add('MSOnline', $true) }
         if ($Menu.DiscoveryItems -match 'Compliance' ) { $ConnectHash.Add('Compliance', $true) }
-        $ConnectionType = 'Connect without MFA', 'Connect with MFA','I am already connected' | ForEach-Object {
+        $ConnectionType = 'Connect without MFA', 'Connect with MFA', 'I am already connected' | ForEach-Object {
             [PSCustomObject]@{
                 ConnectionType = $_
             }
@@ -268,6 +268,7 @@ function Get-DiscoveryOffice365 {
         $EXO_RecipientTypes = (Join-Path $CSV 'EXO_RecipientTypes.csv')
         $EXO_RecipientEmails = (Join-Path $CSV 'EXO_RecipientEmails.csv')
         $EXO_RecipientDomains = (Join-Path $CSV 'EXO_RecipientDomains.csv')
+        $EXO_PrimaryRecipientDomains = (Join-Path $CSV 'EXO_PrimaryRecipientDomains.csv')
         $EXO_Groups = (Join-Path $CSV 'EXO_Groups.csv')
         $EXO_GroupsSync = (Join-Path $Detailed 'EXO_GroupsSync.csv')
         $EXO_GroupMembers = (Join-Path $CSV 'EXO_GroupMembers.csv')
@@ -577,6 +578,17 @@ function Get-DiscoveryOffice365 {
                 Sort-Object -Property count -Descending | Export-Csv $EXO_RecipientTypes @ExportCSVSplat
 
                 $Recipients = Import-Csv $EXO_Recipients | Where-Object { $_.EmailAddresses }
+
+                Write-Verbose "Retrieving Exchange Recipient PrimarySmtpAddress Domains"
+                $PrimaryRecipientDomains = $Recipients | Where-Object { $_.RecipientTypeDetails -ne 'MailContact' } | Select-Object @(
+                    @{
+                        Name       = 'PrimaryDomains'
+                        Expression = { $_.PrimarySMTPAddress.split('@')[1] }
+                    }
+                ) | Group-Object -Property 'PrimaryDomains' | Select-Object Count, Name | Sort-Object count -Descending
+                $PrimaryRecipientDomains | Export-Csv $EXO_PrimaryRecipientDomains @ExportCSVSplat
+
+
                 $OnePerRecipientEmail = Export-EmailsOnePerLine -FindInColumn EmailAddresses -RowList $Recipients | Sort-Object DisplayName
                 $OnePerRecipientEmail | Export-Csv $EXO_RecipientEmails @ExportCSVSplat
 
@@ -617,14 +629,14 @@ function Get-DiscoveryOffice365 {
 
                 $ErrorActionPreference = $EA
             }
-             { $menu.DiscoveryItems -contains 'LicensingReport' -or  $LicensingReport } {
+            { $menu.DiscoveryItems -contains 'LicensingReport' -or $LicensingReport } {
                 Write-Verbose "Gathering Office 365 Licenses"
                 Get-CloudLicense -Path $Detailed
                 $ColumnList = (Get-Content (Join-Path $Detailed 365_Licenses.csv) | ForEach-Object { $_.split(',').count } | Sort-Object -Descending)[0]
                 Import-Csv -Path (Join-Path $Detailed 365_Licenses.csv) -Header (1..$ColumnList | ForEach-Object { "Column$_" }) |
                 Export-Csv -Path (Join-Path $CSV 365_LicenseReport.csv) -NoTypeInformation
             }
-             { $menu.DiscoveryItems -contains 'PermissionsReport' -or  $PermissionsReport } {
+            { $menu.DiscoveryItems -contains 'PermissionsReport' -or $PermissionsReport } {
                 Write-Verbose "Gathering Mailbox Delegate Permissions"
                 Get-EXOMailboxPerms -Path $Detailed
 
@@ -642,7 +654,7 @@ function Get-DiscoveryOffice365 {
                 #>
 
             }
-             { $menu.DiscoveryItems -contains 'FolderPermissionReport' -or  $FolderPermissionReport } {
+            { $menu.DiscoveryItems -contains 'FolderPermissionReport' -or $FolderPermissionReport } {
                 Write-Verbose "Gathering Folder Permissions"
                 $MailboxDetails = Import-Csv $EXO_Mailboxes_Detailed | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' }
                 Write-Host "`nTotal Mailboxes Found: $($MailboxDetails.count)" -ForegroundColor Green
@@ -668,7 +680,7 @@ function Get-DiscoveryOffice365 {
                     Export-Csv $EXO_FolderPermissions @ExportCSVSplat -Append
                 }
             }
-             { $menu.DiscoveryItems -contains 'Compliance' -or  $Compliance } {
+            { $menu.DiscoveryItems -contains 'Compliance' -or $Compliance } {
                 Write-Verbose "Gathering Security and Compliance Roles"
                 if ($MFAHash) {
                     Get-ComplianceRoleReport -MFAHash $MFAHash | Export-Csv $Compliance_Roles @ExportCSVSplat
@@ -688,7 +700,7 @@ function Get-DiscoveryOffice365 {
                 Get-ProtectionAlert | Select-Object $ComplianceAlertPoliciesProperties |
                 Export-Csv $Compliance_AlertPolicies @ExportCSVSplat
             }
-             { $menu.DiscoveryItems -contains 'CreateExcel' -or  $CreateExcel } {
+            { $menu.DiscoveryItems -contains 'CreateExcel' -or $CreateExcel } {
                 $EA = $ErrorActionPreference
                 $ErrorActionPreference = "SilentlyContinue"
                 $ExcelSplat = @{
@@ -726,7 +738,7 @@ function Get-DiscoveryOffice365 {
                 Import-Csv -Path (Join-Path $CSV 365_LicenseReport.csv) -ErrorAction SilentlyContinue | Export-Excel @Excel365Licenses
                 $ErrorActionPreference = $EA
             }
-             { $menu.DiscoveryItems -contains 'CreateBitTitanFile' -or  $CreateBitTitanFile } {
+            { $menu.DiscoveryItems -contains 'CreateBitTitanFile' -or $CreateBitTitanFile } {
                 $MsolHash = @{ }
                 Import-Csv $MSOL_Users | ForEach-Object {
                     $MsolHash.Add($_.UserPrincipalName, @{

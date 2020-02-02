@@ -7,9 +7,11 @@
     Get-DiscoveryOnPrem -Verbose
 
     #>
-    [CmdletBinding(SupportsShouldProcess = $true)]
+    [CmdletBinding()]
     param (
-
+        [Parameter()]
+        [switch]
+        $SkipDetailedExcel
     )
 
     try {
@@ -145,6 +147,16 @@
         }
     ) | Sort-Object count -Descending | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_MessageLimits.csv') -Append
 
+    $Mailboxes | Group-Object { ($_.prohibitSendReceiveQuota.split('(')[0]).padleft(2) } -NoElement | Sort-Object Count -Descending | Select-Object @(
+        @{
+            name       = 'MailboxCount'
+            expression = 'Count'
+        }
+        @{
+            name       = 'ProhibitSendRecieve'
+            expression = 'Name'
+        }
+    ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_MailboxQuotas.csv')
 
     $Mailboxes | Group-Object MaxSendSize, RecipientTypeDetails -NoElement | Select-Object @(
         @{
@@ -355,6 +367,15 @@
     $Recipients | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' } | Select-Object $RecipientProp | Sort-Object DisplayName |
     Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_Recipient.csv')
 
+    Write-Verbose "Retrieving Exchange Recipient PrimarySmtpAddress Domains"
+    $PrimaryRecipientDomains = $Recipients | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' -and $_.RecipientTypeDetails -ne 'MailContact' } | Select-Object @(
+        @{
+            Name       = 'PrimaryDomains'
+            Expression = { $_.PrimarySMTPAddress.split('@')[1] }
+        }
+    ) | Group-Object -Property 'PrimaryDomains' | Select-Object Count, Name | Sort-Object count -Descending
+    $PrimaryRecipientDomains | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_PrimaryRecipientDomains.csv')
+
     $Recipients | Group-Object RecipientTypeDetails | Select-Object name, count | Sort-Object -Property count -Descending |
     Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_RecipientTypes.csv')
 
@@ -405,7 +426,7 @@
 
     # Exchange DLP Policies
     Write-Verbose "Retrieving Exchange DLP Policies"
-    Get-DLPPolicy | Select-Object @(
+    Get-DLPPolicy -ErrorAction SilentlyContinue | Select-Object @(
         'Name'
         'State'
         'Mode'
@@ -488,12 +509,24 @@
     $EA = $global:ErrorActionPreference
     $global:ErrorActionPreference = 'Stop'
     try {
-        Get-EXOPublicFolder | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_PublicFolders.csv')
+        Get-EXPublicFolder | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_PublicFolders.csv')
+        Get-EXPublicFolderRights | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_PublicFoldersRights.csv')
     }
     catch {
         Write-Host "$($_.Exception.Message)" -ForegroundColor DarkCyan
     }
+    $OutlookData = Get-OulookVersions
+    $OutlookData | Select-Object * -Unique | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OutlookReport.csv')
+    $OutlookData | Group-Object -Property "client-software-version" | Select-Object @(
+        @{
+            Name       = 'Version'
+            Expression = { $_.Name }
+        }
+        'Count'
+    ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OutlookCount.csv')
+
     $global:ErrorActionPreference = $EA
+
     ##########################
     #### ACTIVE DIRECTORY ####
     ##########################
@@ -521,9 +554,11 @@
     }
     Get-ChildItem -Path $CSV -Filter "*.csv" | Sort-Object BaseName |
     ForEach-Object { Import-Csv $_.fullname | Export-Excel @ExcelSplat -Path (Join-Path $Discovery 'Discovery.xlsx') -WorksheetName $_.basename }
+    if (-not $SkipDetailedExcel) {
+        Get-ChildItem -Path $Detailed -Filter "*.csv" | Sort-Object BaseName |
+        ForEach-Object { Import-Csv $_.fullname | Export-Excel @ExcelSplat -Path (Join-Path $Detailed 'Detailed.xlsx') -WorksheetName $_.basename }
 
-    Get-ChildItem -Path $Detailed -Filter "*.csv" | Sort-Object BaseName |
-    ForEach-Object { Import-Csv $_.fullname | Export-Excel @ExcelSplat -Path (Join-Path $Detailed 'Detailed.xlsx') -WorksheetName $_.basename }
+    }
 
     # Complete
     Write-Verbose "Script Complete"
