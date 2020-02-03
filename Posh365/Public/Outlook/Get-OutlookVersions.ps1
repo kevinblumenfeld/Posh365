@@ -29,7 +29,7 @@ function Get-OutlookVersions {
     )
     end {
         $ServerList = @(Get-ExchangeServer | Where-Object {
-                (($_.IsClientAccessServer -eq '$true') -and (($_.AdminDisplayVersion).split(' ')[1] -eq '14')) -or
+                (($_.IsClientAccessServer -eq '$true') -and (($_.AdminDisplayVersion).split(' ')[1] -ge '14')) -or
                 (($_.IsMailboxServer -eq '$true') -and (($_.AdminDisplayVersion).split(' ')[1] -ge '15'))
             } | Select-Object @(
                 'Name'
