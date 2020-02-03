@@ -7,7 +7,7 @@ Function Get-ProxyHash {
         $ProxyHash = @{ }
         $ADUserList = $ADUserList.where( { $_.ProxyAddresses })
         foreach ($ADUser in $ADUserList) {
-            foreach ($Proxy in $ADUser.ProxyAddresses) {
+            foreach ($Proxy in $ADUser.ProxyAddresses.Split('|')) {
                 $ProxyHash[$Proxy] = @{
                     DisplayName       = $ADUser.DisplayName
                     UserPrincipalName = $ADUser.UserPrincipalName
