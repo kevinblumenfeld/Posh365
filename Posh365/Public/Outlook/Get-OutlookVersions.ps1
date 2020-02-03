@@ -7,7 +7,7 @@ function Get-OutlookVersions {
     Long description
 
     .EXAMPLE
-    $OutlookData = Get-OulookVersions
+    $OutlookData = Get-OutlookVersions
     $OutlookData | Select-Object * -Unique | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OutlookReport.csv')
     $OutlookData | Group-Object -Property "client-software-version" | Select-Object @(
         @{
