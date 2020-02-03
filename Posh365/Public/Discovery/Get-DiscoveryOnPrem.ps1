@@ -537,6 +537,10 @@
         'client-software', 'client-software-version', 'client-mode'
         @{
             Name       = 'client-name'
+            Expression = { ($_."client-name") }
+        }
+        @{
+            Name       = 'DisplayName'
             Expression = { $ProxyHash['x500:' + ($_."client-name")]['DisplayName'] }
         }
     ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OutlookTypes.csv')
