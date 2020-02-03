@@ -5,7 +5,7 @@ Function Get-LegacyDNHash {
     )
     end {
         $LegacyDNHash = @{ }
-        $ADUserList = $ADUserList.where( { $_.LegacyExchangeDNHash })
+        $ADUserList = $ADUserList.where( { $_.LegacyExchangeDN })
         foreach ($ADUser in $ADUserList) {
             $LegacyDNHash[$ADUser.LegacyExchangeDN] = @{
                 DisplayName       = $ADUser.DisplayName
