@@ -515,15 +515,6 @@
     catch {
         Write-Host "$($_.Exception.Message)" -ForegroundColor DarkCyan
     }
-    $OutlookData = Get-OutlookVersions
-    $OutlookData | Select-Object * -Unique | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OutlookReport.csv')
-    $OutlookData | Group-Object -Property "client-software-version" | Select-Object @(
-        @{
-            Name       = 'Version'
-            Expression = { $_.Name }
-        }
-        'Count'
-    ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OutlookCount.csv')
 
     $global:ErrorActionPreference = $EA
 
@@ -535,8 +526,27 @@
     Write-Verbose "Retrieving Active Directory Users"
     Get-ADUser -Filter * -Properties * | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ActiveDirectoryUsers.xml')
     $ADUsers = Get-ActiveDirectoryUser -DetailedReport
+    $ProxyHash = Get-ProxyHash -ADUserList $ADUsers
     $ADUsers | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ActiveDirectoryUsers.csv')
     $ADUsers | Select-Object $ADUsersProp | Sort-Object 'OU(CN)', 'DisplayName' | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ad_ADUsers.csv')
+
+
+    Write-Verbose "Retrieving Outlook CAS Logs"
+    $OutlookData = Get-OutlookVersions
+    $OutlookData | Select-Object -Unique @(
+        'client-software', 'client-software-version', 'client-mode'
+        @{
+            Name       = 'client-name'
+            Expression = { $ProxyHash[($_."client-name")].DisplayName }
+        }
+    ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OutlookTypes.csv')
+    $OutlookData | Group-Object -Property "client-software-version" | Select-Object @(
+        @{
+            Name       = 'Version'
+            Expression = { $_.Name }
+        }
+        'Count'
+    ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OutlookCount.csv')
 
     # AD Replication
     Write-Verbose "Retrieving Active Directory Replication"

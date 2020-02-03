@@ -7,7 +7,7 @@ function Get-OutlookVersions {
     Long description
 
     .EXAMPLE
-    $OutlookData = Get-OutlookVersions
+    $OutlookData = Get-OutlookVersions -Days 5
     $OutlookData | Select-Object * -Unique | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OutlookReport.csv')
     $OutlookData | Group-Object -Property "client-software-version" | Select-Object @(
         @{
@@ -23,13 +23,14 @@ function Get-OutlookVersions {
 
     [CmdletBinding()]
     param (
-
+        [Parameter()]
+        [int]
+        $Days
     )
     end {
-        $Data = [System.Collections.Generic.List[string]]::New()
         $ServerList = @(Get-ExchangeServer | Where-Object {
-                (($_.IsClientAccessServer -eq '$true') -and (($_.AdminDisplayVersion).major -eq '14')) -or
-                (($_.IsMailboxServer -eq '$true') -and (($_.AdminDisplayVersion).major -ge '15'))
+                (($_.IsClientAccessServer -eq '$true') -and (($_.AdminDisplayVersion).split(' ')[1] -eq '14')) -or
+                (($_.IsMailboxServer -eq '$true') -and (($_.AdminDisplayVersion).split(' ')[1] -ge '15'))
             } | Select-Object @(
                 'Name'
                 @{
@@ -38,22 +39,20 @@ function Get-OutlookVersions {
                 }
             )
         )
-        foreach ($Server in $ServerList) {
-            $FileList = @(
-                Get-ChildItem -Path $Server.Path -Filter *.log |
-                Where-Object { $_.LastWriteTime -gt (Get-Date).AddDays(-5) } |
-                Select-Object @(
-                    @{
-                        Name       = 'File'
-                        Expression = { ("$($Server.Path)" + "\$($_.Name)") }
-                    }
-                )
+        $FileList = foreach ($Server in $ServerList) {
+            Write-Host "Discovering Logs on`t$($Server.Name)" -ForegroundColor Green
+            Get-ChildItem -Path $Server.Path -Filter *.log |
+            Where-Object { $_.LastWriteTime -gt (Get-Date).AddDays(-$Days) } |
+            Select-Object @(
+                @{
+                    Name       = 'File'
+                    Expression = { ("$($Server.Path)" + "\$($_.Name)") }
+                }
             )
         }
         foreach ($File in $FileList) {
-            Write-Host "Working with file $($File.File)" -ForegroundColor DarkYellow
-            $Data.Add((Invoke-GetOutlookData $File.File))
+            Write-Host "Checking Client Access Logs: $($File.File)" -ForegroundColor Green
+            Invoke-GetOutlookData -LogPath $File.File
         }
-        $Data
     }
 }
