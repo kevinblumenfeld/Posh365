@@ -526,7 +526,7 @@
     Write-Verbose "Retrieving Active Directory Users"
     Get-ADUser -Filter * -Properties * | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ActiveDirectoryUsers.xml')
     $ADUsers = Get-ActiveDirectoryUser -DetailedReport
-    $ProxyHash = Get-ProxyHash -ADUserList $ADUsers
+    $LegacyDNHash = Get-LegacyDNHash -ADUserList $ADUsers
     $ADUsers | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ActiveDirectoryUsers.csv')
     $ADUsers | Select-Object $ADUsersProp | Sort-Object 'OU(CN)', 'DisplayName' | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ad_ADUsers.csv')
 
@@ -537,11 +537,15 @@
         'client-software', 'client-software-version', 'client-mode'
         @{
             Name       = 'client-name'
-            Expression = { ($_."client-name") }
+            Expression = { ($_.'client-name') }
         }
         @{
             Name       = 'DisplayName'
-            Expression = { $ProxyHash['x500:' + ($_."client-name")]['DisplayName'] }
+            Expression = { $LegacyDNHash[$_.'client-name']['DisplayName'] }
+        }
+        @{
+            Name       = 'UserPrincipalName'
+            Expression = { $LegacyDNHash[$_.'client-name']['UserPrincipalName'] }
         }
     ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OutlookTypes.csv')
     $OutlookData | Group-Object -Property "client-software-version" | Select-Object @(
