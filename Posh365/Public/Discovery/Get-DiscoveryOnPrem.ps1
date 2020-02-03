@@ -532,7 +532,7 @@
 
 
     Write-Verbose "Retrieving Outlook CAS Logs"
-    $OutlookData = Get-OutlookVersions
+    $OutlookData = Get-OutlookVersions -Days 10
     $OutlookData | Select-Object -Unique @(
         'client-software', 'client-software-version', 'client-mode'
         @{

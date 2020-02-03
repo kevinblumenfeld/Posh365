@@ -7,7 +7,7 @@ Function Get-LegacyDNHash {
         $LegacyDNHash = @{ }
         $ADUserList = $ADUserList.where( { $_.LegacyExchangeDNHash })
         foreach ($ADUser in $ADUserList) {
-            $ProxyHash[$ADUser.LegacyExchangeDN] = @{
+            $LegacyDNHash[$ADUser.LegacyExchangeDN] = @{
                 DisplayName       = $ADUser.DisplayName
                 UserPrincipalName = $ADUser.UserPrincipalName
             }
