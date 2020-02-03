@@ -40,7 +40,7 @@ function Get-OutlookVersions {
             )
         )
         $FileList = foreach ($Server in $ServerList) {
-            Write-Host "Discovering Logs on`t$($Server.Name)" -ForegroundColor Green
+            Write-Verbose "Discovering Logs on`t$($Server.Name)"
             Get-ChildItem -Path $Server.Path -Filter *.log |
             Where-Object { $_.LastWriteTime -gt (Get-Date).AddDays(-$Days) } |
             Select-Object @(
@@ -51,7 +51,7 @@ function Get-OutlookVersions {
             )
         }
         foreach ($File in $FileList) {
-            Write-Host "Checking Client Access Logs: $($File.File)" -ForegroundColor Green
+            Write-Verbose "Inspecting CAS Logs: $($File.File)"
             Invoke-GetOutlookData -LogPath $File.File
         }
     }

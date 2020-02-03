@@ -228,7 +228,7 @@
             Expression = { $_.PrimarySMTPAddress.split('@')[1] }
         }
     ) | Group-Object -Property 'PrimaryDomains' | Select-Object Count, Name | Sort-Object count -Descending
-    $PrimaryDomains | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_PrimaryDomains.csv')
+    $PrimaryDomains | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_PrimaryMailboxDomains.csv')
 
     # DNS Security Records
     Write-Verbose "Retrieving PrimarySmtpAddress Domains DNS Mail Security Records"
@@ -304,7 +304,7 @@
         }
     }
     $ReceiveIPs | Sort-Object IPRange, Identity -Descending | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_ReceiveIPs.csv')
-
+    $ReceiveIPs | Select-Object IPRange | Sort-Object IPRange -Unique -Descending | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_ReceiveIPsUnique.csv')
     # Exchange Send Connectors
     Write-Verbose "Retrieving Exchange Send Connectors"
     $SendConnectors = Get-ExchangeSendConnector
