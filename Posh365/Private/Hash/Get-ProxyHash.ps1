@@ -4,7 +4,6 @@ Function Get-ProxyHash {
         $ADUserList
     )
     end {
-        Get-ADuser
         $ProxyHash = @{ }
         $ADUserList = $ADUserList.where( { $_.ProxyAddresses })
         foreach ($ADUser in $ADUserList) {
