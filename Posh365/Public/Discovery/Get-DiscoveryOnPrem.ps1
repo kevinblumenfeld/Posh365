@@ -360,15 +360,17 @@
     Write-Verbose "Retrieving Exchange Recipients"
     Get-Recipient -ResultSize unlimited | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeRecipients.xml')
 
-    $Recipients = Get-365Recipient -DetailedReport
+    $RecipientsAll = Get-365Recipient -DetailedReport
+
+    $Recipients = $RecipientsAll | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' }
 
     $Recipients | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeRecipients.csv')
 
-    $Recipients | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' } | Select-Object $RecipientProp | Sort-Object DisplayName |
+    $Recipients | Select-Object $RecipientProp | Sort-Object DisplayName |
     Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_Recipient.csv')
 
     Write-Verbose "Retrieving Exchange Recipient PrimarySmtpAddress Domains"
-    $PrimaryRecipientDomains = $Recipients | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' -and $_.RecipientTypeDetails -ne 'MailContact' } | Select-Object @(
+    $PrimaryRecipientDomains = $Recipients | Where-Object { $_.RecipientTypeDetails -ne 'MailContact' } | Select-Object @(
         @{
             Name       = 'PrimaryDomains'
             Expression = { $_.PrimarySMTPAddress.split('@')[1] }
