@@ -129,7 +129,16 @@
     $Mailboxes = Get-ExMailbox -DetailedReport | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' }
     $Mailboxes | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeMailboxes.csv')
     $Mailboxes | Select-Object $MailboxProp | Sort-Object DisplayName | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_Mailboxes.csv')
-
+    $Mailboxes | Group-Object { ($_.MailboxGB.ToString().split('.')[0]).padleft(2) } | Sort-Object name -Descending | Select-Object @(
+        @{
+            Name       = 'Count of Mailboxes'
+            Expression = { $_.Count }
+        }
+        @{
+            Name       = 'TotalGB'
+            Expression = { if (($_.Name).trim() -eq '0') { '<1' } else { $_.Name } }
+        }
+    ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_MailboxStats.csv')
     Remove-Item -Path (Join-Path -Path $CSV -ChildPath 'Ex_MessageLimits.csv') -Force -ErrorAction SilentlyContinue
     $Mailboxes | Group-Object MaxReceiveSize, RecipientTypeDetails -NoElement | Select-Object @(
         @{
@@ -548,14 +557,14 @@
             Name       = 'client-name'
             Expression = { ($_.'client-name') }
         }
-    ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OutlookReport.csv')
+    ) | Sort-Object DisplayName | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OutlookReport.csv')
     $OutlookData | Group-Object -Property "client-software-version" | Select-Object @(
         @{
             Name       = 'Version'
             Expression = { $_.Name }
         }
         'Count'
-    ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OutlookVersions.csv')
+    ) | Sort-Object Count -Descending | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OutlookVersions.csv')
 
     # AD Replication
     Write-Verbose "Retrieving Active Directory Replication"
