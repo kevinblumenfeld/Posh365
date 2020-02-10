@@ -17,6 +17,12 @@ Function Test-MailboxMove {
     .PARAMETER MailboxCSV
     If using a csv instead of sharepoint url excel file
 
+    .PARAMETER ExportToExcel
+    Exports in Excel format to Posh365 folder on Desktop. Also outputs to OutGrid-View
+
+    .PARAMETER SkipUpnMatchSmtpTest
+    Skips the UPN must match PrimarySmtpAddress test
+
     .EXAMPLE
     Test-MailboxMove -SharePointURL 'https://contoso.sharepoint.com/sites/fabrikam' -ExcelFile 'Batches.xlsx'
 
@@ -39,9 +45,20 @@ Function Test-MailboxMove {
         [Parameter(Mandatory, ParameterSetName = 'CSV')]
         [ValidateNotNullOrEmpty()]
         [string]
-        $MailboxCSV
+        $MailboxCSV,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [switch]
+        $ExportToExcel,
+
+        [Parameter()]
+        [switch]
+        $SkipUpnMatchSmtpTest
     )
     end {
+        $PoshPath = Join-Path ([Environment]::GetFolderPath("Desktop")) -ChildPath 'Posh365'
+        $null = New-Item -ItemType Directory -Path $PoshPath  -ErrorAction SilentlyContinue
         switch ($PSCmdlet.ParameterSetName) {
             'SharePoint' {
                 $SharePointSplat = @{
@@ -56,11 +73,20 @@ Function Test-MailboxMove {
         }
         if ($UserChoice -ne 'Quit' ) {
             $TestSelect = @(
-                'OrganizationalUnit', 'MailboxType', 'DisplayName', 'Result', 'AccountDisabled'
+                'BatchName', 'OrganizationalUnit', 'MailboxType', 'DisplayName', 'Result', 'AccountDisabled'
                 'UpnMatchesPrimarySmtp', 'RoutingAddressValid', 'IsDirSynced', 'EmailAddressesValid'
                 'MailboxExists', 'ErrorType', 'ErrorValue', 'UserPrincipalName'
             )
-            Invoke-TestMailboxMove -UserList $UserChoice | Select-Object $TestSelect | Out-GridView -Title "Results of Test Mailbox Move"
+            if ($ExportToExcel) {
+                Write-Host 'Testing & Exporting... Please standby' -ForegroundColor Green
+                $TestResult = Invoke-TestMailboxMove -UserList $UserChoice -SkipUpnMatchSmtpTest:$SkipUpnMatchSmtpTest | Select-Object $TestSelect
+                $TestResult | Out-GridView -Title 'Results of Test Mailbox Move'
+                $TestResult | Export-PoshExcel (Join-Path $PoshPath ('PreFlight_{0}.xlsx' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm')))
+                Write-Host 'Excel file saved in the folder Posh365 on the Desktop' -ForegroundColor Green
+            }
+            else {
+                Invoke-TestMailboxMove -UserList $UserChoice -SkipUpnMatchSmtpTest:$SkipUpnMatchSmtpTest | Select-Object $TestSelect | Out-GridView -Title 'Results of Test Mailbox Move'
+            }
         }
     }
 }

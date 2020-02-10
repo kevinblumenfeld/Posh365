@@ -2,14 +2,20 @@ function Invoke-TestMailboxMove {
     param (
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        $UserList
+        $UserList,
+
+        [Parameter()]
+        [switch]
+        $SkipUpnMatchSmtpTest
     )
     end {
+        $Protocol = @('smtp')
         $AcceptedDomains = (Get-AcceptedDomain).DomainName
         $RoutingAddress = $AcceptedDomains -match '.mail.onmicrosoft.com'
         foreach ($User in $UserList) {
             $Error = [System.Collections.Generic.List[string]]::New()
             $PreFlightHash = @{
+                'BatchName'          = $User.BatchName
                 'DisplayName'        = $User.DisplayName
                 'UserPrincipalName'  = $User.UserPrincipalName
                 'OrganizationalUnit' = $User.OrganizationalUnit
@@ -21,7 +27,7 @@ function Invoke-TestMailboxMove {
                 $BadEmail = [System.Collections.Generic.List[string]]::New()
                 foreach ($Email in $MailUser.EmailAddresses) {
                     $UserDomain = [regex]::matches($Email, '(?<=@)(.*)').value
-                    if ($UserDomain -notin $AcceptedDomains -and $UserDomain.length -gt 0) {
+                    if ($UserDomain -notin $AcceptedDomains -and $UserDomain.length -gt 0 -and ($Email.split(':')[0] -in $Protocol)) {
                         $BadEmail.Add($Email)
                     }
                 }
@@ -46,7 +52,7 @@ function Invoke-TestMailboxMove {
                     $PreFlightHash.Add('RoutingAddressValid', $false)
                     $Error.Add('NoRoutingAddress')
                 }
-                if ($MailUser.WindowsEmailAddress -eq $MailUser.UserPrincipalName) {
+                if ($MailUser.WindowsEmailAddress -eq $MailUser.UserPrincipalName -or $SkipUpnMatchSmtpTest) {
                     $PreFlightHash.Add('UpnMatchesPrimarySmtp', $true)
                 }
                 else {
