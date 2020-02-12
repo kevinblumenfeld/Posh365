@@ -35,6 +35,9 @@ Function Trace-ExchangeMessage {
     .EXAMPLE
     Trace-ExchangeMessage -StartSearchHoursAgo 48 -EndSearchHoursAgo 24 -Recipients "joe@contoso.com" -Subject "Forklift incident"
 
+    .EXAMPLE
+    Trace-ExchangeMessage -StartSearchHoursAgo .01
+
     .NOTES
     General notes
     #>
@@ -49,7 +52,7 @@ Function Trace-ExchangeMessage {
         [string] $Recipients,
 
         [Parameter()]
-        [Double] $StartSearchHoursAgo = ".25",
+        [Double] $StartSearchHoursAgo = ".1",
 
         [Parameter()]
         [Double] $EndSearchHoursAgo = "0",
