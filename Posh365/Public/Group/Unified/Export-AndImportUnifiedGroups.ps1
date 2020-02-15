@@ -78,11 +78,15 @@ https://gallery.technet.microsoft.com/Export-and-Import-Unified-e73d82ba
 			  and remove users that aren't valid recipients in the tenant.
 #>
     param (
+        [Parameter()]
         [string]
         $File,
 
+        [Parameter()]
         [switch]
         $IncludeUsers,
+
+        [Parameter()]
         [validateset('Export', 'Import', 'Set')]
         $Mode,
 
@@ -90,16 +94,16 @@ https://gallery.technet.microsoft.com/Export-and-Import-Unified-e73d82ba
         [switch]
         $RewriteTargetDomain,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter()]
         [string]
         $SourceDomain,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter()]
         [string]
         $TargetDomain
     )
 
-    begin {
+    end {
 
         $Selectproperties1 = @(
             'Alias', 'Name', 'DisplayName', 'AccessType'
@@ -188,7 +192,7 @@ https://gallery.technet.microsoft.com/Export-and-Import-Unified-e73d82ba
                 $UnifiedGroups = Get-UnifiedGroup -ResultSize Unlimited
                 $Count = $UnifiedGroups.Count
                 $i = 1
-                Foreach ($Group in $UnifiedGroups) {
+                foreach ($Group in $UnifiedGroups) {
                     Write-Host "$($Group.Name) [$i of $Count]"
                     $Sub = Get-UnifiedGroupLinks -Identity $Group.Identity -LinkType Subscribers
                     $Mem = Get-UnifiedGroupLinks -Identity $Group.Identity -LinkType Members
@@ -551,14 +555,7 @@ https://gallery.technet.microsoft.com/Export-and-Import-Unified-e73d82ba
                 }
             } # End Set
         } # End Switch
-
         #Cleanup
         If ($TempFile) { Remove-Item $TempFile }
-    }
-    Process {
-
-    }
-    End {
-
     }
 }

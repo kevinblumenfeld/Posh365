@@ -21,16 +21,18 @@ function Get-EXOResourceMailbox {
     #>
     [CmdletBinding()]
     param (
-        [Parameter(ValueFromPipeline = $true, Mandatory = $false)]
+        [Parameter()]
         [string[]] $Filter,
 
         [Parameter()]
         $ResourceMailbox
     )
     begin {
+        <#
         $MailboxProperties = @(
             'DisplayName', 'Office', 'RecipientTypeDetails', 'UserPrincipalName', 'Identity', 'PrimarySmtpAddress', 'Alias'
         )
+        #>
         if ($Filter) {
             $AllUserMailboxes = Get-Mailbox -filter $CurFilter -RecipientTypeDetails RoomMailbox, EquipmentMailbox -ResultSize Unlimited
             $MailboxLegacyExchangeDNHash = $AllUserMailboxes | Get-MailboxLegacyExchangeDNHash
@@ -55,8 +57,6 @@ function Get-EXOResourceMailbox {
             @{n = "RequestInPolicy" ; e = { @($MailboxLegacyExchangeDNHash[$_.RequestInPolicy]) -ne '' -join '|' } },
             @{n = "RequestOutOfPolicy" ; e = { @($MailboxLegacyExchangeDNHash[$_.RequestOutOfPolicy]) -ne '' -join '|' } }
         )
-    }
-    process {
         if (-not $ResourceMailbox) {
             if ($Filter) {
                 foreach ($CurFilter in $Filter) {
@@ -80,30 +80,33 @@ function Get-EXOResourceMailbox {
                         Identity                            = $Resource.Identity
                         PrimarySmtpAddress                  = $Resource.PrimarySmtpAddress
                         Alias                               = $Resource.Alias
-                        TotalGB                             = $Resource.TotalGB
-                        ResourceDelegates                   = @($Cal.ResourceDelegates) -ne '' -join '|'
-                        MaximumDurationInMinutes            = $Cal.MaximumDurationInMinutes
                         AutomateProcessing                  = $Cal.AutomateProcessing
-                        MailboxOwnerId                      = $Cal.MailboxOwnerId
+                        ResourceDelegates                   = @($Cal.ResourceDelegates) -ne '' -join '|'
+                        AllBookInPolicy                     = $Cal.AllBookInPolicy
+                        AllRequestInPolicy                  = $Cal.AllRequestInPolicy
+                        BookInPolicy                        = @($Cal.BookInPolicy) -ne '' -join '|'
+                        RequestInPolicy                     = @($Cal.RequestInPolicy) -ne '' -join '|'
+                        RequestOutOfPolicy                  = @($Cal.RequestOutOfPolicy) -ne '' -join '|'
+                        AllRequestOutOfPolicy               = $Cal.AllRequestOutOfPolicy
+                        TotalGB                             = $Resource.TotalGB
+                        MaximumDurationInMinutes            = $Cal.MaximumDurationInMinutes
                         BookingWindowInDays                 = $Cal.BookingWindowInDays
                         ConflictPercentageAllowed           = $Cal.ConflictPercentageAllowed
                         MaximumConflictInstances            = $Cal.MaximumConflictInstances
                         AdditionalResponse                  = $Cal.AdditionalResponse
                         AddAdditionalResponse               = $Cal.AddAdditionalResponse
                         AddNewRequestsTentatively           = $Cal.AddNewRequestsTentatively
+                        ForwardRequestsToDelegates          = $Cal.ForwardRequestsToDelegates
+                        TentativePendingApproval            = $Cal.TentativePendingApproval
                         AddOrganizerToSubject               = $Cal.AddOrganizerToSubject
-                        AllBookInPolicy                     = $Cal.AllBookInPolicy
                         AllowConflicts                      = $Cal.AllowConflicts
                         AllowRecurringMeetings              = $Cal.AllowRecurringMeetings
-                        AllRequestInPolicy                  = $Cal.AllRequestInPolicy
-                        AllRequestOutOfPolicy               = $Cal.AllRequestOutOfPolicy
                         DeleteAttachments                   = $Cal.DeleteAttachments
                         DeleteComments                      = $Cal.DeleteComments
                         DeleteNonCalendarItems              = $Cal.DeleteNonCalendarItems
                         DeleteSubject                       = $Cal.DeleteSubject
                         EnableResponseDetails               = $Cal.EnableResponseDetails
                         EnforceSchedulingHorizon            = $Cal.EnforceSchedulingHorizon
-                        ForwardRequestsToDelegates          = $Cal.ForwardRequestsToDelegates
                         IsValid                             = $Cal.IsValid
                         OrganizerInfo                       = $Cal.OrganizerInfo
                         ProcessExternalMeetingMessages      = $Cal.ProcessExternalMeetingMessages
@@ -111,17 +114,11 @@ function Get-EXOResourceMailbox {
                         RemoveOldMeetingMessages            = $Cal.RemoveOldMeetingMessages
                         RemovePrivateProperty               = $Cal.RemovePrivateProperty
                         ScheduleOnlyDuringWorkHours         = $Cal.ScheduleOnlyDuringWorkHours
-                        TentativePendingApproval            = $Cal.TentativePendingApproval
                         ObjectState                         = $Cal.ObjectState
-                        BookInPolicy                        = @($Cal.BookInPolicy) -ne '' -join '|'
-                        RequestInPolicy                     = @($Cal.RequestInPolicy) -ne '' -join '|'
-                        RequestOutOfPolicy                  = @($Cal.RequestOutOfPolicy) -ne '' -join '|'
+                        MailboxOwnerId                      = $Cal.MailboxOwnerId
                     }
                 }
             }
         }
-    }
-    end {
-
     }
 }

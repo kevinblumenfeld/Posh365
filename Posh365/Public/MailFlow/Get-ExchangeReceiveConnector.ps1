@@ -34,6 +34,9 @@ function Get-ExchangeReceiveConnector {
                 Name       = 'RemoteIPRanges'
                 Expression = { @($_.RemoteIPRanges) -ne '' -join '|' }
             }
+            'TlsCertificateName'
+            'RequireTLS'
+            'TlsDomainCapabilities'
             'PermissionGroups'
             'AuthMechanism'
             'MaxMessageSize'

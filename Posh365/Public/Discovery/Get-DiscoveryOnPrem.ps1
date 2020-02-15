@@ -424,7 +424,7 @@
         }
     ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_RecipientOUs.csv')
 
-    Write-Verbose "Retrieving Exchange Online Resource Mailboxes and Calendar Processing"
+    Write-Verbose "Retrieving Exchange Resource Mailboxes and Calendar Processing"
     $ResourceMailboxes = $Mailboxes | Where-Object { $_.RecipientTypeDetails -in 'RoomMailbox', 'EquipmentMailbox' }
     Get-EXOResourceMailbox -ResourceMailbox $ResourceMailboxes | Sort-Object DisplayName |
     Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_ResourceMailboxes.csv')

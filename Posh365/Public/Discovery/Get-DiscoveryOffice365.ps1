@@ -253,6 +253,7 @@ function Get-DiscoveryOffice365 {
 
         $AzureAD_Roles = (Join-Path $CSV 'AzureAD_Roles.csv')
         $AzureAD_Users = (Join-Path $Detailed 'AzureAD_Users.csv')
+        $AzureAD_UsersOnPremOUs = (Join-Path $CSV 'AzureAD_UserOUs.csv')
         $AzureAD_Guests = (Join-Path $Detailed 'AzureAD_Guests.csv')
         $AzureAD_Devices = (Join-Path $CSV 'AzureAD_Devices.csv')
 
@@ -410,6 +411,8 @@ function Get-DiscoveryOffice365 {
                     'Total'
                 ) | Export-Csv $365_LicenseOptions @ExportCSVSplat
 
+                Write-Verbose "Gathering AzureAD User On-Premises OUs"
+                Get-AzureUserOnPremisesOUs | Sort-Object OU | Export-Csv $AzureAD_UsersOnPremOUs @ExportCSVSplat
             }
             { $menu.DiscoveryItems -contains 'ExchangeOnline' -or $ExchangeOnline } {
                 $EA = $ErrorActionPreference
@@ -712,7 +715,7 @@ function Get-DiscoveryOffice365 {
                     ClearSheet              = $true
                     ErrorAction             = 'SilentlyContinue'
                 }
-                Get-ChildItem $CSV -Filter "*.csv" | Where-Object { $_.BaseName -ne '365_LicenseReport' } | Sort-Object BaseName -Descending |
+                Get-ChildItem $CSV -Filter "*.csv" | Where-Object { $_.BaseName -ne '365_LicenseReport' } | Sort-Object BaseName |
                 ForEach-Object { Import-Csv $_.fullname | Export-Excel @ExcelSplat -WorksheetName $_.basename }
 
                 $Excel365Licenses = @{
