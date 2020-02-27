@@ -13,7 +13,7 @@ function Invoke-TestMailboxMove {
         $AcceptedDomains = (Get-AcceptedDomain).DomainName
         $RoutingAddress = $AcceptedDomains -match '.mail.onmicrosoft.com'
         foreach ($User in $UserList) {
-            $Error = [System.Collections.Generic.List[string]]::New()
+            $TestError = [System.Collections.Generic.List[string]]::New()
             $PreFlightHash = @{
                 'BatchName'          = $User.BatchName
                 'DisplayName'        = $User.DisplayName
@@ -35,7 +35,7 @@ function Invoke-TestMailboxMove {
                     $PreFlightHash.Add('EmailAddressesValid', $true)
                 }
                 else {
-                    $Error.Add('InvalidEmail')
+                    $TestError.Add('InvalidEmail')
                     $ErrorValue.Add($BadEmail -join ',')
                     $PreFlightHash.Add('EmailAddressesValid', $false)
                 }
@@ -43,21 +43,21 @@ function Invoke-TestMailboxMove {
                 $PreFlightHash.Add('IsDirSynced', $MailUser.IsDirSynced)
                 $PreFlightHash.Add('AccountDisabled', $MailUser.AccountDisabled)
                 if ($MailUser.AccountDisabled -and $User.RecipientTypeDetails -eq 'UserMailbox') {
-                    $Error.Add('AccountDisabledforUserMailbox')
+                    $TestError.Add('AccountDisabledforUserMailbox')
                 }
                 if ($MailUser.EmailAddresses -match $RoutingAddress) {
                     $PreFlightHash.Add('RoutingAddressValid', $true)
                 }
                 else {
                     $PreFlightHash.Add('RoutingAddressValid', $false)
-                    $Error.Add('NoRoutingAddress')
+                    $TestError.Add('NoRoutingAddress')
                 }
                 if ($MailUser.WindowsEmailAddress -eq $MailUser.UserPrincipalName -or $SkipUpnMatchSmtpTest) {
                     $PreFlightHash.Add('UpnMatchesPrimarySmtp', $true)
                 }
                 else {
                     $PreFlightHash.Add('UpnMatchesPrimarySmtp', $false)
-                    $Error.Add('UpnDoesNotMatchPrimarySmtp')
+                    $TestError.Add('UpnDoesNotMatchPrimarySmtp')
                     $ErrorValue.Add(('{0}/{1}' -f $MailUser.WindowsEmailAddress, $MailUser.UserPrincipalName))
                 }
             }
@@ -77,7 +77,7 @@ function Invoke-TestMailboxMove {
                         $PreFlightHash.Add('EmailAddressesValid', $true)
                     }
                     else {
-                        $Error.Add('InvalidEmail')
+                        $TestError.Add('InvalidEmail')
                         $ErrorValue.Add($BadEmail -join ',')
                         $PreFlightHash.Add('EmailAddressesValid', $false)
                     }
@@ -89,7 +89,7 @@ function Invoke-TestMailboxMove {
                     }
                     $PreFlightHash.Add('UpnMatchesPrimarySmtp', $mailbox.PrimarySmtpAddress -eq $mailbox.UserPrincipalName)
                     $PreFlightHash.Add('MailboxExists', $true)
-                    $Error.Add('MailboxFound')
+                    $TestError.Add('MailboxFound')
                     $ErrorValue.Add('MailboxCreated:{0}' -f $Mailbox.WhenCreated)
                 }
                 else {
@@ -99,10 +99,10 @@ function Invoke-TestMailboxMove {
                     $PreFlightHash.Add('RoutingAddressValid', $false)
                     $PreFlightHash.Add('UpnMatchesPrimarySmtp', $false)
                     $PreFlightHash.Add('MailboxExists', $false)
-                    $Error.Add('NoMailUserOrMailboxFound')
+                    $TestError.Add('NoMailUserOrMailboxFound')
                 }
             }
-            if ($Error) {
+            if ($TestError) {
                 $PreFlightHash.Add('Result', 'FAIL')
             }
             else {
@@ -112,9 +112,9 @@ function Invoke-TestMailboxMove {
                 $PreFlightHash.Add('ErrorValue', $ErrorValue -join '|')
             }
             else {
-                $PreFlightHash.Add('ErrorValue', '')
+                $PreFlightHash.Add('ErrorValue', $_.Exception.Message)
             }
-            $PreFlightHash.Add('ErrorType', $Error -join '|')
+            $PreFlightHash.Add('ErrorType', $TestError -join '|')
             [PSCustomObject]$PreFlightHash
         }
     }
