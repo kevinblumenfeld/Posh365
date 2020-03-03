@@ -116,15 +116,14 @@ Function Search-AuditLog {
         $Operations,
 
         [Parameter()]
-        [int] $ResultSize = 100,
-
-        [Parameter()]
-        [string] $Status
+        [int]
+        $ResultSize = 5000
     )
 
     $currentErrorActionPrefs = $ErrorActionPreference
     $ErrorActionPreference = 'Stop'
 
+    $SessionId = [DateTime]::Now.ToLocalTime()
     if ($StartSearchHoursAgo) {
         [DateTime]$StartSearchHoursAgo = ((Get-Date).AddHours( - $StartSearchHoursAgo))
         $StartSearchHoursAgo = $StartSearchHoursAgo.ToUniversalTime()
@@ -135,91 +134,32 @@ Function Search-AuditLog {
         $EndSearchHoursAgo = $EndSearchHoursAgo.ToUniversalTime()
     }
 
-    $cmdletParams = (Get-Command $PSCmdlet.MyInvocation.InvocationName).Parameters.Keys
+    $params = @{
+        'StartDate'      = $StartSearchHoursAgo
+        'EndDate'        = $EndSearchHoursAgo
+        'SessionCommand' = 'returnlargeset'
+        'SessionId'      = $SessionId
+        'ResultSize'     = $ResultSize
+    }
 
-    $params = @{ }
-    $NotArray = 'StartSearchHoursAgo', 'EndSearchHoursAgo', 'Operations', 'ResultSize' , 'RecordType', 'Verbose', 'Debug', 'ErrorAction', 'WarningAction', 'InformationAction', 'ErrorVariable', 'WarningVariable', 'InformationVariable', 'OutVariable', 'OutBuffer', 'PipelineVariable'
-    foreach ($cmdletParam in $cmdletParams) {
-        if ($cmdletParam -notin $NotArray) {
-            if ([string]::IsNullOrWhiteSpace((Get-Variable -Name $cmdletParam).Value) -ne $true) {
-                $params.Add($cmdletParam, (Get-Variable -Name $cmdletParam).Value)
-            }
+    If ($RecordType) {
+        $params.Add('RecordType', $RecordType)
+    }
+    If ($Operations) {
+        $params.Add('Operations', $Operations)
+    }
+    # $ResultList = [System.Collections.Generic.List[PSObject]]::New()
+
+    do {
+        Write-Verbose "Checking audit log results on page $counter."
+        try {
+            Invoke-SearchAuditLog @params | Out-GridView
         }
-    }
-    $params.Add('StartDate', $StartSearchHoursAgo)
-    $params.Add('EndDate', $EndSearchHoursAgo)
-
-
-    $counter = 1
-    $continue = $false
-    $ResultList = [System.Collections.Generic.List[PSObject]]::New()
-
-    Write-Verbose "Checking audit log results on page $counter."
-    try {
-        if (-not $Subject) {
-            Search-UnifiedAuditLog @params | ForEach-Object {
-                $AuditLogResults = [PSCustomObject]@{
-                    RecordType   = $_.RecordType
-                    CreationDate = ($_.CreationDate).ToLocalTime()
-                    UserIds      = $_.UserIds
-                    Operations   = $_.Operations
-                    AuditData    = $_.AuditData
-                }
-                $ResultList.Add($AuditLogResults)
-            }
-            $counter++
+        catch {
+            Write-Verbose "`tException gathering audit log data on page $counter. Trying again in 30 seconds."
+            Start-Sleep -Seconds 1
         }
-        else {
-            $AuditLog = Search-UnifiedAuditLog @params
-            $AuditLogwithSubject = ""
-            $AuditLogwithSubject = $AuditLog | Where-Object { $_.Subject -like "*$Subject*" }
+    } Until ($Log.ResultIndex[-1] -ge $Log.ResultCount[-1])
 
-            if ($AuditLogwithSubject) {
-                $AuditLogwithSubject | ForEach-Object {
-                    $AuditLogResults = [PSCustomObject]@{
-                        RecordType   = $_.RecordType
-                        CreationDate = ($_.CreationDate).ToLocalTime()
-                        UserIds      = $_.UserIds
-                        Operations   = $_.Operations
-                        AuditData    = $_.AuditData
-                    }
-                    $ResultList.Add($AuditLogResults)
-                }
-
-            }
-            if (-not $AuditLog) {
-                Write-Verbose "`tNo results found on page $counter."
-                $continue = $true
-            }
-            else {
-                $counter++
-                Start-Sleep -Seconds 2
-            }
-        }
-    }
-    catch {
-        Write-Verbose "`tException gathering audit log data on page $counter. Trying again in 30 seconds."
-        Start-Sleep -Seconds 1
-    }
-
-    if ($ResultList.count -gt 0) {
-        Write-Verbose "`n$($ResultList.count) results returned."
-
-        $DetailList = $ResultList | Out-GridView -PassThru -Title "Audit Log Results. Select one or more then click OK for detailed report."
-        if ($DetailList) {
-            Foreach ($Detail in $DetailList) {
-                $Splat = @{
-                    MessageTraceID   = $Detail.MessageTraceID
-                    RecipientAddress = $Detail.RecipientAddress
-                    MessageId        = $Detail.MessageId
-                }
-                $TraceDetail = Search-UnifiedAuditLog @Splat
-                $TraceDetail | Out-GridView -Title "DATE: $($Detail.Received) STATUS: $($Detail.Status) FROM: $($Detail.SenderAddress) TO: $($Detail.RecipientAddress) TRACEID: $($Detail.MessageTraceId)"
-            }
-        }
-    }
-    else {
-        Write-Verbose "`nNo Results found."
-    }
     $ErrorActionPreference = $currentErrorActionPrefs
 }
