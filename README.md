@@ -27,7 +27,7 @@ _Syntax_: https://github.com/kevinblumenfeld/Posh365Demo
 * **Get-MailboxMove** Gets current move requests.
 * **Set-MailboxMove** Set move requests.
 * **Suspend-MailboxMove** Suspends move requests.
-* **Resume-MailboxMove** Resumes move requests.
+* **Resume-MailboxMove** Resumes move requests. Includes the switch -DontAutoComplete
 * **Remove-MailboxMove** Removes move requests.
 * **Complete-MailboxMove** Complete move requests.
 

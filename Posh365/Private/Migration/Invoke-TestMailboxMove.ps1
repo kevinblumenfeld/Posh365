@@ -69,7 +69,7 @@ function Invoke-TestMailboxMove {
                     $BadEmail = [System.Collections.Generic.List[string]]::New()
                     foreach ($Email in $Mailbox.EmailAddresses) {
                         $UserDomain = [regex]::matches($Email, '(?<=@)(.*)').value
-                        if ($UserDomain -notin $AcceptedDomains -and $UserDomain.length -gt 0) {
+                        if ($UserDomain -notin $AcceptedDomains -and $UserDomain.length -gt 0 -and ($Email.split(':')[0] -in $Protocol)) {
                             $BadEmail.Add($Email)
                         }
                     }
