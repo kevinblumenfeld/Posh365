@@ -8,9 +8,11 @@
             "name": "PowerShell Launch Current File",
             "type": "PowerShell",
             "request": "launch",
-            "script": "${file}",
-            "args": [],
-            "cwd": "${file}"
+            "script": "${workspaceRoot}\\build.ps1",
+            "args": [
+
+            ],
+            "cwd": "${workspaceRoot}"
         },
         {
             "name": "PowerShell Launch Current File in Temporary Console",

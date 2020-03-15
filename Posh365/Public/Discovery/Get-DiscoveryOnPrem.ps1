@@ -10,6 +10,10 @@
     [CmdletBinding()]
     param (
         [Parameter()]
+        [int]
+        $NumberofDaysCasReport = 7,
+
+        [Parameter()]
         [switch]
         $AddDetailedExcel
     )
@@ -541,30 +545,32 @@
     $ADUsers | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ActiveDirectoryUsers.csv')
     $ADUsers | Select-Object $ADUsersProp | Sort-Object 'OU(CN)', 'DisplayName' | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ad_ADUsers.csv')
 
-    Write-Verbose "Retrieving Outlook CAS Logs"
-    $OutlookData = Get-OutlookVersions -Days 10
-    $OutlookData | Select-Object -Unique @(
-        'client-software', 'client-software-version', 'client-mode'
-        @{
-            Name       = 'DisplayName'
-            Expression = { $LegacyDNHash[$_.'client-name']['DisplayName'] }
-        }
-        @{
-            Name       = 'UserPrincipalName'
-            Expression = { $LegacyDNHash[$_.'client-name']['UserPrincipalName'] }
-        }
-        @{
-            Name       = 'client-name'
-            Expression = { ($_.'client-name') }
-        }
-    ) | Sort-Object DisplayName | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OutlookReport.csv')
-    $OutlookData | Group-Object -Property "client-software-version" | Select-Object @(
-        @{
-            Name       = 'Version'
-            Expression = { $_.Name }
-        }
-        'Count'
-    ) | Sort-Object Count -Descending | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OutlookVersions.csv')
+    if ($NumberofDaysCasReport -ne 0) {
+        Write-Verbose "Retrieving Outlook CAS Logs"
+        $OutlookData = Get-OutlookVersions -Days $NumberofDaysCasReport
+        $OutlookData | Select-Object -Unique @(
+            'client-software', 'client-software-version', 'client-mode'
+            @{
+                Name       = 'DisplayName'
+                Expression = { $LegacyDNHash[$_.'client-name']['DisplayName'] }
+            }
+            @{
+                Name       = 'UserPrincipalName'
+                Expression = { $LegacyDNHash[$_.'client-name']['UserPrincipalName'] }
+            }
+            @{
+                Name       = 'client-name'
+                Expression = { ($_.'client-name') }
+            }
+        ) | Sort-Object DisplayName | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OutlookReport.csv')
+        $OutlookData | Group-Object -Property "client-software-version" | Select-Object @(
+            @{
+                Name       = 'Version'
+                Expression = { $_.Name }
+            }
+            'Count'
+        ) | Sort-Object Count -Descending | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_OutlookVersions.csv')
+    }
 
     # AD Replication
     Write-Verbose "Retrieving Active Directory Replication"
