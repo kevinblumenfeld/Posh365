@@ -201,15 +201,15 @@ https://gallery.technet.microsoft.com/Export-and-Import-Unified-e73d82ba
 
                     # Resolve GrantSendOnBehalfTo
                     $GrantSendOnBehalfTo = @()
-                    foreach ($addr in $Group.GrantSendOnBehalfTo) { $GrantSendOnBehalfTo += (Get-Recipient $addr).PrimarySmtpAddress }
+                    foreach ($addr in $Group.GrantSendOnBehalfTo) { $GrantSendOnBehalfTo += (Get-Recipient $addr -ErrorAction SilentlyContinue).PrimarySmtpAddress }
 
                     #Resolve ManagedBy
                     $ManagedBy = @()
-                    foreach ($addr in $Group.ManagedBy) { $ManagedBy += (Get-Recipient $addr).PrimarySmtpAddress }
+                    foreach ($addr in $Group.ManagedBy) { $ManagedBy += (Get-Recipient $addr -ErrorAction SilentlyContinue).PrimarySmtpAddress }
 
                     # Resolve ManagedByDetails
                     $ManagedByDetails = @()
-                    foreach ($addr in $Group.ManagedByDetails) { $ManagedByDetails += (Get-Recipient $addr).PrimarySmtpAddress }
+                    foreach ($addr in $Group.ManagedByDetails) { $ManagedByDetails += (Get-Recipient $addr -ErrorAction SilentlyContinue).PrimarySmtpAddress }
 
                     # Resolve Members
                     $Members = @()
@@ -229,31 +229,31 @@ https://gallery.technet.microsoft.com/Export-and-Import-Unified-e73d82ba
 
                     # Resolve ModeratedBy
                     $ModeratedBy = @()
-                    foreach ($addr in $Group.ModeratedBy) { $ModeratedBy += (Get-Recipient $addr).PrimarySmtpAddress }
+                    foreach ($addr in $Group.ModeratedBy) { $ModeratedBy += (Get-Recipient $addr -ErrorAction SilentlyContinue).PrimarySmtpAddress }
 
                     # Resolve RejectMessagesFrom
                     $RejectMessagesFrom = @()
-                    foreach ($addr in $Group.RejectMessagesFrom) { $RejectMessagesFrom += (Get-Recipient $addr).PrimarySmtpAddress }
+                    foreach ($addr in $Group.RejectMessagesFrom) { $RejectMessagesFrom += (Get-Recipient $addr -ErrorAction SilentlyContinue).PrimarySmtpAddress }
 
                     # Resolve RejectMessagesFromSendersOrMembers
                     $RejectMessagesFromSendersOrMembers = @()
-                    foreach ($addr in $Group.RejectMessagesFromSendersOrMembers) { $RejectMessagesFromSendersOrMembers += (Get-Recipient $addr).PrimarySmtpAddress }
+                    foreach ($addr in $Group.RejectMessagesFromSendersOrMembers) { $RejectMessagesFromSendersOrMembers += (Get-Recipient $addr -ErrorAction SilentlyContinue).PrimarySmtpAddress }
 
                     # Resolve RejectMessagesFromDLMembers
                     $RejectMessagesFromDLMembers = @()
-                    foreach ($addr in $Group.RejectMessagesFromDLMembers) { $RejectMessagesFromDLMembers += (Get-Recipient $addr).PrimarySmtpAddress }
+                    foreach ($addr in $Group.RejectMessagesFromDLMembers) { $RejectMessagesFromDLMembers += (Get-Recipient $addr -ErrorAction SilentlyContinue).PrimarySmtpAddress }
 
                     # Resolve AcceptMessagesOnlyFrom
                     $AcceptMessagesOnlyFrom = @()
-                    foreach ($addr in $Group.AcceptMessagesOnlyFrom) { $AcceptMessagesOnlyFrom += (Get-Recipient $addr).PrimarySmtpAddress }
+                    foreach ($addr in $Group.AcceptMessagesOnlyFrom) { $AcceptMessagesOnlyFrom += (Get-Recipient $addr -ErrorAction SilentlyContinue).PrimarySmtpAddress }
 
                     # Resolve AcceptMessagesOnlyFromDLMembers
                     $AcceptMessagesOnlyFromDLMembers = @()
-                    foreach ($addr in $Group.AcceptMessagesOnlyFromDLMembers) { $AcceptMessagesOnlyFromDLMembers += (Get-Recipient $addr).PrimarySmtpAddress }
+                    foreach ($addr in $Group.AcceptMessagesOnlyFromDLMembers) { $AcceptMessagesOnlyFromDLMembers += (Get-Recipient $addr -ErrorAction SilentlyContinue).PrimarySmtpAddress }
 
                     # Resolve AcceptMessagesOnlyFromSendersOrMembers
                     $AcceptMessagesOnlyFromSendersOrMembers = @()
-                    foreach ($addr in $Group.AcceptMessagesOnlyFromSendersOrMembers) { $AcceptMessagesOnlyFromSendersOrMembers += (Get-Recipient $addr).PrimarySmtpAddress }
+                    foreach ($addr in $Group.AcceptMessagesOnlyFromSendersOrMembers) { $AcceptMessagesOnlyFromSendersOrMembers += (Get-Recipient $addr -ErrorAction SilentlyContinue).PrimarySmtpAddress }
 
                     $Group | Add-Member -TypeName NoteProperty -NotePropertyName Subscribers -NotePropertyValue ($Subscribers -join ",") -Force
                     $Group | Add-Member -TypeName NoteProperty -NotePropertyName Members -NotePropertyValue ($Members -join ",") -Force
@@ -301,7 +301,7 @@ https://gallery.technet.microsoft.com/Export-and-Import-Unified-e73d82ba
 
                     # If the IncludeUsers switch has been specified, use this
                     If ($IncludeUsers) {
-                        $AllRecipients = (Get-Recipient -ResultSize Unlimited).PrimarySmtpAddress
+                        $AllRecipients = (Get-Recipient -ErrorAction SilentlyContinue -ResultSize Unlimited).PrimarySmtpAddress
 
                         $Members = @()
                         [array]$Members_All = $Group.Members.Split(",")
@@ -425,7 +425,7 @@ https://gallery.technet.microsoft.com/Export-and-Import-Unified-e73d82ba
             } # End Import
 
             Set {
-                $AllRecipients = (Get-Recipient -ResultSize Unlimited).PrimarySmtpAddress
+                $AllRecipients = (Get-Recipient -ErrorAction SilentlyContinue -ResultSize Unlimited).PrimarySmtpAddress
                 If ($RewriteTargetDomain) {
                     RewriteImport -File $File -SourceDomain $SourceDomain -TargetDomain $TargetDomain
                     $UnifiedGroups = Import-Csv $TempFile

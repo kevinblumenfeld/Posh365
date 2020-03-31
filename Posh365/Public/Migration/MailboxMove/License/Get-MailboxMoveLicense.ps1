@@ -1,5 +1,9 @@
 function Get-MailboxMoveLicense {
-    param (    )
+    param (
+        [Parameter()]
+        [switch]
+        $IncludeRecipientType
+      )
     end {
 
         $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath("Desktop")) -ChildPath Posh365 )
