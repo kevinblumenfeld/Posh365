@@ -41,20 +41,20 @@ function Get-CloudMigrationCredentials {
     $SourcePanel = [System.Windows.Forms.Panel]::New()
     $SourcePanel.height = 290
     $SourcePanel.width = 388
-    $SourcePanel.location = [System.Drawing.Point](5, 4)
+    $SourcePanel.location = [System.Drawing.Point]::New(5, 4)
 
     $DestPanel = [System.Windows.Forms.Panel]::New()
     $DestPanel.height = 290
     $DestPanel.width = 388
     $DestPanel.Anchor = 'top,right'
-    $DestPanel.location = [System.Drawing.Point](397, 4)
+    $DestPanel.location = [System.Drawing.Point]::New(397, 4)
 
     $SourceConfigExportBT = [System.Windows.Forms.Button]::New()
     $SourceConfigExportBT.text = "Export Source Config"
     $SourceConfigExportBT.width = 375
     $SourceConfigExportBT.height = 30
     $SourceConfigExportBT.Anchor = 'top,right,left'
-    $SourceConfigExportBT.location = [System.Drawing.Point](13, 136)
+    $SourceConfigExportBT.location = [System.Drawing.Point]::New(13, 136)
     $SourceConfigExportBT.Font = 'Microsoft Sans Serif,10,style=Bold'
     $SourceConfigExportBT.ForeColor = "#cecece"
     $SourceConfigExportBT.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
@@ -67,7 +67,7 @@ function Get-CloudMigrationCredentials {
     $DestConfigExportBT.width = 375
     $DestConfigExportBT.height = 30
     $DestConfigExportBT.Anchor = 'top,right,left'
-    $DestConfigExportBT.location = [System.Drawing.Point](13, 136)
+    $DestConfigExportBT.location = [System.Drawing.Point]::New(13, 136)
     $DestConfigExportBT.Font = 'Microsoft Sans Serif,10,style=Bold'
     $DestConfigExportBT.ForeColor = "#cecece"
     $DestConfigExportBT.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
@@ -80,7 +80,7 @@ function Get-CloudMigrationCredentials {
     $SourceCredsExportBT.width = 375
     $SourceCredsExportBT.height = 30
     $SourceCredsExportBT.Anchor = 'top,right,left'
-    $SourceCredsExportBT.location = [System.Drawing.Point](13, 240)
+    $SourceCredsExportBT.location = [System.Drawing.Point]::New(13, 240)
     $SourceCredsExportBT.Font = 'Microsoft Sans Serif,10,style=Bold'
     $SourceCredsExportBT.ForeColor = "#cecece"
     $SourceCredsExportBT.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
@@ -93,7 +93,7 @@ function Get-CloudMigrationCredentials {
     $DestCredsExportBT.width = 375
     $DestCredsExportBT.height = 30
     $DestCredsExportBT.Anchor = 'top,right,left'
-    $DestCredsExportBT.location = [System.Drawing.Point](13, 240)
+    $DestCredsExportBT.location = [System.Drawing.Point]::New(13, 240)
     $DestCredsExportBT.Font = 'Microsoft Sans Serif,10,style=Bold'
     $DestCredsExportBT.ForeColor = "#cecece"
     $DestCredsExportBT.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
@@ -106,7 +106,7 @@ function Get-CloudMigrationCredentials {
     $FinishBT.width = 360
     $FinishBT.height = 30
     $FinishBT.Anchor = 'top,right,left'
-    $FinishBT.location = [System.Drawing.Point](220, 410)
+    $FinishBT.location = [System.Drawing.Point]::New(220, 410)
     $FinishBT.Font = 'Microsoft Sans Serif,10,style=Bold'
     $FinishBT.ForeColor = "#cecece"
     $FinishBT.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
@@ -119,7 +119,7 @@ function Get-CloudMigrationCredentials {
     $ClientInfoTB.width = 790
     $ClientInfoTB.height = 100
     $ClientInfoTB.Anchor = 'top,right,left'
-    $ClientInfoTB.location = [System.Drawing.Point](5, 300)
+    $ClientInfoTB.location = [System.Drawing.Point]::New(5, 300)
     $ClientInfoTB.Font = 'Microsoft Sans Serif,10'
     $ClientInfoTB.BackColor = "#000000"
     $ClientInfoTB.ForeColor = "#5bde09"
@@ -130,7 +130,7 @@ function Get-CloudMigrationCredentials {
     $SourceLB.AutoSize = $true
     $SourceLB.width = 25
     $SourceLB.height = 10
-    $SourceLB.location = [System.Drawing.Point](173, 9)
+    $SourceLB.location = [System.Drawing.Point]::New(173, 9)
     $SourceLB.Font = 'Microsoft Sans Serif,10,style=Bold,Underline'
     $SourceLB.ForeColor = "#cecece"
 
@@ -140,7 +140,7 @@ function Get-CloudMigrationCredentials {
     $DestinationLB.width = 25
     $DestinationLB.height = 10
     $DestinationLB.Anchor = 'top'
-    $DestinationLB.location = [System.Drawing.Point](162, 7)
+    $DestinationLB.location = [System.Drawing.Point]::New(162, 7)
     $DestinationLB.Font = 'Microsoft Sans Serif,10,style=Bold,Underline'
     $DestinationLB.ForeColor = "#cecece"
 
@@ -149,7 +149,7 @@ function Get-CloudMigrationCredentials {
     $ClientIDLBsource.AutoSize = $true
     $ClientIDLBsource.width = 25
     $ClientIDLBsource.height = 10
-    $ClientIDLBsource.location = [System.Drawing.Point](13, 36)
+    $ClientIDLBsource.location = [System.Drawing.Point]::New(13, 36)
     $ClientIDLBsource.Font = 'Microsoft Sans Serif,10'
     $ClientIDLBsource.ForeColor = "#cecece"
 
@@ -158,7 +158,7 @@ function Get-CloudMigrationCredentials {
     $ClientIDLBdest.AutoSize = $true
     $ClientIDLBdest.width = 25
     $ClientIDLBdest.height = 10
-    $ClientIDLBdest.location = [System.Drawing.Point](13, 36)
+    $ClientIDLBdest.location = [System.Drawing.Point]::New(13, 36)
     $ClientIDLBdest.Font = 'Microsoft Sans Serif,10'
     $ClientIDLBdest.ForeColor = "#cecece"
 
@@ -167,7 +167,7 @@ function Get-CloudMigrationCredentials {
     $ClientIDTBsource.BackColor = "#171717"
     $ClientIDTBsource.width = 300
     $ClientIDTBsource.height = 30
-    $ClientIDTBsource.location = [System.Drawing.Point](88, 36)
+    $ClientIDTBsource.location = [System.Drawing.Point]::New(88, 36)
     $ClientIDTBsource.Font = 'Microsoft Sans Serif,10'
     $ClientIDTBsource.ForeColor = "#ffffff"
     $ClientIDTBsource.BorderStyle = "None"
@@ -177,7 +177,7 @@ function Get-CloudMigrationCredentials {
     $ClientIDTBdest.width = 300
     $ClientIDTBdest.height = 30
     $ClientIDTBdest.Anchor = 'top'
-    $ClientIDTBdest.location = [System.Drawing.Point](88, 36)
+    $ClientIDTBdest.location = [System.Drawing.Point]::New(88, 36)
     $ClientIDTBdest.Font = 'Microsoft Sans Serif,10'
     $ClientIDTBdest.BackColor = "#171717"
     $ClientIDTBdest.ForeColor = "#ffffff"
@@ -188,7 +188,7 @@ function Get-CloudMigrationCredentials {
     $TenantIDLBsource.AutoSize = $true
     $TenantIDLBsource.width = 25
     $TenantIDLBsource.height = 10
-    $TenantIDLBsource.location = [System.Drawing.Point](13, 72)
+    $TenantIDLBsource.location = [System.Drawing.Point]::New(13, 72)
     $TenantIDLBsource.Font = 'Microsoft Sans Serif,10'
     $TenantIDLBsource.ForeColor = "#cecece"
 
@@ -198,7 +198,7 @@ function Get-CloudMigrationCredentials {
     $TenantIDLBdest.width = 25
     $TenantIDLBdest.height = 10
     $TenantIDLBdest.Anchor = 'top,right'
-    $TenantIDLBdest.location = [System.Drawing.Point](13, 72)
+    $TenantIDLBdest.location = [System.Drawing.Point]::New(13, 72)
     $TenantIDLBdest.Font = 'Microsoft Sans Serif,10'
     $TenantIDLBdest.ForeColor = "#cecece"
 
@@ -206,7 +206,7 @@ function Get-CloudMigrationCredentials {
     $TenantIDTBsource.multiline = $false
     $TenantIDTBsource.width = 294
     $TenantIDTBsource.height = 30
-    $TenantIDTBsource.location = [System.Drawing.Point](93, 73)
+    $TenantIDTBsource.location = [System.Drawing.Point]::New(93, 73)
     $TenantIDTBsource.Font = 'Microsoft Sans Serif,10'
     $TenantIDTBsource.BackColor = "#171717"
     $TenantIDTBsource.ForeColor = "#ffffff"
@@ -217,7 +217,7 @@ function Get-CloudMigrationCredentials {
     $TenantIDTBdest.width = 294
     $TenantIDTBdest.height = 30
     $TenantIDTBdest.Anchor = 'top'
-    $TenantIDTBdest.location = [System.Drawing.Point](93, 73)
+    $TenantIDTBdest.location = [System.Drawing.Point]::New(93, 73)
     $TenantIDTBdest.Font = 'Microsoft Sans Serif,10'
     $TenantIDTBdest.BackColor = "#171717"
     $TenantIDTBdest.ForeColor = "#ffffff"
@@ -228,7 +228,7 @@ function Get-CloudMigrationCredentials {
     $ClientSecLBsource.AutoSize = $true
     $ClientSecLBsource.width = 25
     $ClientSecLBsource.height = 10
-    $ClientSecLBsource.location = [System.Drawing.Point](13, 105)
+    $ClientSecLBsource.location = [System.Drawing.Point]::New(13, 105)
     $ClientSecLBsource.Font = 'Microsoft Sans Serif,10'
     $ClientSecLBsource.ForeColor = "#cecece"
 
@@ -238,7 +238,7 @@ function Get-CloudMigrationCredentials {
     $ClientSecLBdest.width = 25
     $ClientSecLBdest.height = 10
     $ClientSecLBdest.Anchor = 'top,right'
-    $ClientSecLBdest.location = [System.Drawing.Point](13, 105)
+    $ClientSecLBdest.location = [System.Drawing.Point]::New(13, 105)
     $ClientSecLBdest.Font = 'Microsoft Sans Serif,10'
     $ClientSecLBdest.ForeColor = "#cecece"
 
@@ -247,7 +247,7 @@ function Get-CloudMigrationCredentials {
     $ClientSecTBsource.multiline = $false
     $ClientSecTBsource.width = 276
     $ClientSecTBsource.height = 30
-    $ClientSecTBsource.location = [System.Drawing.Point](110, 107)
+    $ClientSecTBsource.location = [System.Drawing.Point]::New(110, 107)
     $ClientSecTBsource.Font = 'Microsoft Sans Serif,10'
     $ClientSecTBsource.BackColor = "#171717"
     $ClientSecTBsource.ForeColor = "#ffffff"
@@ -259,7 +259,7 @@ function Get-CloudMigrationCredentials {
     $ClientSecTBdest.width = 276
     $ClientSecTBdest.height = 30
     $ClientSecTBdest.Anchor = 'top'
-    $ClientSecTBdest.location = [System.Drawing.Point](110, 107)
+    $ClientSecTBdest.location = [System.Drawing.Point]::New(110, 107)
     $ClientSecTBdest.Font = 'Microsoft Sans Serif,10'
     $ClientSecTBdest.BackColor = "#171717"
     $ClientSecTBdest.ForeColor = "#ffffff"
@@ -270,7 +270,7 @@ function Get-CloudMigrationCredentials {
     $UsernameLBsource.AutoSize = $true
     $UsernameLBsource.width = 25
     $UsernameLBsource.height = 10
-    $UsernameLBsource.location = [System.Drawing.Point](13, 180)
+    $UsernameLBsource.location = [System.Drawing.Point]::New(13, 180)
     $UsernameLBsource.Font = 'Microsoft Sans Serif,10'
     $UsernameLBsource.ForeColor = "#cecece"
 
@@ -280,7 +280,7 @@ function Get-CloudMigrationCredentials {
     $UsernameLBdest.width = 25
     $UsernameLBdest.height = 10
     $UsernameLBdest.Anchor = 'top,right'
-    $UsernameLBdest.location = [System.Drawing.Point](13, 180)
+    $UsernameLBdest.location = [System.Drawing.Point]::New(13, 180)
     $UsernameLBdest.Font = 'Microsoft Sans Serif,10'
     $UsernameLBdest.ForeColor = "#cecece"
 
@@ -288,7 +288,7 @@ function Get-CloudMigrationCredentials {
     $UsernameTBsource.multiline = $false
     $UsernameTBsource.width = 290
     $UsernameTBsource.height = 30
-    $UsernameTBsource.location = [System.Drawing.Point](96, 180)
+    $UsernameTBsource.location = [System.Drawing.Point]::New(96, 180)
     $UsernameTBsource.Font = 'Microsoft Sans Serif,10'
     $UsernameTBsource.BackColor = "#171717"
     $UsernameTBsource.ForeColor = "#ffffff"
@@ -299,7 +299,7 @@ function Get-CloudMigrationCredentials {
     $UsernameTBdest.width = 290
     $UsernameTBdest.height = 30
     $UsernameTBdest.Anchor = 'top'
-    $UsernameTBdest.location = [System.Drawing.Point](96, 180)
+    $UsernameTBdest.location = [System.Drawing.Point]::New(96, 180)
     $UsernameTBdest.Font = 'Microsoft Sans Serif,10'
     $UsernameTBdest.BackColor = "#171717"
     $UsernameTBdest.ForeColor = "#ffffff"
@@ -310,7 +310,7 @@ function Get-CloudMigrationCredentials {
     $PasswordLBsource.AutoSize = $true
     $PasswordLBsource.width = 25
     $PasswordLBsource.height = 10
-    $PasswordLBsource.location = [System.Drawing.Point](13, 210)
+    $PasswordLBsource.location = [System.Drawing.Point]::New(13, 210)
     $PasswordLBsource.Font = 'Microsoft Sans Serif,10'
     $PasswordLBsource.ForeColor = "#cecece"
 
@@ -320,7 +320,7 @@ function Get-CloudMigrationCredentials {
     $PasswordLBdest.width = 25
     $PasswordLBdest.height = 10
     $PasswordLBdest.Anchor = 'top,right'
-    $PasswordLBdest.location = [System.Drawing.Point](13, 210)
+    $PasswordLBdest.location = [System.Drawing.Point]::New(13, 210)
     $PasswordLBdest.Font = 'Microsoft Sans Serif,10'
     $PasswordLBdest.ForeColor = "#cecece"
 
@@ -328,7 +328,7 @@ function Get-CloudMigrationCredentials {
     $PasswordMTBsource.multiline = $false
     $PasswordMTBsource.width = 291
     $PasswordMTBsource.height = 30
-    $PasswordMTBsource.location = [System.Drawing.Point](95, 210)
+    $PasswordMTBsource.location = [System.Drawing.Point]::New(95, 210)
     $PasswordMTBsource.Font = 'Microsoft Sans Serif,10'
     $PasswordMTBsource.PasswordChar = '*'
     $PasswordMTBsource.BackColor = "#171717"
@@ -339,7 +339,7 @@ function Get-CloudMigrationCredentials {
     $PasswordMTBdest.multiline = $false
     $PasswordMTBdest.width = 291
     $PasswordMTBdest.height = 30
-    $PasswordMTBdest.location = [System.Drawing.Point](95, 210)
+    $PasswordMTBdest.location = [System.Drawing.Point]::New(95, 210)
     $PasswordMTBdest.Font = 'Microsoft Sans Serif,10'
     $PasswordMTBdest.PasswordChar = '*'
     $PasswordMTBdest.BackColor = "#171717"
