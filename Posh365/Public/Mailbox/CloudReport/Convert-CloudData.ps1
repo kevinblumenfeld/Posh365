@@ -29,6 +29,7 @@ function Convert-CloudData {
         [PSCustomObject]@{
             'DisplayName'          = $Source.DisplayName
             'Alias'                = $Source.Alias
+            'SourceType'           = $Source.RecipientTypeDetails
             'RecipientType'        = 'MailUser'
             'RecipientTypeDetails' = 'MailUser'
             'UserPrincipalName'    = $TargetInitial

@@ -19,7 +19,7 @@ function Get-CloudData {
 
         switch ($Menu) {
             0 { }
-            1 { continue }
+            1 { break }
         }
     }
     else {
