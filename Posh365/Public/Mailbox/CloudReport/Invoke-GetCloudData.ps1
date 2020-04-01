@@ -10,7 +10,7 @@ function Invoke-GetCloudData {
         $InitialDomain
     )
 
-    Get-Mailbox -Filter "IsDirSynced -eq '$true'" -ResultSize 600 | Select-Object @(
+    Get-Mailbox -Filter "IsDirSynced -eq '$true'" -ResultSize $ResultSize | Select-Object @(
         'DisplayName'
         'Alias'
         'RecipientType'
