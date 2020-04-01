@@ -38,7 +38,7 @@ function Convert-CloudData {
             'ArchiveGuid'          = $Source.ArchiveGuid
             'LegacyExchangeDN'     = 'x500:{0}' -f $Source.LegacyExchangeDN
             'InitialAddress'       = $TargetInitial
-            'EmailAddresses'       = $AddressList -join '|'
+            'EmailAddresses'       = @($AddressList) -ne '' -join '|'
             'ExternalEmailAddress' = $Source.InitialAddress
         }
     }
