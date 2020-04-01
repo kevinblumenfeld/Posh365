@@ -18,7 +18,7 @@ function Convert-CloudData {
 
     foreach ($Source in $SourceData) {
 
-        $TargetInitial = 'smtp:{0}@{1}' -f ($Source.InitialAddress -split '@')[0], $InitialDomain
+        $TargetInitial = '{0}@{1}' -f ($Source.InitialAddress -split '@')[0], $InitialDomain
 
         $AddressList = [System.Collections.Generic.List[string]]::New()
         $AddressList.Add('x500:{0}' -f $Source.LegacyExchangeDN)

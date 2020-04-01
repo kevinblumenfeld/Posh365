@@ -24,7 +24,7 @@ function Get-CloudData {
     }
     else {
         Write-Host 'Not connected to Exchange Online' -ForegroundColor Red
-        continue
+        break
     }
 
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
