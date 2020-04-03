@@ -437,7 +437,7 @@ function Connect-Cloud {
         # Azure AD
         If ($AzureAD -or $AzureADver2 -or $All365) {
             if (-not $MFA) {
-                If (-not ($null = Get-Module -Name AzureAD -ListAvailable)) {
+                If (-not ($null = Get-Module -Name 'AzureAD', 'AzureADPreview' -ListAvailable)) {
                     Install-Module -Name AzureAD -Scope CurrentUser -Force -AllowClobber
                 }
                 try {

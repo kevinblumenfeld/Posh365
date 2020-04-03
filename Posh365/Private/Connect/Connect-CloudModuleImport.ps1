@@ -92,7 +92,7 @@ function Connect-CloudModuleImport {
                 }
             }
             $AzureAD {
-                if (-not ($null = Get-Module -Name AzureAD -ListAvailable)) {
+                if (-not ($null = Get-Module -Name 'AzureAD', 'AzureADPreview' -ListAvailable)) {
                     Install-Module -Name AzureAD -Scope CurrentUser -Force -AllowClobber
                 }
             }

@@ -8,11 +8,9 @@ function Switch-AzureADModule {
     Get-Module 'AzureAD', 'AzureADPreview' -list | ForEach-Object { Remove-Item -Path $_.Path -Force }
 
     if ($Preview) {
-        Install-Module -Name AzureADPreview -Scope CurrentUser -RequiredVersion 2.0.2.85 -AllowPrerelease -Force
-        Import-Module -Name AzureADPreview -Force
+        Install-Module -Name AzureADPreview -Scope CurrentUser -AllowPrerelease -Force
     }
     else {
         Install-Module -Name AzureAD -Scope CurrentUser -Force
-        Import-Module -Name AzureAD -Force
     }
 }
