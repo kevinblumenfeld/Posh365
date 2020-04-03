@@ -47,7 +47,7 @@ function Set-GroupCreationRestriction {
     )
 
 
-    $GroupChoice = Get-AzureADGroup | Select-Object DisplayName, Description, Mail, DirSyncEnabled, SecurityEnabled, Objectid |
+    $GroupChoice = Get-AzureADGroup -All:$true | Select-Object DisplayName, Description, Mail, DirSyncEnabled, SecurityEnabled, Objectid |
     Out-GridView -Title 'Select one group to manage creation of Office 365 Groups and Microsoft Teams' -OutputMode Single
 
     if (-not $GroupChoice) { return }

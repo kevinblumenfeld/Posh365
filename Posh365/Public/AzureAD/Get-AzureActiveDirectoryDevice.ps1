@@ -2,7 +2,7 @@ function Get-AzureActiveDirectoryDevice {
     param (
 
     )
-    Get-AzureADDevice | Select-Object @(
+    Get-AzureADDevice -All:$true | Select-Object @(
         'DeviceOSType'
         'DisplayName'
         'DeviceOSVersion'
