@@ -6,8 +6,9 @@ function Get-CloudData {
         $ResultSize = 'Unlimited'
     )
 
-    Get-PSSession | Remove-PSSession
-    Connect-ExchangeOnline
+    #Get-PSSession | Remove-PSSession
+    #Connect-ExchangeOnline
+    #Connect-MsolService
     $InitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
 
     if ($InitialDomain) {
