@@ -5,12 +5,27 @@ function Get-CloudData {
         [Parameter()]
         $ResultSize = 'Unlimited'
     )
+    $Yes = [ChoiceDescription]::new('&Yes', 'Connect: Yes')
+    $No = [ChoiceDescription]::new('&No', 'Connect: No')
+    $Question = 'Connect to Exchange Online and AzureAD?' -f $InitialDomain
+    $Options = [ChoiceDescription[]]($Yes, $No)
+    $ConnectMenu = $host.ui.PromptForChoice($Title, $Question, $Options, 0)
 
-    #Get-PSSession | Remove-PSSession
-    #Connect-ExchangeOnline
-    #Connect-MsolService
+    switch ($ConnectMenu) {
+        0 {
+            Get-PSSession | Remove-PSSession
+            Disconnect-AzureAD
+            Connect-ExchangeOnline
+            $null = Connect-AzureAD
+        }
+        1 { }
+    }
     $InitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
-
+    $AzADDomain = ((Get-AzureADDomain).where{ $_.IsInitial }).Name
+    if ($InitialDomain -ne $AzADDomain) {
+        Write-Host "Halting script: $InitialDomain does not match $AzADDomain" -ForegroundColor Red
+        break
+    }
     if ($InitialDomain) {
         $Yes = [ChoiceDescription]::new('&Yes', 'Source Domain: Yes')
         $No = [ChoiceDescription]::new('&No', 'Source Domain: No')
@@ -52,7 +67,6 @@ function Get-CloudData {
 
     Write-Host ('Source tenant data is complete: {0} {1}' -f $SourceFile, [Environment]::NewLine) -ForegroundColor Green
 
-
     $Yes = [ChoiceDescription]::new('&Yes', 'Convert Cloud Data: Yes')
     $No = [ChoiceDescription]::new('&No', 'Convert Cloud Data: No')
     $Question = 'Convert data? (we only create a CSV in this step - we do not write to the tenent)'
@@ -62,9 +76,16 @@ function Get-CloudData {
     switch ($Menu) {
         0 {
             Write-Host ('Converting data...{0}' -f [Environment]::NewLine) -ForegroundColor Gray
-
+            Disconnect-AzureAD
             Get-PSSession | Remove-PSSession
             Connect-ExchangeOnline
+            $null = Connect-AzureAD
+            $InitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
+            $AzADDomain = ((Get-AzureADDomain).where{ $_.IsInitial }).Name
+            if ($InitialDomain -ne $AzADDomain) {
+                Write-Host "Halting script: $InitialDomain does not match $AzADDomain" -ForegroundColor Red
+                break
+            }
             $TargetInitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
             $TargetFile = Join-Path -Path $SourcePath -ChildPath ('{0}.csv' -f $TargetInitialDomain)
 

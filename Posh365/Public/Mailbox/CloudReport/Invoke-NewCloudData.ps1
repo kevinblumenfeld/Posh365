@@ -3,54 +3,148 @@ function Invoke-NewCloudData {
     [CmdletBinding()]
     param (
         [Parameter()]
-        [ValidateScript( { Test-Path $_ })]
-        $Path
+        $ConvertedData
     )
+    $ErrorActionPreference = 'stop'
 
-    Get-PSSession | Remove-PSSession
-    Connect-ExchangeOnline
-    $InitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
-
-    if ($InitialDomain) {
-        $Yes = [ChoiceDescription]::new('&Yes', 'Import Data: Yes')
-        $No = [ChoiceDescription]::new('&No', 'Import Data: No')
-        $Question = 'Import the data into this tenant ---> {0} ?' -f $InitialDomain
-        $Options = [ChoiceDescription[]]($Yes, $No)
-        $Menu = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
-
-        switch ($Menu) {
-            0 { }
-            1 { break }
-        }
-    }
-    else {
-        Write-Host 'Not connected to Exchange Online' -ForegroundColor Red
-        break
-    }
-    $ImportList = Import-Csv -Path $Path
-    foreach ($Import in $ImportList) {
+    $ConvertedList = $ConvertedData | Where-Object { $_.Type -eq 'Recipient' }
+    foreach ($Converted in $ConvertedList) {
+        $MeuCreated, $MeuSet = $null
         $GeneratedPW = [System.Web.Security.Membership]::GeneratePassword(16, 7)
         try {
-            $NewMEUParams = @{
-                Name                      = $NewName
-                DisplayName               = $DisplayName
-                MicrosoftOnlineServicesID = $dbUPN
+            $NewParams = @{
+                Name                      = $Converted.DisplayName
+                DisplayName               = $Converted.DisplayName
+                MicrosoftOnlineServicesID = $Converted.UserPrincipalName
+                PrimarySMTPAddress        = $Converted.UserPrincipalName
+                Alias                     = $Converted.Alias
                 Password                  = ConvertTo-SecureString -String $GeneratedPW -AsPlainText:$true -Force
-                PrimarySMTPAddress        = $dbRFA
-                ExternalEmailAddress      = $dbRFA
+                ExternalEmailAddress      = $Converted.SourceInitial
                 ErrorAction               = 'Stop'
             }
-            $null = New-MailUser @NewMEUParams
-            [PSCustomObject]@{
+            $MeuCreated = New-MailUser @NewParams
 
-                Log = "Success"
+            $SetParams = @{
+                Identity    = $MeuCreated.ExternalDirectoryObjectId
+                ErrorAction = 'Stop'
+            }
+            if ($Converted.RecipientType -eq 'USERMAILBOX') {
+                $SerParams.Add('ExchangeGuid', $Converted.ExchangeGuid)
+            }
+            $MeuSet = Set-MailUser @SetParams
+
+            [PSCustomObject]@{
+                ResultNew                 = 'SUCCESS'
+                ResultSet                 = 'SUCCESS'
+                Name                      = $MeuCreated.Name
+                DisplayName               = $MeuCreated.DisplayName
+                SourceType                = $Converted.RecipientTypeDetails
+                MicrosoftOnlineServicesID = $MeuCreated.MicrosoftOnlineServicesID
+                UserPrincipalName         = $MeuCreated.UserPrincipalName
+                PrimarySMTPAddress        = $MeuCreated.PrimarySMTPAddress
+                Alias                     = $MeuCreated.Alias
+                ExchangeGuid              = $MeuSet.ExchangeGuid
+                SourceId                  = $Converted.ExternalDirectoryObjectId
+                TargetId                  = $MeuCreated.ExternalDirectoryObjectId
+                Password                  = $GeneratedPW
+                EmailAddresses            = $Converted.ExternalEmailAddress
+                Log                       = 'SUCCESS'
+            }
+
+        }
+        catch {
+            if ($MeuCreated -and -not $MeuSet) {
+                [PSCustomObject]@{
+                    ResultNew                 = 'SUCCESS'
+                    ResultSet                 = 'FAILED'
+                    Name                      = $MeuCreated.Name
+                    DisplayName               = $MeuCreated.DisplayName
+                    SourceType                = $Converted.RecipientTypeDetails
+                    MicrosoftOnlineServicesID = $MeuCreated.MicrosoftOnlineServicesID
+                    UserPrincipalName         = $MeuCreated.UserPrincipalName
+                    PrimarySMTPAddress        = $MeuCreated.PrimarySMTPAddress
+                    Alias                     = $MeuCreated.Alias
+                    ExchangeGuid              = $Converted.ExchangeGuid
+                    SourceId                  = $MeuCreated.ExternalDirectoryObjectId
+                    TargetId                  = $MeuCreated.ExternalDirectoryObjectId
+                    Password                  = $GeneratedPW
+                    EmailAddresses            = $Converted.ExternalEmailAddress
+                    Log                       = $_.Exception.Message
+                }
+            }
+            else {
+                [PSCustomObject]@{
+                    ResultNew                 = 'FAILED'
+                    ResultSet                 = 'FAILED'
+                    Name                      = $Converted.DisplayName
+                    DisplayName               = $Converted.DisplayName
+                    SourceType                = $Converted.RecipientTypeDetails
+                    MicrosoftOnlineServicesID = $Converted.MicrosoftOnlineServicesID
+                    UserPrincipalName         = $Converted.UserPrincipalName
+                    PrimarySMTPAddress        = $Converted.PrimarySMTPAddress
+                    Alias                     = $Converted.Alias
+                    ExchangeGuid              = $Converted.ExchangeGuid
+                    SourceId                  = $Converted.ExternalDirectoryObjectId
+                    TargetId                  = ''
+                    Password                  = $GeneratedPW
+                    EmailAddresses            = $Converted.ExternalEmailAddress
+                    Log                       = $_.Exception.Message
+                }
+            }
+        }
+    }
+    $ConvertedAzList = $ConvertedData | Where-Object { $_.Type -eq 'AzureADUser' }
+    foreach ($ConvertedAz in $ConvertedAzList) {
+        try {
+            $GeneratedPW = [System.Web.Security.Membership]::GeneratePassword(16, 7)
+            $PasswordProfile = [Microsoft.Open.AzureAD.Model.PasswordProfile]::new()
+            $PasswordProfile.Password = $GeneratedPW
+            $AzUserParams = @{
+                DisplayName       = $ConvertedAz.DisplayName
+                UserPrincipalName = $ConvertedAz.AzureADUPN
+                MailNickName      = ($ConvertedAz.AzureADUPN -split '@')[0]
+                PasswordProfile   = $PasswordProfile
+                AccountEnabled    = $true
+                ErrorAction       = 'Stop'
+            }
+            $NewAzADUser = New-AzureADUser @AzUserParams
+            [PSCustomObject]@{
+                ResultNew                 = 'SUCCESS'
+                ResultSet                 = 'SUCCESS'
+                Name                      = $ConvertedAz.DisplayName
+                DisplayName               = $NewAzADUser.DisplayName
+                SourceType                = $ConvertedAz.RecipientTypeDetails
+                MicrosoftOnlineServicesID = ''
+                UserPrincipalName         = $NewAzADUser.UserPrincipalName
+                PrimarySMTPAddress        = ''
+                Alias                     = ($ConvertedAz.AzureADUPN -split '@')[0]
+                ExchangeGuid              = ''
+                SourceId                  = $ConvertedAz.ExternalDirectoryObjectId
+                TargetId                  = $NewAzADUser.ObjectId
+                Password                  = $GeneratedPW
+                EmailAddresses            = ''
+                Log                       = 'SUCCESS'
             }
         }
         catch {
             [PSCustomObject]@{
-
-                Log = $_.Exception.Message
+                ResultNew                 = 'FAILED'
+                ResultSet                 = 'FAILED'
+                Name                      = $ConvertedAz.DisplayName
+                DisplayName               = $ConvertedAz.DisplayName
+                SourceType                = $ConvertedAz.RecipientTypeDetails
+                MicrosoftOnlineServicesID = ''
+                UserPrincipalName         = $ConvertedAz.UserPrincipalName
+                PrimarySMTPAddress        = ''
+                Alias                     = ($ConvertedAz.AzureADUPN -split '@')[0]
+                ExchangeGuid              = ''
+                SourceId                  = $ConvertedAz.ExternalDirectoryObjectId
+                TargetId                  = ''
+                Password                  = $GeneratedPW
+                EmailAddresses            = ''
+                Log                       = $_.Exception.Message
             }
         }
     }
+    $ErrorActionPreference = 'continue'
 }

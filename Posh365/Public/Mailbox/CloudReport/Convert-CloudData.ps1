@@ -18,28 +18,43 @@ function Convert-CloudData {
 
     foreach ($Source in $SourceData) {
 
-        $TargetInitial = '{0}@{1}' -f ($Source.InitialAddress -split '@')[0], $InitialDomain
-
         $AddressList = [System.Collections.Generic.List[string]]::New()
-        $AddressList.Add('x500:{0}' -f $Source.LegacyExchangeDN)
+
+        if ($Source.InitialAddress) {
+            $TargetInitial = '{0}@{1}' -f ($Source.InitialAddress -split '@')[0], $InitialDomain
+        }
+        else {
+            $TargetInitial = ''
+        }
+        if ($Source.LegacyExchangeDN) {
+            $LegacyExchangeDN = 'x500:{0}' -f $Source.LegacyExchangeDN
+            $AddressList.Add($LegacyExchangeDN)
+        }
+        else {
+            $LegacyExchangeDN = ''
+        }
+
         $AddressList.Add((@($Source.EmailAddresses -split [Regex]::Escape('|') ).where{
                     $_ -like "x500:*" -or ($_ -split '@')[1] -in $AcceptedDomains
                 }).foreach{ '{0}:{1}' -f ($_ -split ':')[0].ToLower(), ($_ -split ':')[1] })
 
         [PSCustomObject]@{
-            'DisplayName'          = $Source.DisplayName
-            'Alias'                = $Source.Alias
-            'SourceType'           = $Source.RecipientTypeDetails
-            'RecipientType'        = 'MailUser'
-            'RecipientTypeDetails' = 'MailUser'
-            'UserPrincipalName'    = $TargetInitial
-            'PrimarySmtpAddress'   = $TargetInitial
-            'ExchangeGuid'         = $Source.ExchangeGuid
-            'ArchiveGuid'          = $Source.ArchiveGuid
-            'LegacyExchangeDN'     = 'x500:{0}' -f $Source.LegacyExchangeDN
-            'InitialAddress'       = $TargetInitial
-            'EmailAddresses'       = @($AddressList) -ne '' -join '|'
-            'ExternalEmailAddress' = $Source.InitialAddress
+            'DisplayName'               = $Source.DisplayName
+            'Type'                      = $Source.Type
+            'RecipientType'             = $Source.RecipientType
+            'RecipientTypeDetails'      = $Source.RecipientTypeDetails
+            'AzureADUPN'                = '{0}@{1}' -f ($Source.UserPrincipalName -split '@')[0], $InitialDomain
+            'UserPrincipalName'         = $TargetInitial
+            'ExternalEmailAddress'      = $Source.InitialAddress
+            'Alias'                     = $Source.Alias
+            'PrimarySmtpAddress'        = $TargetInitial
+            'SourceInitial'             = $Source.InitialAddress
+            'ExchangeGuid'              = $Source.ExchangeGuid
+            'ArchiveGuid'               = $Source.ArchiveGuid
+            'LegacyExchangeDN'          = $LegacyExchangeDN
+            'InitialAddress'            = $TargetInitial
+            'EmailAddresses'            = @($AddressList) -ne '' -join '|'
+            'ExternalDirectoryObjectId' = $Source.ExternalDirectoryObjectId
         }
     }
 }
