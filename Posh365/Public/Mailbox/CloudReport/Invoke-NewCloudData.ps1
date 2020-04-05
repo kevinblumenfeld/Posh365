@@ -79,7 +79,7 @@ function Invoke-NewCloudData {
                     Name                      = $Converted.DisplayName
                     DisplayName               = $Converted.DisplayName
                     SourceType                = $Converted.RecipientTypeDetails
-                    MicrosoftOnlineServicesID = $Converted.MicrosoftOnlineServicesID
+                    MicrosoftOnlineServicesID = $Converted.UserPrincipalName
                     UserPrincipalName         = $Converted.UserPrincipalName
                     PrimarySMTPAddress        = $Converted.PrimarySMTPAddress
                     Alias                     = $Converted.Alias
@@ -132,7 +132,7 @@ function Invoke-NewCloudData {
                 ResultSet                 = 'FAILED'
                 Name                      = $ConvertedAz.DisplayName
                 DisplayName               = $ConvertedAz.DisplayName
-                SourceType                = $ConvertedAz.RecipientTypeDetails
+                SourceType                = $ConvertedAz.Type
                 MicrosoftOnlineServicesID = ''
                 UserPrincipalName         = $ConvertedAz.UserPrincipalName
                 PrimarySMTPAddress        = ''
