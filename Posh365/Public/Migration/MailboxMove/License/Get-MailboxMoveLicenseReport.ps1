@@ -5,7 +5,7 @@ function Get-MailboxMoveLicenseReport {
         $Path
     )
     end {
-        Remove-Item -Path (Join-Path $Path 365_Licenses.csv) -Force
+        Remove-Item -Path (Join-Path $Path 365_Licenses.csv) -Force -ErrorAction SilentlyContinue
         Get-CloudLicense -Path $Path
         $ColumnList = (Get-Content (Join-Path $Path 365_Licenses.csv) | ForEach-Object { $_.split(',').count } | Sort-Object -Descending)[0]
         Import-Csv -Path (Join-Path $Path 365_Licenses.csv) -Header (1..$ColumnList | ForEach-Object { "Column$_" }) |
@@ -32,6 +32,7 @@ function Get-MailboxMoveLicenseReport {
             )
         }
         Import-Csv -Path (Join-Path $Path 365_LicenseReport.csv) | Export-Excel @Excel365Licenses
+        Remove-Item -Path (Join-Path $Path 365_LicenseReport.csv) -Force
         $ExcelPath = Join-Path $Path '365_LicenseReport.xlsx'
         Write-Host "Excel file located here: $ExcelPath"
     }
