@@ -23,15 +23,18 @@ function Invoke-NewCloudData {
                 ErrorAction               = 'Stop'
             }
             $MeuCreated = New-MailUser @NewParams
+            Write-Host "New Meu: $($MeuCreated.DisplayName)" -ForegroundColor Green
 
             $SetParams = @{
-                Identity    = $MeuCreated.ExternalDirectoryObjectId
-                ErrorAction = 'Stop'
+                Identity       = $MeuCreated.ExternalDirectoryObjectId
+                EmailAddresses = @{Add = $Converted.EmailAddresses -split [regex]::Escape('|') }
+                ErrorAction    = 'Stop'
             }
             if ($Converted.RecipientType -eq 'USERMAILBOX') {
                 $SetParams['ExchangeGuid'] = $Converted.ExchangeGuid
             }
             $MeuSet = Set-MailUser @SetParams
+            Write-Host "Set Meu: $($MeuCreated.DisplayName)" -ForegroundColor Green
 
             [PSCustomObject]@{
                 ResultNew                 = 'SUCCESS'
@@ -43,7 +46,7 @@ function Invoke-NewCloudData {
                 UserPrincipalName         = $MeuCreated.UserPrincipalName
                 PrimarySMTPAddress        = $MeuCreated.PrimarySMTPAddress
                 Alias                     = $MeuCreated.Alias
-                ExchangeGuid              = $MeuSet.ExchangeGuid
+                ExchangeGuid              = $Converted.ExchangeGuid
                 SourceId                  = $Converted.ExternalDirectoryObjectId
                 TargetId                  = $MeuCreated.ExternalDirectoryObjectId
                 Password                  = $GeneratedPW
@@ -71,6 +74,7 @@ function Invoke-NewCloudData {
                     EmailAddresses            = $Converted.ExternalEmailAddress
                     Log                       = $_.Exception.Message
                 }
+                Write-Host "Set Meu failed: $($MeuCreated.DisplayName)" -ForegroundColor Red
             }
             else {
                 [PSCustomObject]@{
@@ -90,6 +94,7 @@ function Invoke-NewCloudData {
                     EmailAddresses            = $Converted.ExternalEmailAddress
                     Log                       = $_.Exception.Message
                 }
+                Write-Host "New and Set Meu failed: $($MeuCreated.DisplayName)" -ForegroundColor Red
             }
         }
     }
@@ -108,6 +113,7 @@ function Invoke-NewCloudData {
                 ErrorAction       = 'Stop'
             }
             $NewAzADUser = New-AzureADUser @AzUserParams
+            Write-Host "New AzureAdUser: $($NewAzADUser.DisplayName)" -ForegroundColor Green
             [PSCustomObject]@{
                 ResultNew                 = 'SUCCESS'
                 ResultSet                 = 'SUCCESS'
@@ -144,6 +150,7 @@ function Invoke-NewCloudData {
                 EmailAddresses            = ''
                 Log                       = $_.Exception.Message
             }
+            Write-Host "New AzureAdUser failed: $($NewAzADUser.DisplayName)" -ForegroundColor Red
         }
     }
     $ErrorActionPreference = 'continue'

@@ -45,6 +45,9 @@ function New-CloudData {
         break
     }
     $ConvertedData = Import-Csv -Path $FilePath
-    Invoke-NewCloudData -ConvertedData $ConvertedData # | EXPORT
-
+    $FileStamp = 'Results_{0}_{1}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'), $InitialDomain
+    $ResultFilePath = Join-Path -Path (Split-Path $FilePath) -ChildPath $FileStamp
+    $ResultObject = Invoke-NewCloudData -ConvertedData $ConvertedData
+    $ResultObject | Out-GridView -Title $FileStamp
+    $ResultObject | Export-Csv $ResultFilePath -NoTypeInformation
 }
