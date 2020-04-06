@@ -29,7 +29,7 @@ function Invoke-NewCloudData {
                 ErrorAction = 'Stop'
             }
             if ($Converted.RecipientType -eq 'USERMAILBOX') {
-                $SerParams.Add('ExchangeGuid', $Converted.ExchangeGuid)
+                $SetParams['ExchangeGuid'] = $Converted.ExchangeGuid
             }
             $MeuSet = Set-MailUser @SetParams
 
@@ -113,7 +113,7 @@ function Invoke-NewCloudData {
                 ResultSet                 = 'SUCCESS'
                 Name                      = $ConvertedAz.DisplayName
                 DisplayName               = $NewAzADUser.DisplayName
-                SourceType                = $ConvertedAz.RecipientTypeDetails
+                SourceType                = $ConvertedAz.Type
                 MicrosoftOnlineServicesID = ''
                 UserPrincipalName         = $NewAzADUser.UserPrincipalName
                 PrimarySMTPAddress        = ''
