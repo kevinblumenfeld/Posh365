@@ -44,10 +44,20 @@ function Convert-CloudData {
             'RecipientType'             = $Source.RecipientType
             'RecipientTypeDetails'      = $Source.RecipientTypeDetails
             'AzureADUPN'                = '{0}@{1}' -f ($Source.UserPrincipalName -split '@')[0], $InitialDomain
-            'UserPrincipalName'         = $TargetInitial
+            'UserPrincipalName'         = if ($Source.PrimarySmtpAddress) {
+                '{0}@{1}' -f ($Source.PrimarySmtpAddress -split '@')[0], $InitialDomain
+            }
+            else {
+                { '{0}@{1}' -f ($Source.UserPrincipalName -split '@')[0], $InitialDomain }
+            }
             'ExternalEmailAddress'      = $Source.InitialAddress
             'Alias'                     = $Source.Alias
-            'PrimarySmtpAddress'        = $TargetInitial
+            'PrimarySmtpAddress'        = if ($Source.PrimarySmtpAddress) {
+                '{0}@{1}' -f ($Source.PrimarySmtpAddress -split '@')[0], $InitialDomain
+            }
+            else {
+                { '' }
+            }
             'SourceInitial'             = $Source.InitialAddress
             'ExchangeGuid'              = $Source.ExchangeGuid
             'ArchiveGuid'               = $Source.ArchiveGuid
@@ -55,6 +65,9 @@ function Convert-CloudData {
             'InitialAddress'            = $TargetInitial
             'EmailAddresses'            = @($AddressList) -ne '' -join '|'
             'ExternalDirectoryObjectId' = $Source.ExternalDirectoryObjectId
+            'UPNPrimaryMismatch'        = { if (($Source.PrimarySmtpAddress -split '@')[0] -ne ($Source.UserPrincipalName -split '@')[0]) {
+                    $Source.UserPrincipalName
+                } }
         }
     }
 }
