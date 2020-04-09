@@ -54,7 +54,7 @@ function Invoke-NewCloudData {
                 SourceId                  = $Converted.ExternalDirectoryObjectId
                 TargetId                  = $MeuSet.ExternalDirectoryObjectId
                 Password                  = $GeneratedPW
-                EmailAddresses            = @($MeuSet.EmailAddresses) -ne '' -join '|'
+                TargetEmailAddresses      = @($MeuSet.EmailAddresses) -ne '' -join '|'
                 Log                       = 'SUCCESS'
             }
 
@@ -76,7 +76,7 @@ function Invoke-NewCloudData {
                     SourceId                  = $Converted.ExternalDirectoryObjectId
                     TargetId                  = $MeuCreated.ExternalDirectoryObjectId
                     Password                  = $GeneratedPW
-                    EmailAddresses            = 'FAILED'
+                    TargetEmailAddresses      = @($MeuCreated.EmailAddresses) -ne '' -join '|'
                     Log                       = $_.Exception.Message
                 }
                 Write-Host "Failed Set MailUser: $($MeuCreated.DisplayName)" -ForegroundColor Yellow
@@ -103,6 +103,11 @@ function Invoke-NewCloudData {
                 Write-Host "Failed New & Set MailUser: $($Converted.DisplayName)" -ForegroundColor Red
             }
         }
+        if ($MeuCreated) {
+            $MeuPasswordProfile = [Microsoft.Open.AzureAD.Model.PasswordProfile]::new()
+            $MeuPasswordProfile.ForceChangePasswordNextLogin = $true
+            Set-AzureAdUser -ObjectId $MeuCreated.ExternalDirectoryObjectId -PasswordProfile $MeuPasswordProfile
+        }
     }
     $ConvertedAzList = $ConvertedData | Where-Object { $_.Type -eq 'AzureADUser' }
     foreach ($ConvertedAz in $ConvertedAzList) {
@@ -110,6 +115,7 @@ function Invoke-NewCloudData {
             $GeneratedPW = [System.Web.Security.Membership]::GeneratePassword(16, 7)
             $PasswordProfile = [Microsoft.Open.AzureAD.Model.PasswordProfile]::new()
             $PasswordProfile.Password = $GeneratedPW
+            $PasswordProfile.ForceChangePasswordNextLogin = $true
             $AzUserParams = @{
                 DisplayName       = $ConvertedAz.DisplayName
                 UserPrincipalName = $ConvertedAz.AzureADUPN
