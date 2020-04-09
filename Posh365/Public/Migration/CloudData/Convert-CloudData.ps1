@@ -38,12 +38,12 @@ function Convert-CloudData {
                     $_ -like "x500:*" -or ($_ -split '@')[1] -in $AcceptedDomains
                 }).foreach{ '{0}:{1}' -f ($_ -split ':')[0].ToLower(), ($_ -split ':')[1] })
 
+        $ConstructedUPN = '{0}@{1}' -f ($Source.UserPrincipalName -split '@')[0], $InitialDomain
+
         if ($Source.PrimarySmtpAddress) {
-            $ConstructedUPN = '{0}@{1}' -f ($Source.PrimarySmtpAddress -split '@')[0], $InitialDomain
-            $ConstructedPrimarySmtp = $ConstructedUPN
+            $ConstructedPrimarySmtp = '{0}@{1}' -f ($Source.PrimarySmtpAddress -split '@')[0], $InitialDomain
         }
         else {
-            $ConstructedUPN = '{0}@{1}' -f ($Source.UserPrincipalName -split '@')[0], $InitialDomain
             $ConstructedPrimarySmtp = ''
         }
 
@@ -54,7 +54,7 @@ function Convert-CloudData {
             RecipientTypeDetails      = $Source.RecipientTypeDetails
             AzureADUPN                = '{0}@{1}' -f ($Source.UserPrincipalName -split '@')[0], $InitialDomain
             UserPrincipalName         = $ConstructedUPN
-            ExternalEmailAddress      = $Source.InitialAddress
+            ExternalEmailAddress      = $Source.ExternalEmailAddress
             Alias                     = $Source.Alias
             PrimarySmtpAddress        = $ConstructedPrimarySmtp
             SourceInitial             = $Source.InitialAddress
@@ -66,7 +66,8 @@ function Convert-CloudData {
             ExternalDirectoryObjectId = $Source.ExternalDirectoryObjectId
             UPNPrimaryMismatch        = if ( $Source.PrimarySmtpAddress -and ($Source.PrimarySmtpAddress -split '@')[0] -ne ($Source.UserPrincipalName -split '@')[0]) {
                 $Source.UserPrincipalName
-            } else {''}
+            }
+            else { '' }
         }
     }
 }
