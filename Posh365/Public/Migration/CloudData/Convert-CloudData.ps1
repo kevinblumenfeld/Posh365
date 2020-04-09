@@ -4,7 +4,7 @@ function Convert-CloudData {
 
         [Parameter()]
         [ValidateScript( { Test-Path $_ })]
-        $SourceFilePath,
+        $FilePath,
 
         [Parameter()]
         $SourceData
@@ -13,7 +13,7 @@ function Convert-CloudData {
     $InitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
     $AcceptedDomains = (Get-AcceptedDomain).DomainName
     if (-not $SourceData) {
-        $SourceData = Import-Csv -Path $SourceFilePath
+        $SourceData = Import-Csv -Path $FilePath
     }
 
     foreach ($Source in $SourceData) {

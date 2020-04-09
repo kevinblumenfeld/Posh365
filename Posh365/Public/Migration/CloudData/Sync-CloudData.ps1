@@ -1,5 +1,5 @@
 using namespace System.Management.Automation.Host
-function Get-CloudData {
+function Sync-CloudData {
     [CmdletBinding()]
     param (
         [Parameter()]
@@ -92,7 +92,7 @@ function Get-CloudData {
     $SourceData = Invoke-GetCloudData -ResultSize $ResultSize -InitialDomain $InitialDomain
     $SourceData | Export-Csv -Path $SourceFile -NoTypeInformation
 
-    Write-Host ('Source tenant data is complete: {0} {1}' -f $SourceFile, [Environment]::NewLine) -ForegroundColor Green
+    Write-Host ('Source objects converted for Target: {0} {1}' -f $SourceFile, [Environment]::NewLine) -ForegroundColor Green
 
     $Yes = [ChoiceDescription]::new('&Yes', 'Convert Cloud Data: Yes')
     $No = [ChoiceDescription]::new('&No', 'Convert Cloud Data: No')
@@ -121,7 +121,32 @@ function Get-CloudData {
             Write-Host 'Converted target file: ' -ForegroundColor Gray -NoNewline
             Write-Host ('{0}{1}' -f $TargetFile, [Environment]::NewLine) -ForegroundColor Yellow
 
-            Convert-CloudData -SourceData $SourceData | Export-Csv -Path $TargetFile -NoTypeInformation
+            $ConvertedData = Convert-CloudData -SourceData $SourceData
+            $ConvertedData | Out-GridView -Title "Data converted for import into Target: $TargetInitialDomains"
+            $ConvertedData | Export-Csv -Path $TargetFile -NoTypeInformation
+        }
+        1 {
+            Write-Host 'Halting Script' -ForegroundColor Red
+            break
+        }
+    }
+
+    $Yes = [ChoiceDescription]::new('&Yes', 'Import: Yes')
+    $No = [ChoiceDescription]::new('&No', 'Import: No')
+    $Question = 'Write converted data to Target Tenant?'
+    $Options = [ChoiceDescription[]]($Yes, $No)
+    $Menu = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
+
+    switch ($Menu) {
+        0 {
+            Write-Host 'Still connected to target: ' -ForegroundColor Cyan -NoNewline
+            Write-Host ('{0}{1}' -f $TargetInitialDomain, [Environment]::NewLine) -ForegroundColor Green
+
+            $FileStamp = 'Sync_Results_{0}_{1}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'), $InitialDomain
+            $ResultFile = Join-Path -Path $SourcePath -ChildPath $FileStamp
+            $ResultObject = New-CloudData -SourceData $ConvertedData
+            $ResultObject | Out-GridView -Title $FileStamp
+            $ResultObject | Export-Csv $ResultFile -NoTypeInformation
         }
         1 {
             Write-Host 'Halting Script' -ForegroundColor Red
