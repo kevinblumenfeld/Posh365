@@ -122,7 +122,7 @@ function Sync-CloudData {
             Write-Host ('{0}{1}' -f $TargetFile, [Environment]::NewLine) -ForegroundColor Yellow
 
             $ConvertedData = Convert-CloudData -SourceData $SourceData
-            $ConvertedData | Out-GridView -Title "Data converted for import into Target: $TargetInitialDomains"
+            $ConvertedData | Out-GridView -Title "Data converted for import into Target: $TargetInitialDomain"
             $ConvertedData | Export-Csv -Path $TargetFile -NoTypeInformation
         }
         1 {

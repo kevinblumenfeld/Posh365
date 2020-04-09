@@ -36,7 +36,7 @@ function Invoke-NewCloudData {
                 $SetParams['ExchangeGuid'] = $Converted.ExchangeGuid
             }
             Set-MailUser @SetParams
-            $MeuSet = Get-MailUser -Filter ('PrimarySmtpAddress -eq {0}' -f $Converted.UserPrincipalName)
+            $MeuSet = Get-MailUser -Filter ('PrimarySmtpAddress -eq "{0}"' -f $Converted.UserPrincipalName)
             Write-Host "Success Set MailUser: $($MeuSet.DisplayName)" -ForegroundColor Green
 
             [PSCustomObject]@{
