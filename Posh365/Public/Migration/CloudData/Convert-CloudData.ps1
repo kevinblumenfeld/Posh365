@@ -64,9 +64,9 @@ function Convert-CloudData {
             InitialAddress            = $TargetInitial
             EmailAddresses            = @($AddressList) -ne '' -join '|'
             ExternalDirectoryObjectId = $Source.ExternalDirectoryObjectId
-            UPNPrimaryMismatch        = { if (($Source.PrimarySmtpAddress -split '@')[0] -ne ($Source.UserPrincipalName -split '@')[0]) {
-                    $Source.UserPrincipalName
-                } }
+            UPNPrimaryMismatch        = if ( $Source.PrimarySmtpAddress -and ($Source.PrimarySmtpAddress -split '@')[0] -ne ($Source.UserPrincipalName -split '@')[0]) {
+                $Source.UserPrincipalName
+            } else {''}
         }
     }
 }

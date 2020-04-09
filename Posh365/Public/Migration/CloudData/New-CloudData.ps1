@@ -16,7 +16,7 @@ function New-CloudData {
     switch ($ConnectMenu) {
         0 {
             Get-PSSession | Remove-PSSession
-            Disconnect-AzureAD
+            try { Disconnect-AzureAD -ErrorAction Stop } catch { }
             Connect-ExchangeOnline
             $null = Connect-AzureAD
         }

@@ -13,8 +13,35 @@ function Get-CloudData {
 
     switch ($ConnectMenu) {
         0 {
+            If (-not ($null = Get-Module -Name 'AzureAD', 'AzureADPreview' -ListAvailable)) {
+                Install-Module -Name AzureAD -Scope CurrentUser -Force -AllowClobber
+            }
+            if (((Get-Module -Name PowerShellGet -ListAvailable).Version.Major | Sort-Object -Descending)[0] -lt 2 ) {
+                try {
+                    Install-Module -Name PowerShellGet -Scope CurrentUser -Force -ErrorAction Stop -AllowClobber
+                    Write-Warning "Exchange Online v.2 module requires PowerShellGet v.2"
+                    Write-Warning "PowerShellGet v.2 was just installed"
+                    Write-Warning "Please restart this PowerShell console and rerun the same command"
+                }
+                catch {
+                    Write-Warning "Unable to install the latest version of PowerShellGet"
+                    Write-Warning "and thus unable to install the Exchange Online v.2 module"
+                }
+                $Script:RestartConsole = $true
+                return
+            }
+            if (-not ($null = Get-Module -Name ExchangeOnlineManagement -ListAvailable)) {
+                $EXOInstall = @{
+                    Name          = 'ExchangeOnlineManagement'
+                    Scope         = 'CurrentUser'
+                    AllowClobber  = $true
+                    AcceptLicense = $true
+                    Force         = $true
+                }
+                Install-Module @EXOInstall
+            }
             Get-PSSession | Remove-PSSession
-            Disconnect-AzureAD
+            try { Disconnect-AzureAD -ErrorAction Stop } catch { }
             Connect-ExchangeOnline
             $null = Connect-AzureAD
         }

@@ -19,7 +19,7 @@ function Set-ExchangeGuid {
     $Question = 'Are you ready to stamp ExchangeGuids in this tenant... {0} ?' -f $InitialDomain
     $Options = [ChoiceDescription[]]($Yes, $No)
     $Menu = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
-
+    $ErrorActionPreference = 'Stop'
     switch ($Menu) {
         0 {
             foreach ($AddGuid in $AddGuidList) {
@@ -67,4 +67,5 @@ function Set-ExchangeGuid {
         }
         1 { break }
     }
+    $ErrorActionPreference = 'Continue'
 }
