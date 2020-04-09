@@ -142,7 +142,7 @@ function Sync-CloudData {
             Write-Host 'Still connected to target: ' -ForegroundColor Cyan -NoNewline
             Write-Host ('{0}{1}' -f $TargetInitialDomain, [Environment]::NewLine) -ForegroundColor Green
 
-            $FileStamp = 'Sync_Results_{0}_{1}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'), $InitialDomain
+            $FileStamp = 'Sync_Result_{0}_{1}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'), $InitialDomain
             $ResultFile = Join-Path -Path $SourcePath -ChildPath $FileStamp
             $ResultObject = New-CloudData -SourceData $ConvertedData
             $ResultObject | Out-GridView -Title $FileStamp

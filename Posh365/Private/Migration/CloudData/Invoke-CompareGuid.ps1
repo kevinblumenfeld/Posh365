@@ -67,7 +67,7 @@ function Invoke-CompareGuid {
                 Displayname        = $ADUser.Displayname
                 PrimarySmtpAddress = $Recipient.PrimarySmtpAddress
                 SamAccountname     = $Recipient.SamAccountName
-                OU                 = Convert-DistinguishedToCanonical -DistinguishedName ($ADUser.DistinguishedName -replace '^.+?,(?=(OU|CN)=)')
+                OU                 = Convert-DistinguishedToCanonical -DistinguishedName ($ADUser.DistinguishedName -replace '^.+?,(?=(OU|CN)=)') -ErrorAction SilentlyContinue
                 ADUPN              = $ADUser.UserPrincipalName
                 MailboxLocation    = 'CLOUD'
                 MailboxType        = $Recipient.RecipientTypeDetails
@@ -87,7 +87,7 @@ function Invoke-CompareGuid {
                 DisplayName        = $ADUser.Displayname
                 PrimarySmtpAddress = $Recipient.PrimarySmtpAddress
                 SamAccountname     = $Recipient.SamAccountName
-                OU                 = Convert-DistinguishedToCanonical -DistinguishedName ($ADUser.DistinguishedName -replace '^.+?,(?=(OU|CN)=)')
+                OU                 = Convert-DistinguishedToCanonical -DistinguishedName ($ADUser.DistinguishedName -replace '^.+?,(?=(OU|CN)=)') -ErrorAction SilentlyContinue
                 ADUPN              = $ADUser.UserPrincipalName
                 MailboxLocation    = 'ONPREMISES'
                 MailboxType        = $Recipient.RecipientTypeDetails

@@ -66,8 +66,14 @@ function Sync-Guid {
     $CompareResult | Export-Csv $SourceFile -NoTypeInformation
 
     $AddGuidList = $CompareResult | Where-Object { -not $_.MailboxGuidMatch }
-    $GuidResult = Set-ExchangeGuid -AddGuidList $AddGuidList
-    $GuidResult | Out-GridView -Title "Results of Adding Guid to Tenant: $InitialDomain"
-    $ResultFile = Join-Path -Path $SourcePath -ChildPath ('Guid_Result_{0}.csv' -f $InitialDomain)
-    $GuidResult | Export-Csv $ResultFile -NoTypeInformation
+    if ($AddGuidList) {
+        $GuidResult = Set-ExchangeGuid -AddGuidList $AddGuidList
+        $GuidResult | Out-GridView -Title "Results of Adding Guid to Tenant: $InitialDomain"
+        $ResultFile = Join-Path -Path $SourcePath -ChildPath ('Guid_Result_{0}.csv' -f $InitialDomain)
+        $GuidResult | Export-Csv $ResultFile -NoTypeInformation
+    }
+    else {
+        Write-Host "No matching data was found to sync to $InitialDomain" -ForegroundColor Red
+        continue
+    }
 }

@@ -33,7 +33,6 @@ function Set-ExchangeGuid {
                         OnlineExchangeGuid = $Stamped.ExchangeGuid
                         Result             = 'SUCCESS'
                         Log                = 'SUCCESS'
-                        OnlineGuid         = $Stamped.Guid
                         PrimarySmtpAddress = $AddGuid.PrimarySmtpAddress
                         SamAccountname     = $AddGuid.SamAccountName
                         ADUPN              = $AddGuid.UserPrincipalName
@@ -41,7 +40,8 @@ function Set-ExchangeGuid {
                         MailboxType        = $AddGuid.MailboxType
                         OnPremArchiveGuid  = $AddGuid.OnPremArchiveGuid
                         OnlineArchiveGuid  = $AddGuid.OnlineArchiveGuid
-                        OnPremSid          = $ADUser.SID
+                        OnlineGuid         = $Stamped.Guid
+                        OnPremSid          = $ADUser.OnPremSid
                     }
                 }
                 catch {
@@ -52,7 +52,6 @@ function Set-ExchangeGuid {
                         OnlineExchangeGuid = $Stamped.ExchangeGuid
                         Result             = 'FAILED'
                         Log                = $_.Exception.Message
-                        OnlineGuid         = $Stamped.Guid
                         PrimarySmtpAddress = $AddGuid.PrimarySmtpAddress
                         SamAccountname     = $AddGuid.SamAccountName
                         ADUPN              = $AddGuid.UserPrincipalName
@@ -60,7 +59,8 @@ function Set-ExchangeGuid {
                         MailboxType        = $AddGuid.MailboxType
                         OnPremArchiveGuid  = $AddGuid.OnPremArchiveGuid
                         OnlineArchiveGuid  = $AddGuid.OnlineArchiveGuid
-                        OnPremSid          = $ADUser.SID
+                        OnlineGuid         = $Stamped.Guid
+                        OnPremSid          = $ADUser.OnPremSid
                     }
                 }
             }
