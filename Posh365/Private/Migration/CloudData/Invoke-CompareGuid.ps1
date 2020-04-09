@@ -50,8 +50,8 @@ function Invoke-CompareGuid {
     )
     $RecipientType = @(
         'UserMailbox', 'SharedMailbox', 'RoomMailbox', 'EquipmentMailbox'
-        'SchedulingMailbox', 'MailUser', 'RemoteEquipmentMailbox'
-        'RemoteRoomMailbox', 'RemoteSharedMailbox', 'RemoteUserMailbox'
+        'MailUser', 'RemoteEquipmentMailbox', 'RemoteRoomMailbox'
+        'RemoteSharedMailbox', 'RemoteUserMailbox'
     )
     $RecipientList = Get-Recipient -RecipientTypeDetails $RecipientType -ResultSize Unlimited | Select-Object $RecipientSelect
 
@@ -68,7 +68,7 @@ function Invoke-CompareGuid {
                 PrimarySmtpAddress = $Recipient.PrimarySmtpAddress
                 SamAccountname     = $Recipient.SamAccountName
                 OU                 = Convert-DistinguishedToCanonical -DistinguishedName ($ADUser.DistinguishedName -replace '^.+?,(?=(OU|CN)=)')
-                UserUPN            = $ADUser.UserPrincipalName
+                ADUPN              = $ADUser.UserPrincipalName
                 MailboxLocation    = 'CLOUD'
                 MailboxType        = $Recipient.RecipientTypeDetails
                 OnPremExchangGuid  = $Recipient.ExchangeGuid
@@ -88,7 +88,7 @@ function Invoke-CompareGuid {
                 PrimarySmtpAddress = $Recipient.PrimarySmtpAddress
                 SamAccountname     = $Recipient.SamAccountName
                 OU                 = Convert-DistinguishedToCanonical -DistinguishedName ($ADUser.DistinguishedName -replace '^.+?,(?=(OU|CN)=)')
-                UserUPN            = $ADUser.UserPrincipalName
+                ADUPN              = $ADUser.UserPrincipalName
                 MailboxLocation    = 'ONPREMISES'
                 MailboxType        = $Recipient.RecipientTypeDetails
                 OnPremExchangGuid  = $Recipient.ExchangeGuid

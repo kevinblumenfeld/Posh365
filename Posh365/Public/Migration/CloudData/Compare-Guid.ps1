@@ -24,7 +24,7 @@ function Compare-Guid {
 
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
     $SourcePath = Join-Path -Path $PoshPath -ChildPath $InitialDomain
-    $SourceFile = Join-Path -Path $SourcePath -ChildPath ('CompareGuid_{0}.csv' -f $InitialDomain)
+    $SourceFile = Join-Path -Path $SourcePath -ChildPath ('Guid_Compare_{0}.csv' -f $InitialDomain)
 
     if (-not ($null = Test-Path $SourcePath)) {
         $ItemSplat = @{
@@ -37,20 +37,12 @@ function Compare-Guid {
     }
 
     $CompareResult = Invoke-CompareGuid -OnPremExchangeServer $OnPremExchangeServer -DontViewEntireForest:$DontViewEntireForest
-    $CompareResult | Out-GridView -Title 'Results of Guid Comparison'
-    $CompareResult | Export-Csv $SourceFile
+    $CompareResult | Out-GridView -Title "Results of Guid Comparison to Tenant: $InitialDomain"
+    $CompareResult | Export-Csv $SourceFile -NoTypeInformation
 
-
-    $Yes = [ChoiceDescription]::new('&Yes', 'Set-RemoteDomain: Yes')
-    $No = [ChoiceDescription]::new('&No', 'Set-RemoteDomain: No')
-    $Question = 'Are you ready to stamp ExchangeGuid in this tenant... {0} ?' -f $InitialDomain
-    $Options = [ChoiceDescription[]]($Yes, $No)
-    $Menu = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
-
-    switch ($Menu) {
-        0 { <#  Set-RemoteDomain #>  }
-        1 { break }
-    }
-
-
+    $AddGuidList = $CompareResult | Where-Object { -not $_.MailboxGuidMatch }
+    $GuidResult = Set-ExchangeGuid -AddGuidList $AddGuidList
+    $GuidResult | Out-GridView -Title "Results of Adding Guid to Tenant: $InitialDomain"
+    $ResultFile = Join-Path -Path $SourcePath -ChildPath ('Guid_Result_{0}.csv' -f $InitialDomain)
+    $GuidResult | Export-Csv $ResultFile -NoTypeInformation
 }

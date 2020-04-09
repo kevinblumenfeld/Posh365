@@ -56,7 +56,7 @@ function Invoke-GetCloudData {
         @{
             Name       = 'InitialAddress'
             Expression = {
-                if ($InitialAddress = ($_.EmailAddresses -like "smtp:*@$InitialDomain")[0] -replace 'smtp:', '') {
+                if ($InitialAddress -eq ($_.EmailAddresses -like "smtp:*@$InitialDomain")[0] -replace 'smtp:', '') {
                     $InitialAddress
                 }
                 else {
