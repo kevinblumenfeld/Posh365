@@ -1,4 +1,4 @@
-function Compare-Guid {
+function Sync-Guid {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
