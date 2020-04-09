@@ -1,3 +1,4 @@
+using namespace System.Management.Automation.Host
 function Set-ExchangeGuid {
     [CmdletBinding()]
     param (
@@ -7,60 +8,73 @@ function Set-ExchangeGuid {
         $SourceFilePath,
 
         [Parameter()]
-        $AddGuidList
+        $AddGuidList,
+
+        [Parameter()]
+        $OnPremExchangeServer,
+
+        [Parameter()]
+        [switch]
+        $DontViewEntireForest
     )
 
+    Get-PSSession | Remove-PSSession
+    Connect-Exchange -Server $OnPremExchangeServer -DontViewEntireForest:$DontViewEntireForest
+
+    $ErrorActionPreference = 'Stop'
     if (-not $AddGuidList) {
         $AddGuidList = Import-Csv -Path $SourceFilePath
     }
 
     $Yes = [ChoiceDescription]::new('&Yes', 'Set-RemoteDomain: Yes')
     $No = [ChoiceDescription]::new('&No', 'Set-RemoteDomain: No')
-    $Question = 'Are you ready to stamp ExchangeGuids in this tenant... {0} ?' -f $InitialDomain
+    $Question = 'Are you ready to stamp ExchangeGuids?'
     $Options = [ChoiceDescription[]]($Yes, $No)
+    $Title = 'Please make a selection'
     $Menu = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
-    $ErrorActionPreference = 'Stop'
     switch ($Menu) {
         0 {
             foreach ($AddGuid in $AddGuidList) {
                 try {
-                    Set-RemoteMailbox -Identity $AddGuid.ADUPN -ExchangeGuid $AddGuid.OnPremExchangGuid -ErrorAction stop
-                    $Stamped = Get-RemoteMailbox -Identity $AddGuid.ADUPN -ErrorAction SilentlyContinue
+                    Set-RemoteMailbox -Identity $AddGuid.ADUPN -ExchangeGuid $AddGuid.OnlineGuid -ErrorAction stop
+                    $Stamped = Get-RemoteMailbox -Identity $AddGuid.ADUPN
+                    Write-Host "Set ExchangeGuid $($Stamped.ExchangeGuid) for On-Premises Remote Mailbox $($Stamped.DisplayName)" -ForegroundColor Green
                     [PSCustomObject]@{
                         Displayname        = $AddGuid.Displayname
                         OU                 = $AddGuid.OU
-                        ExchangGuid        = $AddGuid.OnPremExchangGuid
-                        OnlineExchangeGuid = $Stamped.ExchangeGuid
+                        ExchangeGuid       = $Stamped.ExchangeGuid
+                        OnlineExchangeGuid = $AddGuid.OnlineGuid
                         Result             = 'SUCCESS'
                         Log                = 'SUCCESS'
                         PrimarySmtpAddress = $AddGuid.PrimarySmtpAddress
                         SamAccountname     = $AddGuid.SamAccountName
-                        ADUPN              = $AddGuid.UserPrincipalName
+                        ADUPN              = $AddGuid.ADUPN
                         MailboxLocation    = $AddGuid.MailboxLocation
                         MailboxType        = $AddGuid.MailboxType
                         OnPremArchiveGuid  = $AddGuid.OnPremArchiveGuid
                         OnlineArchiveGuid  = $AddGuid.OnlineArchiveGuid
-                        OnlineGuid         = $Stamped.Guid
-                        OnPremSid          = $ADUser.OnPremSid
+                        CloudGuid          = $Stamped.Guid
+                        OnPremSid          = $AddGuid.OnPremSid
                     }
                 }
                 catch {
+                    Write-Host "Failed setting ExchangeGuid $($Stamped.ExchangeGuid) for On-Premises Remote Mailbox $($Stamped.DisplayName)" -ForegroundColor Red
                     [PSCustomObject]@{
                         Displayname        = $AddGuid.Displayname
                         OU                 = $AddGuid.OU
-                        ExchangGuid        = $AddGuid.OnPremExchangGuid
-                        OnlineExchangeGuid = $Stamped.ExchangeGuid
+                        ExchangeGuid       = $AddGuid.OnPremExchangeGuid
+                        OnlineExchangeGuid = $AddGuid.OnlineGuid
                         Result             = 'FAILED'
                         Log                = $_.Exception.Message
                         PrimarySmtpAddress = $AddGuid.PrimarySmtpAddress
                         SamAccountname     = $AddGuid.SamAccountName
-                        ADUPN              = $AddGuid.UserPrincipalName
+                        ADUPN              = $AddGuid.ADUPN
                         MailboxLocation    = $AddGuid.MailboxLocation
                         MailboxType        = $AddGuid.MailboxType
                         OnPremArchiveGuid  = $AddGuid.OnPremArchiveGuid
                         OnlineArchiveGuid  = $AddGuid.OnlineArchiveGuid
-                        OnlineGuid         = $Stamped.Guid
-                        OnPremSid          = $ADUser.OnPremSid
+                        CloudGuid          = $Stamped.Guid
+                        OnPremSid          = $AddGuid.OnPremSid
                     }
                 }
             }

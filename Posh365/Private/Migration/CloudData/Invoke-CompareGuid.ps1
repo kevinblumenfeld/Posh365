@@ -15,6 +15,7 @@ function Invoke-CompareGuid {
         'ExchangeGuid', 'ArchiveGuid'
     )
     $ExoList = Get-Mailbox -ResultSize Unlimited | Select-Object $MailboxSelect
+
     $ExoHash = @{ }
     foreach ($Exo in $ExoList) {
         $ExoHash[$Exo.UserPrincipalName] = @{
@@ -43,6 +44,18 @@ function Invoke-CompareGuid {
         }
     }
 
+    $MeuList = Get-MailUser -ResultSize Unlimited | Select-Object $MailboxSelect
+    foreach ($Meu in $MeuList) {
+        $Hash[$Meu.UserPrincipalName] = @{
+            'Identity'            = $Meu.Identity
+            'SamAccountName'      = $Meu.SamAccountName
+            'WindowsEmailAddress' = $Meu.WindowsEmailAddress
+            'PrimarySmtpAddress'  = $Meu.PrimarySmtpAddress
+            'ExchangeGuid'        = ($Meu.ExchangeGuid).ToString()
+            'ArchiveGuid'         = ($Meu.ArchiveGuid).ToString()
+        }
+    }
+
     $RecipientSelect = @(
         'Identity', 'RecipientType', 'RecipientTypeDetails'
         'SamAccountName', 'UserPrincipalName', 'WindowsEmailAddress'
@@ -56,22 +69,20 @@ function Invoke-CompareGuid {
     $RecipientList = Get-Recipient -RecipientTypeDetails $RecipientType -ResultSize Unlimited | Select-Object $RecipientSelect
 
     Get-PSSession | Remove-PSSession
-    $i = 0
-
     foreach ($Recipient in $RecipientList) {
-        $ADUser = Get-ADUser -identity $Recipient.SamAccountName -Properties DisplayName
+        $Display = $null
+        $ADUser = Get-ADUser -identity $Recipient.SamAccountName -Properties DisplayName, UserPrincipalName
         if ($Recipient.RecipientTypeDetails -like "Remote*") {
-            Write-Host ('ADUpn {0} Key {1}' -f $ADUser.UserPrincipalName, $ExoHash.ContainsKey("$($ADUser.UserPrincipalName)")) -ForegroundColor Cyan
-            Write-Host ('AD {0} Rec {1} Type {2}' -f $ADUser.Displayname, $Recipient.SamAccountName, $Recipient.RecipientTypeDetails) -ForegroundColor White
+            Write-Host ('{0} {2}' -f $ADUser.Displayname, $Recipient.RecipientTypeDetails) -ForegroundColor White
             [PSCustomObject]@{
-                Displayname        = $ADUser.Displayname
+                Displayname        = if ($Display = $ADUser.DisplayName) { $Display } else { $ADUser.Name }
                 PrimarySmtpAddress = $Recipient.PrimarySmtpAddress
                 SamAccountname     = $Recipient.SamAccountName
                 OU                 = Convert-DistinguishedToCanonical -DistinguishedName ($ADUser.DistinguishedName -replace '^.+?,(?=(OU|CN)=)') -ErrorAction SilentlyContinue
                 ADUPN              = $ADUser.UserPrincipalName
                 MailboxLocation    = 'CLOUD'
                 MailboxType        = $Recipient.RecipientTypeDetails
-                OnPremExchangGuid  = $Recipient.ExchangeGuid
+                OnPremExchangeGuid = $Recipient.ExchangeGuid
                 OnlineGuid         = $ExoHash[$ADUser.UserPrincipalName]['ExchangeGuid']
                 OnPremArchiveGuid  = $Recipient.ArchiveGuid
                 OnlineArchiveGuid  = $ExoHash[$ADUser.UserPrincipalName]['ArchiveGuid']
@@ -81,17 +92,16 @@ function Invoke-CompareGuid {
             }
         }
         else {
-            Write-Host ('CLOUDADUpn {0} Key {1}' -f $ADUser.UserPrincipalName, $Hash.ContainsKey("$($ADUser.UserPrincipalName)")) -ForegroundColor Green
-            Write-Host ('AD {0} Rec {1} Type {2}' -f $ADUser.Displayname, $Recipient.SamAccountName, $Recipient.RecipientTypeDetails) -ForegroundColor White
+            Write-Host ('{0} {2}' -f $ADUser.Displayname, $Recipient.RecipientTypeDetails) -ForegroundColor White
             [PSCustomObject]@{
-                DisplayName        = $ADUser.Displayname
+                Displayname        = if ($Display = $ADUser.DisplayName) { $Display } else { $ADUser.Name }
                 PrimarySmtpAddress = $Recipient.PrimarySmtpAddress
                 SamAccountname     = $Recipient.SamAccountName
                 OU                 = Convert-DistinguishedToCanonical -DistinguishedName ($ADUser.DistinguishedName -replace '^.+?,(?=(OU|CN)=)') -ErrorAction SilentlyContinue
                 ADUPN              = $ADUser.UserPrincipalName
                 MailboxLocation    = 'ONPREMISES'
                 MailboxType        = $Recipient.RecipientTypeDetails
-                OnPremExchangGuid  = $Recipient.ExchangeGuid
+                OnPremExchangeGuid = $Recipient.ExchangeGuid
                 OnlineGuid         = $Hash[$ADUser.UserPrincipalName]['ExchangeGuid']
                 OnPremArchiveGuid  = $Recipient.ArchiveGuid
                 OnlineArchiveGuid  = $Hash[$ADUser.UserPrincipalName]['ArchiveGuid']
@@ -100,7 +110,5 @@ function Invoke-CompareGuid {
                 OnPremSid          = $ADUser.SID
             }
         }
-        $i ++
-        Write-Progress -Activity "$i 'out' $($RecipientList.count)" -PercentComplete ($i / $RecipientList.count * 100)
     }
 }
