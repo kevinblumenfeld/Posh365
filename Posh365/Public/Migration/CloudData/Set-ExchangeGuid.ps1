@@ -38,7 +38,7 @@ function Set-ExchangeGuid {
                 try {
                     Set-RemoteMailbox -Identity $AddGuid.ADUPN -ExchangeGuid $AddGuid.OnlineGuid -ErrorAction stop
                     $Stamped = Get-RemoteMailbox -Identity $AddGuid.ADUPN
-                    Write-Host "Set ExchangeGuid $($Stamped.ExchangeGuid) for On-Premises Remote Mailbox $($Stamped.DisplayName)" -ForegroundColor Green
+                    Write-Host "Success setting ExchangeGuid $($Stamped.ExchangeGuid) for On-Premises Remote Mailbox $($Stamped.DisplayName)" -ForegroundColor Green
                     [PSCustomObject]@{
                         Displayname        = $AddGuid.Displayname
                         OU                 = $AddGuid.OU
@@ -58,7 +58,7 @@ function Set-ExchangeGuid {
                     }
                 }
                 catch {
-                    Write-Host "Failed setting ExchangeGuid $($Stamped.ExchangeGuid) for On-Premises Remote Mailbox $($Stamped.DisplayName)" -ForegroundColor Red
+                    Write-Host "Failed setting ExchangeGuid $($AddGuid.OnlineGuid) for On-Premises Remote Mailbox $($AddGuid.DisplayName)" -ForegroundColor Red
                     [PSCustomObject]@{
                         Displayname        = $AddGuid.Displayname
                         OU                 = $AddGuid.OU
