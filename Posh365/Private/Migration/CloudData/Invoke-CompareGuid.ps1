@@ -111,23 +111,24 @@ function Invoke-CompareGuid {
                     OnPremSid          = $ADUser.SID
                 }
             }
-            else {
-                [PSCustomObject]@{
-                    Displayname        = if ($ADUser.DisplayName) { $ADUser.DisplayName } else { $ADUser.Name }
-                    PrimarySmtpAddress = $Recipient.PrimarySmtpAddress
-                    SamAccountname     = $Recipient.SamAccountName
-                    OU                 = Convert-DistinguishedToCanonical -DistinguishedName ($ADUser.DistinguishedName -replace '^.+?,(?=(OU|CN)=)')
-                    ADUPN              = $ADUser.UserPrincipalName
-                    MailboxLocation    = $Recipient.RecipientTypeDetails
-                    MailboxType        = $Recipient.RecipientTypeDetails
-                    OnPremExchangeGuid = $Recipient.ExchangeGuid
-                    OnlineGuid         = 'NOMATCHINGOBJECT'
-                    OnPremArchiveGuid  = $Recipient.ArchiveGuid
-                    OnlineArchiveGuid  = 'NOMATCHINGOBJECT'
-                    MailboxGuidMatch   = 'NOMATCHINGOBJECT'
-                    ArchiveGuidMatch   = 'NOMATCHINGOBJECT'
-                    OnPremSid          = $ADUser.SID
-                }
+        }
+        else {
+            Write-Host ('No Matching Object {0} {1}' -f $ADUser.Displayname, $Recipient.RecipientTypeDetails) -ForegroundColor Red
+            [PSCustomObject]@{
+                Displayname        = if ($ADUser.DisplayName) { $ADUser.DisplayName } else { $ADUser.Name }
+                PrimarySmtpAddress = $Recipient.PrimarySmtpAddress
+                SamAccountname     = $Recipient.SamAccountName
+                OU                 = Convert-DistinguishedToCanonical -DistinguishedName ($ADUser.DistinguishedName -replace '^.+?,(?=(OU|CN)=)')
+                ADUPN              = $ADUser.UserPrincipalName
+                MailboxLocation    = 'NOMATCHINGOBJECT'
+                MailboxType        = $Recipient.RecipientTypeDetails
+                OnPremExchangeGuid = $Recipient.ExchangeGuid
+                OnlineGuid         = 'NOMATCHINGOBJECT'
+                OnPremArchiveGuid  = $Recipient.ArchiveGuid
+                OnlineArchiveGuid  = 'NOMATCHINGOBJECT'
+                MailboxGuidMatch   = 'NOMATCHINGOBJECT'
+                ArchiveGuidMatch   = 'NOMATCHINGOBJECT'
+                OnPremSid          = $ADUser.SID
             }
         }
     }
