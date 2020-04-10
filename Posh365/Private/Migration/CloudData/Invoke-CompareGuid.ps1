@@ -70,11 +70,14 @@ function Invoke-CompareGuid {
     $RecipientList = Get-Recipient -RecipientTypeDetails $RecipientType -ResultSize Unlimited | Select-Object $RecipientSelect
 
     Get-PSSession | Remove-PSSession
+    $Count = $RecipientList.Count
+    $iUP = 0
     foreach ($Recipient in $RecipientList) {
+        $iUP++
         $ADUser = Get-ADUser -identity $Recipient.SamAccountName -Properties DisplayName, UserPrincipalName
         if ($ExoHash[$ADUser.UserPrincipalName] -or $Hash[$ADUser.UserPrincipalName]) {
             if ($Recipient.RecipientTypeDetails -like "Remote*") {
-                Write-Host ('{0} {1}' -f $ADUser.Displayname, $Recipient.RecipientTypeDetails) -ForegroundColor White
+                Write-Host ('[{0} of {1}] Comparing Guids {2} {3}' -f $iUP, $count, $ADUser.Displayname, $Recipient.RecipientTypeDetails) -ForegroundColor Green
                 [PSCustomObject]@{
                     Displayname        = if ($ADUser.DisplayName) { $ADUser.DisplayName } else { $ADUser.Name }
                     PrimarySmtpAddress = $Recipient.PrimarySmtpAddress
@@ -93,7 +96,7 @@ function Invoke-CompareGuid {
                 }
             }
             else {
-                Write-Host ('{0} {1}' -f $ADUser.Displayname, $Recipient.RecipientTypeDetails) -ForegroundColor White
+                Write-Host ('[{0} of {1}] Comparing Guids {2} {3}' -f $iUP, $count, $ADUser.Displayname, $Recipient.RecipientTypeDetails) -ForegroundColor Green
                 [PSCustomObject]@{
                     Displayname        = if ($ADUser.DisplayName) { $ADUser.DisplayName } else { $ADUser.Name }
                     PrimarySmtpAddress = $Recipient.PrimarySmtpAddress
@@ -113,7 +116,7 @@ function Invoke-CompareGuid {
             }
         }
         else {
-            Write-Host ('No Matching Object {0} {1}' -f $ADUser.Displayname, $Recipient.RecipientTypeDetails) -ForegroundColor Red
+            Write-Host ('[{0} of {1}] No matching {2} {3} {4}' -f $iUP, $count, $ADUser.Displayname, $ADUser.UserPrincipalName, $Recipient.RecipientTypeDetails) -ForegroundColor Red
             [PSCustomObject]@{
                 Displayname        = if ($ADUser.DisplayName) { $ADUser.DisplayName } else { $ADUser.Name }
                 PrimarySmtpAddress = $Recipient.PrimarySmtpAddress

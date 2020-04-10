@@ -35,11 +35,23 @@ function Set-ExchangeGuid {
     $Menu = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
     switch ($Menu) {
         0 {
+            $Count = $AddGuidList.Count
+            $iUP = 0
             foreach ($AddGuid in $AddGuidList) {
+                $SetParams = @{
+                    Identity    = $AddGuid.ADUPN
+                    ErrorAction = 'Stop'
+                }
+                if (-not $AddGuid.MailboxGuidMatch) {
+                    $SetParams['ExchangeGuid'] = $AddGuid.OnlineGuid
+                }
+                if (-not $AddGuid.ArchiveGuidMatch) {
+                    $SetParams['ArchiveGuid'] = $AddGuid.OnlineArchiveGuid
+                }
                 try {
-                    Set-RemoteMailbox -Identity $AddGuid.ADUPN -ExchangeGuid $AddGuid.OnlineGuid -ErrorAction stop
+                    Set-RemoteMailbox @SetParams
                     $Stamped = Get-RemoteMailbox -Identity $AddGuid.ADUPN
-                    Write-Host "Success setting ExchangeGuid $($Stamped.ExchangeGuid) for On-Premises Remote Mailbox $($Stamped.DisplayName)" -ForegroundColor Green
+                    Write-Host "[$iUP of $count] Success Set Guid $($Stamped.DisplayName)" -ForegroundColor Green
                     [PSCustomObject]@{
                         Displayname        = $AddGuid.Displayname
                         OU                 = $AddGuid.OU
@@ -59,7 +71,7 @@ function Set-ExchangeGuid {
                     }
                 }
                 catch {
-                    Write-Host "Failed setting ExchangeGuid $($AddGuid.OnlineGuid) for On-Premises Remote Mailbox $($AddGuid.DisplayName)" -ForegroundColor Red
+                    Write-Host "[$iUP of $count] Failed Set Guid $($Stamped.DisplayName)" -ForegroundColor Red
                     [PSCustomObject]@{
                         Displayname        = $AddGuid.Displayname
                         OU                 = $AddGuid.OU

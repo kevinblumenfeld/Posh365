@@ -8,7 +8,10 @@ function Invoke-NewCloudData {
     $ErrorActionPreference = 'stop'
 
     $ConvertedList = $ConvertedData | Where-Object { $_.Type -eq 'Recipient' }
+    $Count = $ConvertedData.Count
+    $iUP = 0
     foreach ($Converted in $ConvertedList) {
+        $iUP++
         $MeuCreated, $MeuSet = $null
         $GeneratedPW = [System.Web.Security.Membership]::GeneratePassword(16, 7)
         try {
@@ -25,7 +28,7 @@ function Invoke-NewCloudData {
                 $NewParams['ExternalEmailAddress'] = $Converted.ExternalEmailAddress
             }
             $MeuCreated = New-MailUser @NewParams
-            Write-Host "Success New MailUser: $($MeuCreated.DisplayName)" -ForegroundColor Green
+            Write-Host "[$iUP of $count] Success New MailUser: $($MeuCreated.DisplayName)" -ForegroundColor Green
 
             $SetParams = @{
                 Identity       = $MeuCreated.ExternalDirectoryObjectId
@@ -35,9 +38,15 @@ function Invoke-NewCloudData {
             if ($Converted.RecipientType -eq 'USERMAILBOX') {
                 $SetParams['ExchangeGuid'] = $Converted.ExchangeGuid
             }
+            $i = 0
+            while (-not ($null = Get-MailUser -Filter ('PrimarySmtpAddress -eq "{0}"' -f $Converted.UserPrincipalName) -ErrorAction SilentlyContinue) -and $i -lt 50) {
+                Write-Host ('Waiting for {0}' -f $Converted.UserPrincipalName) -ForegroundColor White
+                Start-Sleep -Seconds $i
+                $i++
+            }
             Set-MailUser @SetParams
             $MeuSet = Get-MailUser -Filter ('PrimarySmtpAddress -eq "{0}"' -f $Converted.UserPrincipalName)
-            Write-Host "Success Set MailUser: $($MeuSet.DisplayName)" -ForegroundColor Green
+            Write-Host "[$iUP of $count] Success Set MailUser: $($MeuSet.DisplayName)" -ForegroundColor Green
 
             [PSCustomObject]@{
                 ResultNew                 = 'SUCCESS'
@@ -79,7 +88,7 @@ function Invoke-NewCloudData {
                     TargetEmailAddresses      = @($MeuCreated.EmailAddresses) -ne '' -join '|'
                     Log                       = $_.Exception.Message
                 }
-                Write-Host "Failed Set MailUser: $($MeuCreated.DisplayName)" -ForegroundColor Yellow
+                Write-Host "[$iUP of $count] Failed Set MailUser: $($MeuCreated.DisplayName)" -ForegroundColor Yellow
             }
             else {
                 [PSCustomObject]@{
@@ -100,17 +109,28 @@ function Invoke-NewCloudData {
                     TargetEmailAddresses      = 'FAILED'
                     Log                       = $_.Exception.Message
                 }
-                Write-Host "Failed New & Set MailUser: $($Converted.DisplayName)" -ForegroundColor Red
+                Write-Host "[$iUP of $count] Failed New & Set MailUser: $($Converted.DisplayName)" -ForegroundColor Red
             }
         }
         if ($MeuCreated) {
+            $i = 0
             $MeuPasswordProfile = [Microsoft.Open.AzureAD.Model.PasswordProfile]::new()
             $MeuPasswordProfile.ForceChangePasswordNextLogin = $true
-            Set-AzureAdUser -ObjectId $MeuCreated.ExternalDirectoryObjectId -PasswordProfile $MeuPasswordProfile
+            do {
+                try {
+                    Set-AzureAdUser -ObjectId $MeuCreated.ExternalDirectoryObjectId -PasswordProfile $MeuPasswordProfile -ErrorAction Stop
+                    $FlagAz = $true
+                }
+                catch {
+                    Write-Host ('Waiting for AzureAdUser: {0}' -f $MeuCreated.DisplayName) -ForegroundColor White
+                }
+                $i++
+            } until ($FlagAz -or $i -gt 50)
         }
     }
     $ConvertedAzList = $ConvertedData | Where-Object { $_.Type -eq 'AzureADUser' }
     foreach ($ConvertedAz in $ConvertedAzList) {
+        $iUP++
         try {
             $GeneratedPW = [System.Web.Security.Membership]::GeneratePassword(16, 7)
             $PasswordProfile = [Microsoft.Open.AzureAD.Model.PasswordProfile]::new()
@@ -125,7 +145,7 @@ function Invoke-NewCloudData {
                 ErrorAction       = 'Stop'
             }
             $NewAzADUser = New-AzureADUser @AzUserParams
-            Write-Host "Success New AzureADUser: $($NewAzADUser.DisplayName)" -ForegroundColor Green
+            Write-Host "[$iUP of $count] Success New AzureADUser: $($NewAzADUser.DisplayName)" -ForegroundColor Green
             [PSCustomObject]@{
                 ResultNew                 = 'SUCCESS'
                 ResultSet                 = 'SUCCESS'
@@ -164,7 +184,7 @@ function Invoke-NewCloudData {
                 TargetEmailAddresses      = ''
                 Log                       = $_.Exception.Message
             }
-            Write-Host "Failed New AzureADUser: $($NewAzADUser.DisplayName)" -ForegroundColor Red
+            Write-Host "[$iUP of $count] Failed New AzureADUser: $($ConvertedAz.DisplayName)" -ForegroundColor Red
         }
     }
     $ErrorActionPreference = 'continue'

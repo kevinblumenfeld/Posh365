@@ -66,7 +66,7 @@ function Sync-Guid {
     $CompareResult | Out-GridView -Title "Results of Guid Comparison to Tenant: $InitialDomain"
     $CompareResult | Export-Csv $SourceFile -NoTypeInformation
 
-    $AddGuidList = $CompareResult | Where-Object { -not $_.MailboxGuidMatch }
+    $AddGuidList = $CompareResult | Where-Object { -not $_.MailboxGuidMatch -or -not $_.ArchiveGuidMatch }
     if ($AddGuidList) {
         $GuidResult = Set-ExchangeGuid -AddGuidList $AddGuidList -OnPremExchangeServer $OnPremExchangeServer -DontViewEntireForest:$DontViewEntireForest
         $GuidResult | Out-GridView -Title "Results of Adding Guid to Tenant: $InitialDomain"
@@ -74,7 +74,7 @@ function Sync-Guid {
         $GuidResult | Export-Csv $ResultFile -NoTypeInformation
     }
     else {
-        Write-Host "No matching data was found to sync to $InitialDomain" -ForegroundColor Red
+        Write-Host "All ExchangeGuid and ArchiveGuid already match" -ForegroundColor Yellow
         continue
     }
 }
