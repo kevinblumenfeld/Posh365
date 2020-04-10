@@ -29,6 +29,7 @@ function Invoke-CompareGuid {
     }
 
     Get-PSSession | Remove-PSSession
+    Write-Host "`r`nConnecting to Exchange On-Premises $OnPremExchangeServer`r`n" -ForegroundColor Green
     Connect-Exchange -Server $OnPremExchangeServer -DontViewEntireForest:$DontViewEntireForest
 
     $MailboxList = Get-Mailbox -ResultSize Unlimited | Select-Object $MailboxSelect

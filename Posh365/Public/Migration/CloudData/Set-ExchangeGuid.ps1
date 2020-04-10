@@ -19,6 +19,7 @@ function Set-ExchangeGuid {
     )
 
     Get-PSSession | Remove-PSSession
+    Write-Host "`r`nConnecting to Exchange On-Premises $OnPremExchangeServer`r`n" -ForegroundColor Green
     Connect-Exchange -Server $OnPremExchangeServer -DontViewEntireForest:$DontViewEntireForest
 
     $ErrorActionPreference = 'Stop'
@@ -79,7 +80,7 @@ function Set-ExchangeGuid {
                 }
             }
         }
-        1 { break }
+        1 { continue }
     }
     $ErrorActionPreference = 'Continue'
 }

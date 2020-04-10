@@ -7,7 +7,7 @@ function Sync-CloudData {
     )
     $Yes = [ChoiceDescription]::new('&Yes', 'Connect: Yes')
     $No = [ChoiceDescription]::new('&No', 'Connect: No')
-    $Question = 'Connect to Exchange Online and AzureAD?' -f $InitialDomain
+    $Question = 'Connect to Exchange Online and AzureAD?'
     $Options = [ChoiceDescription[]]($Yes, $No)
     $ConnectMenu = $host.ui.PromptForChoice($Title, $Question, $Options, 0)
 
@@ -42,7 +42,9 @@ function Sync-CloudData {
             }
             Get-PSSession | Remove-PSSession
             try { Disconnect-AzureAD -ErrorAction Stop } catch { }
+            Write-Host "`r`nEnter credentials for Source Tenant Exchange Online`r`n" -ForegroundColor White
             Connect-ExchangeOnline
+            Write-Host "`r`nEnter credentials for Source Azure AD`r`n" -ForegroundColor White
             $null = Connect-AzureAD
         }
         1 { }
@@ -51,7 +53,7 @@ function Sync-CloudData {
     $AzADDomain = ((Get-AzureADDomain).where{ $_.IsInitial }).Name
     if ($InitialDomain -ne $AzADDomain) {
         Write-Host "Halting script: $InitialDomain does not match $AzADDomain" -ForegroundColor Red
-        break
+        continue
     }
     if ($InitialDomain) {
         $Yes = [ChoiceDescription]::new('&Yes', 'Source Domain: Yes')
@@ -62,12 +64,12 @@ function Sync-CloudData {
 
         switch ($Menu) {
             0 { }
-            1 { break }
+            1 { continue }
         }
     }
     else {
         Write-Host 'Not connected to Exchange Online' -ForegroundColor Red
-        break
+        continue
     }
 
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
@@ -92,7 +94,7 @@ function Sync-CloudData {
     $SourceData = Invoke-GetCloudData -ResultSize $ResultSize -InitialDomain $InitialDomain
     $SourceData | Export-Csv -Path $SourceFile -NoTypeInformation
 
-    Write-Host ('Source objects converted for Target: {0} {1}' -f $SourceFile, [Environment]::NewLine) -ForegroundColor Green
+    Write-Host ('Source objects written to file: {0} {1}' -f $SourceFile, [Environment]::NewLine) -ForegroundColor Green
 
     $Yes = [ChoiceDescription]::new('&Yes', 'Convert Cloud Data: Yes')
     $No = [ChoiceDescription]::new('&No', 'Convert Cloud Data: No')
@@ -103,15 +105,17 @@ function Sync-CloudData {
     switch ($Menu) {
         0 {
             Write-Host ('Converting data...{0}' -f [Environment]::NewLine) -ForegroundColor Gray
-            Disconnect-AzureAD
             Get-PSSession | Remove-PSSession
+            try { Disconnect-AzureAD -ErrorAction Stop } catch { }
+            Write-Host "`r`nEnter credentials for Target Tenant Exchange Online`r`n" -ForegroundColor White
             Connect-ExchangeOnline
+            Write-Host "`r`nEnter credentials for Target Azure AD`r`n" -ForegroundColor White
             $null = Connect-AzureAD
             $InitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
             $AzADDomain = ((Get-AzureADDomain).where{ $_.IsInitial }).Name
             if ($InitialDomain -ne $AzADDomain) {
                 Write-Host "Halting script: $InitialDomain does not match $AzADDomain" -ForegroundColor Red
-                break
+                continue
             }
             $TargetInitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
             $TargetFile = Join-Path -Path $SourcePath -ChildPath ('{0}.csv' -f $TargetInitialDomain)
@@ -127,7 +131,7 @@ function Sync-CloudData {
         }
         1 {
             Write-Host 'Halting Script' -ForegroundColor Red
-            break
+            continue
         }
     }
 
@@ -139,18 +143,16 @@ function Sync-CloudData {
 
     switch ($Menu) {
         0 {
-            Write-Host 'Still connected to target: ' -ForegroundColor Cyan -NoNewline
-            Write-Host ('{0}{1}' -f $TargetInitialDomain, [Environment]::NewLine) -ForegroundColor Green
-
             $FileStamp = 'Sync_Result_{0}_{1}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'), $InitialDomain
             $ResultFile = Join-Path -Path $SourcePath -ChildPath $FileStamp
+
             $ResultObject = New-CloudData -SourceData $ConvertedData
             $ResultObject | Out-GridView -Title $FileStamp
             $ResultObject | Export-Csv $ResultFile -NoTypeInformation
         }
         1 {
             Write-Host 'Halting Script' -ForegroundColor Red
-            break
+            continue
         }
     }
 }

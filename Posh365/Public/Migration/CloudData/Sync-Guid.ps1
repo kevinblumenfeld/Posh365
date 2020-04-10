@@ -15,7 +15,7 @@ function Sync-Guid {
 
     if ($DeleteExchangeCreds) {
         Connect-Exchange -DeleteExchangeCreds:$true
-        break
+        continue
     }
 
     if (((Get-Module -Name PowerShellGet -ListAvailable).Version.Major | Sort-Object -Descending)[0] -lt 2 ) {
@@ -44,6 +44,7 @@ function Sync-Guid {
     }
 
     Get-PSSession | Remove-PSSession
+    Write-Host "`r`nEnter credentials for Target Tenant Exchange Online`r`n" -ForegroundColor White
     Connect-ExchangeOnline
     $InitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
 

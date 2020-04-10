@@ -12,13 +12,28 @@ function New-CloudData {
         $SourceData
     )
 
-    $InitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
+    try {
+        $InitialDomain = ((Get-AcceptedDomain -ErrorAction Stop).where{ $_.InitialDomain }).DomainName
+        Write-Host ('{0}Currently connected to Exchange Online: ' -f [Environment]::NewLine) -ForegroundColor Cyan -NoNewline
+        Write-Host ('{0}' -f $InitialDomain) -ForegroundColor Green
+    }
+    catch {
+        Write-Host 'Not Connected to Exchange Online' -ForegroundColor Yellow
+    }
+    try {
+        $AzDomain = ((Get-AzureADDomain -ErrorAction Stop).where{ $_.IsInitial }).Name
+        Write-Host 'Currently connected to AzureAD: ' -ForegroundColor Cyan -NoNewline
+        Write-Host ('{0}' -f $AzDomain) -ForegroundColor Green
+    }
+    catch {
+        Write-Host 'Not Connected to AzureAD' -ForegroundColor Yellow
+    }
     if (-not $SourceData) {
         $SourceData = Import-Csv -Path $FilePath
     }
     $Yes = [ChoiceDescription]::new('&Yes', 'Connect: Yes')
     $No = [ChoiceDescription]::new('&No', 'Connect: No')
-    $Question = 'Connect to Exchange Online and AzureAD?' -f $InitialDomain
+    $Question = 'Connect to Exchange Online and AzureAD?'
     $Options = [ChoiceDescription[]]($Yes, $No)
     $ConnectMenu = $host.ui.PromptForChoice($Title, $Question, $Options, 0)
 
@@ -35,7 +50,7 @@ function New-CloudData {
     $AzADDomain = ((Get-AzureADDomain).where{ $_.IsInitial }).Name
     if ($InitialDomain -ne $AzADDomain) {
         Write-Host "Halting script: $InitialDomain does not match $AzADDomain" -ForegroundColor Red
-        break
+        continue
     }
     if ($InitialDomain) {
         $Yes = [ChoiceDescription]::new('&Yes', 'Source Domain: Yes')
@@ -46,12 +61,12 @@ function New-CloudData {
 
         switch ($Menu) {
             0 { }
-            1 { break }
+            1 { continue }
         }
     }
     else {
         Write-Host 'Not connected to Exchange Online' -ForegroundColor Red
-        break
+        Continue
     }
     Invoke-NewCloudData -ConvertedData $SourceData
 }
