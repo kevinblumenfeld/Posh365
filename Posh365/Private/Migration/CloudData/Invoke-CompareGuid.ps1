@@ -74,12 +74,11 @@ function Invoke-CompareGuid {
         $Display = $null
         $ADUser = Get-ADUser -identity $Recipient.SamAccountName -Properties DisplayName, UserPrincipalName
         if ($Recipient.RecipientTypeDetails -like "Remote*") {
-            Write-Host ('{0} {2}' -f $ADUser.Displayname, $Recipient.RecipientTypeDetails) -ForegroundColor White
+            Write-Host ('{0} {1}' -f $ADUser.Displayname, $Recipient.RecipientTypeDetails) -ForegroundColor White
             [PSCustomObject]@{
                 Displayname        = if ($Display = $ADUser.DisplayName) { $Display } else { $ADUser.Name }
                 PrimarySmtpAddress = $Recipient.PrimarySmtpAddress
                 SamAccountname     = $Recipient.SamAccountName
-                OU                 = Convert-DistinguishedToCanonical -DistinguishedName ($ADUser.DistinguishedName -replace '^.+?,(?=(OU|CN)=)') -ErrorAction SilentlyContinue
                 ADUPN              = $ADUser.UserPrincipalName
                 MailboxLocation    = 'CLOUD'
                 MailboxType        = $Recipient.RecipientTypeDetails
@@ -93,12 +92,11 @@ function Invoke-CompareGuid {
             }
         }
         else {
-            Write-Host ('{0} {2}' -f $ADUser.Displayname, $Recipient.RecipientTypeDetails) -ForegroundColor White
+            Write-Host ('{0} {1}' -f $ADUser.Displayname, $Recipient.RecipientTypeDetails) -ForegroundColor White
             [PSCustomObject]@{
                 Displayname        = if ($Display = $ADUser.DisplayName) { $Display } else { $ADUser.Name }
                 PrimarySmtpAddress = $Recipient.PrimarySmtpAddress
                 SamAccountname     = $Recipient.SamAccountName
-                OU                 = Convert-DistinguishedToCanonical -DistinguishedName ($ADUser.DistinguishedName -replace '^.+?,(?=(OU|CN)=)') -ErrorAction SilentlyContinue
                 ADUPN              = $ADUser.UserPrincipalName
                 MailboxLocation    = 'ONPREMISES'
                 MailboxType        = $Recipient.RecipientTypeDetails
