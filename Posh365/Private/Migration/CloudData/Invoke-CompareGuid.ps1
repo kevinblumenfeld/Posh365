@@ -71,42 +71,63 @@ function Invoke-CompareGuid {
 
     Get-PSSession | Remove-PSSession
     foreach ($Recipient in $RecipientList) {
-        $Display = $null
         $ADUser = Get-ADUser -identity $Recipient.SamAccountName -Properties DisplayName, UserPrincipalName
-        if ($Recipient.RecipientTypeDetails -like "Remote*") {
-            Write-Host ('{0} {1}' -f $ADUser.Displayname, $Recipient.RecipientTypeDetails) -ForegroundColor White
-            [PSCustomObject]@{
-                Displayname        = if ($Display = $ADUser.DisplayName) { $Display } else { $ADUser.Name }
-                PrimarySmtpAddress = $Recipient.PrimarySmtpAddress
-                SamAccountname     = $Recipient.SamAccountName
-                ADUPN              = $ADUser.UserPrincipalName
-                MailboxLocation    = 'CLOUD'
-                MailboxType        = $Recipient.RecipientTypeDetails
-                OnPremExchangeGuid = $Recipient.ExchangeGuid
-                OnlineGuid         = $ExoHash[$ADUser.UserPrincipalName]['ExchangeGuid']
-                OnPremArchiveGuid  = $Recipient.ArchiveGuid
-                OnlineArchiveGuid  = $ExoHash[$ADUser.UserPrincipalName]['ArchiveGuid']
-                MailboxGuidMatch   = $Recipient.ExchangeGuid -eq $ExoHash[$ADUser.UserPrincipalName]['ExchangeGuid']
-                ArchiveGuidMatch   = $Recipient.ArchiveGuid -eq $ExoHash[$ADUser.UserPrincipalName]['ArchiveGuid']
-                OnPremSid          = $ADUser.SID
+        if ($ExoHash[$ADUser.UserPrincipalName] -or $Hash[$ADUser.UserPrincipalName]) {
+            if ($Recipient.RecipientTypeDetails -like "Remote*") {
+                Write-Host ('{0} {1}' -f $ADUser.Displayname, $Recipient.RecipientTypeDetails) -ForegroundColor White
+                [PSCustomObject]@{
+                    Displayname        = if ($ADUser.DisplayName) { $ADUser.DisplayName } else { $ADUser.Name }
+                    PrimarySmtpAddress = $Recipient.PrimarySmtpAddress
+                    SamAccountname     = $Recipient.SamAccountName
+                    OU                 = Convert-DistinguishedToCanonical -DistinguishedName ($ADUser.DistinguishedName -replace '^.+?,(?=(OU|CN)=)')
+                    ADUPN              = $ADUser.UserPrincipalName
+                    MailboxLocation    = 'CLOUD'
+                    MailboxType        = $Recipient.RecipientTypeDetails
+                    OnPremExchangeGuid = $Recipient.ExchangeGuid
+                    OnlineGuid         = $ExoHash[$ADUser.UserPrincipalName]['ExchangeGuid']
+                    OnPremArchiveGuid  = $Recipient.ArchiveGuid
+                    OnlineArchiveGuid  = $ExoHash[$ADUser.UserPrincipalName]['ArchiveGuid']
+                    MailboxGuidMatch   = $Recipient.ExchangeGuid -eq $ExoHash[$ADUser.UserPrincipalName]['ExchangeGuid']
+                    ArchiveGuidMatch   = $Recipient.ArchiveGuid -eq $ExoHash[$ADUser.UserPrincipalName]['ArchiveGuid']
+                    OnPremSid          = $ADUser.SID
+                }
             }
-        }
-        else {
-            Write-Host ('{0} {1}' -f $ADUser.Displayname, $Recipient.RecipientTypeDetails) -ForegroundColor White
-            [PSCustomObject]@{
-                Displayname        = if ($Display = $ADUser.DisplayName) { $Display } else { $ADUser.Name }
-                PrimarySmtpAddress = $Recipient.PrimarySmtpAddress
-                SamAccountname     = $Recipient.SamAccountName
-                ADUPN              = $ADUser.UserPrincipalName
-                MailboxLocation    = 'ONPREMISES'
-                MailboxType        = $Recipient.RecipientTypeDetails
-                OnPremExchangeGuid = $Recipient.ExchangeGuid
-                OnlineGuid         = $Hash[$ADUser.UserPrincipalName]['ExchangeGuid']
-                OnPremArchiveGuid  = $Recipient.ArchiveGuid
-                OnlineArchiveGuid  = $Hash[$ADUser.UserPrincipalName]['ArchiveGuid']
-                MailboxGuidMatch   = $Recipient.ExchangeGuid -eq $Hash[$ADUser.UserPrincipalName]['ExchangeGuid']
-                ArchiveGuidMatch   = $Recipient.ArchiveGuid -eq $Hash[$ADUser.UserPrincipalName]['ArchiveGuid']
-                OnPremSid          = $ADUser.SID
+            else {
+                Write-Host ('{0} {1}' -f $ADUser.Displayname, $Recipient.RecipientTypeDetails) -ForegroundColor White
+                [PSCustomObject]@{
+                    Displayname        = if ($ADUser.DisplayName) { $ADUser.DisplayName } else { $ADUser.Name }
+                    PrimarySmtpAddress = $Recipient.PrimarySmtpAddress
+                    SamAccountname     = $Recipient.SamAccountName
+                    OU                 = Convert-DistinguishedToCanonical -DistinguishedName ($ADUser.DistinguishedName -replace '^.+?,(?=(OU|CN)=)')
+                    ADUPN              = $ADUser.UserPrincipalName
+                    MailboxLocation    = 'ONPREMISES'
+                    MailboxType        = $Recipient.RecipientTypeDetails
+                    OnPremExchangeGuid = $Recipient.ExchangeGuid
+                    OnlineGuid         = $Hash[$ADUser.UserPrincipalName]['ExchangeGuid']
+                    OnPremArchiveGuid  = $Recipient.ArchiveGuid
+                    OnlineArchiveGuid  = $Hash[$ADUser.UserPrincipalName]['ArchiveGuid']
+                    MailboxGuidMatch   = $Recipient.ExchangeGuid -eq $Hash[$ADUser.UserPrincipalName]['ExchangeGuid']
+                    ArchiveGuidMatch   = $Recipient.ArchiveGuid -eq $Hash[$ADUser.UserPrincipalName]['ArchiveGuid']
+                    OnPremSid          = $ADUser.SID
+                }
+            }
+            else {
+                [PSCustomObject]@{
+                    Displayname        = if ($ADUser.DisplayName) { $ADUser.DisplayName } else { $ADUser.Name }
+                    PrimarySmtpAddress = $Recipient.PrimarySmtpAddress
+                    SamAccountname     = $Recipient.SamAccountName
+                    OU                 = Convert-DistinguishedToCanonical -DistinguishedName ($ADUser.DistinguishedName -replace '^.+?,(?=(OU|CN)=)')
+                    ADUPN              = $ADUser.UserPrincipalName
+                    MailboxLocation    = $Recipient.RecipientTypeDetails
+                    MailboxType        = $Recipient.RecipientTypeDetails
+                    OnPremExchangeGuid = $Recipient.ExchangeGuid
+                    OnlineGuid         = 'NOMATCHINGOBJECT'
+                    OnPremArchiveGuid  = $Recipient.ArchiveGuid
+                    OnlineArchiveGuid  = 'NOMATCHINGOBJECT'
+                    MailboxGuidMatch   = 'NOMATCHINGOBJECT'
+                    ArchiveGuidMatch   = 'NOMATCHINGOBJECT'
+                    OnPremSid          = $ADUser.SID
+                }
             }
         }
     }
