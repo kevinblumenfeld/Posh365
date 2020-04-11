@@ -43,10 +43,21 @@ function Sync-Guid {
         return
     }
 
+    # On-Premises ( Remote Mailbox )
+    Write-Host "`r`nConnecting to Exchange On-Premises $OnPremExchangeServer`r`n" -ForegroundColor Cyan
+    Connect-Exchange -Server $OnPremExchangeServer -DontViewEntireForest:$DontViewEntireForest
+    $OnHash = Get-RemoteMailboxHash
     Get-PSSession | Remove-PSSession
+
+    # Cloud ( Mailbox )
     Write-Host "`r`nEnter Exchange Online credentials for the Target Tenant`r`n" -ForegroundColor Cyan
     Connect-ExchangeOnline
     $InitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
+    Write-Host "`r`nConnected to Exchange Online Tenant: $InitialDomain`r`n" -ForegroundColor Cyan
+    $CloudHash = Get-CloudMailboxHash
+    Get-PSSession | Remove-PSSession
+
+    $CompareObject = Invoke-CompareGuid -OnHash $OnHash -CloudHash $CloudHash
 
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
     $SourcePath = Join-Path -Path $PoshPath -ChildPath $InitialDomain
@@ -62,19 +73,18 @@ function Sync-Guid {
         $null = New-Item $SourcePath @ItemSplat
     }
 
-    $CompareResult = Invoke-CompareGuid -OnPremExchangeServer $OnPremExchangeServer -DontViewEntireForest:$DontViewEntireForest
-    $CompareResult | Out-GridView -Title "Results of Guid Comparison to Tenant: $InitialDomain"
-    $CompareResult | Export-Csv $SourceFile -NoTypeInformation
+    $CompareObject | Out-GridView -Title "Results of Guid Comparison to Tenant: $InitialDomain"
+    $CompareObject | Export-Csv $SourceFile -NoTypeInformation
 
-    $AddGuidList = $CompareResult | Where-Object { -not $_.MailboxGuidMatch -or -not $_.ArchiveGuidMatch }
-    if ($AddGuidList) {
-        $GuidResult = Set-ExchangeGuid -AddGuidList $AddGuidList -OnPremExchangeServer $OnPremExchangeServer -DontViewEntireForest:$DontViewEntireForest
-        $GuidResult | Out-GridView -Title "Results of Adding Guid to Tenant: $InitialDomain"
-        $ResultFile = Join-Path -Path $SourcePath -ChildPath ('Guid_Result_{0}.csv' -f $InitialDomain)
-        $GuidResult | Export-Csv $ResultFile -NoTypeInformation
-    }
-    else {
-        Write-Host "All ExchangeGuid and ArchiveGuid already match" -ForegroundColor Yellow
-        continue
-    }
+    # $AddGuidList = $CompareResult | Where-Object { -not $_.MailboxGuidMatch -or -not $_.ArchiveGuidMatch }
+    # if ($AddGuidList) {
+    #     $GuidResult = Set-ExchangeGuid -AddGuidList $AddGuidList -OnPremExchangeServer $OnPremExchangeServer -DontViewEntireForest:$DontViewEntireForest
+    #     $GuidResult | Out-GridView -Title "Results of Adding Guid to Tenant: $InitialDomain"
+    #     $ResultFile = Join-Path -Path $SourcePath -ChildPath ('Guid_Result_{0}.csv' -f $InitialDomain)
+    #     $GuidResult | Export-Csv $ResultFile -NoTypeInformation
+    # }
+    # else {
+    #     Write-Host "All ExchangeGuid and ArchiveGuid already match" -ForegroundColor Yellow
+    #     continue
+    # }
 }
