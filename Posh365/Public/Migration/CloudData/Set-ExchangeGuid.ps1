@@ -38,6 +38,7 @@ function Set-ExchangeGuid {
             $Count = $AddGuidList.Count
             $iUP = 0
             foreach ($AddGuid in $AddGuidList) {
+                $iUP++
                 $SetParams = @{
                     Identity    = $AddGuid.ADUPN
                     ErrorAction = 'Stop'
