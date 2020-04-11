@@ -11,16 +11,9 @@ function Set-ExchangeGuid {
         $AddGuidList,
 
         [Parameter()]
-        $OnPremExchangeServer,
+        $InitialDomain
 
-        [Parameter()]
-        [switch]
-        $DontViewEntireForest
     )
-
-    Get-PSSession | Remove-PSSession
-    Write-Host "`r`nConnecting to Exchange On-Premises $OnPremExchangeServer`r`n" -ForegroundColor Green
-    Connect-Exchange -Server $OnPremExchangeServer -DontViewEntireForest:$DontViewEntireForest
 
     $ErrorActionPreference = 'Stop'
     if (-not $AddGuidList) {
@@ -29,7 +22,7 @@ function Set-ExchangeGuid {
 
     $Yes = [ChoiceDescription]::new('&Yes', 'Set-RemoteDomain: Yes')
     $No = [ChoiceDescription]::new('&No', 'Set-RemoteDomain: No')
-    $Question = 'Are you ready to stamp ExchangeGuids?'
+    $Question = "Are you ready to stamp Guids in this tenant: $InitialDomain ?"
     $Options = [ChoiceDescription[]]($Yes, $No)
     $Title = 'Please make a selection'
     $Menu = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
@@ -40,55 +33,43 @@ function Set-ExchangeGuid {
             foreach ($AddGuid in $AddGuidList) {
                 $iUP++
                 $SetParams = @{
-                    Identity    = $AddGuid.ADUPN
+                    Identity    = $AddGuid.UserPrincipalName
                     ErrorAction = 'Stop'
                 }
-                if (-not $AddGuid.MailboxGuidMatch) {
-                    $SetParams['ExchangeGuid'] = $AddGuid.OnlineGuid
+                if (-not $AddGuid.ExchangeGuidMatch) {
+                    $SetParams['ExchangeGuid'] = $AddGuid.ExchangeGuidCloud
                 }
                 if (-not $AddGuid.ArchiveGuidMatch) {
-                    $SetParams['ArchiveGuid'] = $AddGuid.OnlineArchiveGuid
+                    $SetParams['ArchiveGuid'] = $AddGuid.ArchiveGuidCloud
                 }
                 try {
                     Set-RemoteMailbox @SetParams
-                    $Stamped = Get-RemoteMailbox -Identity $AddGuid.ADUPN
+                    $Stamped = Get-RemoteMailbox -Identity $AddGuid.UserPrincipalName
                     Write-Host "[$iUP of $count] Success Set Guid $($Stamped.DisplayName)" -ForegroundColor Green
                     [PSCustomObject]@{
-                        Displayname        = $AddGuid.Displayname
-                        OU                 = $AddGuid.OU
-                        ExchangeGuid       = $Stamped.ExchangeGuid
-                        OnlineExchangeGuid = $AddGuid.OnlineGuid
-                        Result             = 'SUCCESS'
-                        Log                = 'SUCCESS'
-                        PrimarySmtpAddress = $AddGuid.PrimarySmtpAddress
-                        SamAccountname     = $AddGuid.SamAccountName
-                        ADUPN              = $AddGuid.ADUPN
-                        MailboxLocation    = $AddGuid.MailboxLocation
-                        MailboxType        = $AddGuid.MailboxType
-                        OnPremArchiveGuid  = $AddGuid.OnPremArchiveGuid
-                        OnlineArchiveGuid  = $AddGuid.OnlineArchiveGuid
-                        CloudGuid          = $Stamped.Guid
-                        OnPremSid          = $AddGuid.OnPremSid
+                        Displayname        = $AddGuid.DisplayName
+                        OrganizationalUnit = $AddGuid.OrganizationalUnit
+                        ExchangeGuidMatch  = $Stamped.ExchangeGuid -eq $AddGuid.ExchangeGuidCloud
+                        ArchiveGuidMatch   = $Stamped.ArchiveGuid -eq $AddGuid.ArchiveGuidCloud
+                        ExchangeGuidOnPrem = $Stamped.ExchangeGuid
+                        ExchangeGuidCloud  = $AddGuid.ExchangeGuidCloud
+                        ArchiveGuidOnPrem  = $Stamped.ArchiveGuid
+                        ArchiveGuidCloud   = $AddGuid.ArchiveGuidCloud
+                        UserPrincipalName =  $Stamped.UserPrincipalName
                     }
                 }
                 catch {
                     Write-Host "[$iUP of $count] Failed Set Guid $($Stamped.DisplayName)" -ForegroundColor Red
                     [PSCustomObject]@{
-                        Displayname        = $AddGuid.Displayname
-                        OU                 = $AddGuid.OU
-                        ExchangeGuid       = $AddGuid.OnPremExchangeGuid
-                        OnlineExchangeGuid = $AddGuid.OnlineGuid
-                        Result             = 'FAILED'
-                        Log                = $_.Exception.Message
-                        PrimarySmtpAddress = $AddGuid.PrimarySmtpAddress
-                        SamAccountname     = $AddGuid.SamAccountName
-                        ADUPN              = $AddGuid.ADUPN
-                        MailboxLocation    = $AddGuid.MailboxLocation
-                        MailboxType        = $AddGuid.MailboxType
-                        OnPremArchiveGuid  = $AddGuid.OnPremArchiveGuid
-                        OnlineArchiveGuid  = $AddGuid.OnlineArchiveGuid
-                        CloudGuid          = $Stamped.Guid
-                        OnPremSid          = $AddGuid.OnPremSid
+                        Displayname        = $AddGuid.DisplayName
+                        OrganizationalUnit = $AddGuid.OrganizationalUnit
+                        ExchangeGuidMatch  = 'FAILED'
+                        ArchiveGuidMatch   = 'FAILED'
+                        ExchangeGuidOnPrem = $Stamped.ExchangeGuid
+                        ExchangeGuidCloud  = $AddGuid.ExchangeGuidCloud
+                        ArchiveGuidOnPrem  = $Stamped.ExchangeGuidCloud
+                        ArchiveGuidCloud   = $AddGuid.ArchiveGuidCloud
+                        UserPrincipalName =  $Stamped.UserPrincipalName
                     }
                 }
             }
