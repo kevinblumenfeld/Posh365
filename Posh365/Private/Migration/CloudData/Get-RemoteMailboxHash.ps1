@@ -3,7 +3,14 @@ function Get-RemoteMailboxHash {
     param (
     )
 
-    $OnPremList = Get-RemoteMailbox -ResultSize Unlimited
+    $RemoteSelect = @(
+        'UserPrincipalName', 'Identity', 'DisplayName'
+        'Name', 'SamAccountName', 'WindowsEmailAddress'
+        'PrimarySmtpAddress', 'OnPremisesOrganizationalUnit'
+        'ExchangeGuid', 'ArchiveGuid'
+    )
+
+    $OnPremList = Get-RemoteMailbox -ResultSize Unlimited | Select-Object $RemoteSelect
     $OnHash = @{ }
     foreach ($On in $OnPremList) {
         $OnHash[$On.UserPrincipalName] = @{
@@ -18,4 +25,5 @@ function Get-RemoteMailboxHash {
             'ArchiveGuid'         = ($On.ArchiveGuid).ToString()
         }
     }
+    $OnHash
 }

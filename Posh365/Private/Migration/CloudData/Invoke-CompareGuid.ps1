@@ -14,7 +14,7 @@ function Invoke-CompareGuid {
         if ($CloudHash.ContainsKey($OnKey)) {
             [PSCustomObject]@{
                 Displayname        = if ($OnHash[$OnKey]['DisplayName']) { $OnHash[$OnKey]['DisplayName'] } else { $OnHash[$OnKey]['DisplayName']}
-                OrganizationalUnit = $OnHash[$OnKey]['OnPremisesOrganizationalUnit']
+                OrganizationalUnit = $OnHash[$OnKey]['OrganizationalUnit']
                 ExchangeGuidMatch  = $OnHash[$OnKey]['ExchangeGuid'] -eq $CloudHash[$OnKey]['ExchangeGuid']
                 ArchiveGuidMatch   = $OnHash[$OnKey]['ArchiveGuid'] -eq $CloudHash[$OnKey]['ArchiveGuid']
                 ExchangeGuidOnPrem = $OnHash[$OnKey]['ExchangeGuid']
@@ -24,7 +24,7 @@ function Invoke-CompareGuid {
         else {
             [PSCustomObject]@{
                 Displayname        = if ($OnHash[$OnKey]['DisplayName']) { $OnHash[$OnKey]['DisplayName'] } else { $OnHash[$OnKey]['DisplayName'] }
-                OrganizationalUnit = $OnHash[$OnKey]['OnPremisesOrganizationalUnit']
+                OrganizationalUnit = $OnHash[$OnKey]['OrganizationalUnit']
                 ExchangeGuidMatch  = 'CLOUDUPNNOTFOUND'
                 ArchiveGuidMatch   = 'CLOUDUPNNOTFOUND'
                 ExchangeGuidOnPrem = $OnHash[$OnKey]['ExchangeGuid']

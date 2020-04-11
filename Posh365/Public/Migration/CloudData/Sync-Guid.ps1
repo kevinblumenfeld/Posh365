@@ -44,9 +44,11 @@ function Sync-Guid {
     }
 
     # On-Premises ( Remote Mailbox )
+    Get-PSSession | Remove-PSSession
     Write-Host "`r`nConnecting to Exchange On-Premises $OnPremExchangeServer`r`n" -ForegroundColor Cyan
     Connect-Exchange -Server $OnPremExchangeServer -DontViewEntireForest:$DontViewEntireForest
     $OnHash = Get-RemoteMailboxHash
+    
     Get-PSSession | Remove-PSSession
 
     # Cloud ( Mailbox )

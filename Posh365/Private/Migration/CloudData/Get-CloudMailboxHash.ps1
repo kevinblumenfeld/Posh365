@@ -3,12 +3,22 @@ function Get-CloudMailboxHash {
     param (
     )
 
-    $CloudList = Get-Mailbox -ResultSize Unlimited
+    
+    $CloudSelect = @(
+        'UserPrincipalName', 'Identity', 'DisplayName'
+        'Name', 'SamAccountName', 'WindowsEmailAddress'
+        'PrimarySmtpAddress', 'OnPremisesOrganizationalUnit'
+        'ExchangeGuid', 'ArchiveGuid'
+    )
+
+    $CloudList = Get-Mailbox -ResultSize Unlimited | Select-Object $CloudSelect
 
     $CloudHash = @{ }
     foreach ($Cloud in $CloudList) {
         $CloudHash[$Cloud.UserPrincipalName] = @{
             'Identity'            = $Cloud.Identity
+            'DisplayName'         = $Cloud.DisplayName
+            'Name'                = $Cloud.Name
             'SamAccountName'      = $Cloud.SamAccountName
             'WindowsEmailAddress' = $Cloud.WindowsEmailAddress
             'PrimarySmtpAddress'  = $Cloud.PrimarySmtpAddress
@@ -16,4 +26,5 @@ function Get-CloudMailboxHash {
             'ArchiveGuid'         = ($Cloud.ArchiveGuid).ToString()
         }
     }
+    $CloudHash
 }
