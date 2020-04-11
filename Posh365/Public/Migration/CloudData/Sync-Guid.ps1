@@ -31,8 +31,8 @@ function Sync-Guid {
         switch ($YN) {
             0 { $ConfirmExServer = $true }
             1 {
-                Write-Host "`r`nEnter the name of the Exchange Server. Example: ExServer01.domain.com"
-                $OnPremExchangeServer = Read-Host "Exchange Server Name >>"
+                Write-Host "`r`nEnter the name of the Exchange Server. Example: ExServer01.domain.com" -ForegroundColor Cyan
+                $OnPremExchangeServer = Read-Host "Exchange Server Name"
             }
         }
     }
