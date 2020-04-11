@@ -77,7 +77,7 @@ function Invoke-CompareGuid {
         $ADUser = Get-ADUser -identity $Recipient.SamAccountName -Properties DisplayName, UserPrincipalName
         if ($ExoHash[$ADUser.UserPrincipalName] -or $Hash[$ADUser.UserPrincipalName]) {
             if ($Recipient.RecipientTypeDetails -like "Remote*") {
-                Write-Host ('[{0} of {1}] Comparing Guids {2} {3}' -f $iUP, $count, $ADUser.Displayname, $Recipient.RecipientTypeDetails) -ForegroundColor Green
+                Write-Host ('[{0} of {1}] Comparing Guids {2} ({3})' -f $iUP, $count, $ADUser.Displayname, $Recipient.RecipientTypeDetails) -ForegroundColor Green
                 [PSCustomObject]@{
                     Displayname        = if ($ADUser.DisplayName) { $ADUser.DisplayName } else { $ADUser.Name }
                     PrimarySmtpAddress = $Recipient.PrimarySmtpAddress
@@ -96,7 +96,7 @@ function Invoke-CompareGuid {
                 }
             }
             else {
-                Write-Host ('[{0} of {1}] Comparing Guids {2} {3}' -f $iUP, $count, $ADUser.Displayname, $Recipient.RecipientTypeDetails) -ForegroundColor Green
+                Write-Host ('[{0} of {1}] Comparing Guids {2} ({3})' -f $iUP, $count, $ADUser.Displayname, $Recipient.RecipientTypeDetails) -ForegroundColor Green
                 [PSCustomObject]@{
                     Displayname        = if ($ADUser.DisplayName) { $ADUser.DisplayName } else { $ADUser.Name }
                     PrimarySmtpAddress = $Recipient.PrimarySmtpAddress
