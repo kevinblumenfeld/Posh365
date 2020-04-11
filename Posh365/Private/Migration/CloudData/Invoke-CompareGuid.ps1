@@ -9,26 +9,21 @@ function Invoke-CompareGuid {
         $DontViewEntireForest
     )
 
-    $MailboxSelect = @(
-        'Identity', 'SamAccountName', 'UserPrincipalName'
-        'WindowsEmailAddress', 'PrimarySmtpAddress'
-        'ExchangeGuid', 'ArchiveGuid'
-    )
-    $ExoList = Get-Mailbox -ResultSize Unlimited | Select-Object $MailboxSelect
+    $CloudList = Get-Mailbox -ResultSize Unlimited
 
-    $ExoHash = @{ }
-    foreach ($Exo in $ExoList) {
-        $ExoHash[$Exo.UserPrincipalName] = @{
-            'Identity'            = $Exo.Identity
-            'SamAccountName'      = $Exo.SamAccountName
-            'WindowsEmailAddress' = $Exo.WindowsEmailAddress
-            'PrimarySmtpAddress'  = $Exo.PrimarySmtpAddress
-            'ExchangeGuid'        = ($Exo.ExchangeGuid).ToString()
-            'ArchiveGuid'         = ($Exo.ArchiveGuid).ToString()
+    $CloudHash = @{ }
+    foreach ($Cloud in $CloudList) {
+        $CloudHash[$Cloud.UserPrincipalName] = @{
+            'Identity'            = $Cloud.Identity
+            'SamAccountName'      = $Cloud.SamAccountName
+            'WindowsEmailAddress' = $Cloud.WindowsEmailAddress
+            'PrimarySmtpAddress'  = $Cloud.PrimarySmtpAddress
+            'ExchangeGuid'        = ($Cloud.ExchangeGuid).ToString()
+            'ArchiveGuid'         = ($Cloud.ArchiveGuid).ToString()
         }
     }
-
     Get-PSSession | Remove-PSSession
+
     Write-Host "`r`nConnecting to Exchange On-Premises $OnPremExchangeServer`r`n" -ForegroundColor Green
     Connect-Exchange -Server $OnPremExchangeServer -DontViewEntireForest:$DontViewEntireForest
 
@@ -45,37 +40,14 @@ function Invoke-CompareGuid {
         }
     }
 
-    $MeuList = Get-MailUser -ResultSize Unlimited | Select-Object $MailboxSelect
-    foreach ($Meu in $MeuList) {
-        $Hash[$Meu.UserPrincipalName] = @{
-            'Identity'            = $Meu.Identity
-            'SamAccountName'      = $Meu.SamAccountName
-            'WindowsEmailAddress' = $Meu.WindowsEmailAddress
-            'PrimarySmtpAddress'  = $Meu.PrimarySmtpAddress
-            'ExchangeGuid'        = ($Meu.ExchangeGuid).ToString()
-            'ArchiveGuid'         = ($Meu.ArchiveGuid).ToString()
-        }
-    }
-
-    $RecipientSelect = @(
-        'Identity', 'RecipientType', 'RecipientTypeDetails'
-        'SamAccountName', 'UserPrincipalName', 'WindowsEmailAddress'
-        'PrimarySmtpAddress', 'ExchangeGuid', 'ArchiveGuid'
-    )
-    $RecipientType = @(
-        'UserMailbox', 'SharedMailbox', 'RoomMailbox', 'EquipmentMailbox'
-        'MailUser', 'RemoteEquipmentMailbox', 'RemoteRoomMailbox'
-        'RemoteSharedMailbox', 'RemoteUserMailbox'
-    )
-    $RecipientList = Get-Recipient -RecipientTypeDetails $RecipientType -ResultSize Unlimited | Select-Object $RecipientSelect
-
     Get-PSSession | Remove-PSSession
-    $Count = $RecipientList.Count
+
+    $Count = $MailboxList.Count
     $iUP = 0
     foreach ($Recipient in $RecipientList) {
         $iUP++
         $ADUser = Get-ADUser -identity $Recipient.SamAccountName -Properties DisplayName, UserPrincipalName
-        if ($ExoHash[$ADUser.UserPrincipalName] -or $Hash[$ADUser.UserPrincipalName]) {
+        if ($CloudHash[$ADUser.UserPrincipalName] -or $Hash[$ADUser.UserPrincipalName]) {
             if ($Recipient.RecipientTypeDetails -like "Remote*") {
                 Write-Host ('[{0} of {1}] Comparing Guids {2} ({3})' -f $iUP, $count, $ADUser.Displayname, $Recipient.RecipientTypeDetails) -ForegroundColor Green
                 [PSCustomObject]@{
@@ -87,11 +59,11 @@ function Invoke-CompareGuid {
                     MailboxLocation    = 'CLOUD'
                     MailboxType        = $Recipient.RecipientTypeDetails
                     OnPremExchangeGuid = $Recipient.ExchangeGuid
-                    OnlineGuid         = $ExoHash[$ADUser.UserPrincipalName]['ExchangeGuid']
+                    OnlineGuid         = $CloudHash[$ADUser.UserPrincipalName]['ExchangeGuid']
                     OnPremArchiveGuid  = $Recipient.ArchiveGuid
-                    OnlineArchiveGuid  = $ExoHash[$ADUser.UserPrincipalName]['ArchiveGuid']
-                    MailboxGuidMatch   = $Recipient.ExchangeGuid -eq $ExoHash[$ADUser.UserPrincipalName]['ExchangeGuid']
-                    ArchiveGuidMatch   = $Recipient.ArchiveGuid -eq $ExoHash[$ADUser.UserPrincipalName]['ArchiveGuid']
+                    OnlineArchiveGuid  = $CloudHash[$ADUser.UserPrincipalName]['ArchiveGuid']
+                    MailboxGuidMatch   = $Recipient.ExchangeGuid -eq $CloudHash[$ADUser.UserPrincipalName]['ExchangeGuid']
+                    ArchiveGuidMatch   = $Recipient.ArchiveGuid -eq $CloudHash[$ADUser.UserPrincipalName]['ArchiveGuid']
                     OnPremSid          = $ADUser.SID
                 }
             }

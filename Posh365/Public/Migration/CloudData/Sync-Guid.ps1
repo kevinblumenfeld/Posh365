@@ -1,7 +1,7 @@
 function Sync-Guid {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory)]
+        [Parameter()]
         $OnPremExchangeServer,
 
         [Parameter()]
@@ -17,34 +17,34 @@ function Sync-Guid {
         Connect-Exchange -DeleteExchangeCreds:$true
         continue
     }
-
-    if (((Get-Module -Name PowerShellGet -ListAvailable).Version.Major | Sort-Object -Descending)[0] -lt 2 ) {
-        try {
-            Install-Module -Name PowerShellGet -Scope CurrentUser -Force -ErrorAction Stop -AllowClobber
-            Write-Warning "Exchange Online v.2 module requires PowerShellGet v.2"
-            Write-Warning "PowerShellGet v.2 was just installed"
-            Write-Warning "Please restart this PowerShell console and rerun the same command"
-        }
-        catch {
-            Write-Warning "Unable to install the latest version of PowerShellGet"
-            Write-Warning "and thus unable to install the Exchange Online v.2 module"
-        }
-        $Script:RestartConsole = $true
-        return
+    while (-not $OnPremExchangeServer ) {
+        Write-Host "Enter the name of the Exchange Server. Example: ExServer01.domain.com"
+        $OnPremExchangeServer = Read-Host "Exchange Server Name"
     }
-    if (-not ($null = Get-Module -Name ExchangeOnlineManagement -ListAvailable)) {
-        $EXOInstall = @{
-            Name          = 'ExchangeOnlineManagement'
-            Scope         = 'CurrentUser'
-            AllowClobber  = $true
-            AcceptLicense = $true
-            Force         = $true
+    while (-not $ConfirmExServer) {
+        $Yes = [ChoiceDescription]::new('&Yes', 'ExServer: Yes')
+        $No = [ChoiceDescription]::new('&No', 'ExServer: No')
+        $Options = [ChoiceDescription[]]($Yes, $No)
+        $Title = 'Specified Exchange Server: {0}' -f $OnPremExchangeServer
+        $Question = 'Is this correct?'
+        $YN = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
+        switch ($YN) {
+            0 { $ConfirmExServer = $true }
+            1 {
+                Write-Host "`r`nEnter the name of the Exchange Server. Example: ExServer01.domain.com"
+                $OnPremExchangeServer = Read-Host "Exchange Server Name >>"
+            }
         }
-        Install-Module @EXOInstall
+    }
+
+    $Script:RestartConsole = $null
+    Connect-CloudModuleImport -EXO2
+    if ($RestartConsole) {
+        return
     }
 
     Get-PSSession | Remove-PSSession
-    Write-Host "`r`nEnter credentials for Target Tenant Exchange Online`r`n" -ForegroundColor White
+    Write-Host "`r`nEnter Exchange Online credentials for the Target Tenant`r`n" -ForegroundColor Cyan
     Connect-ExchangeOnline
     $InitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
 
