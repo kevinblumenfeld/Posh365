@@ -50,7 +50,7 @@ function New-CloudData {
     $AzADDomain = ((Get-AzureADDomain).where{ $_.IsInitial }).Name
     if ($InitialDomain -ne $AzADDomain) {
         Write-Host "Halting script: $InitialDomain does not match $AzADDomain" -ForegroundColor Red
-        continue
+        return
     }
     if ($InitialDomain) {
         $Yes = [ChoiceDescription]::new('&Yes', 'Source Domain: Yes')
@@ -61,12 +61,12 @@ function New-CloudData {
 
         switch ($Menu) {
             0 { }
-            1 { continue }
+            1 { return }
         }
     }
     else {
         Write-Host 'Not connected to Exchange Online' -ForegroundColor Red
-        Continue
+        return
     }
     Invoke-NewCloudData -ConvertedData $SourceData
 }

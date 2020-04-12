@@ -12,6 +12,7 @@ function Invoke-GetCloudData {
     $MailboxList = Get-Mailbox -Filter "IsDirSynced -eq '$false'" -RecipientTypeDetails UserMailbox, SharedMailbox, RoomMailbox, EquipmentMailbox -ResultSize $ResultSize
     $MailboxList | Select-Object @(
         'DisplayName'
+        'Name'
         @{
             Name       = 'Type'
             Expression = { 'Recipient' }
@@ -39,6 +40,7 @@ function Invoke-GetCloudData {
     $MailUserList = (Get-MailUser -Filter "IsDirSynced -eq '$false'" -ResultSize $ResultSize).where{ $_.UserPrincipalName -notlike "*#EXT#*" }
     $MailUserList | Select-Object @(
         'DisplayName'
+        'Name'
         @{
             Name       = 'Type'
             Expression = { 'Recipient' }
@@ -79,6 +81,10 @@ function Invoke-GetCloudData {
     } | Select-Object @(
         'DisplayName'
         @{
+            Name       = 'Name'
+            Expression = { '' }
+        }
+        @{
             Name       = 'Type'
             Expression = { 'AzureADUser' }
         }
@@ -94,7 +100,7 @@ function Invoke-GetCloudData {
         'ExternalEmailAddress'
         @{
             Name       = 'Alias'
-            Expression = { '' }
+            Expression = { $_.MailNickName }
         }
         @{
             Name       = 'PrimarySmtpAddress'

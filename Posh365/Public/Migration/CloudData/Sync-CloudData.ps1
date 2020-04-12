@@ -39,7 +39,7 @@ function Sync-CloudData {
 
     if ($InitialDomain -ne $AzDomain) {
         Write-Host "Halting script: $InitialDomain does not match $AzDomain" -ForegroundColor Red
-        continue
+        return
     }
     if ($InitialDomain) {
         $Yes = [ChoiceDescription]::new('&Yes', 'Source Domain: Yes')
@@ -51,12 +51,12 @@ function Sync-CloudData {
 
         switch ($Menu) {
             0 { }
-            1 { continue }
+            1 { return }
         }
     }
     else {
         Write-Host 'Halting script: Not connected to Exchange Online' -ForegroundColor Red
-        continue
+        return
     }
 
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
@@ -108,7 +108,7 @@ function Sync-CloudData {
 
             if ($TargetInitialDomain -ne $TargetAzDomain) {
                 Write-Host "Halting script: $TargetInitialDomain does not match $TargetAzDomain" -ForegroundColor Red
-                continue
+                return
             }
             $TargetFile = Join-Path -Path $SourcePath -ChildPath ('{0}.csv' -f $TargetInitialDomain)
 
@@ -123,7 +123,7 @@ function Sync-CloudData {
         }
         1 {
             Write-Host 'Halting Script' -ForegroundColor Red
-            continue
+            return
         }
     }
 
@@ -138,13 +138,13 @@ function Sync-CloudData {
             $FileStamp = 'Sync_Result_{0}_{1}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'), $TargetInitialDomain
             $ResultFile = Join-Path -Path $SourcePath -ChildPath $FileStamp
 
-            $ResultObject = New-CloudData -SourceData $ConvertedData
+            New-CloudData -SourceData $ConvertedData | Export-Csv $ResultFile -NoTypeInformation
+            $ResultObject = Import-Csv $ResultFile
             $ResultObject | Out-GridView -Title $FileStamp
-            $ResultObject | Export-Csv $ResultFile -NoTypeInformation
         }
         1 {
             Write-Host 'Halting Script' -ForegroundColor Red
-            continue
+            return
         }
     }
 }

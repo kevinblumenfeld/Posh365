@@ -74,7 +74,7 @@ function Set-ExchangeGuid {
                 }
             }
         }
-        1 { continue }
+        1 { return }
     }
     $ErrorActionPreference = 'Continue'
 }

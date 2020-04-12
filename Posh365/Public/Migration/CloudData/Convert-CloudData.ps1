@@ -11,7 +11,7 @@ function Convert-CloudData {
     )
 
     $InitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
-    $AcceptedDomains = (Get-AcceptedDomain).DomainName
+
     if (-not $SourceData) {
         $SourceData = Import-Csv -Path $FilePath
     }
@@ -31,38 +31,39 @@ function Convert-CloudData {
         else {
             $LegacyExchangeDN = ''
         }
-        $AddressList.Add((@($Source.EmailAddresses -split [Regex]::Escape('|') ).where{$_ -like "x500:*"}))
-
-        $ConstructedUPN = '{0}@{1}' -f ($Source.UserPrincipalName -split '@')[0], $InitialDomain
+        $AddressList.Add((@($Source.EmailAddresses -split [Regex]::Escape('|') ).where{ $_ -like "x500:*" }))
 
         if ($Source.PrimarySmtpAddress) {
-            $ConstructedPrimarySmtp = '{0}@{1}' -f ($Source.PrimarySmtpAddress -split '@')[0], $InitialDomain
+            $TargetPrimarySmtpAddress = '{0}@{1}' -f ($Source.PrimarySmtpAddress -split '@')[0], $InitialDomain
         }
         else {
-            $ConstructedPrimarySmtp = ''
+            $TargetPrimarySmtpAddress = ''
         }
-
+        if ($Source.Name) {$Name = $Source.Name} else {$Name = ''}
         [PSCustomObject]@{
             DisplayName               = $Source.DisplayName
+            Name                      = $Name
             Type                      = $Source.Type
             RecipientType             = $Source.RecipientType
             RecipientTypeDetails      = $Source.RecipientTypeDetails
-            AzureADUPN                = '{0}@{1}' -f ($Source.UserPrincipalName -split '@')[0], $InitialDomain
-            UserPrincipalName         = $ConstructedUPN
+            UserPrincipalName         = '{0}@{1}' -f ($Source.UserPrincipalName -split '@')[0], $InitialDomain
             ExternalEmailAddress      = $Source.ExternalEmailAddress
             Alias                     = $Source.Alias
-            PrimarySmtpAddress        = $ConstructedPrimarySmtp
-            SourceInitial             = $Source.InitialAddress
-            ExchangeGuid              = $Source.ExchangeGuid
-            ArchiveGuid               = $Source.ArchiveGuid
+            PrimarySmtpAddress        = $TargetPrimarySmtpAddress
             LegacyExchangeDN          = $LegacyExchangeDN
             InitialAddress            = $TargetInitial
             EmailAddresses            = @($AddressList) -ne '' -join '|'
-            ExternalDirectoryObjectId = $Source.ExternalDirectoryObjectId
             UPNPrimaryMismatch        = if ( $Source.PrimarySmtpAddress -and ($Source.PrimarySmtpAddress -split '@')[0] -ne ($Source.UserPrincipalName -split '@')[0]) {
                 $Source.UserPrincipalName
             }
             else { '' }
+            ExternalDirectoryObjectId = $Source.ExternalDirectoryObjectId
+            SourceUserPrincipalName   = $Source.UserPrincipalName
+            SourcePrimarySmtpAddress  = $Source.PrimarySmtpAddress
+            SourceEmailAddresses      = $Source.EmailAddresses
+            SourceExchangeGuid        = $Source.ExchangeGuid
+            SourceArchiveGuid         = $Source.ArchiveGuid
+
         }
     }
 }

@@ -87,6 +87,6 @@ function Sync-Guid {
     }
     else {
         Write-Host "All ExchangeGuid and ArchiveGuid already match" -ForegroundColor Yellow
-        continue
+        return
     }
 }
