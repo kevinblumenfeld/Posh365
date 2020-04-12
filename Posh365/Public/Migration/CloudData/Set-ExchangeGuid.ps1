@@ -45,7 +45,7 @@ function Set-ExchangeGuid {
                 try {
                     Set-RemoteMailbox @SetParams
                     $Stamped = Get-RemoteMailbox -Identity $AddGuid.UserPrincipalName
-                    Write-Host "[$iUP of $count] Success Set Guid $($Stamped.DisplayName)" -ForegroundColor Green
+                    Write-Host "[$iUP of $Count] Success Set Guid $($AddGuid.DisplayName)" -ForegroundColor Green
                     [PSCustomObject]@{
                         Displayname        = $AddGuid.DisplayName
                         OrganizationalUnit = $AddGuid.OrganizationalUnit
@@ -59,7 +59,7 @@ function Set-ExchangeGuid {
                     }
                 }
                 catch {
-                    Write-Host "[$iUP of $count] Failed Set Guid $($Stamped.DisplayName)" -ForegroundColor Red
+                    Write-Host "[$iUP of $Count] Failed Set Guid $($AddGuid.DisplayName)" -ForegroundColor Red
                     [PSCustomObject]@{
                         Displayname        = $AddGuid.DisplayName
                         OrganizationalUnit = $AddGuid.OrganizationalUnit
