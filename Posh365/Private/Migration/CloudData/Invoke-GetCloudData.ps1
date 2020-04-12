@@ -1,5 +1,4 @@
 function Invoke-GetCloudData {
-
     [CmdletBinding()]
     param (
         [Parameter()]

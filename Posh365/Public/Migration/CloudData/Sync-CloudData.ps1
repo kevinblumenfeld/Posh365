@@ -7,57 +7,44 @@ function Sync-CloudData {
     )
     $Yes = [ChoiceDescription]::new('&Yes', 'Connect: Yes')
     $No = [ChoiceDescription]::new('&No', 'Connect: No')
+    $Title = 'Please make a selection'
     $Question = 'Connect to Exchange Online and AzureAD?'
     $Options = [ChoiceDescription[]]($Yes, $No)
     $ConnectMenu = $host.ui.PromptForChoice($Title, $Question, $Options, 0)
 
     switch ($ConnectMenu) {
         0 {
+            Get-PSSession | Remove-PSSession
+            try { Disconnect-AzureAD -ErrorAction Stop } catch { }
             If (-not ($null = Get-Module -Name 'AzureAD', 'AzureADPreview' -ListAvailable)) {
                 Install-Module -Name AzureAD -Scope CurrentUser -Force -AllowClobber
             }
-            if (((Get-Module -Name PowerShellGet -ListAvailable).Version.Major | Sort-Object -Descending)[0] -lt 2 ) {
-                try {
-                    Install-Module -Name PowerShellGet -Scope CurrentUser -Force -ErrorAction Stop -AllowClobber
-                    Write-Warning "Exchange Online v.2 module requires PowerShellGet v.2"
-                    Write-Warning "PowerShellGet v.2 was just installed"
-                    Write-Warning "Please restart this PowerShell console and rerun the same command"
-                }
-                catch {
-                    Write-Warning "Unable to install the latest version of PowerShellGet"
-                    Write-Warning "and thus unable to install the Exchange Online v.2 module"
-                }
-                $Script:RestartConsole = $true
+            $Script:RestartConsole = $null
+            Connect-CloudModuleImport -EXO2
+            if ($RestartConsole) {
                 return
             }
-            if (-not ($null = Get-Module -Name ExchangeOnlineManagement -ListAvailable)) {
-                $EXOInstall = @{
-                    Name          = 'ExchangeOnlineManagement'
-                    Scope         = 'CurrentUser'
-                    AllowClobber  = $true
-                    AcceptLicense = $true
-                    Force         = $true
-                }
-                Install-Module @EXOInstall
-            }
-            Get-PSSession | Remove-PSSession
-            try { Disconnect-AzureAD -ErrorAction Stop } catch { }
-            Write-Host "`r`nEnter credentials for Source Tenant Exchange Online`r`n" -ForegroundColor White
+            Write-Host "`r`nEnter credentials for Source Tenant Exchange Online`r`n" -ForegroundColor Cyan
             Connect-ExchangeOnline
-            Write-Host "`r`nEnter credentials for Source Azure AD`r`n" -ForegroundColor White
+            $InitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
+            Write-Host "`r`nConnected to Exchange Online Tenant: $InitialDomain`r`n" -ForegroundColor Green
+
+            Write-Host "`r`nEnter credentials for Source Azure AD`r`n" -ForegroundColor Cyan
             $null = Connect-AzureAD
+            $AzDomain = ((Get-AzureADDomain).where{ $_.IsInitial }).Name
+            Write-Host "`r`nConnected to Azure AD Tenant: $AzDomain`r`n" -ForegroundColor Green
         }
         1 { }
     }
-    $InitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
-    $AzADDomain = ((Get-AzureADDomain).where{ $_.IsInitial }).Name
-    if ($InitialDomain -ne $AzADDomain) {
-        Write-Host "Halting script: $InitialDomain does not match $AzADDomain" -ForegroundColor Red
+
+    if ($InitialDomain -ne $AzDomain) {
+        Write-Host "Halting script: $InitialDomain does not match $AzDomain" -ForegroundColor Red
         continue
     }
     if ($InitialDomain) {
         $Yes = [ChoiceDescription]::new('&Yes', 'Source Domain: Yes')
         $No = [ChoiceDescription]::new('&No', 'Source Domain: No')
+        $Title = 'Please make a selection'
         $Question = 'Is this the source tenant {0}?' -f $InitialDomain
         $Options = [ChoiceDescription[]]($Yes, $No)
         $Menu = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
@@ -68,7 +55,7 @@ function Sync-CloudData {
         }
     }
     else {
-        Write-Host 'Not connected to Exchange Online' -ForegroundColor Red
+        Write-Host 'Halting script: Not connected to Exchange Online' -ForegroundColor Red
         continue
     }
 
@@ -88,8 +75,8 @@ function Sync-CloudData {
 
     Write-Host ('{0}Connected to source: ' -f [Environment]::NewLine) -ForegroundColor Cyan -NoNewline
     Write-Host ('{0}{1}' -f $InitialDomain, [Environment]::NewLine) -ForegroundColor Green
-    Write-Host 'Writing to: ' -ForegroundColor White -NoNewline
-    Write-Host ('{0}{1}' -f $SourceFile, [Environment]::NewLine) -ForegroundColor Yellow
+    Write-Host 'Writing to: ' -ForegroundColor Cyan -NoNewline
+    Write-Host ('{0}{1}' -f $SourceFile, [Environment]::NewLine) -ForegroundColor Green
 
     $SourceData = Invoke-GetCloudData -ResultSize $ResultSize -InitialDomain $InitialDomain
     $SourceData | Export-Csv -Path $SourceFile -NoTypeInformation
@@ -98,32 +85,37 @@ function Sync-CloudData {
 
     $Yes = [ChoiceDescription]::new('&Yes', 'Convert Cloud Data: Yes')
     $No = [ChoiceDescription]::new('&No', 'Convert Cloud Data: No')
-    $Question = 'Convert data? (we only create a CSV in this step - we do not write to the tenent)'
+    $Title = 'Please make a selection'
+    $Question = 'Convert data? (We only create a CSV in this step)'
     $Options = [ChoiceDescription[]]($Yes, $No)
     $Menu = $host.ui.PromptForChoice($Title, $Question, $Options, 0)
 
     switch ($Menu) {
         0 {
-            Write-Host ('Converting data...{0}' -f [Environment]::NewLine) -ForegroundColor Gray
             Get-PSSession | Remove-PSSession
             try { Disconnect-AzureAD -ErrorAction Stop } catch { }
-            Write-Host "`r`nEnter credentials for Target Tenant Exchange Online`r`n" -ForegroundColor White
+
+            Write-Host "`r`nEnter credentials for Target Tenant Exchange Online`r`n" -ForegroundColor Cyan
             Connect-ExchangeOnline
-            Write-Host "`r`nEnter credentials for Target Azure AD`r`n" -ForegroundColor White
+            $TargetInitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
+            Write-Host "`r`nConnected to Exchange Online Tenant: $TargetInitialDomain`r`n" -ForegroundColor Green
+
+            Write-Host "`r`nEnter credentials for Target Azure AD`r`n" -ForegroundColor Cyan
             $null = Connect-AzureAD
-            $InitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
-            $AzADDomain = ((Get-AzureADDomain).where{ $_.IsInitial }).Name
-            if ($InitialDomain -ne $AzADDomain) {
-                Write-Host "Halting script: $InitialDomain does not match $AzADDomain" -ForegroundColor Red
+            $TargetAzDomain = ((Get-AzureADDomain).where{ $_.IsInitial }).Name
+            Write-Host "`r`nConnected to Azure AD Tenant: $TargetAzDomain`r`n" -ForegroundColor Green
+
+
+            if ($TargetInitialDomain -ne $TargetAzDomain) {
+                Write-Host "Halting script: $TargetInitialDomain does not match $TargetAzDomain" -ForegroundColor Red
                 continue
             }
-            $TargetInitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
             $TargetFile = Join-Path -Path $SourcePath -ChildPath ('{0}.csv' -f $TargetInitialDomain)
 
             Write-Host 'Connected to target: ' -ForegroundColor Cyan -NoNewline
             Write-Host ('{0}{1}' -f $TargetInitialDomain, [Environment]::NewLine) -ForegroundColor Green
-            Write-Host 'Converted target file: ' -ForegroundColor Gray -NoNewline
-            Write-Host ('{0}{1}' -f $TargetFile, [Environment]::NewLine) -ForegroundColor Yellow
+            Write-Host 'Converted target file: ' -ForegroundColor Cyan -NoNewline
+            Write-Host ('{0}{1}' -f $TargetFile, [Environment]::NewLine) -ForegroundColor Green
 
             $ConvertedData = Convert-CloudData -SourceData $SourceData
             $ConvertedData | Out-GridView -Title "Data converted for import into Target: $TargetInitialDomain"
@@ -143,7 +135,7 @@ function Sync-CloudData {
 
     switch ($Menu) {
         0 {
-            $FileStamp = 'Sync_Result_{0}_{1}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'), $InitialDomain
+            $FileStamp = 'Sync_Result_{0}_{1}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'), $TargetInitialDomain
             $ResultFile = Join-Path -Path $SourcePath -ChildPath $FileStamp
 
             $ResultObject = New-CloudData -SourceData $ConvertedData

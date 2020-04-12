@@ -17,9 +17,7 @@ function Convert-CloudData {
     }
 
     foreach ($Source in $SourceData) {
-
         $AddressList = [System.Collections.Generic.List[string]]::New()
-
         if ($Source.InitialAddress) {
             $TargetInitial = '{0}@{1}' -f ($Source.InitialAddress -split '@')[0], $InitialDomain
         }
@@ -33,10 +31,7 @@ function Convert-CloudData {
         else {
             $LegacyExchangeDN = ''
         }
-
-        $AddressList.Add((@($Source.EmailAddresses -split [Regex]::Escape('|') ).where{
-                    $_ -like "x500:*" -or ($_ -split '@')[1] -in $AcceptedDomains
-                }).foreach{ '{0}:{1}' -f ($_ -split ':')[0].ToLower(), ($_ -split ':')[1] })
+        $AddressList.Add((@($Source.EmailAddresses -split [Regex]::Escape('|') ).where{$_ -like "x500:*"}))
 
         $ConstructedUPN = '{0}@{1}' -f ($Source.UserPrincipalName -split '@')[0], $InitialDomain
 
