@@ -16,6 +16,7 @@ function Connect-MigrationWiz {
         $DeleteCredential
     )
     end {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
         if ( $Email ) {
             $EmailAddress = $Email
         }

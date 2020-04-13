@@ -170,6 +170,7 @@ function Connect-Cloud {
         $host.ui.RawUI.WindowTitle = "Tenant: $($Tenant.ToUpper())"
         $RootPath = $env:USERPROFILE + "\ps\"
         $KeyPath = $Rootpath + "creds\"
+        [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
     }
     Process {
         if ($DeleteCreds) {

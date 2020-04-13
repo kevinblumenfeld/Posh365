@@ -13,6 +13,13 @@ function Sync-Guid {
         $DontViewEntireForest
     )
 
+
+    $Script:RestartConsole = $null
+    Connect-CloudModuleImport -EXO2
+    if ($RestartConsole) {
+        return
+    }
+
     if ($DeleteExchangeCreds) {
         Connect-Exchange -DeleteExchangeCreds:$true
         continue
@@ -35,12 +42,6 @@ function Sync-Guid {
                 $OnPremExchangeServer = Read-Host "Exchange Server Name"
             }
         }
-    }
-
-    $Script:RestartConsole = $null
-    Connect-CloudModuleImport -EXO2
-    if ($RestartConsole) {
-        return
     }
 
     # On-Premises ( Remote Mailbox )

@@ -8,6 +8,7 @@ function Connect-OktaSecure {
 
 
     )
+    [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
     if (-not (Get-Module -ListAvailable Okta.Core.Automation)) {
         Install-Module Okta.Core.Automation -Force -SkipPublisherCheck -Scope CurrentUser
     }

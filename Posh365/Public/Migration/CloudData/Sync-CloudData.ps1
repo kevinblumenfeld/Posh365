@@ -5,6 +5,7 @@ function Sync-CloudData {
         [Parameter()]
         $ResultSize = 'Unlimited'
     )
+    [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
     $Yes = [ChoiceDescription]::new('&Yes', 'Connect: Yes')
     $No = [ChoiceDescription]::new('&No', 'Connect: No')
     $Title = 'Please make a selection'

@@ -27,6 +27,7 @@ function Connect-CloudModuleImport {
         $SharePoint
     )
     end {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
         switch ($true) {
             $ExchangeOnline {
                 $Modules = @(Get-ChildItem -ErrorAction SilentlyContinue -Path "$($env:LOCALAPPDATA)\Apps\2.0" -Filter "Microsoft.Exchange.Management.ExoPowershellModule.manifest" -Recurse )

@@ -38,6 +38,7 @@ function Install-ModuleOnServer {
         [string] $Module = 'Posh365'
     )
     End {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
         $Path = "\\{0}\c$\Program Files\WindowsPowerShell\Modules" -f $Server
         Write-Host "`nAttempting to install module here: $Path`n" -ForegroundColor White
         if (Test-Path $Path) {
