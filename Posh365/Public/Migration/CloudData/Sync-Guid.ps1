@@ -81,6 +81,7 @@ function Sync-Guid {
 
     $AddGuidList = $CompareObject | Where-Object { -not $_.ExchangeGuidMatch -or -not $_.ArchiveGuidMatch }
     if ($AddGuidList) {
+        Connect-Exchange -Server $OnPremExchangeServer -DontViewEntireForest:$DontViewEntireForest
         $GuidResult = Set-ExchangeGuid -AddGuidList $AddGuidList -InitialDomain $InitialDomain
         $GuidResult | Out-GridView -Title "Results of Adding Guid to Tenant: $InitialDomain"
         $ResultFile = Join-Path -Path $SourcePath -ChildPath ('Guid_Result_{0}.csv' -f $InitialDomain)
