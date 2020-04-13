@@ -55,12 +55,13 @@ function Invoke-NewCloudData {
                 UserPrincipalName         = $MeuSet.UserPrincipalName
                 PrimarySMTPAddress        = $MeuSet.PrimarySMTPAddress
                 Alias                     = $MeuSet.Alias
-                SourceExchangeGuid        = $Converted.ExchangeGuid
-                TargetExchangeGuid        = $MeuSet.ExchangeGuid
                 SourceId                  = $Converted.ExternalDirectoryObjectId
                 TargetId                  = $MeuSet.ExternalDirectoryObjectId
                 Password                  = $GeneratedPW
                 TargetEmailAddresses      = @($MeuSet.EmailAddresses) -ne '' -join '|'
+                SourcePrimarySmtpAddress  = $Converted.SourcePrimarySmtpAddress
+                SourceUserPrincipalName   = $Converted.SourceUserPrincipalName
+                SourceEmailAddresses      = $Converted.SourceEmailAddresses
                 Log                       = 'SUCCESS'
             }
         }
@@ -76,15 +77,16 @@ function Invoke-NewCloudData {
                     UserPrincipalName         = $MeuCreated.UserPrincipalName
                     PrimarySMTPAddress        = $MeuCreated.PrimarySMTPAddress
                     Alias                     = $MeuCreated.Alias
-                    SourceExchangeGuid        = $Converted.ExchangeGuid
-                    TargetExchangeGuid        = 'FAILED'
                     SourceId                  = $Converted.ExternalDirectoryObjectId
                     TargetId                  = $MeuCreated.ExternalDirectoryObjectId
                     Password                  = $GeneratedPW
                     TargetEmailAddresses      = @($MeuCreated.EmailAddresses) -ne '' -join '|'
+                    SourcePrimarySmtpAddress  = $Converted.SourcePrimarySmtpAddress
+                    SourceUserPrincipalName   = $Converted.SourceUserPrincipalName
+                    SourceEmailAddresses      = $Converted.SourceEmailAddresses
                     Log                       = $_.Exception.Message
                 }
-                Write-Host "[$iUP of $Count] Failed Set MailUser: $($MeuCreated.DisplayName)" -ForegroundColor Yellow
+                Write-Host "[$iUP of $Count] Failed Set MailUser: $($MeuCreated.DisplayName) <$($_.Exception.Message)>" -ForegroundColor Yellow
             }
             else {
                 [PSCustomObject]@{
@@ -97,15 +99,16 @@ function Invoke-NewCloudData {
                     UserPrincipalName         = $Converted.UserPrincipalName
                     PrimarySMTPAddress        = $Converted.PrimarySMTPAddress
                     Alias                     = $Converted.Alias
-                    SourceExchangeGuid        = $Converted.ExchangeGuid
-                    TargetExchangeGuid        = 'FAILED'
                     SourceId                  = $Converted.ExternalDirectoryObjectId
                     TargetId                  = 'FAILED'
                     Password                  = $GeneratedPW
                     TargetEmailAddresses      = 'FAILED'
+                    SourcePrimarySmtpAddress  = $Converted.SourcePrimarySmtpAddress
+                    SourceUserPrincipalName   = $Converted.SourceUserPrincipalName
+                    SourceEmailAddresses      = $Converted.SourceEmailAddresses
                     Log                       = $_.Exception.Message
                 }
-                Write-Host "[$iUP of $Count] Failed New & Set MailUser: $($Converted.DisplayName)" -ForegroundColor Red
+                Write-Host "[$iUP of $Count] Failed New & Set MailUser: $($Converted.DisplayName) <$($_.Exception.Message)>" -ForegroundColor Red
             }
         }
         if ($MeuCreated) {
@@ -152,12 +155,13 @@ function Invoke-NewCloudData {
                 UserPrincipalName         = $NewAzADUser.UserPrincipalName
                 PrimarySMTPAddress        = ''
                 Alias                     = $ConvertedAz.Alias
-                SourceExchangeGuid        = ''
-                TargetExchangeGuid        = ''
                 SourceId                  = $ConvertedAz.ExternalDirectoryObjectId
                 TargetId                  = $NewAzADUser.ObjectId
                 Password                  = $GeneratedPW
                 TargetEmailAddresses      = ''
+                SourcePrimarySmtpAddress  = $ConvertedAz.SourcePrimarySmtpAddress
+                SourceUserPrincipalName   = $ConvertedAz.SourceUserPrincipalName
+                SourceEmailAddresses      = $ConvertedAz.SourceEmailAddresses
                 Log                       = 'SUCCESS'
             }
         }
@@ -172,15 +176,16 @@ function Invoke-NewCloudData {
                 UserPrincipalName         = $ConvertedAz.UserPrincipalName
                 PrimarySMTPAddress        = ''
                 Alias                     = ($ConvertedAz.UserPrincipalName -split '@')[0]
-                SourceExchangeGuid        = ''
-                TargetExchangeGuid        = ''
                 SourceId                  = $ConvertedAz.ExternalDirectoryObjectId
                 TargetId                  = ''
                 Password                  = $GeneratedPW
                 TargetEmailAddresses      = ''
+                SourcePrimarySmtpAddress  = $ConvertedAz.SourcePrimarySmtpAddress
+                SourceUserPrincipalName   = $ConvertedAz.SourceUserPrincipalName
+                SourceEmailAddresses      = $ConvertedAz.SourceEmailAddresses
                 Log                       = $_.Exception.Message
             }
-            Write-Host "[$iUP of $Count] Failed New AzureADUser: $($ConvertedAz.DisplayName)" -ForegroundColor Red
+            Write-Host "[$iUP of $Count] Failed New AzureADUser: $($ConvertedAz.DisplayName) <$($_.Exception.Message)>" -ForegroundColor Red
         }
     }
     $ErrorActionPreference = 'continue'
