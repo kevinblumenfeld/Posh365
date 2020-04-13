@@ -4,6 +4,12 @@ Module used by Office 365 consultants and admins to migrate, discover and manage
 This module leverages several native cmdlets.  I created this for my everyday use.
 All feedback is welcome.
 
+## Prerequisite when TLS1.2 is not enforced
+If you receive an error attempting to installing the module. Run this and try again.
+```
+[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+```
+
 ## How to install
 ```
 Install-Module Posh365 -Force
