@@ -8,10 +8,7 @@ function Set-ExchangeGuid {
         $SourceFilePath,
 
         [Parameter()]
-        $AddGuidList,
-
-        [Parameter()]
-        $InitialDomain
+        $AddGuidList
 
     )
 
@@ -22,7 +19,7 @@ function Set-ExchangeGuid {
 
     $Yes = [ChoiceDescription]::new('&Yes', 'Set-RemoteDomain: Yes')
     $No = [ChoiceDescription]::new('&No', 'Set-RemoteDomain: No')
-    $Question = "Are you ready to stamp Guids in this tenant: $InitialDomain ?"
+    $Question = "Are you ready to stamp Guids on-premises?"
     $Options = [ChoiceDescription[]]($Yes, $No)
     $Title = 'Please make a selection'
     $Menu = $host.ui.PromptForChoice($Title, $Question, $Options, 1)

@@ -53,7 +53,7 @@ function Sync-Guid {
     Get-PSSession | Remove-PSSession
 
     # Cloud ( Mailbox )
-    Write-Host "`r`nEnter Exchange Online credentials for the Target Tenant`r`n" -ForegroundColor Cyan
+    Write-Host "`r`nEnter Exchange Online credentials`r`n" -ForegroundColor Cyan
     Connect-ExchangeOnline
     $InitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
     Write-Host "`r`nConnected to Exchange Online Tenant: $InitialDomain`r`n" -ForegroundColor Green
@@ -82,7 +82,7 @@ function Sync-Guid {
     $AddGuidList = $CompareObject | Where-Object { -not $_.ExchangeGuidMatch -or -not $_.ArchiveGuidMatch }
     if ($AddGuidList) {
         Connect-Exchange -Server $OnPremExchangeServer -DontViewEntireForest:$DontViewEntireForest
-        $GuidResult = Set-ExchangeGuid -AddGuidList $AddGuidList -InitialDomain $InitialDomain
+        $GuidResult = Set-ExchangeGuid -AddGuidList $AddGuidList
         $GuidResult | Out-GridView -Title "Results of Adding Guid to Tenant: $InitialDomain"
         $ResultFile = Join-Path -Path $SourcePath -ChildPath ('Guid_Result_{0}.csv' -f $InitialDomain)
         $GuidResult | Export-Csv $ResultFile -NoTypeInformation
