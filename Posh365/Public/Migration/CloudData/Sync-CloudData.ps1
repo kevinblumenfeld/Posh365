@@ -3,6 +3,18 @@ function Sync-CloudData {
     [CmdletBinding()]
     param (
         [Parameter()]
+        [switch]
+        $Mailboxes,
+
+        [Parameter()]
+        [switch]
+        $MailUsers,
+
+        [Parameter()]
+        [switch]
+        $AzureADUsers,
+
+        [Parameter()]
         $ResultSize = 'Unlimited'
     )
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
@@ -16,37 +28,35 @@ function Sync-CloudData {
     switch ($ConnectMenu) {
         0 {
             Get-PSSession | Remove-PSSession
-            try { Disconnect-AzureAD -ErrorAction Stop } catch { }
-            If (-not ($null = Get-Module -Name 'AzureAD', 'AzureADPreview' -ListAvailable)) {
-                Install-Module -Name AzureAD -Scope CurrentUser -Force -AllowClobber
+            if ($AzureADUsers) {
+                try { Disconnect-AzureAD -ErrorAction Stop } catch { }
+                if (-not ($null = Get-Module -Name 'AzureAD', 'AzureADPreview' -ListAvailable)) {
+                    Install-Module -Name AzureAD -Scope CurrentUser -Force -AllowClobber
+                }
+                Write-Host "`r`nEnter credentials for Source Azure AD`r`n" -ForegroundColor Cyan
+                $null = Connect-AzureAD
+                $AzDomain = ((Get-AzureADDomain).where{ $_.IsInitial }).Name
+                Write-Host "`r`nConnected to Azure AD Tenant: $AzDomain`r`n" -ForegroundColor Green
             }
-            $Script:RestartConsole = $null
-            Connect-CloudModuleImport -EXO2
-            if ($RestartConsole) {
-                return
+            if ($Mailboxes -or $MailUsers) {
+                $Script:RestartConsole = $null
+                Connect-CloudModuleImport -EXO2
+                if ($RestartConsole) {
+                    return
+                }
+                Write-Host "`r`nEnter credentials for Source Tenant Exchange Online`r`n" -ForegroundColor Cyan
+                Connect-ExchangeOnline
+                $InitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
+                Write-Host "`r`nConnected to Exchange Online Tenant: $InitialDomain`r`n" -ForegroundColor Green
             }
-            Write-Host "`r`nEnter credentials for Source Tenant Exchange Online`r`n" -ForegroundColor Cyan
-            Connect-ExchangeOnline
-            $InitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
-            Write-Host "`r`nConnected to Exchange Online Tenant: $InitialDomain`r`n" -ForegroundColor Green
-
-            Write-Host "`r`nEnter credentials for Source Azure AD`r`n" -ForegroundColor Cyan
-            $null = Connect-AzureAD
-            $AzDomain = ((Get-AzureADDomain).where{ $_.IsInitial }).Name
-            Write-Host "`r`nConnected to Azure AD Tenant: $AzDomain`r`n" -ForegroundColor Green
         }
         1 { }
     }
-
-    if ($InitialDomain -ne $AzDomain) {
-        Write-Host "Halting script: $InitialDomain does not match $AzDomain" -ForegroundColor Red
-        return
-    }
-    if ($InitialDomain) {
+    if ($InitialDomain -or $AzDomain) {
         $Yes = [ChoiceDescription]::new('&Yes', 'Source Domain: Yes')
         $No = [ChoiceDescription]::new('&No', 'Source Domain: No')
         $Title = 'Please make a selection'
-        $Question = 'Is this the source tenant {0}?' -f $InitialDomain
+        $Question = 'Is this the source tenant {0} | {1}?' -f $InitialDomain, $AzDomain
         $Options = [ChoiceDescription[]]($Yes, $No)
         $Menu = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
 

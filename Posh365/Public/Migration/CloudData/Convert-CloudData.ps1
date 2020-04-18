@@ -33,13 +33,16 @@ function Convert-CloudData {
         }
         $AddressList.Add((@($Source.EmailAddresses -split [Regex]::Escape('|') ).where{ $_ -like "x500:*" }))
 
-        if ($Source.PrimarySmtpAddress) {
+        if ($Source.RecipientTypeDetails -eq 'MailUser') {
+            $TargetPrimarySmtpAddress = $Source.PrimarySmtpAddress
+        }
+        elseif ($Source.PrimarySmtpAddress) {
             $TargetPrimarySmtpAddress = '{0}@{1}' -f ($Source.PrimarySmtpAddress -split '@')[0], $InitialDomain
         }
         else {
             $TargetPrimarySmtpAddress = ''
         }
-        if ($Source.Name) {$Name = $Source.Name} else {$Name = ''}
+        if ($Source.Name) { $Name = $Source.Name } else { $Name = '' }
         [PSCustomObject]@{
             DisplayName               = $Source.DisplayName
             Name                      = $Name
