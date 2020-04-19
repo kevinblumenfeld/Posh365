@@ -55,7 +55,7 @@ function Get-EXCalendarProcessing {
     $MailUser = Import-Clixml $MailUserXML
     $MailContact = Import-Clixml $MailContactXML
     $DistributionGroup = Import-Clixml $DistributionGroupXML
-    $LegDNHash = Get-LegacyDNHash -Mailbox $MailboxList -MailUser $MailUser -MailContact $MailContact -DistributionGroup $DistributionGroup
+    $LegDNHash = Get-LegacyDNToPrimarySmtpHash -Mailbox $MailboxList -MailUser $MailUser -MailContact $MailContact -DistributionGroup $DistributionGroup
     $i = 0
     $Count = $MailboxList.Count
     foreach ($Mailbox in $MailboxList) {
