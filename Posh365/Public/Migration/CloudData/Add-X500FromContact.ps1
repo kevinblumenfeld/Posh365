@@ -23,20 +23,10 @@ function Add-X500FromContact {
     }
 
     $MatchingPrimaryCSV = Join-Path -Path $PoshPath -ChildPath 'MatchingPrimary.csv'
+    $ResultObject = Invoke-AddX500FromContact -Local $Local -Cloud $Cloud
 
-    foreach ($Key in $Cloud.Keys) {
-        [PSCustomObject]@{
-            TargetDisplayName  = $Local[$Key]['DisplayName']
-            SourceDisplayName  = $Cloud[$Key]['DisplayName']
-            TargetType         = $Local[$Key]['RecipientTypeDetails']
-            PrimarySmtpAddress = $Key
-            GUID               = $Local[$Key]['GUID']
-            TargetIdentity     = $Local[$Key]['Identity']
-            SourceName  = $Cloud[$Key]['DisplayName']
-        }
-    }
-    $OutputXml = Join-Path -Path $PoshPath -ChildPath 'OnPremRecipientHash_PrimaryToGUID.xml'
-    Write-Host "Hash has been exported to: " -ForegroundColor Cyan -NoNewline
-    Write-Host "$OutputXml" -ForegroundColor Green
-    $Hash | Export-Clixml $OutputXml
+    $ResultObject | Out-GridView -Title "Results of comparison between source and target"
+    $ResultObject | Export-Csv $MatchingPrimaryCSV
+    Write-Host "Results have been exported to: " -ForegroundColor Cyan -NoNewline
+    Write-Host "$MatchingPrimaryCSV" -ForegroundColor Green
 }

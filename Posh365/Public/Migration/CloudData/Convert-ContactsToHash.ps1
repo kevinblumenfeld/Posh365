@@ -22,6 +22,7 @@ function Convert-ContactsToHash {
         $Hash[($Contact.ExternalEmailAddress).Split(':')[1]] = @{
             X500        = 'X500:{0}' -f $Contact.LegacyExchangeDN
             DisplayName = $Contact.DisplayName
+            Name        = $Contact.Name
         }
     }
     $OutputXml = Join-Path -Path $PoshPath -ChildPath 'ContactHash_ExternalToX500.xml'
