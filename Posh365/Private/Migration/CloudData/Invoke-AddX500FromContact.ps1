@@ -1,38 +1,22 @@
-function Invoke-Addx500FromContact {
+function Invoke-AddX500FromContact {
     [CmdletBinding()]
     param (
 
         [Parameter(Mandatory)]
-        $Source,
-
-        [Parameter(Mandatory)]
-        $Target
+        $MatchingPrimary
     )
-    foreach ($Key in $Source.Keys) {
-        if ($Target.ContainsKey($Key)) {
+    foreach ($Item in $MatchingPrimary) {
+        if ($Item.TargetDisplayName -ne 'NOTFOUND') {
             [PSCustomObject]@{
-                TargetDisplayName  = $Target[$Key]['DisplayName']
-                SourceDisplayName  = $Source[$Key]['DisplayName']
-                TargetType         = $Target[$Key]['RecipientTypeDetails']
-                PrimarySmtpAddress = $Key
-                LegacyExchangeDN   = $Source[$Key]['LegacyExchangeDN']
-                X500               = $Source[$Key]['X500']
-                TargetGUID         = $Target[$Key]['GUID']
-                TargetIdentity     = $Target[$Key]['Identity']
-                SourceName         = $Source[$Key]['Name']
-            }
-        }
-        else {
-            [PSCustomObject]@{
-                TargetDisplayName  = 'NOTFOUND'
-                SourceDisplayName  = $Source[$Key]['DisplayName']
-                TargetType         = 'NOTFOUND'
-                PrimarySmtpAddress = $Key
-                LegacyExchangeDN   = $Source[$Key]['LegacyExchangeDN']
-                X500               = $Source[$Key]['X500']
-                TargetGUID         = 'NOTFOUND'
-                TargetIdentity     = 'NOTFOUND'
-                SourceName         = $Source[$Key]['Name']
+                TargetDisplayName  = $Item.TargetDisplayName
+                SourceDisplayName  = $Item.SourceDisplayName
+                TargetType         = $Item.TargetType
+                PrimarySmtpAddress = $Item.PrimarySmtpAddress
+                LegacyExchangeDN   = $Item.LegacyExchangeDN
+                X500               = $Item.X500
+                TargetGUID         = $Item.TargetGUID
+                TargetIdentity     = $Item.TargetIdentity
+                SourceName         = $Item.SourceName
             }
         }
     }

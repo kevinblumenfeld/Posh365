@@ -4,6 +4,33 @@ function Get-SourceContactHash {
 
     )
 
+    if ($DeleteExchangeCreds) {
+        Connect-Exchange -DeleteExchangeCreds:$true
+        continue
+    }
+    while (-not $OnPremExchangeServer ) {
+        Write-Host "Enter the name of the Exchange Server. Example: ExServer01.domain.com" -ForegroundColor Cyan
+        $OnPremExchangeServer = Read-Host "Exchange Server Name"
+    }
+    while (-not $ConfirmExServer) {
+        $Yes = [ChoiceDescription]::new('&Yes', 'ExServer: Yes')
+        $No = [ChoiceDescription]::new('&No', 'ExServer: No')
+        $Options = [ChoiceDescription[]]($Yes, $No)
+        $Title = 'Specified Exchange Server: {0}' -f $OnPremExchangeServer
+        $Question = 'Is this correct?'
+        $YN = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
+        switch ($YN) {
+            0 { $ConfirmExServer = $true }
+            1 {
+                Write-Host "`r`nEnter the name of the Exchange Server. Example: ExServer01.domain.com" -ForegroundColor Cyan
+                $OnPremExchangeServer = Read-Host "Exchange Server Name"
+            }
+        }
+    }
+    Get-PSSession | Remove-PSSession
+    Write-Host "`r`nConnecting to Exchange On-Premises: $OnPremExchangeServer`r`n" -ForegroundColor Cyan
+    Connect-Exchange -Server $OnPremExchangeServer -DontViewEntireForest:$DontViewEntireForest
+
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath 'Posh365' )
     if (-not ($null = Test-Path $PoshPath)) {
         $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
@@ -33,4 +60,5 @@ function Get-SourceContactHash {
     $Hash | Export-Clixml $OutputXml
     Write-Host "Hash has been exported as an XML file here: " -ForegroundColor Cyan -NoNewline
     Write-Host "$OutputXml" -ForegroundColor Green
+
 }
