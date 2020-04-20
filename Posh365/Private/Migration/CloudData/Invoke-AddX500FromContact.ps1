@@ -1,29 +1,38 @@
-function Invoke-AddX500FromContact {
+function Invoke-Addx500FromContact {
     [CmdletBinding()]
     param (
 
+        [Parameter(Mandatory)]
+        $Source,
+
+        [Parameter(Mandatory)]
+        $Target
     )
-    foreach ($Key in $Cloud.Keys) {
-        if ($Local.ContainsKey($Key)) {
+    foreach ($Key in $Source.Keys) {
+        if ($Target.ContainsKey($Key)) {
             [PSCustomObject]@{
-                TargetDisplayName  = $Local[$Key]['DisplayName']
-                SourceDisplayName  = $Cloud[$Key]['DisplayName']
-                TargetType         = $Local[$Key]['RecipientTypeDetails']
+                TargetDisplayName  = $Target[$Key]['DisplayName']
+                SourceDisplayName  = $Source[$Key]['DisplayName']
+                TargetType         = $Target[$Key]['RecipientTypeDetails']
                 PrimarySmtpAddress = $Key
-                GUID               = $Local[$Key]['GUID']
-                TargetIdentity     = $Local[$Key]['Identity']
-                SourceName         = $Cloud[$Key]['DisplayName']
+                LegacyExchangeDN   = $Source[$Key]['LegacyExchangeDN']
+                X500               = $Source[$Key]['X500']
+                TargetGUID         = $Target[$Key]['GUID']
+                TargetIdentity     = $Target[$Key]['Identity']
+                SourceName         = $Source[$Key]['Name']
             }
         }
         else {
             [PSCustomObject]@{
                 TargetDisplayName  = 'NOTFOUND'
-                SourceDisplayName  = $Cloud[$Key]['DisplayName']
+                SourceDisplayName  = $Source[$Key]['DisplayName']
                 TargetType         = 'NOTFOUND'
                 PrimarySmtpAddress = $Key
-                GUID               = 'NOTFOUND'
+                LegacyExchangeDN   = $Source[$Key]['LegacyExchangeDN']
+                X500               = $Source[$Key]['X500']
+                TargetGUID         = 'NOTFOUND'
                 TargetIdentity     = 'NOTFOUND'
-                SourceName         = $Cloud[$Key]['Name']
+                SourceName         = $Source[$Key]['Name']
             }
         }
     }

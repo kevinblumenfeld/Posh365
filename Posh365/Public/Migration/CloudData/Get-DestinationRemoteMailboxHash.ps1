@@ -1,22 +1,26 @@
-function Convert-RecipientsToHash {
+function Get-DestinationRemoteMailboxHash {
     [CmdletBinding()]
     param (
-        [Parameter()]
-        $OnPremRecipientXML
+
     )
 
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
-
     if (-not ($null = Test-Path $PoshPath)) {
         $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
 
-    if (-not $OnPremRecipientXML) {
-        $OnPremRecipientXML = Join-Path -Path $PoshPath -ChildPath 'OnPremRecipient.xml'
-        Get-Recipient -ResultSize Unlimited | Select-Object * | Export-Clixml -Path $OnPremRecipientXML
+    $RemoteXML = Join-Path -Path $PoshPath -ChildPath 'RemoteRecipient.xml'
+    if (-not (Test-Path $RemoteXML)) {
+        Write-Host "XML ($RemoteXML) needed was not found.  Creating now . . . " -ForegroundColor White
+        Get-Recipient -ResultSize Unlimited -RecipientTypeDetails RemoteUserMailbox, RemoteRoomMailbox, RemoteEquipmentMailbox, RemoteSharedMailbox |
+        Select-Object * | Export-Clixml -Path $RemoteXML
+    }
+    else {
+        Write-Host "Found the XML created earlier: ($RemoteXML) . . . " -ForegroundColor Green
     }
 
-    $RecipientList = Import-Clixml $OnPremRecipientXML
+    Write-Host "Using the XML to create a hashtable . . . " -ForegroundColor White
+    $RecipientList = Import-Clixml $RemoteXML
     $Hash = @{ }
     foreach ($Recipient in $RecipientList) {
         $Hash[$Recipient.PrimarySmtpAddress] = @{
@@ -28,7 +32,7 @@ function Convert-RecipientsToHash {
             Name                 = $Recipient.Name
         }
     }
-    $OutputXml = Join-Path -Path $PoshPath -ChildPath 'OnPremRecipientHash_PrimaryToGUID.xml'
+    $OutputXml = Join-Path -Path $PoshPath -ChildPath 'TargetHash.xml'
     Write-Host "Hash has been exported to: " -ForegroundColor Cyan -NoNewline
     Write-Host "$OutputXml" -ForegroundColor Green
     $Hash | Export-Clixml $OutputXml
