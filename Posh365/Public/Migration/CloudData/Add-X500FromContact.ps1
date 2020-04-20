@@ -72,11 +72,11 @@ function Add-X500FromContact {
     $Yes = [ChoiceDescription]::new('&Yes', 'WriteX500: Yes')
     $No = [ChoiceDescription]::new('&No', 'WriteX500: No')
     $Options = [ChoiceDescription[]]($Yes, $No)
-    $Title = 'Write all source x500s and LegacyExchangeDN (as an x500) to the Remote Mailboxes?' -f $OnPremExchangeServer
+    $Title = 'Write all source x500s and LegacyExchangeDN (as an x500) to the Remote Mailboxes?'
     $Question = 'Please make a selection'
-    $YN = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
-    switch ($YN) {
-        0 { return }
-        1 { Invoke-Addx500FromContact -MatchingPrimary $ResultObject }
+    $YesNo = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
+    switch ($YesNo) {
+        0 { Invoke-Addx500FromContact -MatchingPrimary $ResultObject }
+        1 { return }
     }
 }
