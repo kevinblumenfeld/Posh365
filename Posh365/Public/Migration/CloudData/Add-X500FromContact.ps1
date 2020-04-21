@@ -50,6 +50,8 @@ function Add-X500FromContact {
     }
     $TargetHash = Join-Path -Path $PoshPath -ChildPath 'TargetHash.xml'
     $SourceHash = Join-Path -Path $PoshPath -ChildPath 'SourceHash.xml'
+    $TargetResult = Join-Path -Path $PoshPath -ChildPath 'TargetResult.csv'
+
     if (-not (Test-Path $TargetHash) -or -not (Test-Path $SourceHash)) {
         Write-Host "Missing one or both files" -ForegroundColor Red
         Write-Host "1) $TargetHash" -ForegroundColor Cyan
@@ -72,13 +74,15 @@ function Add-X500FromContact {
     $Yes = [ChoiceDescription]::new('&Yes', 'WriteX500: Yes')
     $No = [ChoiceDescription]::new('&No', 'WriteX500: No')
     $Options = [ChoiceDescription[]]($Yes, $No)
-    $Title = 'Please inspect the results comparing the Source and the Target'
-    $Question = 'Did you inspect the resuls, showing where PrimarySmtpAddress was/was not found in the Target environment?'
+    $Title = 'Please inspect the results comparing Source ExternalEmailAddress to Target PrimarySmtpAddress'
+    $Question = 'Select ( Y ) to add the x500 addresses to specific mailboxes you choose'
     $YesNo = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
     switch ($YesNo) {
         0 {
             $AddProxyList = Invoke-Addx500FromContact -MatchingPrimary $ResultObject | Out-GridView -OutputMode Multiple -Title "Choose Recipients to add X500s - To select use Ctrl + click (individual) or Ctrl + A (All)"
-            Add-ProxyToRemoteMailbox -AddProxyList $AddProxyList
+            $ResultAddProxy = Add-ProxyToRemoteMailbox -AddProxyList $AddProxyList
+            $ResultAddProxy | Out-GridView -Title 'Results of adding Email Addresses to Target Remote Mailboxes'
+            $ResultAddProxy | Export-Csv $TargetResult -NoTypeInformation -Encoding UTF8 -Append
         }
         1 { return }
     }
