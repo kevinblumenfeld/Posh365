@@ -72,12 +72,12 @@ function Add-X500FromContact {
     $Yes = [ChoiceDescription]::new('&Yes', 'WriteX500: Yes')
     $No = [ChoiceDescription]::new('&No', 'WriteX500: No')
     $Options = [ChoiceDescription[]]($Yes, $No)
-    $Title = 'The results comparing source ?'
-    $Question = 'Please make a selection'
+    $Title = 'Please inspect the results comparing the Source and the Target'
+    $Question = 'Did you inspect the resuls, showing where PrimarySmtpAddress was/was not found in the Target environment?'
     $YesNo = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
     switch ($YesNo) {
         0 {
-            $AddProxyList = Invoke-Addx500FromContact -MatchingPrimary $ResultObject | Out-GridView -OutputMode Multiple -Title "Choose Recipients to add X500s"
+            $AddProxyList = Invoke-Addx500FromContact -MatchingPrimary $ResultObject | Out-GridView -OutputMode Multiple -Title "Choose Recipients to add X500s - To select use Ctrl + click (individual) or Ctrl + A (All)"
             Add-ProxyToRemoteMailbox -AddProxyList $AddProxyList
         }
         1 { return }

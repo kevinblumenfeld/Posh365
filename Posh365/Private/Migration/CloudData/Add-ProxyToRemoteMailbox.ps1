@@ -7,7 +7,7 @@ function Add-ProxyToRemoteMailbox {
     $ErrorActionPreference = 'Stop'
     foreach ($Add in $AddProxyList) {
         try {
-            Set-RemoteMailbox -Identity $Add.TargetGUID -EmailAddress @{add = $Add.LegacyExchangeDN }
+            Set-RemoteMailbox -Identity $Add.TargetGUID -EmailAddresses @{add = $Add.LegacyExchangeDN }
             [PSCustomObject]@{
                 Count              = $Add.Count
                 Result             = 'SUCCESS'
@@ -21,7 +21,7 @@ function Add-ProxyToRemoteMailbox {
             }
             if ($Add.X500) {
                 foreach ($X in ($Add.X500).split('|')) {
-                    Set-RemoteMailbox -Identity $Add.TargetGUID -EmailAddress @{add = $X }
+                    Set-RemoteMailbox -Identity $Add.TargetGUID -EmailAddresses @{add = $X }
                     [PSCustomObject]@{
                         Count              = $Add.Count
                         Result             = 'SUCCESS'
