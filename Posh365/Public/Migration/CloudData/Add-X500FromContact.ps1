@@ -64,7 +64,7 @@ function Add-X500FromContact {
     $MatchingPrimaryCSV = Join-Path -Path $PoshPath -ChildPath 'MatchingPrimary.csv'
     $ResultObject = Compare-AddX500FromContact -Target $Target -Source $Source
 
-    $ResultObject | Out-GridView -Title "Results of comparison between source and target"
+    $ResultObject | Out-GridView -Title "Results of comparison between source and target - Looking for Source ExternalEmailAddress matches with Target PrimarySmtpAddress"
     $ResultObject | Export-Csv $MatchingPrimaryCSV -NoTypeInformation -Encoding UTF8
     Write-Host "Results have been exported to: " -ForegroundColor Cyan -NoNewline
     Write-Host "$MatchingPrimaryCSV" -ForegroundColor Green
