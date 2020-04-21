@@ -69,13 +69,14 @@ function Add-X500FromContact {
     $ResultObject | Out-GridView -Title "Results of comparison between source and target - Looking for Source ExternalEmailAddress matches with Target PrimarySmtpAddress"
     $ResultObject | Export-Csv $MatchingPrimaryCSV -NoTypeInformation -Encoding UTF8
     Write-Host "Results have been exported to: " -ForegroundColor Cyan -NoNewline
-    Write-Host "$MatchingPrimaryCSV" -ForegroundColor Green
+    Write-Host "$MatchingPrimaryCSV`t`n`t`n" -ForegroundColor Green
 
+    Write-Host "Comparing Source to Target . . ." -BackgroundColor White -ForegroundColor Black
     $Yes = [ChoiceDescription]::new('&Yes', 'WriteX500: Yes')
     $No = [ChoiceDescription]::new('&No', 'WriteX500: No')
     $Options = [ChoiceDescription[]]($Yes, $No)
     $Title = 'Please inspect the results comparing Source ExternalEmailAddress to Target PrimarySmtpAddress'
-    $Question = 'Select ( Y ) to add the x500 addresses to specific mailboxes you choose next'
+    $Question = 'Select ( Y ) to choose the mailboxes to which you will add x500 addresses from the LegacyExchageDN column (and x500 column if values are present)'
     $YesNo = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
     switch ($YesNo) {
         0 {
