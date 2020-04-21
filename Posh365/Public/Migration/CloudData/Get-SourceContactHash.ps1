@@ -56,7 +56,7 @@ function Get-SourceContactHash {
             X500             = @($Contact.EmailAddresses) -match 'x500:' -join '|'
         }
     }
-    $OutputXml = Join-Path -Path $PoshPath -ChildPath 'SourceContactHash.xml'
+    $OutputXml = Join-Path -Path $PoshPath -ChildPath 'SourceHash.xml'
     $Hash | Export-Clixml $OutputXml
     Write-Host "Hash has been exported as an XML file here: " -ForegroundColor Cyan -NoNewline
     Write-Host "$OutputXml" -ForegroundColor Green

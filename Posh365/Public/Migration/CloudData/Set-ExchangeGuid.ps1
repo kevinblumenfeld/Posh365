@@ -52,7 +52,7 @@ function Set-ExchangeGuid {
                         ExchangeGuidCloud  = $AddGuid.ExchangeGuidCloud
                         ArchiveGuidOnPrem  = $Stamped.ArchiveGuid
                         ArchiveGuidCloud   = $AddGuid.ArchiveGuidCloud
-                        UserPrincipalName =  $Stamped.UserPrincipalName
+                        UserPrincipalName  = $Stamped.UserPrincipalName
                     }
                 }
                 catch {
@@ -66,7 +66,7 @@ function Set-ExchangeGuid {
                         ExchangeGuidCloud  = $AddGuid.ExchangeGuidCloud
                         ArchiveGuidOnPrem  = $Stamped.ExchangeGuidCloud
                         ArchiveGuidCloud   = $AddGuid.ArchiveGuidCloud
-                        UserPrincipalName =  $Stamped.UserPrincipalName
+                        UserPrincipalName  = $Stamped.UserPrincipalName
                     }
                 }
             }

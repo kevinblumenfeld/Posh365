@@ -11,6 +11,7 @@ function Compare-Addx500FromContact {
     foreach ($Key in $Source.Keys) {
         if ($Target.ContainsKey($Key)) {
             [PSCustomObject]@{
+                FOUND              = 'TRUE'
                 TargetDisplayName  = $Target[$Key]['DisplayName']
                 SourceDisplayName  = $Source[$Key]['DisplayName']
                 TargetType         = $Target[$Key]['RecipientTypeDetails']
@@ -24,7 +25,7 @@ function Compare-Addx500FromContact {
         }
         else {
             [PSCustomObject]@{
-                TargetDisplayName  = 'NOTFOUND'
+                FOUND              = 'FALSE'
                 SourceDisplayName  = $Source[$Key]['DisplayName']
                 TargetType         = 'NOTFOUND'
                 PrimarySmtpAddress = $Key

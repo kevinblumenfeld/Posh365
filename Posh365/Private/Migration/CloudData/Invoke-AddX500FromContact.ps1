@@ -5,7 +5,7 @@ function Invoke-AddX500FromContact {
         [Parameter(Mandatory)]
         $MatchingPrimary
     )
-    $AllFound = $MatchingPrimary.where{ $_.TargetDisplayName -ne 'NOTFOUND' }
+    $AllFound = $MatchingPrimary.where{ $_.Found }
     $Count = $AllFound.Count
     $i = 0
     foreach ($Item in $AllFound) {

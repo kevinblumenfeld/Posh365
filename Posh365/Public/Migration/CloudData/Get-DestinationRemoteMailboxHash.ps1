@@ -9,7 +9,7 @@ function Get-DestinationRemoteMailboxHash {
         $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
 
-    $RemoteXML = Join-Path -Path $PoshPath -ChildPath 'RemoteRecipient.xml'
+    $RemoteXML = Join-Path -Path $PoshPath -ChildPath 'TargetRecipient.xml'
     if (-not (Test-Path $RemoteXML)) {
         Write-Host "XML ($RemoteXML) needed was not found.  Creating now . . . " -ForegroundColor White
         Get-Recipient -ResultSize Unlimited -RecipientTypeDetails RemoteUserMailbox, RemoteRoomMailbox, RemoteEquipmentMailbox, RemoteSharedMailbox |

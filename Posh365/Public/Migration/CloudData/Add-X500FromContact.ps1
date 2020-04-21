@@ -49,16 +49,16 @@ function Add-X500FromContact {
         $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
     $TargetHash = Join-Path -Path $PoshPath -ChildPath 'TargetHash.xml'
-    $SourceContactHash = Join-Path -Path $PoshPath -ChildPath 'SourceContactHash.xml'
-    if (-not (Test-Path $TargetHash) -or -not (Test-Path $SourceContactHash)) {
+    $SourceHash = Join-Path -Path $PoshPath -ChildPath 'SourceHash.xml'
+    if (-not (Test-Path $TargetHash) -or -not (Test-Path $SourceHash)) {
         Write-Host "Missing one or both files" -ForegroundColor Red
         Write-Host "1) $TargetHash" -ForegroundColor Cyan
-        Write-Host "2) $SourceContactHash" -ForegroundColor Cyan
+        Write-Host "2) $SourceHash" -ForegroundColor Cyan
         return
     }
     else {
         $Target = Import-Clixml $TargetHash
-        $Source = Import-Clixml $SourceContactHash
+        $Source = Import-Clixml $SourceHash
     }
 
     $MatchingPrimaryCSV = Join-Path -Path $PoshPath -ChildPath 'MatchingPrimary.csv'
@@ -72,13 +72,13 @@ function Add-X500FromContact {
     $Yes = [ChoiceDescription]::new('&Yes', 'WriteX500: Yes')
     $No = [ChoiceDescription]::new('&No', 'WriteX500: No')
     $Options = [ChoiceDescription[]]($Yes, $No)
-    $Title = 'Write all source x500s and LegacyExchangeDN (as an x500) to the Remote Mailboxes?'
+    $Title = 'The results comparing source ?'
     $Question = 'Please make a selection'
     $YesNo = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
     switch ($YesNo) {
         0 {
             $AddProxyList = Invoke-Addx500FromContact -MatchingPrimary $ResultObject | Out-GridView -OutputMode Multiple -Title "Choose Recipients to add X500s"
-            $AddProxyList | OGV
+            Add-ProxyToRemoteMailbox -AddProxyList $AddProxyList
         }
         1 { return }
     }
