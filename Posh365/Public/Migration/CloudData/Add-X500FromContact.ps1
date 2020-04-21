@@ -50,7 +50,6 @@ function Add-X500FromContact {
     }
     $TargetHash = Join-Path -Path $PoshPath -ChildPath 'TargetHash.xml'
     $SourceHash = Join-Path -Path $PoshPath -ChildPath 'SourceHash.xml'
-    $TargetResult = Join-Path -Path $PoshPath -ChildPath 'TargetResult.csv'
 
     if (-not (Test-Path $TargetHash) -or -not (Test-Path $SourceHash)) {
         Write-Host "Missing one or both files" -ForegroundColor Red
@@ -68,7 +67,7 @@ function Add-X500FromContact {
 
     $ResultObject | Out-GridView -Title "Results of comparison between source and target - Looking for Source ExternalEmailAddress matches with Target PrimarySmtpAddress"
     $ResultObject | Export-Csv $MatchingPrimaryCSV -NoTypeInformation -Encoding UTF8
-    Write-Host "Results have been exported to: " -ForegroundColor Cyan -NoNewline
+    Write-Host "Comparison has been exported to: " -ForegroundColor Cyan -NoNewline
     Write-Host "$MatchingPrimaryCSV`t`n`t`n" -ForegroundColor Green
 
     Write-Host "Comparing Source to Target . . ." -BackgroundColor White -ForegroundColor Black
@@ -80,10 +79,14 @@ function Add-X500FromContact {
     $YesNo = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
     switch ($YesNo) {
         0 {
-            $AddProxyList = Invoke-Addx500FromContact -MatchingPrimary $ResultObject | Out-GridView -OutputMode Multiple -Title "Choose Recipients to add X500s - To select use Ctrl + click (individual) or Ctrl + A (All)"
+            $TargetResult = Join-Path -Path $PoshPath -ChildPath 'TargetResult.csv'
+            Write-Host "Choose Recipients to add X500s then click OK - To select use Ctrl/Shift + click (individual) or Ctrl + A (All)" -ForegroundColor Black -BackgroundColor White
+            $AddProxyList = Invoke-Addx500FromContact -MatchingPrimary $ResultObject | Out-GridView -OutputMode Multiple -Title "Choose Recipients to add X500s then click OK - To select use Ctrl/Shift + click (individual) or Ctrl + A (All)"
             $UserSelection = Add-ProxyToRemoteMailbox -AddProxyList $AddProxyList
             $UserSelection | Out-GridView -Title 'Results of adding Email Addresses to Target Remote Mailboxes'
             $UserSelection | Export-Csv $TargetResult -NoTypeInformation -Encoding UTF8 -Append
+            Write-Host "Log has been exported to: " -ForegroundColor Cyan -NoNewline
+            Write-Host "$TargetResult" -ForegroundColor Green
         }
         1 { return }
     }
