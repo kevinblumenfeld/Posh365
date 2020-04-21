@@ -76,7 +76,10 @@ function Add-X500FromContact {
     $Question = 'Please make a selection'
     $YesNo = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
     switch ($YesNo) {
-        0 { Invoke-Addx500FromContact -MatchingPrimary $ResultObject }
+        0 {
+            $AddProxyList = Invoke-Addx500FromContact -MatchingPrimary $ResultObject | Out-GridView -OutputMode Multiple -Title "Choose Recipients to add X500s"
+            $AddProxyList | OGV
+        }
         1 { return }
     }
 }
