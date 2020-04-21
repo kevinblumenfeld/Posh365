@@ -26,6 +26,7 @@ function Compare-Addx500FromContact {
         else {
             [PSCustomObject]@{
                 FOUND              = 'FALSE'
+                TargetDisplayName  = 'NOTFOUND'
                 SourceDisplayName  = $Source[$Key]['DisplayName']
                 TargetType         = 'NOTFOUND'
                 PrimarySmtpAddress = $Key
