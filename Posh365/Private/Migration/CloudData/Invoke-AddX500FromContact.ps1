@@ -5,7 +5,7 @@ function Invoke-AddX500FromContact {
         [Parameter(Mandatory)]
         $MatchingPrimary
     )
-    $AllFound = $MatchingPrimary.where{ $_.Found }
+    $AllFound = $MatchingPrimary.where{ $_.Found -eq 'TRUE' }
     $Count = $AllFound.Count
     $i = 0
     foreach ($Item in $AllFound) {
