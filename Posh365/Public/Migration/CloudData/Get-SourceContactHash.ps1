@@ -1,44 +1,34 @@
+using namespace System.Management.Automation.Host
 function Get-SourceContactHash {
     [CmdletBinding()]
     param (
 
     )
 
-    if ($DeleteExchangeCreds) {
-        Connect-Exchange -DeleteExchangeCreds:$true
-        continue
-    }
-    while (-not $OnPremExchangeServer ) {
-        Write-Host "Enter the name of the Exchange Server. Example: ExServer01.domain.com" -ForegroundColor Cyan
-        $OnPremExchangeServer = Read-Host "Exchange Server Name"
-    }
-    while (-not $ConfirmExServer) {
-        $Yes = [ChoiceDescription]::new('&Yes', 'ExServer: Yes')
-        $No = [ChoiceDescription]::new('&No', 'ExServer: No')
-        $Options = [ChoiceDescription[]]($Yes, $No)
-        $Title = 'Specified Exchange Server: {0}' -f $OnPremExchangeServer
-        $Question = 'Is this correct?'
-        $YN = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
-        switch ($YN) {
-            0 { $ConfirmExServer = $true }
-            1 {
-                Write-Host "`r`nEnter the name of the Exchange Server. Example: ExServer01.domain.com" -ForegroundColor Cyan
-                $OnPremExchangeServer = Read-Host "Exchange Server Name"
-            }
-        }
-    }
-    Get-PSSession | Remove-PSSession
-    Write-Host "`r`nConnecting to Exchange On-Premises: $OnPremExchangeServer`r`n" -ForegroundColor Cyan
-    Connect-Exchange -Server $OnPremExchangeServer -DontViewEntireForest:$DontViewEntireForest
-
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath 'Posh365' )
-    if (-not ($null = Test-Path $PoshPath)) {
-        $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
-    }
-
+    $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
     $ContactXML = Join-Path -Path $PoshPath -ChildPath 'SourceContact.xml'
+
     if (-not (Test-Path $ContactXML)) {
-        Write-Host "XML ($ContactXML) needed was not found.  Creating now . . . " -ForegroundColor White
+        Write-Host "XML ($ContactXML) needed was not found.  Connecting then creating xml now . . . " -ForegroundColor White
+        $Script:RestartConsole = $null
+        Connect-CloudModuleImport -EXO2
+        if ($RestartConsole) {
+            return
+        }
+        Get-PSSession | Remove-PSSession
+        Connect-ExchangeOnline
+        $Accepted = Get-AcceptedDomain
+        $Yes = [ChoiceDescription]::new('&Yes', 'Connect: Yes')
+        $No = [ChoiceDescription]::new('&No', 'Connect: No')
+        $Question = 'Is this the correct Exchange Online Tenant {0}?' -f ($Accepted.where{ $_.Default }).DomainName
+        $Options = [ChoiceDescription[]]($Yes, $No)
+        $YN = $host.ui.PromptForChoice($Title, $Question, $Options, 0)
+
+        switch ($YN) {
+            0 { }
+            1 { return }
+        }
         Get-MailContact -ResultSize Unlimited | Select-Object * | Export-Clixml -Path $ContactXML
     }
     else {
