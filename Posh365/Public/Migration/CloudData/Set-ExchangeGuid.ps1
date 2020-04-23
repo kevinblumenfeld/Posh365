@@ -53,10 +53,11 @@ function Set-ExchangeGuid {
                         ArchiveGuidOnPrem  = $Stamped.ArchiveGuid
                         ArchiveGuidCloud   = $AddGuid.ArchiveGuidCloud
                         UserPrincipalName  = $Stamped.UserPrincipalName
+                        Log                = 'SUCCESS'
                     }
                 }
                 catch {
-                    Write-Host "[$iUP of $Count] Failed Set Guid $($AddGuid.DisplayName)" -ForegroundColor Red
+                    Write-Host "[$iUP of $Count] Failed Set Guid $($AddGuid.DisplayName). Error: $($_.Exception.Message)" -ForegroundColor Red
                     [PSCustomObject]@{
                         Displayname        = $AddGuid.DisplayName
                         OrganizationalUnit = $AddGuid.OrganizationalUnit
@@ -67,6 +68,7 @@ function Set-ExchangeGuid {
                         ArchiveGuidOnPrem  = $Stamped.ExchangeGuidCloud
                         ArchiveGuidCloud   = $AddGuid.ArchiveGuidCloud
                         UserPrincipalName  = $Stamped.UserPrincipalName
+                        Log                = $_.Exception.Message
                     }
                 }
             }

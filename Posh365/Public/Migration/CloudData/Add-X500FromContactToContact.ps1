@@ -41,7 +41,7 @@ function Add-X500FromContactToContact {
     Write-Host "`r`nConnecting to Exchange On-Premises: $OnPremExchangeServer`r`n" -ForegroundColor Cyan
     Connect-Exchange -Server $OnPremExchangeServer -DontViewEntireForest:$DontViewEntireForest
 
-    Get-DestinationRemoteMailboxHash
+    Get-DestinationRecipientHash
 
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
 
@@ -82,8 +82,8 @@ function Add-X500FromContactToContact {
             $TargetResult = Join-Path -Path $PoshPath -ChildPath 'TargetResult.csv'
             Write-Host "Choose Recipients to add X500s then click OK - To select use Ctrl/Shift + click (individual) or Ctrl + A (All)" -ForegroundColor Black -BackgroundColor White
             $AddProxyList = Invoke-Addx500FromContact -MatchingPrimary $ResultObject | Out-GridView -OutputMode Multiple -Title "Choose Recipients to add X500s then click OK - To select use Ctrl/Shift + click (individual) or Ctrl + A (All)"
-            $UserSelection = Add-ProxyToRemoteMailbox -AddProxyList $AddProxyList
-            $UserSelection | Out-GridView -Title 'Results of adding Email Addresses to Target Remote Mailboxes'
+            $UserSelection = Add-ProxyToRecipient -Type MailContact -AddProxyList $AddProxyList
+            $UserSelection | Out-GridView -Title 'Results of adding Email Addresses to Target Mail Contacts'
             $UserSelection | Export-Csv $TargetResult -NoTypeInformation -Encoding UTF8 -Append
             Write-Host "Log has been exported to: " -ForegroundColor Cyan -NoNewline
             Write-Host "$TargetResult" -ForegroundColor Green

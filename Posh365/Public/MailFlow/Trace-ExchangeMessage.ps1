@@ -1,5 +1,5 @@
 
-Function Trace-ExchangeMessage {
+function Trace-ExchangeMessage {
     <#
     .SYNOPSIS
     On-Premises Exchange Message Tracking Log made easy!
@@ -32,11 +32,22 @@ Function Trace-ExchangeMessage {
     .PARAMETER Status
     Parameter description
 
+    .PARAMETER ExportToExcel
+    Export results to Excel file in Posh365 folder on the desktop
+    Can be used with ExportToCSV
+
+    .PARAMETER ExportToCSV
+    Export results to CSV file in Posh365 folder on the desktop
+    Can be used with ExportToExcel
+
     .EXAMPLE
     Trace-ExchangeMessage -StartSearchHoursAgo 48 -EndSearchHoursAgo 24 -Recipients "joe@contoso.com" -Subject "Forklift incident"
 
     .EXAMPLE
     Trace-ExchangeMessage -StartSearchHoursAgo .01
+
+    .EXAMPLE
+    Trace-ExchangeMessage -StartSearchHoursAgo 1 -ExportToExcel
 
     .NOTES
     General notes
@@ -67,7 +78,13 @@ Function Trace-ExchangeMessage {
         [string] $ResultSize = "Unlimited",
 
         [Parameter()]
-        [string] $Status
+        [string] $Status,
+
+        [Parameter()]
+        [switch] $ExportToExcel,
+
+        [Parameter()]
+        [switch] $ExportToCSV
     )
     $Servers = Get-TransportServer -WarningAction SilentlyContinue
     $currentErrorActionPrefs = $ErrorActionPreference
@@ -86,7 +103,7 @@ Function Trace-ExchangeMessage {
     $cmdletParams = (Get-Command $PSCmdlet.MyInvocation.InvocationName).Parameters.Keys
 
     $params = @{ }
-    $NotArray = 'StartSearchHoursAgo', 'EndSearchHoursAgo', 'Subject', 'ResultSize', 'Debug', 'Verbose', 'ErrorAction', 'WarningAction', 'InformationAction', 'ErrorVariable', 'WarningVariable', 'InformationVariable', 'OutVariable', 'OutBuffer', 'PipelineVariable'
+    $NotArray = 'ExportToExcel', 'ExportToCSV', 'StartSearchHoursAgo', 'EndSearchHoursAgo', 'Subject', 'ResultSize', 'Debug', 'Verbose', 'ErrorAction', 'WarningAction', 'InformationAction', 'ErrorVariable', 'WarningVariable', 'InformationVariable', 'OutVariable', 'OutBuffer', 'PipelineVariable'
     foreach ($cmdletParam in $cmdletParams) {
         if ($cmdletParam -notin $NotArray) {
             if ([string]::IsNullOrWhiteSpace((Get-Variable -Name $cmdletParam).Value) -ne $true) {
@@ -109,11 +126,11 @@ Function Trace-ExchangeMessage {
                     Directionality   = $_.Directionality
                     EventID          = $_.EventID
                     Sender           = $_.Sender
-                    Recipients       = $_.Recipients
+                    Recipients       = ($_.Recipients) -ne '' -join '|'
                     Subject          = $_.MessageSubject
                     Connector        = $_.ConnectorID
                     SourceContext    = $_.SourceContext
-                    EventData        = $_.EventData
+                    EventData        = ($_.EventData) -ne '' -join '|'
                     ServerHostName   = $_.ServerHostName
                     ServerIP         = $_.ServerIP
                     ClientIP         = $_.ClientIP
@@ -134,6 +151,34 @@ Function Trace-ExchangeMessage {
     }
 
     if ($allMessageTrackResults.count -gt 0) {
+        if ($ExportToExcel -or $ExportToCSV) {
+            $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
+            $null = New-Item $PoshPath -type Directory -Force -ErrorAction SilentlyContinue
+
+            if ($ExportToExcel) {
+                $FileStamp = 'OnPremises-MessageTrace_{0}.xlsx' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm')
+                $ExcelSplat = @{
+                    Path                    = (Join-Path $PoshPath $FileStamp)
+                    TableStyle              = 'Medium2'
+                    FreezeTopRowFirstColumn = $true
+                    AutoSize                = $true
+                    BoldTopRow              = $true
+                    ClearSheet              = $true
+                }
+                $allMessageTrackResults | Export-Excel @ExcelSplat
+            }
+            if ($ExportToCSV) {
+                $FileStamp = 'OnPremises-MessageTrace_{0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm')
+                $CsvSplat = @{
+                    Path              = (Join-Path $PoshPath $FileStamp)
+                    NoTypeInformation = $true
+                    Encoding          = 'UTF8'
+                }
+                $allMessageTrackResults | Export-Csv  @CsvSplat
+            }
+            return
+        }
+
         Write-Verbose "`n$($allMessageTrackResults.count) results returned."
 
         $WantsToTrackMoreSpecifically = $allMessageTrackResults | Out-GridView -PassThru -Title "Message Tracking Log. Select one or more then click OK to track by only those Message IDs."
