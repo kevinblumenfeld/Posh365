@@ -41,7 +41,7 @@ function Add-X500FromContactToContact {
     Write-Host "`r`nConnecting to Exchange On-Premises: $OnPremExchangeServer`r`n" -ForegroundColor Cyan
     Connect-Exchange -Server $OnPremExchangeServer -DontViewEntireForest:$DontViewEntireForest
 
-    Get-DestinationRecipientHash
+    Get-DestinationRecipientHash -Type MailContact
 
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
 
