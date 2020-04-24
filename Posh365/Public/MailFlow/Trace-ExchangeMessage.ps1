@@ -72,6 +72,9 @@ function Trace-ExchangeMessage {
         [string] $Subject,
 
         [Parameter()]
+        [switch] $SkipHealthMessages,
+
+        [Parameter()]
         [string] $MessageID,
 
         [Parameter()]
@@ -103,7 +106,7 @@ function Trace-ExchangeMessage {
     $cmdletParams = (Get-Command $PSCmdlet.MyInvocation.InvocationName).Parameters.Keys
 
     $params = @{ }
-    $NotArray = 'ExportToExcel', 'ExportToCSV', 'StartSearchHoursAgo', 'EndSearchHoursAgo', 'Subject', 'ResultSize', 'Debug', 'Verbose', 'ErrorAction', 'WarningAction', 'InformationAction', 'ErrorVariable', 'WarningVariable', 'InformationVariable', 'OutVariable', 'OutBuffer', 'PipelineVariable'
+    $NotArray = 'SkipHealthMessages','ExportToExcel', 'ExportToCSV', 'StartSearchHoursAgo', 'EndSearchHoursAgo', 'Subject', 'ResultSize', 'Debug', 'Verbose', 'ErrorAction', 'WarningAction', 'InformationAction', 'ErrorVariable', 'WarningVariable', 'InformationVariable', 'OutVariable', 'OutBuffer', 'PipelineVariable'
     foreach ($cmdletParam in $cmdletParams) {
         if ($cmdletParam -notin $NotArray) {
             if ([string]::IsNullOrWhiteSpace((Get-Variable -Name $cmdletParam).Value) -ne $true) {
@@ -165,7 +168,13 @@ function Trace-ExchangeMessage {
                     BoldTopRow              = $true
                     ClearSheet              = $true
                 }
-                $allMessageTrackResults | Export-Excel @ExcelSplat
+                if ($SkipHealthMessages) {
+                    $allMessageTrackResults.where{ $_.sender -notmatch "contoso|MicrosoftExchange|HealthMailbox|maildeliveryprobe" -and $_.recipients -notmatch "healthmailbox" } | Export-Excel @ExcelSplat
+                }
+                else {
+                    $allMessageTrackResults | Export-Excel @ExcelSplat
+                }
+
             }
             if ($ExportToCSV) {
                 $FileStamp = 'OnPremises-MessageTrace_{0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm')
@@ -174,14 +183,27 @@ function Trace-ExchangeMessage {
                     NoTypeInformation = $true
                     Encoding          = 'UTF8'
                 }
-                $allMessageTrackResults | Export-Csv  @CsvSplat
+                if ($SkipHealthMessages) {
+                    $allMessageTrackResults.where{ $_.sender -notmatch "contoso|MicrosoftExchange|HealthMailbox|maildeliveryprobe" -and $_.recipients -notmatch "healthmailbox" } | Export-Csv @CsvSplat
+
+                }
+                else {
+                    $allMessageTrackResults | Export-Csv @CsvSplat
+                }
             }
             return
         }
 
         Write-Verbose "`n$($allMessageTrackResults.count) results returned."
+        if ($SkipHealthMessages) {
+            $WantsToTrackMoreSpecifically = $allMessageTrackResults.where{ $_.sender -notmatch "contoso|MicrosoftExchange|HealthMailbox|maildeliveryprobe" -and $_.recipients -notmatch "healthmailbox" } |
+            Out-GridView -PassThru -Title "Message Tracking Log. Select one or more then click OK to track by only those Message IDs."
+        }
+        else {
+            $WantsToTrackMoreSpecifically = $allMessageTrackResults |
+            Out-GridView -PassThru -Title "Message Tracking Log. Select one or more then click OK to track by only those Message IDs."
+        }
 
-        $WantsToTrackMoreSpecifically = $allMessageTrackResults | Out-GridView -PassThru -Title "Message Tracking Log. Select one or more then click OK to track by only those Message IDs."
         if ($WantsToTrackMoreSpecifically) {
             Foreach ($Wants in $WantsToTrackMoreSpecifically) {
                 $allMessageTrackResults = New-Object "System.Collections.Generic.List[PSObject]"
