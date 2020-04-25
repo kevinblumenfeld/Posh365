@@ -39,7 +39,7 @@ function Connect-Exchange {
 
         [Parameter()]
         [switch]
-        $ConfirmPrompt
+        $PromptConfirm
     )
 
     $CredFile = Join-Path $Env:USERPROFILE ConnectExchange.xml
@@ -47,7 +47,7 @@ function Connect-Exchange {
         Remove-Item $CredFile -Force
         return
     }
-    if ($ConfirmPrompt) {
+    if ($PromptConfirm) {
         while (-not $Server ) {
             Write-Host "Enter the name of the Exchange Server. Example: ExServer01.domain.com" -ForegroundColor Cyan
             $Server = Read-Host "Exchange Server Name"
