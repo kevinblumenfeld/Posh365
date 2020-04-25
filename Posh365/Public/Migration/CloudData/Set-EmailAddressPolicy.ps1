@@ -62,15 +62,29 @@ function Set-EmailAddressPolicy {
         $RemoteMailboxList = Import-Clixml $RemoteMailboxXML | Sort-Object DisplayName, OnPremisesOrganizationalUnit
     }
 
+    $RMHash = @{ }
+    foreach ($RM in $RemoteMailboxList) {
+        $RMHash[$RM.Guid.ToString()] = @{
+            DisplayName                  = $RM.DisplayName
+            EmailAddressPolicyEnabled    = $RM.EmailAddressPolicyEnabled
+            OnPremisesOrganizationalUnit = $RM.OnPremisesOrganizationalUnit
+            Alias                        = $RM.Alias
+            PrimarySmtpAddress           = $RM.PrimarySmtpAddress
+            EmailCount                   = $RM.EmailAddresses.Count
+            EmailAddresses               = @($RM.EmailAddresses) -match 'smtp:' -join '|'
+            EmailAddressesNotSmtp        = @($RemoteMailbox.EmailAddresses) -notmatch 'smtp:' -join '|'
+        }
+    }
+
     Write-Host "Choose the Remote Mailboxes to set their EmailAddressPolicyEnabled to $Enable" -ForegroundColor Black -BackgroundColor White
     Write-Host "To select use Ctrl/Shift + click (individual) or Ctrl + A (All)" -ForegroundColor Black -BackgroundColor White
 
-    $Choice = Select-SetEmailAddressPolicy -RemoteMailboxList $RemoteMailboxList |
+    $Choice = Select-SetEmailAddressPolicy -RemoteMailboxList $RemoteMailboxList
     Out-GridView -OutputMode Multiple -Title "Choose the Remote Mailboxes to set their EmailAddressPolicyEnabled to $Enable"
     $ChoiceCSV = Join-Path -Path $PoshPath -ChildPath ('Before set EmailAddressPolicyEnabled to {0} _ {1}.csv' -f $Enable, [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $Choice | Export-Csv $ChoiceCSV -NoTypeInformation -Encoding UTF8
 
     if ($Choice) { Get-DecisionbyOGV } else { Write-Host "Halting as nothing was selected" ; continue }
-    $Result = Invoke-SetEmailAddressPolicy $Choice
+    $Result = Invoke-SetEmailAddressPolicy -Choice $Choice -Hash $RMHash
 
 }
