@@ -86,5 +86,7 @@ function Set-EmailAddressPolicy {
 
     if ($Choice) { Get-DecisionbyOGV } else { Write-Host "Halting as nothing was selected" ; continue }
     $Result = Invoke-SetEmailAddressPolicy -Choice $Choice -Hash $RMHash
-
+    $Result | Out-GridView -Title ('Results of Setting Email Address Policy to {0}. [ Count: {1} ]' -f $Enable, $Result.Count)
+    $ResultCSV = Join-Path -Path $PoshPath -ChildPath ('After set EmailAddressPolicyEnabled ({0}) to {1} _ {2}.csv' -f $Result.Count, $Enable, [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+    $Result | Export-Csv $ResultCSV
 }
