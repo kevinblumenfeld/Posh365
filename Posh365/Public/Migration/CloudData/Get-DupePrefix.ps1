@@ -42,7 +42,7 @@ function Get-DupePrefix {
 
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
 
-    if (-not ($null = Test-Path $PoshPath)) {
+     if (-not (Test-Path $PoshPath)) {
         $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
 

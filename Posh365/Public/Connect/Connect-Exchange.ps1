@@ -1,5 +1,5 @@
+using namespace System.Management.Automation.Host
 function Connect-Exchange {
-
     <#
     .SYNOPSIS
     Connects to On-Premises Microsoft Exchange Server
@@ -30,12 +30,16 @@ function Connect-Exchange {
         $Server,
 
         [Parameter()]
-        [Switch]
+        [switch]
         $DeleteExchangeCreds,
 
         [Parameter()]
-        [Switch]
-        $DontViewEntireForest
+        [switch]
+        $DontViewEntireForest,
+
+        [Parameter()]
+        [switch]
+        $ConfirmPrompt
     )
 
     $CredFile = Join-Path $Env:USERPROFILE ConnectExchange.xml
@@ -43,7 +47,27 @@ function Connect-Exchange {
         Remove-Item $CredFile -Force
         return
     }
-
+    if ($ConfirmPrompt) {
+        while (-not $Server ) {
+            Write-Host "Enter the name of the Exchange Server. Example: ExServer01.domain.com" -ForegroundColor Cyan
+            $Server = Read-Host "Exchange Server Name"
+        }
+        while (-not $ConfirmExServer) {
+            $Yes = [ChoiceDescription]::new('&Yes', 'ExServer: Yes')
+            $No = [ChoiceDescription]::new('&No', 'ExServer: No')
+            $Options = [ChoiceDescription[]]($Yes, $No)
+            $Title = 'Specified Exchange Server: {0}' -f $Server
+            $Question = 'Is this correct?'
+            $YN = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
+            switch ($YN) {
+                0 { $ConfirmExServer = $true }
+                1 {
+                    Write-Host "`r`nEnter the name of the Exchange Server. Example: ExServer01.domain.com" -ForegroundColor Cyan
+                    $Server = Read-Host "Exchange Server Name"
+                }
+            }
+        }
+    }
     if (-not ($null = Test-Path $CredFile)) {
         [System.Management.Automation.PSCredential]$Credential = Get-Credential -Message 'Enter on-premises Exchange username and password'
         [System.Management.Automation.PSCredential]$Credential | Export-Clixml -Path $CredFile
