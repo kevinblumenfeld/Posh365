@@ -1,5 +1,4 @@
-function Invoke-SetEmailAddressPolicy {
-
+function Invoke-DisableMailboxEmailAddressPolicy {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -49,9 +48,9 @@ function Invoke-SetEmailAddressPolicy {
             Write-Host ('[{0} of {1}] {2} Error: {3}' -f $i, $Count, $item.DisplayName, $_.Exception.Message) -ForegroundColor Red
             [PSCustomObject]@{
                Count                         = '[{0} of {1}]' -f $i, $Count
-                Result                        = 'SUCCESS'
+                Result                        = 'FAILED'
                 PrimarySmtpAddressUnchanged   = 'FAILED'
-                DisplayName                   = 'FAILED'
+                DisplayName                   = $Hash[$item.Guid]['DisplayName']
                 EmailAddressPolicyEnabled     = 'FAILED'
                 PreviousEAPEnabled            = $Hash[$item.Guid]['EmailAddressPolicyEnabled']
                 OnPremisesOrganizationalUnit  = 'FAILED'

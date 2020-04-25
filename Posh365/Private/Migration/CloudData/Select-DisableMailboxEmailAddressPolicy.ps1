@@ -1,4 +1,4 @@
-function Select-SetEmailAddressPolicy {
+function Select-DisableMailboxEmailAddressPolicy {
     [CmdletBinding()]
     param (
         [Parameter()]
