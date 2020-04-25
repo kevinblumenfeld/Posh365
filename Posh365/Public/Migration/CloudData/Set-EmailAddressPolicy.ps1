@@ -41,10 +41,8 @@ function Set-EmailAddressPolicy {
         [switch]
         $DontViewEntireForest
     )
-
-    Connect-Exchange @PSBoundParameters -PromptConfirm
     Get-PSSession | Remove-PSSession
-
+    Connect-Exchange @PSBoundParameters -PromptConfirm
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
 
     if (-not (Test-Path $PoshPath)) {
