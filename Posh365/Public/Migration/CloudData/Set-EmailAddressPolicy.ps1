@@ -77,7 +77,7 @@ function Set-EmailAddressPolicy {
     Write-Host "Choose the Remote Mailboxes to set their EmailAddressPolicyEnabled to $Enable" -ForegroundColor Black -BackgroundColor White
     Write-Host "To select use Ctrl/Shift + click (individual) or Ctrl + A (All)" -ForegroundColor Black -BackgroundColor White
 
-    $Choice = Select-SetEmailAddressPolicy -RemoteMailboxList $RemoteMailboxList
+    $Choice = Select-SetEmailAddressPolicy -RemoteMailboxList $RemoteMailboxList |
     Out-GridView -OutputMode Multiple -Title "Choose the Remote Mailboxes to set their EmailAddressPolicyEnabled to $Enable"
     $ChoiceCSV = Join-Path -Path $PoshPath -ChildPath ('Before set EmailAddressPolicyEnabled to {0} _ {1}.csv' -f $Enable, [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $Choice | Export-Csv $ChoiceCSV -NoTypeInformation -Encoding UTF8
