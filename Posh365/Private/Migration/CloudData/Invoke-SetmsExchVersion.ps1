@@ -5,7 +5,10 @@ function Invoke-SetmsExchVersion {
         $Choice,
 
         [Parameter(Mandatory)]
-        $Hash,
+        $RMHash,
+
+        [Parameter(Mandatory)]
+        $UserHash,
 
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
@@ -18,9 +21,9 @@ function Invoke-SetmsExchVersion {
         try {
             Set-ADUser -Identity $Item.Guid -Replace @{ msExchVersion = $VersionDecision } -ErrorAction Stop
             Write-Host ('[{0} of {1}] {2} Success modifying msExchVersion - PrimarySmtpAddress unchanged? ' -f $i, $Count, $item.DisplayName) -ForegroundColor Green -NoNewline
-            $AfterSuccess = Get-ADUser -Identity $item.Guid -ErrorAction Stop
-            $AfterSuccessRM = Get-RemoteMailbox -Identity $item.Guid -ErrorAction Stop
-            $PrimaryUnchanged = $Hash[$item.Guid]['PrimarySmtpAddress'] -eq $AfterSuccess.PrimarySmtpAddress
+            $AfterSuccessAD = Get-ADUser -Identity $item.Guid -Properties DisplayName, msExchVersion -ErrorAction Stop
+            $AfterSuccessRM = Get-RemoteMailbox -Identity $item.Guid -ErrorAction Stop | Select-Object *
+            $PrimaryUnchanged = $RMHash[$item.Guid]['PrimarySmtpAddress'] -eq $AfterSuccessRM.PrimarySmtpAddress
             if ($PrimaryUnchanged) {
                 Write-Host $PrimaryUnchanged -ForegroundColor White -BackgroundColor DarkMagenta
             }
@@ -31,23 +34,24 @@ function Invoke-SetmsExchVersion {
             [PSCustomObject]@{
                 Count                         = '[{0} of {1}]' -f $i, $Count
                 Result                        = 'SUCCESS'
-                Action                        = 'EAPDISABLED'
+                Action                        = "SETMSEXCHVERSION ($VersionDecision)"
+                CurrentmsExchVersion          = $AfterSuccessAD.msExchVersion.ToString()
+                PreviousmsExchVersion         = $UserHash[$item.Guid]['msExchVersion'].ToString()
                 PrimarySmtpAddressUnchanged   = $PrimaryUnchanged
-                DisplayName                   = $AfterSuccess.DisplayName
-                CurrentPolicyEnabled          = $AfterSuccess.EmailAddressPolicyEnabled
-                PreviousPolicyEnabled         = $Hash[$item.Guid]['EmailAddressPolicyEnabled']
-                OnPremisesOrganizationalUnit  = $AfterSuccess.OnPremisesOrganizationalUnit
-                Alias                         = $AfterSuccess.Alias
-                CurrentPrimarySmtpAddress     = $AfterSuccess.PrimarySmtpAddress
-                PreviousPrimarySmtpAddress    = $Hash[$item.Guid]['PrimarySmtpAddress']
-                EmailCountChange              = $AfterSuccess.EmailAddresses.Count - $Hash[$item.Guid]['EmailCount']
-                CurrentEmailCount             = $AfterSuccess.EmailAddresses.Count
-                PreviousEmailCount            = $Hash[$item.Guid]['EmailCount']
-                CurrentEmailAddresses         = @($AfterSuccess.EmailAddresses) -match 'smtp:' -join '|'
-                PreviousEmailAddresses        = $Hash[$item.Guid]['EmailAddresses']
-                CurrentEmailAddressesNotSmtp  = @($AfterSuccess.EmailAddresses) -notmatch 'smtp:' -join '|'
-                PreviousEmailAddressesNotSmtp = $Hash[$item.Guid]['EmailAddressesNotSmtp']
-                Guid                          = $AfterSuccess.Guid.ToString()
+                AllAddressesUnchanged         = $RMHash[$item.Guid]['AllEmailAddresses'] -eq (@($AfterSuccessRM.EmailAddresses) -ne '' -join '|')
+                DisplayName                   = $AfterSuccessAD.DisplayName
+                OnPremisesOrganizationalUnit  = $AfterSuccessRM.OnPremisesOrganizationalUnit
+                Alias                         = $AfterSuccessRM.Alias
+                CurrentPrimarySmtpAddress     = $AfterSuccessRM.PrimarySmtpAddress
+                PreviousPrimarySmtpAddress    = $RMHash[$item.Guid]['PrimarySmtpAddress']
+                EmailCountChange              = $AfterSuccessRM.EmailAddresses.Count - $RMHash[$item.Guid]['EmailCount']
+                CurrentEmailCount             = $AfterSuccessRM.EmailAddresses.Count
+                PreviousEmailCount            = $RMHash[$item.Guid]['EmailCount']
+                CurrentEmailAddresses         = @($AfterSuccessRM.EmailAddresses) -match 'smtp:' -join '|'
+                PreviousEmailAddresses        = $RMHash[$item.Guid]['EmailAddresses']
+                CurrentEmailAddressesNotSmtp  = @($AfterSuccessRM.EmailAddresses) -notmatch 'smtp:' -join '|'
+                PreviousEmailAddressesNotSmtp = $RMHash[$item.Guid]['EmailAddressesNotSmtp']
+                Guid                          = $AfterSuccessAD.ObjectGUID.ToString()
                 Log                           = 'SUCCESS'
             }
         }
@@ -56,22 +60,23 @@ function Invoke-SetmsExchVersion {
             [PSCustomObject]@{
                 Count                         = '[{0} of {1}]' -f $i, $Count
                 Result                        = 'FAILED'
-                Action                        = 'EAPDISABLED'
+                Action                        = "SETMSEXCHVERSION ($VersionDecision)"
+                CurrentmsExchVersion          = 'FAILED'
+                PreviousmsExchVersion         = $UserHash[$item.Guid]['msExchVersion'].ToString()
                 PrimarySmtpAddressUnchanged   = 'FAILED'
-                DisplayName                   = $Hash[$item.Guid]['DisplayName']
-                CurrentPolicyEnabled          = 'FAILED'
-                PreviousPolicyEnabled         = $Hash[$item.Guid]['EmailAddressPolicyEnabled']
+                AllAddressesUnchanged         = 'FAILED'
+                DisplayName                   = $RMHash[$item.Guid]['DisplayName']
                 OnPremisesOrganizationalUnit  = 'FAILED'
                 Alias                         = 'FAILED'
                 CurrentPrimarySmtpAddress     = 'FAILED'
-                PreviousPrimarySmtpAddress    = $Hash[$item.Guid]['PrimarySmtpAddress']
+                PreviousPrimarySmtpAddress    = $RMHash[$item.Guid]['PrimarySmtpAddress']
                 EmailCountChange              = 'FAILED'
                 CurrentEmailCount             = 'FAILED'
-                PreviousEmailCount            = $Hash[$item.Guid]['EmailCount']
+                PreviousEmailCount            = $RMHash[$item.Guid]['EmailCount']
                 CurrentEmailAddresses         = 'FAILED'
-                PreviousEmailAddresses        = $Hash[$item.Guid]['EmailAddresses']
+                PreviousEmailAddresses        = $RMHash[$item.Guid]['EmailAddresses']
                 CurrentEmailAddressesNotSmtp  = 'FAILED'
-                PreviousEmailAddressesNotSmtp = $Hash[$item.Guid]['EmailAddressesNotSmtp']
+                PreviousEmailAddressesNotSmtp = $RMHash[$item.Guid]['EmailAddressesNotSmtp']
                 Guid                          = 'FAILED'
                 Log                           = $_.Exception.Message
             }

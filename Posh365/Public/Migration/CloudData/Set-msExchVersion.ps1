@@ -7,6 +7,10 @@ function Set-msExchVersion {
         $SkipConnection,
 
         [Parameter()]
+        [switch]
+        $ReuseADXML,
+
+        [Parameter()]
         $OnPremExchangeServer,
 
         [Parameter()]
@@ -27,21 +31,28 @@ function Set-msExchVersion {
         $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
     Import-Module ActiveDirectory -force
-    Write-Host "`r`nCreating XML of all Active Directory Users with the following values in the attribute, msExchRecipientTypeDetails:" -ForegroundColor Green
-    Write-Host "2147483648 (RemoteMailbox), 8589934592 (RemoteRoomMailbox), 17179869184 (RemoteEquipmentMailbox), 34359738368 (RemoteSharedMailbox)`r`n" -BackgroundColor White -ForegroundColor Black
-    Write-Host "Breakdown of msExchVersion via Active Directory of Remote Mailbox types will be output shortly to Out Grid`r`n" -ForegroundColor Green
-    $ADUserXML = Join-Path -Path $PoshPath -ChildPath 'RemoteMailbox_msExchVersion.xml'
-    $ADParams = @{
-        LDAPFilter    = '(|(msExchRecipientTypeDetails=8589934592)(msExchRecipientTypeDetails=2147483648)(msExchRecipientTypeDetails=17179869184)(msExchRecipientTypeDetails=34359738368))'
-        Properties    = '*'
-        ResultSetSize = $null
+    $ADUserXML = Join-Path -Path $PoshPath -ChildPath 'ADUser_msExchVersion.xml'
+    if ($ReuseADXML) {
+        $UserList = Import-Clixml $ADUserXML
     }
-    $UserList = Get-ADUser @ADParams
-    $UserList | Export-Clixml $ADUserXML
-
+    else {
+        Write-Host "`r`nCreating XML of all Active Directory Users with the following values in the attribute, msExchRecipientTypeDetails:" -ForegroundColor Green
+        Write-Host "2147483648 (RemoteMailbox), 8589934592 (RemoteRoomMailbox), 17179869184 (RemoteEquipmentMailbox), 34359738368 (RemoteSharedMailbox)" -BackgroundColor White -ForegroundColor Black
+        Write-Host "`r`nBreakdown of msExchVersion via Active Directory of Remote Mailbox types will output shortly to Out Grid`r`n" -ForegroundColor Green
+        Write-Host "`r`nPlease stand by . . .  `r`n" -ForegroundColor White
+        
+        $ADParams = @{
+            LDAPFilter    = '(|(msExchRecipientTypeDetails=8589934592)(msExchRecipientTypeDetails=2147483648)(msExchRecipientTypeDetails=17179869184)(msExchRecipientTypeDetails=34359738368))'
+            Properties    = 'msExchVersion', 'DisplayName', 'UserPrincipalName', 'ObjectGuid'
+            ResultSetSize = $null
+        }
+        $UserList = Get-ADUser @ADParams | Select-Object *
+        $UserList | Export-Clixml $ADUserXML   
+    }
+    
     $UserHash = @{ }
     foreach ($User in $UserList) {
-        $UserHash[$User.Guid.ToString()] = @{
+        $UserHash[$User.ObjectGuid.ToString()] = @{
             msExchVersion     = $User.msExchVersion
             DisplayName       = $User.DisplayName
             UserPrincipalName = $User.UserPrincipalName
@@ -82,8 +93,9 @@ function Set-msExchVersion {
             Alias                        = $RM.Alias
             PrimarySmtpAddress           = $RM.PrimarySmtpAddress
             EmailCount                   = $RM.EmailAddresses.Count
+            AllEmailAddresses            = @($RM.EmailAddresses) -ne '' -join '|'
             EmailAddresses               = @($RM.EmailAddresses) -match 'smtp:' -join '|'
-            EmailAddressesNotSmtp        = @($RemoteMailbox.EmailAddresses) -notmatch 'smtp:' -join '|'
+            EmailAddressesNotSmtp        = @($RM.EmailAddresses) -notmatch 'smtp:' -join '|'
         }
     }
 
@@ -117,9 +129,9 @@ function Set-msExchVersion {
         }) | Out-GridView -OutputMode Single -Title 'Choose the msExchVersion to apply the mailboxes you just selected'
     if ($Choice) { Get-DecisionbyOGV } else { Write-Host 'Halting as nothing was selected' ; continue }
 
-    $Result = Invoke-SetmsExchVersion -Choice $Choice -Hash $RMHash -VersionDecision $VersionDecision.msExchVersion
+    $Result = Invoke-SetmsExchVersion -Choice $Choice -RMHash $RMHash -UserHash $UserHash -VersionDecision $VersionDecision.msExchVersion
 
-    $Result | Out-GridView -Title ('Results of Disabling Email Address Policy  [ Count: {0} ]' -f $Result.Count)
+    $Result | Out-GridView -Title ('Results of modifying msExchVersion to version: {0}  [ Count: {1} ]' -f $VersionDecision.msExchVersion, $Result.Count)
     $ResultCSV = Join-Path -Path $PoshPath -ChildPath ('After modify msExchVersion {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $Result | Export-Csv $ResultCSV -NoTypeInformation
 }
