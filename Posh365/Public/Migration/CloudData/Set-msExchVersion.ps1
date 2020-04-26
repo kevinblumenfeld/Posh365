@@ -27,9 +27,9 @@ function Set-msExchVersion {
         $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
     Import-Module ActiveDirectory -force
-    Write-Host '`r`nCreating XML of all Active Directory Users with the following values in the attribute, msExchRecipientTypeDetails:' -ForegroundColor Green
-    Write-Host '2147483648 (RemoteMailbox), 8589934592 (RemoteRoomMailbox), 17179869184 (RemoteEquipmentMailbox), 34359738368 (RemoteSharedMailbox)' -BackgroundColor White -ForegroundColor Black
-    Write-Host 'Breakdown of msExchVersion via Active Directory of Remote Mailbox types has been output to Out Grid`r`n' -ForegroundColor Green
+    Write-Host "`r`nCreating XML of all Active Directory Users with the following values in the attribute, msExchRecipientTypeDetails:" -ForegroundColor Green
+    Write-Host "2147483648 (RemoteMailbox), 8589934592 (RemoteRoomMailbox), 17179869184 (RemoteEquipmentMailbox), 34359738368 (RemoteSharedMailbox)`r`n" -BackgroundColor White -ForegroundColor Black
+    Write-Host "Breakdown of msExchVersion via Active Directory of Remote Mailbox types has been output to Out Grid`r`n" -ForegroundColor Green
     $ADUserXML = Join-Path -Path $PoshPath -ChildPath 'RemoteMailbox_msExchVersion.xml'
     $ADParams = @{
         LDAPFilter    = '(|(msExchRecipientTypeDetails=8589934592)(msExchRecipientTypeDetails=2147483648)(msExchRecipientTypeDetails=17179869184)(msExchRecipientTypeDetails=34359738368))'
