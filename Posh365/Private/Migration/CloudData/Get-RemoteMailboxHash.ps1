@@ -1,29 +1,44 @@
 function Get-RemoteMailboxHash {
     [CmdletBinding()]
     param (
+        [Parameter()]
+        $RemoteMailboxList,
+
+        [Parameter()]
+        [ValidateSet('Guid', 'UserPrincipalName')]
+        $Key
     )
 
-    $RemoteSelect = @(
-        'UserPrincipalName', 'Identity', 'DisplayName'
-        'Name', 'SamAccountName', 'WindowsEmailAddress'
-        'PrimarySmtpAddress', 'OnPremisesOrganizationalUnit'
-        'ExchangeGuid', 'ArchiveGuid'
-    )
-
-    $OnPremList = Get-RemoteMailbox -ResultSize Unlimited | Select-Object $RemoteSelect
-    $OnHash = @{ }
-    foreach ($On in $OnPremList) {
-        $OnHash[$On.UserPrincipalName] = @{
-            'Identity'            = $On.Identity
-            'DisplayName'         = $On.DisplayName
-            'Name'                = $On.Name
-            'SamAccountName'      = $On.SamAccountName
-            'WindowsEmailAddress' = $On.WindowsEmailAddress
-            'PrimarySmtpAddress'  = $On.PrimarySmtpAddress
-            'OrganizationalUnit'  = $On.OnPremisesOrganizationalUnit
-            'ExchangeGuid'        = ($On.ExchangeGuid).ToString()
-            'ArchiveGuid'         = ($On.ArchiveGuid).ToString()
+    $RMHash = @{ }
+    if ($Key -eq 'Guid') {
+        foreach ($RM in $RemoteMailboxList) {
+            $RMHash[$RM.Guid.ToString()] = @{
+                DisplayName                  = $RM.DisplayName
+                EmailAddressPolicyEnabled    = $RM.EmailAddressPolicyEnabled
+                OnPremisesOrganizationalUnit = $RM.OnPremisesOrganizationalUnit
+                Alias                        = $RM.Alias
+                PrimarySmtpAddress           = $RM.PrimarySmtpAddress
+                EmailCount                   = $RM.EmailAddresses.Count
+                AllEmailAddresses            = @($RM.EmailAddresses) -ne '' -join '|'
+                EmailAddresses               = @($RM.EmailAddresses) -match 'smtp:' -join '|'
+                EmailAddressesNotSmtp        = @($RM.EmailAddresses) -notmatch 'smtp:' -join '|'
+            }
         }
     }
-    $OnHash
+    if ($Key -eq 'UserPrincipalName') {
+        foreach ($RM in $RemoteMailboxList) {
+            $RMHash[$RM.UserPrincipalName] = @{
+                'Identity'            = $RM.Identity
+                'DisplayName'         = $RM.DisplayName
+                'Name'                = $RM.Name
+                'SamAccountName'      = $RM.SamAccountName
+                'WindowsEmailAddress' = $RM.WindowsEmailAddress
+                'PrimarySmtpAddress'  = $RM.PrimarySmtpAddress
+                'OrganizationalUnit'  = $RM.OnPremisesOrganizationalUnit
+                'ExchangeGuid'        = ($RM.ExchangeGuid).ToString()
+                'ArchiveGuid'         = ($RM.ArchiveGuid).ToString()
+            }
+        }
+    }
+    $RMHash
 }

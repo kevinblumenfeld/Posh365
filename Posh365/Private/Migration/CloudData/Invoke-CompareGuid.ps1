@@ -3,38 +3,38 @@ function Invoke-CompareGuid {
     param (
         [Parameter()]
         [hashtable]
-        $OnHash,
+        $RMHash,
 
         [Parameter()]
         [hashtable]
         $CloudHash
     )
 
-    foreach ($OnKey in $OnHash.keys) {
-        if ($CloudHash.ContainsKey($OnKey)) {
+    foreach ($RMKey in $RMHash.keys) {
+        if ($CloudHash.ContainsKey($RMKey)) {
             [PSCustomObject]@{
-                Displayname        = if ($OnHash[$OnKey]['DisplayName']) { $OnHash[$OnKey]['DisplayName'] } else { $OnHash[$OnKey]['DisplayName'] }
-                OrganizationalUnit = $OnHash[$OnKey]['OrganizationalUnit']
-                ExchangeGuidMatch  = $OnHash[$OnKey]['ExchangeGuid'] -eq $CloudHash[$OnKey]['ExchangeGuid']
-                ArchiveGuidMatch   = $OnHash[$OnKey]['ArchiveGuid'] -eq $CloudHash[$OnKey]['ArchiveGuid']
-                ExchangeGuidOnPrem = $OnHash[$OnKey]['ExchangeGuid']
-                ExchangeGuidCloud  = $CloudHash[$OnKey]['ExchangeGuid']
-                ArchiveGuidOnPrem  = $OnHash[$OnKey]['ArchiveGuid']
-                ArchiveGuidCloud   = $CloudHash[$OnKey]['ArchiveGuid']
-                UserPrincipalName =  $OnKey
+                Displayname        = if ($RMHash[$RMKey]['DisplayName']) { $RMHash[$RMKey]['DisplayName'] } else { $RMHash[$RMKey]['DisplayName'] }
+                OrganizationalUnit = $RMHash[$RMKey]['OrganizationalUnit']
+                ExchangeGuidMatch  = $RMHash[$RMKey]['ExchangeGuid'] -eq $CloudHash[$RMKey]['ExchangeGuid']
+                ArchiveGuidMatch   = $RMHash[$RMKey]['ArchiveGuid'] -eq $CloudHash[$RMKey]['ArchiveGuid']
+                ExchangeGuidOnPrem = $RMHash[$RMKey]['ExchangeGuid']
+                ExchangeGuidCloud  = $CloudHash[$RMKey]['ExchangeGuid']
+                ArchiveGuidOnPrem  = $RMHash[$RMKey]['ArchiveGuid']
+                ArchiveGuidCloud   = $CloudHash[$RMKey]['ArchiveGuid']
+                UserPrincipalName =  $RMKey
             }
         }
         else {
             [PSCustomObject]@{
-                Displayname        = if ($OnHash[$OnKey]['DisplayName']) { $OnHash[$OnKey]['DisplayName'] } else { $OnHash[$OnKey]['DisplayName'] }
-                OrganizationalUnit = $OnHash[$OnKey]['OrganizationalUnit']
+                Displayname        = if ($RMHash[$RMKey]['DisplayName']) { $RMHash[$RMKey]['DisplayName'] } else { $RMHash[$RMKey]['DisplayName'] }
+                OrganizationalUnit = $RMHash[$RMKey]['OrganizationalUnit']
                 ExchangeGuidMatch  = 'CLOUDUPNNOTFOUND'
                 ArchiveGuidMatch   = 'CLOUDUPNNOTFOUND'
-                ExchangeGuidOnPrem = $OnHash[$OnKey]['ExchangeGuid']
+                ExchangeGuidOnPrem = $RMHash[$RMKey]['ExchangeGuid']
                 ExchangeGuidCloud  = 'CLOUDUPNNOTFOUND'
-                ArchiveGuidOnPrem  = $OnHash[$OnKey]['ArchiveGuid']
+                ArchiveGuidOnPrem  = $RMHash[$RMKey]['ArchiveGuid']
                 ArchiveGuidCloud   = 'CLOUDUPNNOTFOUND'
-                UserPrincipalName =  $OnKey
+                UserPrincipalName =  $RMKey
             }
         }
     }

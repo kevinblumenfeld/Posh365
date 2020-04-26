@@ -2,9 +2,6 @@ function Sync-Guid {
     [CmdletBinding()]
     param (
         [Parameter()]
-        $OnPremExchangeServer,
-
-        [Parameter()]
         [switch]
         $DeleteExchangeCreds,
 
@@ -12,43 +9,24 @@ function Sync-Guid {
         [switch]
         $DontViewEntireForest
     )
-
-
     $Script:RestartConsole = $null
     Connect-CloudModuleImport -EXO2
     if ($RestartConsole) {
         return
     }
-
-    if ($DeleteExchangeCreds) {
-        Connect-Exchange -DeleteExchangeCreds:$true
-        continue
-    }
-    while (-not $OnPremExchangeServer ) {
-        Write-Host "Enter the name of the Exchange Server. Example: ExServer01.domain.com" -ForegroundColor Cyan
-        $OnPremExchangeServer = Read-Host "Exchange Server Name"
-    }
-    while (-not $ConfirmExServer) {
-        $Yes = [ChoiceDescription]::new('&Yes', 'ExServer: Yes')
-        $No = [ChoiceDescription]::new('&No', 'ExServer: No')
-        $Options = [ChoiceDescription[]]($Yes, $No)
-        $Title = 'Specified Exchange Server: {0}' -f $OnPremExchangeServer
-        $Question = 'Is this correct?'
-        $YN = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
-        switch ($YN) {
-            0 { $ConfirmExServer = $true }
-            1 {
-                Write-Host "`r`nEnter the name of the Exchange Server. Example: ExServer01.domain.com" -ForegroundColor Cyan
-                $OnPremExchangeServer = Read-Host "Exchange Server Name"
-            }
-        }
-    }
-
-    # On-Premises ( Remote Mailbox )
     Get-PSSession | Remove-PSSession
-    Write-Host "`r`nConnecting to Exchange On-Premises: $OnPremExchangeServer`r`n" -ForegroundColor Cyan
-    Connect-Exchange -Server $OnPremExchangeServer -DontViewEntireForest:$DontViewEntireForest
-    $OnHash = Get-RemoteMailboxHash
+    while (-not $Server ) {
+        Write-Host "Enter the name of the Exchange Server. Example: ExServer01.domain.com" -ForegroundColor Cyan
+        $Server = Read-Host "Exchange Server Name"
+    }
+    Connect-Exchange @PSBoundParameters -PromptConfirm -Server $Server
+
+    $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath 'RemoteMailboxSyncGuid.xml'
+    Write-Host "Fetching Remote Mailboxes..." -ForegroundColor Cyan
+
+    Get-RemoteMailbox -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
+    $RemoteMailboxList = Import-Clixml $RemoteMailboxXML | Sort-Object DisplayName, OnPremisesOrganizationalUnit
+    $RMHash = Get-RemoteMailboxHash -Key UserPrincipalName -RemoteMailboxList $RemoteMailboxList
 
     Get-PSSession | Remove-PSSession
 
@@ -60,7 +38,7 @@ function Sync-Guid {
     $CloudHash = Get-CloudMailboxHash
     Get-PSSession | Remove-PSSession
 
-    $CompareObject = Invoke-CompareGuid -OnHash $OnHash -CloudHash $CloudHash
+    $CompareObject = Invoke-CompareGuid -RMHash $RMHash -CloudHash $CloudHash
 
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
     $SourcePath = Join-Path -Path $PoshPath -ChildPath $InitialDomain
@@ -81,14 +59,14 @@ function Sync-Guid {
 
     $AddGuidList = $CompareObject | Where-Object { -not $_.ExchangeGuidMatch -or -not $_.ArchiveGuidMatch }
     if ($AddGuidList) {
-        Connect-Exchange -Server $OnPremExchangeServer -DontViewEntireForest:$DontViewEntireForest
+        Connect-Exchange @PSBoundParameters -PromptConfirm -Server $Server
         $GuidResult = Set-ExchangeGuid -AddGuidList $AddGuidList
         $GuidResult | Out-GridView -Title "Results of Adding Guid to Tenant: $InitialDomain"
         $ResultFile = Join-Path -Path $SourcePath -ChildPath ('Guid_Result_{0}.csv' -f $InitialDomain)
         $GuidResult | Export-Csv $ResultFile -NoTypeInformation
     }
     else {
-        Write-Host "All ExchangeGuid and ArchiveGuid already match" -ForegroundColor Yellow
+        Write-Host "All ExchangeGuid and ArchiveGuid already match" -ForegroundColor Yellow -BackgroundColor Black
         return
     }
 }

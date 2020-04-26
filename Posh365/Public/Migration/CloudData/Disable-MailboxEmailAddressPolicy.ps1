@@ -51,25 +51,12 @@ function Disable-MailboxEmailAddressPolicy {
     if (-not (Test-Path $PoshPath)) {
         $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
-    $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath 'RemoteMailbox.xml'
+    $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath 'RemoteMailboxEAPTrue.xml'
     Write-Host "Fetching Remote Mailboxes..." -ForegroundColor Cyan
 
     Get-RemoteMailbox -Filter "EmailAddressPolicyEnabled -eq '$true'" -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
     $RemoteMailboxList = Import-Clixml $RemoteMailboxXML | Sort-Object DisplayName, OnPremisesOrganizationalUnit
-
-    $RMHash = @{ }
-    foreach ($RM in $RemoteMailboxList) {
-        $RMHash[$RM.Guid.ToString()] = @{
-            DisplayName                  = $RM.DisplayName
-            EmailAddressPolicyEnabled    = $RM.EmailAddressPolicyEnabled
-            OnPremisesOrganizationalUnit = $RM.OnPremisesOrganizationalUnit
-            Alias                        = $RM.Alias
-            PrimarySmtpAddress           = $RM.PrimarySmtpAddress
-            EmailCount                   = $RM.EmailAddresses.Count
-            EmailAddresses               = @($RM.EmailAddresses) -match 'smtp:' -join '|'
-            EmailAddressesNotSmtp        = @($RemoteMailbox.EmailAddresses) -notmatch 'smtp:' -join '|'
-        }
-    }
+    $RMHash = Get-RemoteMailboxHash -Key Guid -RemoteMailboxList $RemoteMailboxList
 
     Write-Host "Choose which Remote Mailboxes in which to disable their Email Address Policy" -ForegroundColor Black -BackgroundColor White
     Write-Host "To select use Ctrl/Shift + click (Individual) or Ctrl + A (All)" -ForegroundColor Black -BackgroundColor White

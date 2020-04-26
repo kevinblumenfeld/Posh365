@@ -40,16 +40,16 @@ function Set-msExchVersion {
         Write-Host "2147483648 (RemoteMailbox), 8589934592 (RemoteRoomMailbox), 17179869184 (RemoteEquipmentMailbox), 34359738368 (RemoteSharedMailbox)" -BackgroundColor White -ForegroundColor Black
         Write-Host "`r`nBreakdown of msExchVersion via Active Directory of Remote Mailbox types will output shortly to Out Grid`r`n" -ForegroundColor Green
         Write-Host "`r`nPlease stand by . . .  `r`n" -ForegroundColor White
-        
+
         $ADParams = @{
             LDAPFilter    = '(|(msExchRecipientTypeDetails=8589934592)(msExchRecipientTypeDetails=2147483648)(msExchRecipientTypeDetails=17179869184)(msExchRecipientTypeDetails=34359738368))'
             Properties    = 'msExchVersion', 'DisplayName', 'UserPrincipalName', 'ObjectGuid'
             ResultSetSize = $null
         }
         $UserList = Get-ADUser @ADParams | Select-Object *
-        $UserList | Export-Clixml $ADUserXML   
+        $UserList | Export-Clixml $ADUserXML
     }
-    
+
     $UserHash = @{ }
     foreach ($User in $UserList) {
         $UserHash[$User.ObjectGuid.ToString()] = @{
@@ -84,20 +84,7 @@ function Set-msExchVersion {
     Write-Host " Remote Mailboxes found in Exchange (via Get-RemoteMailbox). Count: $($RemoteMailboxList.Count)  " -ForegroundColor DarkBlue -BackgroundColor White
     Write-Host '  >> We will not modify any users in Active Directory unless a matching GUID is found in Exchange <<  ' -ForegroundColor DarkRed -BackgroundColor White
 
-    $RMHash = @{ }
-    foreach ($RM in $RemoteMailboxList) {
-        $RMHash[$RM.Guid.ToString()] = @{
-            DisplayName                  = $RM.DisplayName
-            EmailAddressPolicyEnabled    = $RM.EmailAddressPolicyEnabled
-            OnPremisesOrganizationalUnit = $RM.OnPremisesOrganizationalUnit
-            Alias                        = $RM.Alias
-            PrimarySmtpAddress           = $RM.PrimarySmtpAddress
-            EmailCount                   = $RM.EmailAddresses.Count
-            AllEmailAddresses            = @($RM.EmailAddresses) -ne '' -join '|'
-            EmailAddresses               = @($RM.EmailAddresses) -match 'smtp:' -join '|'
-            EmailAddressesNotSmtp        = @($RM.EmailAddresses) -notmatch 'smtp:' -join '|'
-        }
-    }
+    $RMHash = Get-RemoteMailboxHash -Key Guid -RemoteMailboxList $RemoteMailboxList
 
     Write-Host 'Choose which Remote Mailboxes to modify msExchVersion - Prior to modification, you will choose which version' -ForegroundColor Black -BackgroundColor White
     Write-Host 'To select use Ctrl/Shift + click (Individual) or Ctrl + A (All)' -ForegroundColor Black -BackgroundColor White
