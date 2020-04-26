@@ -38,6 +38,15 @@ function Set-msExchVersion {
     $UserList = Get-ADUser @ADParams
     $UserList | Export-Clixml $ADUserXML
 
+    $UserHash = @{ }
+    foreach ($User in $UserList) {
+        $UserHash[$User.Guid.ToString()] = @{
+            msExchVersion     = $User.msExchVersion
+            DisplayName       = $User.DisplayName
+            UserPrincipalName = $User.UserPrincipalName
+        }
+    }
+
     $VersionList = $UserList | Group-Object msExchVersion | Sort-Object Count -Descending
     $ShowVersion = [System.Collections.Generic.List[PSObject]]::New()
     foreach ($Version in $VersionList) {
@@ -46,7 +55,7 @@ function Set-msExchVersion {
                 'Version' = $Version.Name
             })
     }
-    $ShowVersion | Out-GridView -Title 'Current breakdown of msExchVersions found in Remote Mailboxes'
+    $ShowVersion | Out-GridView -Title 'Current breakdown of msExchVersion found in Remote Mailboxes'
 
     if (-not $SkipConnection) {
         Get-PSSession | Remove-PSSession
@@ -59,9 +68,9 @@ function Set-msExchVersion {
     Get-RemoteMailbox -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
     $RemoteMailboxList = Import-Clixml $RemoteMailboxXML | Sort-Object DisplayName, OnPremisesOrganizationalUnit
 
-    Write-Host "Remote Mailboxes found in Active Directory (via msExchRecipientTypeDetails). Count:  $($UserList.Count)  " -ForegroundColor DarkBlue -BackgroundColor White
-    Write-Host "Remote Mailboxes found in Exchange (via Get-RemoteMailbox). Count: $($RemoteMailboxList.Count)  " -ForegroundColor DarkBlue -BackgroundColor White
-    Write-Host "  We will only effect change on those found in Exchange  " -ForegroundColor DarkRed -BackgroundColor White
+    Write-Host " Remote Mailboxes found in Active Directory (via msExchRecipientTypeDetails). Count:  $($UserList.Count)  " -ForegroundColor DarkBlue -BackgroundColor White
+    Write-Host " Remote Mailboxes found in Exchange (via Get-RemoteMailbox). Count: $($RemoteMailboxList.Count)  " -ForegroundColor DarkBlue -BackgroundColor White
+    Write-Host '  >> We will not modify any users in Active Directory unless a matching GUID is found in Exchange <<  ' -ForegroundColor DarkRed -BackgroundColor White
 
     $RMHash = @{ }
     foreach ($RM in $RemoteMailboxList) {
@@ -77,17 +86,27 @@ function Set-msExchVersion {
         }
     }
 
-    Write-Host 'Choose which Remote Mailboxes in which to disable their Email Address Policy' -ForegroundColor Black -BackgroundColor White
+    Write-Host 'Choose which Remote Mailboxes to modify msExchVersion - Prior to modification, you will choose which version' -ForegroundColor Black -BackgroundColor White
     Write-Host 'To select use Ctrl/Shift + click (Individual) or Ctrl + A (All)' -ForegroundColor Black -BackgroundColor White
 
-    $Choice = Select-DisableMailboxEmailAddressPolicy -RemoteMailboxList $RemoteMailboxList |
-    Out-GridView -OutputMode Multiple -Title 'Choose which Remote Mailboxes in which to disable their Email Address Policy'
-    $ChoiceCSV = Join-Path -Path $PoshPath -ChildPath ('Before Disable EAP {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+    $Choice = Select-SetmsExchVersion -RemoteMailboxList $RemoteMailboxList -UserHash $UserHash
+
+    Out-GridView -OutputMode Multiple -Title 'Choose which Remote Mailboxes to modify msExchVersion'
+    $ChoiceCSV = Join-Path -Path $PoshPath -ChildPath ('Before modify msExchVersion {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $Choice | Export-Csv $ChoiceCSV -NoTypeInformation -Encoding UTF8
 
     if ($Choice) { Get-DecisionbyOGV } else { Write-Host 'Halting as nothing was selected' ; continue }
-    $Result = Invoke-DisableMailboxEmailAddressPolicy -Choice $Choice -Hash $RMHash
+    $VersionDecision = [PSCustomObject]@{
+        Exchange2007 = '4535486012416'
+        Exchange2010 = '44220983382016'
+        Exchange2013 = '88218628259840'
+        Exchange2016 = '1125899906842624'
+    } | Out-GridView -OutputMode Single -Title 'Choose the msExchVersion to apply the mailboxes you just selected'
+    if ($Choice) { Get-DecisionbyOGV } else { Write-Host 'Halting as nothing was selected' ; continue }
+
+    $Result = Invoke-SetmsExchVersion -Choice $Choice -Hash $RMHash -VersionDecision $VersionDecision
+
     $Result | Out-GridView -Title ('Results of Disabling Email Address Policy  [ Count: {0} ]' -f $Result.Count)
-    $ResultCSV = Join-Path -Path $PoshPath -ChildPath ('After Disable EAP {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+    $ResultCSV = Join-Path -Path $PoshPath -ChildPath ('After modify msExchVersion {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $Result | Export-Csv $ResultCSV -NoTypeInformation
 }
