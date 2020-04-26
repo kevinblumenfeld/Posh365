@@ -21,6 +21,7 @@ function Sync-Guid {
     }
     Connect-Exchange @PSBoundParameters -PromptConfirm -Server $Server
 
+    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
     $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath 'RemoteMailboxSyncGuid.xml'
     Write-Host "Fetching Remote Mailboxes..." -ForegroundColor Cyan
 
@@ -40,7 +41,6 @@ function Sync-Guid {
 
     $CompareObject = Invoke-CompareGuid -RMHash $RMHash -CloudHash $CloudHash
 
-    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
     $SourcePath = Join-Path -Path $PoshPath -ChildPath $InitialDomain
     $SourceFile = Join-Path -Path $SourcePath -ChildPath ('Guid_Compare_{0}.csv' -f $InitialDomain)
 
