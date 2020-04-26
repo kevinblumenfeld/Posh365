@@ -16,9 +16,10 @@ function Invoke-SetmsExchVersion {
     foreach ($item in $Choice) {
         $i++
         try {
-            Set-RemoteMailbox -Identity $Item.Guid -Replace @{ msExchVersion = $Hash[$item.Guid]['msExchVersion'] } -ErrorAction Stop
-            Write-Host ('[{0} of {1}] {2} Success Disabling EAP - PrimarySmtpAddress unchanged? ' -f $i, $Count, $item.DisplayName) -ForegroundColor Green -NoNewline
-            $AfterSuccess = Get-RemoteMailbox -Identity $item.Guid -ErrorAction Stop
+            Set-ADUser -Identity $Item.Guid -Replace @{ msExchVersion = $Hash[$item.Guid]['msExchVersion'] } -ErrorAction Stop
+            Write-Host ('[{0} of {1}] {2} Success modifying msExchVersion - PrimarySmtpAddress unchanged? ' -f $i, $Count, $item.DisplayName) -ForegroundColor Green -NoNewline
+            $AfterSuccess = Get-ADUser -Identity $item.Guid -ErrorAction Stop
+            $AfterSuccessRM = Get-RemoteMailbox -Identity $item.Guid -ErrorAction Stop
             $PrimaryUnchanged = $Hash[$item.Guid]['PrimarySmtpAddress'] -eq $AfterSuccess.PrimarySmtpAddress
             if ($PrimaryUnchanged) {
                 Write-Host $PrimaryUnchanged -ForegroundColor White -BackgroundColor DarkMagenta
@@ -51,7 +52,7 @@ function Invoke-SetmsExchVersion {
             }
         }
         catch {
-            Write-Host ('[{0} of {1}] {2} Failed Disabling EAP Error: {3}' -f $i, $Count, $item.DisplayName, $_.Exception.Message) -ForegroundColor Red
+            Write-Host ('[{0} of {1}] {2} Failed modifying msExchVersion Error: {3}' -f $i, $Count, $item.DisplayName, $_.Exception.Message) -ForegroundColor Red
             [PSCustomObject]@{
                 Count                         = '[{0} of {1}]' -f $i, $Count
                 Result                        = 'FAILED'

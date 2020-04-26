@@ -29,7 +29,7 @@ function Set-msExchVersion {
     Import-Module ActiveDirectory -force
     Write-Host "`r`nCreating XML of all Active Directory Users with the following values in the attribute, msExchRecipientTypeDetails:" -ForegroundColor Green
     Write-Host "2147483648 (RemoteMailbox), 8589934592 (RemoteRoomMailbox), 17179869184 (RemoteEquipmentMailbox), 34359738368 (RemoteSharedMailbox)`r`n" -BackgroundColor White -ForegroundColor Black
-    Write-Host "Breakdown of msExchVersion via Active Directory of Remote Mailbox types has been output to Out Grid`r`n" -ForegroundColor Green
+    Write-Host "Breakdown of msExchVersion via Active Directory of Remote Mailbox types will be output shortly to Out Grid`r`n" -ForegroundColor Green
     $ADUserXML = Join-Path -Path $PoshPath -ChildPath 'RemoteMailbox_msExchVersion.xml'
     $ADParams = @{
         LDAPFilter    = '(|(msExchRecipientTypeDetails=8589934592)(msExchRecipientTypeDetails=2147483648)(msExchRecipientTypeDetails=17179869184)(msExchRecipientTypeDetails=34359738368))'
@@ -90,8 +90,7 @@ function Set-msExchVersion {
     Write-Host 'Choose which Remote Mailboxes to modify msExchVersion - Prior to modification, you will choose which version' -ForegroundColor Black -BackgroundColor White
     Write-Host 'To select use Ctrl/Shift + click (Individual) or Ctrl + A (All)' -ForegroundColor Black -BackgroundColor White
 
-    $Choice = Select-SetmsExchVersion -RemoteMailboxList $RemoteMailboxList -UserHash $UserHash
-
+    $Choice = Select-SetmsExchVersion -RemoteMailboxList $RemoteMailboxList -UserHash $UserHash |
     Out-GridView -OutputMode Multiple -Title 'Choose which Remote Mailboxes to modify msExchVersion'
     $ChoiceCSV = Join-Path -Path $PoshPath -ChildPath ('Before modify msExchVersion {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $Choice | Export-Csv $ChoiceCSV -NoTypeInformation -Encoding UTF8
