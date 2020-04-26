@@ -7,6 +7,7 @@ function Get-DecisionbyOGV {
     }
     $Decision = 'Yes, I want to continue', 'Quit' | Out-GridView @OGVDecision
     if ($Decision -ne 'Yes, I want to continue') {
-        return
+        Write-Host "Halting script as Quit was selected" -ForegroundColor DarkRed
+        continue
     }
 }
