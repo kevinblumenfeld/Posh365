@@ -27,8 +27,8 @@ function Set-msExchVersion {
         $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
     Import-Module ActiveDirectory -force
-    Write-Host 'Creating XML of all Active Directory Users with the following values in the attribute, msExchRecipientTypeDetails:' -ForegroundColor Gray
-    Write-Host '2147483648 (RemoteMailbox), 8589934592 (RemoteRoomMailbox), 17179869184 (RemoteEquipmentMailbox), 34359738368 (RemoteSharedMailbox)' -ForegroundColor Cyan
+    Write-Host 'Creating XML of all Active Directory Users with the following values in the attribute, msExchRecipientTypeDetails:' -ForegroundColor Green
+    Write-Host '2147483648 (RemoteMailbox), 8589934592 (RemoteRoomMailbox), 17179869184 (RemoteEquipmentMailbox), 34359738368 (RemoteSharedMailbox)' -BackgroundColor White -ForegroundColor Black
     $ADUserXML = Join-Path -Path $PoshPath -ChildPath 'RemoteMailbox_msExchVersion.xml'
     $ADParams = @{
         LDAPFilter    = '(|(msExchRecipientTypeDetails=8589934592)(msExchRecipientTypeDetails=2147483648)(msExchRecipientTypeDetails=17179869184)(msExchRecipientTypeDetails=34359738368))'
@@ -96,15 +96,28 @@ function Set-msExchVersion {
     $Choice | Export-Csv $ChoiceCSV -NoTypeInformation -Encoding UTF8
 
     if ($Choice) { Get-DecisionbyOGV } else { Write-Host 'Halting as nothing was selected' ; continue }
-    $VersionDecision = [PSCustomObject]@{
-        Exchange2007 = '4535486012416'
-        Exchange2010 = '44220983382016'
-        Exchange2013 = '88218628259840'
-        Exchange2016 = '1125899906842624'
-    } | Out-GridView -OutputMode Single -Title 'Choose the msExchVersion to apply the mailboxes you just selected'
+
+
+    $VersionDecision = @(
+        [PSCustomObject]@{
+            Version       = 'Exchange2007'
+            msExchVersion = '4535486012416'
+        }
+        [PSCustomObject]@{
+            Version       = 'Exchange2010'
+            msExchVersion = '44220983382016'
+        }
+        [PSCustomObject]@{
+            Version       = 'Exchange2013'
+            msExchVersion = '88218628259840'
+        }
+        [PSCustomObject]@{
+            Version       = 'Exchange2016'
+            msExchVersion = '1125899906842624'
+        }) | Out-GridView -OutputMode Single -Title 'Choose the msExchVersion to apply the mailboxes you just selected'
     if ($Choice) { Get-DecisionbyOGV } else { Write-Host 'Halting as nothing was selected' ; continue }
 
-    $Result = Invoke-SetmsExchVersion -Choice $Choice -Hash $RMHash -VersionDecision $VersionDecision
+    $Result = Invoke-SetmsExchVersion -Choice $Choice -Hash $RMHash -VersionDecision $VersionDecision.msExchVersion
 
     $Result | Out-GridView -Title ('Results of Disabling Email Address Policy  [ Count: {0} ]' -f $Result.Count)
     $ResultCSV = Join-Path -Path $PoshPath -ChildPath ('After modify msExchVersion {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
