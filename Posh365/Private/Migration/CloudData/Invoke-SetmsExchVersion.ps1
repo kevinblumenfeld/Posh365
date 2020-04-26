@@ -16,7 +16,7 @@ function Invoke-SetmsExchVersion {
     foreach ($item in $Choice) {
         $i++
         try {
-            Set-ADUser -Identity $Item.Guid -Replace @{ msExchVersion = $Hash[$item.Guid]['msExchVersion'] } -ErrorAction Stop
+            Set-ADUser -Identity $Item.Guid -Replace @{ msExchVersion = $VersionDecision } -ErrorAction Stop
             Write-Host ('[{0} of {1}] {2} Success modifying msExchVersion - PrimarySmtpAddress unchanged? ' -f $i, $Count, $item.DisplayName) -ForegroundColor Green -NoNewline
             $AfterSuccess = Get-ADUser -Identity $item.Guid -ErrorAction Stop
             $AfterSuccessRM = Get-RemoteMailbox -Identity $item.Guid -ErrorAction Stop
