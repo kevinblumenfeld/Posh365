@@ -13,15 +13,15 @@ function Get-RemoteMailboxHash {
     if ($Key -eq 'Guid') {
         foreach ($RM in $RemoteMailboxList) {
             $RMHash[$RM.Guid.ToString()] = @{
-                DisplayName                  = $RM.DisplayName
-                EmailAddressPolicyEnabled    = $RM.EmailAddressPolicyEnabled
-                OnPremisesOrganizationalUnit = $RM.OnPremisesOrganizationalUnit
-                Alias                        = $RM.Alias
-                PrimarySmtpAddress           = $RM.PrimarySmtpAddress
-                EmailCount                   = $RM.EmailAddresses.Count
-                AllEmailAddresses            = @($RM.EmailAddresses) -ne '' -join '|'
-                EmailAddresses               = @($RM.EmailAddresses) -match 'smtp:' -join '|'
-                EmailAddressesNotSmtp        = @($RM.EmailAddresses) -notmatch 'smtp:' -join '|'
+                DisplayName               = $RM.DisplayName
+                EmailAddressPolicyEnabled = $RM.EmailAddressPolicyEnabled
+                OrganizationalUnit        = $RM.OnPremisesOrganizationalUnit
+                Alias                     = $RM.Alias
+                PrimarySmtpAddress        = $RM.PrimarySmtpAddress
+                EmailCount                = $RM.EmailAddresses.Count
+                AllEmailAddresses         = @($RM.EmailAddresses) -ne '' -join '|'
+                EmailAddresses            = @($RM.EmailAddresses) -match 'smtp:' -join '|'
+                EmailAddressesNotSmtp     = @($RM.EmailAddresses) -notmatch 'smtp:' -join '|'
             }
         }
     }

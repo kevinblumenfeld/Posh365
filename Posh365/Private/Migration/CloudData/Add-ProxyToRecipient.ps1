@@ -5,7 +5,7 @@ function Add-ProxyToRecipient {
         $AddProxyList,
 
         [Parameter(Mandatory)]
-        [ValidateSet('RemoteMailbox','MailContact')]
+        [ValidateSet('RemoteMailbox', 'MailContact')]
         $Type
     )
     $ErrorActionPreference = 'Stop'

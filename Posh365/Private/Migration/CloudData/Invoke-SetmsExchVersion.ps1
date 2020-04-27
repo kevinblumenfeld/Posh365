@@ -40,7 +40,7 @@ function Invoke-SetmsExchVersion {
                 PrimarySmtpAddressUnchanged   = $PrimaryUnchanged
                 AllAddressesUnchanged         = $RMHash[$item.Guid]['AllEmailAddresses'] -eq (@($AfterSuccessRM.EmailAddresses) -ne '' -join '|')
                 DisplayName                   = $AfterSuccessAD.DisplayName
-                OnPremisesOrganizationalUnit  = $AfterSuccessRM.OnPremisesOrganizationalUnit
+                OrganizationalUnit            = $AfterSuccessRM.OnPremisesOrganizationalUnit
                 Alias                         = $AfterSuccessRM.Alias
                 CurrentPrimarySmtpAddress     = $AfterSuccessRM.PrimarySmtpAddress
                 PreviousPrimarySmtpAddress    = $RMHash[$item.Guid]['PrimarySmtpAddress']
@@ -66,7 +66,7 @@ function Invoke-SetmsExchVersion {
                 PrimarySmtpAddressUnchanged   = 'FAILED'
                 AllAddressesUnchanged         = 'FAILED'
                 DisplayName                   = $RMHash[$item.Guid]['DisplayName']
-                OnPremisesOrganizationalUnit  = 'FAILED'
+                OrganizationalUnit            = 'FAILED'
                 Alias                         = 'FAILED'
                 CurrentPrimarySmtpAddress     = 'FAILED'
                 PreviousPrimarySmtpAddress    = $RMHash[$item.Guid]['PrimarySmtpAddress']

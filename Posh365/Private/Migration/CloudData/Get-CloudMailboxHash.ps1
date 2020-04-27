@@ -7,8 +7,7 @@ function Get-CloudMailboxHash {
     $CloudSelect = @(
         'UserPrincipalName', 'Identity', 'DisplayName'
         'Name', 'SamAccountName', 'WindowsEmailAddress'
-        'PrimarySmtpAddress', 'OnPremisesOrganizationalUnit'
-        'ExchangeGuid', 'ArchiveGuid'
+        'PrimarySmtpAddress', 'ExchangeGuid', 'ArchiveGuid'
     )
 
     $CloudList = Get-Mailbox -ResultSize Unlimited | Select-Object $CloudSelect

@@ -22,11 +22,11 @@ function Sync-Guid {
     Connect-Exchange @PSBoundParameters -PromptConfirm -Server $Server
 
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
-    $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath 'RemoteMailboxSyncGuid.xml'
+    $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath ('RemoteMailboxSyncGuid_{0}.xml' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     Write-Host "Fetching Remote Mailboxes..." -ForegroundColor Cyan
 
     Get-RemoteMailbox -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
-    $RemoteMailboxList = Import-Clixml $RemoteMailboxXML | Sort-Object DisplayName, OnPremisesOrganizationalUnit
+    $RemoteMailboxList = Import-Clixml $RemoteMailboxXML | Sort-Object DisplayName, OrganizationalUnit
     $RMHash = Get-RemoteMailboxHash -Key UserPrincipalName -RemoteMailboxList $RemoteMailboxList
 
     Get-PSSession | Remove-PSSession
@@ -42,7 +42,7 @@ function Sync-Guid {
     $CompareObject = Invoke-CompareGuid -RMHash $RMHash -CloudHash $CloudHash
 
     $SourcePath = Join-Path -Path $PoshPath -ChildPath $InitialDomain
-    $SourceFile = Join-Path -Path $SourcePath -ChildPath ('Guid_Compare_{0}.csv' -f $InitialDomain)
+    $SourceFile = Join-Path -Path $SourcePath -ChildPath ('Guid_Compare_{0}_{1}.csv' -f $InitialDomain, [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
 
     if (-not ($null = Test-Path $SourcePath)) {
         $ItemSplat = @{
@@ -57,12 +57,16 @@ function Sync-Guid {
     $CompareObject | Out-GridView -Title "Results of Guid Comparison to Tenant: $InitialDomain"
     $CompareObject | Export-Csv $SourceFile -NoTypeInformation
 
-    $AddGuidList = $CompareObject | Where-Object { -not $_.ExchangeGuidMatch -or -not $_.ArchiveGuidMatch }
+    $AddGuidListTrimmed = $CompareObject | Where-Object { -not $_.ExchangeGuidMatch -or -not $_.ArchiveGuidMatch } | Sort-Object DisplayName, OrganizationalUnit
+    $AddGuidListNumbered = Invoke-CompareGuid -Numbered $AddGuidListTrimmed
+    $AddGuidList = $AddGuidListNumbered | Out-GridView -OutputMode Multiple -Title 'Please choose which Remote Mailbox to modify to match Exchange Online'
     if ($AddGuidList) {
-        Connect-Exchange @PSBoundParameters -PromptConfirm -Server $Server
+        Connect-Exchange @PSBoundParameters -Server $Server
+
         $GuidResult = Set-ExchangeGuid -AddGuidList $AddGuidList
+
         $GuidResult | Out-GridView -Title "Results of Adding Guid to Tenant: $InitialDomain"
-        $ResultFile = Join-Path -Path $SourcePath -ChildPath ('Guid_Result_{0}.csv' -f $InitialDomain)
+        $ResultFile = Join-Path -Path $SourcePath -ChildPath ('Guid_Result_{0}_{1}.csv' -f $InitialDomain, [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
         $GuidResult | Export-Csv $ResultFile -NoTypeInformation
     }
     else {
