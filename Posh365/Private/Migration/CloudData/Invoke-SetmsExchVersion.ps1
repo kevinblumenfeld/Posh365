@@ -20,25 +20,25 @@ function Invoke-SetmsExchVersion {
         $i++
         try {
             Set-ADUser -Identity $Item.Guid -Replace @{ msExchVersion = $VersionDecision } -ErrorAction Stop
-            Write-Host ('[{0} of {1}] {2} Success modifying msExchVersion - PrimarySmtpAddress unchanged? ' -f $i, $Count, $item.DisplayName) -ForegroundColor Green -NoNewline
+            Write-Host ('[{0} of {1}] {2} Success modifying msExchVersion -  All emails unchanged? ' -f $i, $Count, $item.DisplayName) -ForegroundColor Green -NoNewline
             $AfterSuccessAD = Get-ADUser -Identity $item.Guid -Properties DisplayName, msExchVersion -ErrorAction Stop
             $AfterSuccessRM = Get-RemoteMailbox -Identity $item.Guid -ErrorAction Stop | Select-Object *
-            $PrimaryUnchanged = $RMHash[$item.Guid]['PrimarySmtpAddress'] -eq $AfterSuccessRM.PrimarySmtpAddress
-            if ($PrimaryUnchanged) {
-                Write-Host $PrimaryUnchanged -ForegroundColor White -BackgroundColor DarkMagenta
+
+            $AllAddressesUnchanged = $RMHash[$item.Guid]['AllEmailAddresses'] -eq (@($AfterSuccessRM.EmailAddresses) -ne '' -join '|')
+            if ($AllAddressesUnchanged) {
+                Write-Host $AllAddressesUnchanged -ForegroundColor White -BackgroundColor DarkMagenta
             }
             else {
-                Write-Host $PrimaryUnchanged -ForegroundColor Black -BackgroundColor Yellow
+                Write-Host $AllAddressesUnchanged -ForegroundColor Black -BackgroundColor Yellow
             }
-
             [PSCustomObject]@{
                 Count                         = '[{0} of {1}]' -f $i, $Count
                 Result                        = 'SUCCESS'
                 Action                        = "SETMSEXCHVERSION ($VersionDecision)"
                 CurrentmsExchVersion          = $AfterSuccessAD.msExchVersion.ToString()
-                PreviousmsExchVersion         = $UserHash[$item.Guid]['msExchVersion'].ToString()
-                PrimarySmtpAddressUnchanged   = $PrimaryUnchanged
-                AllAddressesUnchanged         = $RMHash[$item.Guid]['AllEmailAddresses'] -eq (@($AfterSuccessRM.EmailAddresses) -ne '' -join '|')
+                PreviousmsExchVersion         = if ($Ver = $UserHash[$item.Guid]['msExchVersion']) { $Ver.ToString() } else { $null }
+                PrimarySmtpAddressUnchanged   = $RMHash[$item.Guid]['PrimarySmtpAddress'] -eq $AfterSuccessRM.PrimarySmtpAddress
+                AllAddressesUnchanged         = $AllAddressesUnchanged
                 DisplayName                   = $AfterSuccessAD.DisplayName
                 OrganizationalUnit            = $AfterSuccessRM.OnPremisesOrganizationalUnit
                 Alias                         = $AfterSuccessRM.Alias
@@ -62,7 +62,7 @@ function Invoke-SetmsExchVersion {
                 Result                        = 'FAILED'
                 Action                        = "SETMSEXCHVERSION ($VersionDecision)"
                 CurrentmsExchVersion          = 'FAILED'
-                PreviousmsExchVersion         = $UserHash[$item.Guid]['msExchVersion'].ToString()
+                PreviousmsExchVersion         = if ($Ver = $UserHash[$item.Guid]['msExchVersion']) { $Ver.ToString() } else { $null }
                 PrimarySmtpAddressUnchanged   = 'FAILED'
                 AllAddressesUnchanged         = 'FAILED'
                 DisplayName                   = $RMHash[$item.Guid]['DisplayName']

@@ -4,6 +4,10 @@ function Set-msExchVersion {
     param (
         [Parameter()]
         [switch]
+        $ShowVersionCountOnly,
+
+        [Parameter()]
+        [switch]
         $SkipConnection,
 
         [Parameter()]
@@ -68,7 +72,7 @@ function Set-msExchVersion {
             })
     }
     $ShowVersion | Out-GridView -Title 'Current breakdown of msExchVersion found in Remote Mailboxes'
-
+    if ($ShowVersionCountOnly) { continue }
     if (-not $SkipConnection) {
         Get-PSSession | Remove-PSSession
         Connect-Exchange @PSBoundParameters -PromptConfirm
