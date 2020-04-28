@@ -21,7 +21,7 @@ function Set-ExchangeGuid {
     }
     if ($AddGuidList) { Get-DecisionbyOGV } else { Write-Host 'Halting script. No selected was made.' ; continue }
 
-    $Count = $AddGuidList.Count
+    $Count = @($AddGuidList).Count
     $iUP = 0
     foreach ($AddGuid in $AddGuidList) {
         $Stamped = $null
