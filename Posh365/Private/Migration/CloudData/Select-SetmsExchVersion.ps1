@@ -12,8 +12,8 @@ function Select-SetmsExchVersion {
     foreach ($RemoteMailbox in $RemoteMailboxList) {
         $i++
         [PSCustomObject]@{
-            Count                     = '[{0} of {1}]' -f $i, $Count
-            msExchVersion             = if ($Ver = $UserHash[$RemoteMailbox.Guid.ToString()].msExchVersion) {$Ver.ToString()} else {$null}
+            Num                       = '[{0} of {1}]' -f $i, $Count
+            msExchVersion             = if ($Ver = $UserHash[$RemoteMailbox.Guid.ToString()].msExchVersion) { $Ver.ToString() } else { $null }
             DisplayName               = $RemoteMailbox.DisplayName
             EmailAddressPolicyEnabled = $RemoteMailbox.EmailAddressPolicyEnabled
             OrganizationalUnit        = $RemoteMailbox.OnPremisesOrganizationalUnit

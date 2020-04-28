@@ -49,7 +49,7 @@ function Set-ExchangeGuid {
                 Write-Host $AllAddressesUnchanged -ForegroundColor Black -BackgroundColor Yellow
             }
             [PSCustomObject]@{
-                Count                         = '[{0} of {1}]' -f $iUP, $Count
+                Num                           = '[{0} of {1}]' -f $iUP, $Count
                 Displayname                   = $AddGuid.DisplayName
                 OrganizationalUnit            = $AddGuid.OrganizationalUnit
                 PrimarySmtpAddressUnchanged   = $RMHash[$AddGuid.UserPrincipalName]['PrimarySmtpAddress'] -eq $Stamped.PrimarySmtpAddress
@@ -75,7 +75,7 @@ function Set-ExchangeGuid {
         catch {
             Write-Host "[$iUP of $Count] Failed Set Guid $($AddGuid.DisplayName). Error: $($_.Exception.Message)" -ForegroundColor Red
             [PSCustomObject]@{
-                Count                         = '[{0} of {1}]' -f $iUP, $Count
+                Num                           = '[{0} of {1}]' -f $iUP, $Count
                 Displayname                   = $AddGuid.DisplayName
                 OrganizationalUnit            = $AddGuid.OrganizationalUnit
                 PrimarySmtpAddressUnchanged   = 'FAILED'

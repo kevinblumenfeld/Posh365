@@ -11,7 +11,7 @@ function Invoke-AddX500FromContact {
     foreach ($Item in $AllFound) {
         $i++
         [PSCustomObject]@{
-            Count              = '[{0} of {1}]' -f $i, $Count
+            Num                = '[{0} of {1}]' -f $i, $Count
             TargetDisplayName  = $Item.TargetDisplayName
             SourceDisplayName  = $Item.SourceDisplayName
             TargetType         = $Item.TargetType

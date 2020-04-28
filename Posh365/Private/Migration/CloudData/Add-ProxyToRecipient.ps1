@@ -15,7 +15,7 @@ function Add-ProxyToRecipient {
             try {
                 Set-RemoteMailbox -Identity $Guid -EmailAddresses @{add = $Add.LegacyExchangeDN }
                 [PSCustomObject]@{
-                    Count              = $Add.Count
+                    Num                = $Add.Count
                     Result             = 'SUCCESS'
                     TargetDisplayName  = $Add.TargetDisplayName
                     PrimarySmtpAddress = $Add.PrimarySmtpAddress
@@ -29,7 +29,7 @@ function Add-ProxyToRecipient {
                     foreach ($X in ($Add.X500).split('|')) {
                         Set-RemoteMailbox -Identity $Guid -EmailAddresses @{add = $X }
                         [PSCustomObject]@{
-                            Count              = $Add.Count
+                            Num                = $Add.Count
                             Result             = 'SUCCESS'
                             TargetDisplayName  = $Add.TargetDisplayName
                             PrimarySmtpAddress = $Add.PrimarySmtpAddress
@@ -44,7 +44,7 @@ function Add-ProxyToRecipient {
             }
             catch {
                 [PSCustomObject]@{
-                    Count              = $Add.Count
+                    Num                = $Add.Count
                     Result             = 'FAILED'
                     TargetDisplayName  = $Add.TargetDisplayName
                     PrimarySmtpAddress = $Add.PrimarySmtpAddress
@@ -63,7 +63,7 @@ function Add-ProxyToRecipient {
             try {
                 Set-MailContact -Identity $Guid -EmailAddresses @{add = $Add.LegacyExchangeDN }
                 [PSCustomObject]@{
-                    Count              = $Add.Count
+                    Num                = $Add.Count
                     Result             = 'SUCCESS'
                     TargetDisplayName  = $Add.TargetDisplayName
                     PrimarySmtpAddress = $Add.PrimarySmtpAddress
@@ -77,7 +77,7 @@ function Add-ProxyToRecipient {
                     foreach ($X in ($Add.X500).split('|')) {
                         Set-MailContact -Identity $Guid -EmailAddresses @{add = $X }
                         [PSCustomObject]@{
-                            Count              = $Add.Count
+                            Num                = $Add.Count
                             Result             = 'SUCCESS'
                             TargetDisplayName  = $Add.TargetDisplayName
                             PrimarySmtpAddress = $Add.PrimarySmtpAddress
@@ -92,7 +92,7 @@ function Add-ProxyToRecipient {
             }
             catch {
                 [PSCustomObject]@{
-                    Count              = $Add.Count
+                    Num                = $Add.Count
                     Result             = 'FAILED'
                     TargetDisplayName  = $Add.TargetDisplayName
                     PrimarySmtpAddress = $Add.PrimarySmtpAddress

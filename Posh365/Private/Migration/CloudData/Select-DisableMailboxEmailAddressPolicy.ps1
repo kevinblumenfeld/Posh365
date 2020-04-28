@@ -9,7 +9,7 @@ function Select-DisableMailboxEmailAddressPolicy {
     foreach ($RemoteMailbox in $RemoteMailboxList) {
         $i++
         [PSCustomObject]@{
-            Count                     = '[{0} of {1}]' -f $i, $Count
+            Num                       = '[{0} of {1}]' -f $i, $Count
             DisplayName               = $RemoteMailbox.DisplayName
             EmailAddressPolicyEnabled = $RemoteMailbox.EmailAddressPolicyEnabled
             OrganizationalUnit        = $RemoteMailbox.OnPremisesOrganizationalUnit

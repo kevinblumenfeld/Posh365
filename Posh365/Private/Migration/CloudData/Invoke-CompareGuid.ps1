@@ -19,7 +19,7 @@ function Invoke-CompareGuid {
         foreach ($Num in $Numbered) {
             $i++
             [PSCustomObject]@{
-                Count              = '[{0} of {1}]' -f $i, $Count
+                Num                = '[{0} of {1}]' -f $i, $Count
                 DisplayName        = $Num.DisplayName
                 OrganizationalUnit = $Num.OrganizationalUnit
                 ExchangeGuidMatch  = $Num.ExchangeGuidMatch

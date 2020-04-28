@@ -33,7 +33,7 @@ function Invoke-SetmsExchVersion {
                 Write-Host $AllAddressesUnchanged -ForegroundColor Black -BackgroundColor Yellow
             }
             [PSCustomObject]@{
-                Count                         = '[{0} of {1}]' -f $i, $Count
+                Num                           = '[{0} of {1}]' -f $i, $Count
                 Result                        = 'SUCCESS'
                 Action                        = "SETMSEXCHVERSION ($VersionDecision)"
                 CurrentmsExchVersion          = $AfterSuccessAD.msExchVersion.ToString()
@@ -59,7 +59,7 @@ function Invoke-SetmsExchVersion {
         catch {
             Write-Host ('[{0} of {1}] {2} Failed modifying msExchVersion Error: {3}' -f $i, $Count, $item.DisplayName, $_.Exception.Message) -ForegroundColor Red
             [PSCustomObject]@{
-                Count                         = '[{0} of {1}]' -f $i, $Count
+                Num                           = '[{0} of {1}]' -f $i, $Count
                 Result                        = 'FAILED'
                 Action                        = "SETMSEXCHVERSION ($VersionDecision)"
                 CurrentmsExchVersion          = 'FAILED'
