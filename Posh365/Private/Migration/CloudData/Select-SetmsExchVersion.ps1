@@ -7,7 +7,7 @@ function Select-SetmsExchVersion {
         [Parameter()]
         $UserHash
     )
-    $Count = $RemoteMailboxList.Count
+    $Count = @($RemoteMailboxList).Count
     $i = 0
     foreach ($RemoteMailbox in $RemoteMailboxList) {
         $i++

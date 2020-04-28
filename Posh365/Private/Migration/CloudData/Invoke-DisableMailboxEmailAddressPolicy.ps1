@@ -8,7 +8,7 @@ function Invoke-DisableMailboxEmailAddressPolicy {
         $Hash
     )
     $i = 0
-    $Count = $Choice.Count
+    $Count = @($Choice).Count
     foreach ($item in $Choice) {
         $AfterSuccess = $null
         $i++

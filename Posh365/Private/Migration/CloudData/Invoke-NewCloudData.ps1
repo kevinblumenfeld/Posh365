@@ -8,7 +8,7 @@ function Invoke-NewCloudData {
     $ErrorActionPreference = 'stop'
 
     $ConvertedList = $ConvertedData | Where-Object { $_.Type -eq 'Recipient' }
-    $Count = $ConvertedData.Count
+    $Count = @($ConvertedData).Count
     $iUP = 0
     foreach ($Converted in $ConvertedList) {
         $iUP++

@@ -4,7 +4,7 @@ function Select-DisableMailboxEmailAddressPolicy {
         [Parameter()]
         $RemoteMailboxList
     )
-    $Count = $RemoteMailboxList.Count
+    $Count = @($RemoteMailboxList).Count
     $i = 0
     foreach ($RemoteMailbox in $RemoteMailboxList) {
         $i++

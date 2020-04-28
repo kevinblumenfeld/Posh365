@@ -15,7 +15,7 @@ function Invoke-CompareGuid {
 
     if ($Numbered) {
         $i = 0
-        $Count = $Numbered.Count
+        $Count = @($Numbered).Count
         foreach ($Num in $Numbered) {
             $i++
             [PSCustomObject]@{

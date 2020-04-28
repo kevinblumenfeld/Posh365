@@ -15,7 +15,7 @@ function Invoke-SetmsExchVersion {
         $VersionDecision
     )
     $i = 0
-    $Count = $Choice.Count
+    $Count = @($Choice).Count
     foreach ($item in $Choice) {
         $AfterSuccessAD, $AfterSuccessRM = $null
         $i++
