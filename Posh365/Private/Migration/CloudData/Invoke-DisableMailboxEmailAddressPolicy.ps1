@@ -10,6 +10,7 @@ function Invoke-DisableMailboxEmailAddressPolicy {
     $i = 0
     $Count = $Choice.Count
     foreach ($item in $Choice) {
+        $AfterSuccess = $null
         $i++
         try {
             Set-RemoteMailbox -Identity $Item.Guid -EmailAddressPolicyEnabled:$false -ErrorAction Stop

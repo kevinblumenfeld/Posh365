@@ -16,6 +16,7 @@ function Get-SourceContactHash {
         if ($RestartConsole) {
             return
         }
+        $Accepted = $null
         Get-PSSession | Remove-PSSession
         Connect-ExchangeOnline
         $Accepted = Get-AcceptedDomain
@@ -24,7 +25,6 @@ function Get-SourceContactHash {
         $Question = 'Is this the correct Exchange Online Tenant {0}?' -f ($Accepted.where{ $_.Default }).DomainName
         $Options = [ChoiceDescription[]]($Yes, $No)
         $YN = $host.ui.PromptForChoice($Title, $Question, $Options, 0)
-
         switch ($YN) {
             0 { }
             1 { return }
@@ -34,7 +34,6 @@ function Get-SourceContactHash {
     else {
         Write-Host "Found the XML created earlier here: ($ContactXML) . . . " -ForegroundColor Green
     }
-
     Write-Host "Using the XML to create a hashtable . . . " -ForegroundColor White
     $ContactList = Import-Clixml $ContactXML
     $Hash = @{ }
@@ -50,5 +49,4 @@ function Get-SourceContactHash {
     $Hash | Export-Clixml $OutputXml
     Write-Host "Hash has been exported as an XML file here: " -ForegroundColor Cyan -NoNewline
     Write-Host "$OutputXml" -ForegroundColor Green
-
 }

@@ -17,6 +17,7 @@ function Invoke-SetmsExchVersion {
     $i = 0
     $Count = $Choice.Count
     foreach ($item in $Choice) {
+        $AfterSuccessAD, $AfterSuccessRM = $null
         $i++
         try {
             Set-ADUser -Identity $Item.Guid -Replace @{ msExchVersion = $VersionDecision } -ErrorAction Stop

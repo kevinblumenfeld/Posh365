@@ -110,7 +110,7 @@ function Set-msExchVersion {
         [PSCustomObject]@{
             Version       = 'Exchange2016'
             msExchVersion = '1125899906842624'
-        }) | Out-GridView -OutputMode Single -Title 'Choose the msExchVersion to apply the mailboxes you just selected'
+        }) | Out-GridView -OutputMode Single -Title 'Choose the msExchVersion to apply to the mailboxes you just selected'
     if ($Choice) { Get-DecisionbyOGV } else { Write-Host 'Halting as nothing was selected' ; continue }
 
     $Result = Invoke-SetmsExchVersion -Choice $Choice -RMHash $RMHash -UserHash $UserHash -VersionDecision $VersionDecision.msExchVersion
