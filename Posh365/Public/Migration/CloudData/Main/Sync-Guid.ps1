@@ -3,10 +3,6 @@ function Sync-Guid {
     param (
         [Parameter()]
         [switch]
-        $DeleteExchangeCreds,
-
-        [Parameter()]
-        [switch]
         $DontViewEntireForest
     )
     $Script:RestartConsole = $null
@@ -28,7 +24,7 @@ function Sync-Guid {
     Get-RemoteMailbox -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
     $RemoteMailboxList = Import-Clixml $RemoteMailboxXML | Sort-Object DisplayName, OrganizationalUnit
     $RMHash = Get-RemoteMailboxHash -Key UserPrincipalName -RemoteMailboxList $RemoteMailboxList
-
+    
     Get-PSSession | Remove-PSSession
 
     # Cloud ( Mailbox )
@@ -63,7 +59,7 @@ function Sync-Guid {
     if ($AddGuidList) {
         Connect-Exchange @PSBoundParameters -Server $Server
 
-        $GuidResult = Set-ExchangeGuid -AddGuidList $AddGuidList
+        $GuidResult = Set-ExchangeGuid -AddGuidList $AddGuidList -RMHash $RMHash
 
         $GuidResult | Out-GridView -Title "Results of Adding Guid to Tenant: $InitialDomain"
         $ResultFile = Join-Path -Path $SourcePath -ChildPath ('Guid_Result_{0}_{1}.csv' -f $InitialDomain, [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))

@@ -15,13 +15,6 @@ function Set-msExchVersion {
         $ReuseADXML,
 
         [Parameter()]
-        $OnPremExchangeServer,
-
-        [Parameter()]
-        [switch]
-        $DeleteExchangeCreds,
-
-        [Parameter()]
         [switch]
         $DontViewEntireForest
     )

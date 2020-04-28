@@ -44,7 +44,14 @@ function Connect-Exchange {
 
     $CredFile = Join-Path $Env:USERPROFILE ConnectExchange.xml
     if ($DeleteExchangeCreds) {
-        Remove-Item $CredFile -Force
+        if (Test-Path $CredFile) {
+            Write-Host "Deleting encrypted credential file: $Credfile"
+            Remove-Item $CredFile -Force -ErrorAction SilentlyContinue
+        }
+        else {
+            Write-Host "No Credential file found to be deleted: Not found=> $CredFile"
+        }
+        
         return
     }
     if ($PromptConfirm) {

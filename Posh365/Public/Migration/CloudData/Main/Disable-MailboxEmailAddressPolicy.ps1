@@ -31,13 +31,6 @@ function Disable-MailboxEmailAddressPolicy {
         $SkipConnection,
 
         [Parameter()]
-        $OnPremExchangeServer,
-
-        [Parameter()]
-        [switch]
-        $DeleteExchangeCreds,
-
-        [Parameter()]
         [switch]
         $DontViewEntireForest
     )
