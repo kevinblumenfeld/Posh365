@@ -2,53 +2,23 @@ using namespace System.Management.Automation.Host
 function Add-X500FromContactToContact {
     [CmdletBinding()]
     param (
-        [Parameter()]
-        $OnPremExchangeServer,
-
-        [Parameter()]
-        [switch]
-        $DeleteExchangeCreds,
 
         [Parameter()]
         [switch]
         $DontViewEntireForest
     )
 
-    if ($DeleteExchangeCreds) {
-        Connect-Exchange -DeleteExchangeCreds:$true
-        continue
-    }
-    while (-not $OnPremExchangeServer ) {
-        Write-Host "Enter the name of the Exchange Server. Example: ExServer01.domain.com" -ForegroundColor Cyan
-        $OnPremExchangeServer = Read-Host "Exchange Server Name"
-    }
-    while (-not $ConfirmExServer) {
-        $Yes = [ChoiceDescription]::new('&Yes', 'ExServer: Yes')
-        $No = [ChoiceDescription]::new('&No', 'ExServer: No')
-        $Options = [ChoiceDescription[]]($Yes, $No)
-        $Title = 'Specified Exchange Server: {0}' -f $OnPremExchangeServer
-        $Question = 'Is this correct?'
-        $YN = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
-        switch ($YN) {
-            0 { $ConfirmExServer = $true }
-            1 {
-                Write-Host "`r`nEnter the name of the Exchange Server. Example: ExServer01.domain.com" -ForegroundColor Cyan
-                $OnPremExchangeServer = Read-Host "Exchange Server Name"
-            }
-        }
-    }
     Get-PSSession | Remove-PSSession
-    Write-Host "`r`nConnecting to Exchange On-Premises: $OnPremExchangeServer`r`n" -ForegroundColor Cyan
-    Connect-Exchange -Server $OnPremExchangeServer -DontViewEntireForest:$DontViewEntireForest
+    Connect-Exchange -DontViewEntireForest:$DontViewEntireForest -PromptConfirm
 
     Get-DestinationRecipientHash -Type MailContact
 
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
 
-     if (-not (Test-Path $PoshPath)) {
+    if (-not (Test-Path $PoshPath)) {
         $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
-    $TargetHash = Join-Path -Path $PoshPath -ChildPath 'TargetHash.xml'
+    $TargetHash = Join-Path -Path $PoshPath -ChildPath 'TargetContactHash.xml'
     $SourceHash = Join-Path -Path $PoshPath -ChildPath 'SourceContactHash.xml'
 
     if (-not (Test-Path $TargetHash) -or -not (Test-Path $SourceHash)) {

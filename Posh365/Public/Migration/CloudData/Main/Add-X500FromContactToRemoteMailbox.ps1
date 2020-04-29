@@ -4,16 +4,11 @@ function Add-X500FromContactToRemoteMailbox {
     param (
         [Parameter()]
         [switch]
-        $SkipConnection,
-
-        [Parameter()]
-        [switch]
         $DontViewEntireForest
     )
-    if (-not $SkipConnection) {
-        Get-PSSession | Remove-PSSession
-        Connect-Exchange -DontViewEntireForest:$DontViewEntireForest -PromptConfirm
-    }
+
+    Get-PSSession | Remove-PSSession
+    Connect-Exchange -DontViewEntireForest:$DontViewEntireForest -PromptConfirm
 
     Get-DestinationRecipientHash -Type RemoteMailbox
 
