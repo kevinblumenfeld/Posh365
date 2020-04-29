@@ -22,7 +22,7 @@ function Add-X500FromContactToRemoteMailbox {
         $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
     $TargetHash = Join-Path -Path $PoshPath -ChildPath 'TargetHash.xml'
-    $SourceHash = Join-Path -Path $PoshPath -ChildPath 'SourceHash.xml'
+    $SourceHash = Join-Path -Path $PoshPath -ChildPath 'SourceContactHash.xml'
 
     if (-not (Test-Path $TargetHash) -or -not (Test-Path $SourceHash)) {
         Write-Host "Missing one or both files" -ForegroundColor Red
