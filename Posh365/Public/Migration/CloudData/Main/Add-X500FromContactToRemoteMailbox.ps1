@@ -21,7 +21,7 @@ function Add-X500FromContactToRemoteMailbox {
     if (-not (Test-Path $PoshPath)) {
         $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
-    $TargetHash = Join-Path -Path $PoshPath -ChildPath 'TargetHash.xml'
+    $TargetHash = Join-Path -Path $PoshPath -ChildPath 'TargetRemoteMailboxHash.xml'
     $SourceHash = Join-Path -Path $PoshPath -ChildPath 'SourceContactHash.xml'
 
     if (-not (Test-Path $TargetHash) -or -not (Test-Path $SourceHash)) {

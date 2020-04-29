@@ -15,8 +15,8 @@ function Get-DestinationRecipientHash {
         $HashFile = 'TargetRemoteMailboxHash.xml'
     }
     else {
-        $File = 'TargetMailContact.xml'
-        $HashFile = 'TargetMailContactHash.xml'
+        $File = 'TargetContact.xml'
+        $HashFile = 'TargetContactHash.xml'
     }
     $RemoteXML = Join-Path -Path $PoshPath -ChildPath $File
     if (-not (Test-Path $RemoteXML)) {
