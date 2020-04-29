@@ -1,17 +1,15 @@
 function Get-DestinationRecipientHash {
     [CmdletBinding()]
     param (
-    [Parameter(Mandatory)]
-    [ValidateSet('RemoteMailbox','MailContact')]
-    $Type
+        [Parameter(Mandatory)]
+        [ValidateSet('RemoteMailbox', 'MailContact')]
+        $Type
     )
 
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
-     if (-not (Test-Path $PoshPath)) {
+    if (-not (Test-Path $PoshPath)) {
         $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
-
-
     if ($Type -eq 'RemoteMailbox') {
         $File = 'TargetRemoteMailbox.xml'
         $HashFile = 'TargetRemoteMailboxHash.xml'
@@ -23,10 +21,8 @@ function Get-DestinationRecipientHash {
     $RemoteXML = Join-Path -Path $PoshPath -ChildPath $File
     if (-not (Test-Path $RemoteXML)) {
         Write-Host "XML ($RemoteXML) needed was not found.  Creating now . . . " -ForegroundColor White
-
-            Get-Recipient -ResultSize Unlimited -RecipientTypeDetails RemoteUserMailbox, RemoteRoomMailbox, RemoteEquipmentMailbox, RemoteSharedMailbox |
-
-        Select-Object * | Export-Clixml -Path $RemoteXML
+        $Recip = @('RemoteUserMailbox', 'RemoteRoomMailbox', 'RemoteEquipmentMailbox', 'RemoteSharedMailbox')
+        Get-Recipient -ResultSize Unlimited -RecipientTypeDetails $Recip | Select-Object * | Export-Clixml -Path $RemoteXML
     }
     else {
         Write-Host "Found the XML created earlier: ($RemoteXML) . . . " -ForegroundColor Green

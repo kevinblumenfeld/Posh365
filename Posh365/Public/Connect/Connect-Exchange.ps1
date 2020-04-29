@@ -51,7 +51,6 @@ function Connect-Exchange {
         else {
             Write-Host "No Credential file found to be deleted: Not found=> $CredFile"
         }
-        
         return
     }
     if ($PromptConfirm) {

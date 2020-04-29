@@ -5,17 +5,18 @@ function Get-SourceContactHash {
 
     )
 
-    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath 'Posh365' )
-    $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
+    $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
+    if (-not (Test-Path $PoshPath)) {
+        $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
+    }
+
     $ContactXML = Join-Path -Path $PoshPath -ChildPath 'SourceContact.xml'
 
     if (-not (Test-Path $ContactXML)) {
         Write-Host "XML ($ContactXML) needed was not found.  Connecting then creating xml now . . . " -ForegroundColor White
         $Script:RestartConsole = $null
         Connect-CloudModuleImport -EXO2
-        if ($RestartConsole) {
-            return
-        }
+        if ($RestartConsole) { return }
         $Accepted = $null
         Get-PSSession | Remove-PSSession
         Connect-ExchangeOnline
