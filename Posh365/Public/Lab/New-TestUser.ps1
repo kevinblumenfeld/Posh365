@@ -13,53 +13,53 @@ function New-TestUser {
 
         [Parameter()]
         [switch]
-        $SkipMailContact,
+        $MailContact,
 
         [Parameter()]
         [switch]
-        $SkipAzUser,
+        $AzUser,
 
         [Parameter()]
         [switch]
-        $SkipCloudOnlyMailbox,
+        $CloudOnlyMailbox,
 
         [Parameter()]
         [switch]
-        $SkipRemoteMailbox,
+        $RemoteMailbox,
 
         [Parameter()]
         [switch]
-        $SkipMailUser,
+        $MailUser,
 
         [Parameter()]
         $Prefix = 'Test',
 
         [Parameter()]
-        $Domain
+        $Domain,
+
+        [Parameter()]
+        $PasswordLength = 10
     )
 
-    if ($Domain) {
-        $Dom = $Domain
-    }
-    else {
-        $Dom = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
-    }
-    $GeneratedPW = [System.Web.Security.Membership]::GeneratePassword(10, 3)
+    if ($Domain) { $Dom = $Domain }
+    else { $Dom = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName }
+
+    $GeneratedPW = [System.Web.Security.Membership]::GeneratePassword($PasswordLength, 3)
     $Pass = ConvertTo-SecureString -String $GeneratedPW -AsPlainText:$true -Force
     $LicenseList = [System.Collections.Generic.List[string]]::New()
     $Total = $Start + $Count
     foreach ($i in ($Start..($Total))) {
-        if (-not $SkipMailContact) {
+        if (MailContact) {
             $ContactParams = @{
                 ExternalEmailAddress = '{0}{1:d3}@{2}' -f $prefix, $i, $Dom
                 Name                 = '{0}{1:d3}' -f $prefix, $i
                 DisplayName          = '{0}{1:d3}' -f $prefix, $i
                 Alias                = '{0}{1:d3}' -f $prefix, $i
             }
-            $MC = New-MailContact @ContactParams
-            Write-Host "[$i of $Total] MailContact :`t$($MC.DisplayName)" -ForegroundColor Cyan
+            $NewMC = New-MailContact @ContactParams
+            Write-Host "[$i of $Total] MailContact :`t$($NewMC.DisplayName)" -ForegroundColor Cyan
         }
-        if (-not $SkipMailUser) {
+        if ($MailUser) {
             $MeuParams = @{
                 PrimarySmtpAddress        = '{0}{1:d3}@{2}' -f $prefix, $i, $Dom
                 Name                      = '{0}{1:d3}' -f $prefix, $i
@@ -68,58 +68,45 @@ function New-TestUser {
                 Password                  = $pass
                 ExternalEmailAddress      = 'kevin@thenext.net'
             }
-            $meu = New-MailUser @MeuParams
-            Write-Host "[$i of $Total] MailUser :`t$($Meu.DisplayName)" -ForegroundColor Green
+            $NewMEU = New-MailUser @MeuParams
+            Write-Host "[$i of $Total] MailUser :`t$($NewMEU.DisplayName)" -ForegroundColor Green
         }
 
-        if (-not $SkipAzUser) {
+        if ($AzUser) {
             $PasswordProfile = [Microsoft.Open.AzureAD.Model.PasswordProfile]::new()
             $PasswordProfile.Password = $pass
             $AzUserParams = @{
-                DisplayName       = '{0}Az{1:d3}' -f $prefix, $i
-                UserPrincipalName = '{0}Az{1:d3}@{2}' -f $prefix, $i, $Dom
-                MailNickName      = '{0}Az{1:d3}' -f $prefix, $i
+                DisplayName       = '{0}{1:d3}' -f $prefix, $i
+                UserPrincipalName = '{0}{1:d3}@{2}' -f $prefix, $i, $Dom
+                MailNickName      = '{0}{1:d3}' -f $prefix, $i
                 PasswordProfile   = $PasswordProfile
                 AccountEnabled    = $true
             }
-            $AzUser = New-AzureADUser @AzUserParams
-            Write-Host "[$i of $Total] AzureUser:`t$($AzUser.DisplayName)" -ForegroundColor DarkCyan
+            $NewAz = New-AzureADUser @AzUserParams
+            Write-Host "[$i of $Total] AzureUser:`t$($NewAz.DisplayName)" -ForegroundColor DarkCyan
         }
-        if (-not $SkipCloudOnlyMailbox) {
-            $PasswordProfile = [Microsoft.Open.AzureAD.Model.PasswordProfile]::new()
-            $PasswordProfile.Password = $pass
-            $AzUserParams = @{
-                DisplayName       = '{0}Mailbox{1:d3}' -f $prefix, $i
-                UserPrincipalName = '{0}Mailbox{1:d3}@{2}' -f $prefix, $i, $Dom
-                MailNickName      = '{0}Mailbox{1:d3}' -f $prefix, $i
-                PasswordProfile   = $PasswordProfile
-                AccountEnabled    = $true
-            }
-            $AzUser = New-AzureADUser @AzUserParams
-            $LicenseList.Add($AzUser.UserPrincipalName)
-            Write-Host "[$i of $Total] AzureUser:`t$($AzUser.DisplayName)" -ForegroundColor DarkCyan
-        }
-        if (-not $SkipRemoteMailbox) {
+
+        if ($RemoteMailbox) {
             $ParamNew = @{
                 OnPremisesOrganizationalUnit = $OU
-                DisplayName                  = '{0}RM{1:d3}' -f $prefix, $i
-                Name                         = '{0}RM{1:d3}' -f $prefix, $i
-                UserPrincipalName            = '{0}RM{1:d3}@{2}' -f $prefix, $i, $Dom
-                PrimarySMTPAddress           = '{0}RM{1:d3}@{2}' -f $prefix, $i, $Dom
+                DisplayName                  = '{0}{1:d3}' -f $prefix, $i
+                Name                         = '{0}{1:d3}' -f $prefix, $i
+                UserPrincipalName            = '{0}{1:d3}@{2}' -f $prefix, $i, $Dom
+                PrimarySMTPAddress           = '{0}{1:d3}@{2}' -f $prefix, $i, $Dom
                 SamAccountName               = '{0}{1:d3}' -f $prefix, $i
                 Alias                        = '{0}{1:d3}' -f $prefix, $i
                 Password                     = $Pass
             }
-            $RMailbox = New-RemoteMailbox @ParamNew
-            Write-Host "[$i of $Total] RemoteMailbox:`t$($RMailbox.DisplayName)" -ForegroundColor DarkCyan
+            $NewRM = New-RemoteMailbox @ParamNew
+            Write-Host "[$i of $Total] RemoteMailbox:`t$($NewRM.DisplayName)" -ForegroundColor DarkCyan
         }
-        if (-not $SkipCloudOnlyMailbox) {
+        if ($CloudOnlyMailbox) {
             $PasswordProfile = [Microsoft.Open.AzureAD.Model.PasswordProfile]::new()
             $PasswordProfile.Password = $pass
             $AzUserParams = @{
-                DisplayName       = '{0}Mailbox{1:d3}' -f $prefix, $i
-                UserPrincipalName = '{0}Mailbox{1:d3}@{2}' -f $prefix, $i, $Dom
-                MailNickName      = '{0}Mailbox{1:d3}' -f $prefix, $i
+                DisplayName       = '{0}{1:d3}' -f $prefix, $i
+                UserPrincipalName = '{0}{1:d3}@{2}' -f $prefix, $i, $Dom
+                MailNickName      = '{0}{1:d3}' -f $prefix, $i
                 PasswordProfile   = $PasswordProfile
                 AccountEnabled    = $true
             }
