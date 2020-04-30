@@ -13,13 +13,14 @@ function Get-DestinationRecipientHash {
     if ($Type -eq 'RemoteMailbox') {
         $File = 'TargetRemoteMailbox.xml'
         $HashFile = 'TargetRemoteMailboxHash.xml'
+        $Recip = @('RemoteUserMailbox', 'RemoteRoomMailbox', 'RemoteEquipmentMailbox', 'RemoteSharedMailbox')
     }
     else {
         $File = ('TargetContact_{0}.xml' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
         $HashFile = 'TargetContactHash.xml'
+        $Recip = @('MailContact')
     }
     $RemoteXML = Join-Path -Path $PoshPath -ChildPath $File
-    $Recip = @('RemoteUserMailbox', 'RemoteRoomMailbox', 'RemoteEquipmentMailbox', 'RemoteSharedMailbox')
     Get-Recipient -ResultSize Unlimited -RecipientTypeDetails $Recip | Select-Object * | Export-Clixml -Path $RemoteXML
 
     Write-Host "Using the XML to create a hashtable . . . " -ForegroundColor White

@@ -30,7 +30,7 @@ function Add-X500FromContactToRemoteMailbox {
         $Source = Import-Clixml $SourceHash
     }
 
-    $MatchingPrimaryCSV = Join-Path -Path $PoshPath -ChildPath 'MatchingPrimary.csv'
+    $MatchingPrimaryCSV = Join-Path -Path $PoshPath -ChildPath 'MatchingPrimary-RemoteMailbox.csv'
     $ResultObject = Compare-AddX500FromContact -Target $Target -Source $Source | Sort-Object TargetDisplayName
 
     $ResultObject | Out-GridView -Title "Results of comparison between source and target - Looking for Source ExternalEmailAddress matches with Target PrimarySmtpAddress"
@@ -47,7 +47,7 @@ function Add-X500FromContactToRemoteMailbox {
     $YesNo = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
     switch ($YesNo) {
         0 {
-            $TargetResult = Join-Path -Path $PoshPath -ChildPath 'TargetResult.csv'
+            $TargetResult = Join-Path -Path $PoshPath -ChildPath 'TargetResult-RemoteMailbox.csv'
             Write-Host "Choose Recipients to add X500s then click OK - To select use Ctrl/Shift + click (individual) or Ctrl + A (All)" -ForegroundColor Black -BackgroundColor White
             $AddProxyList = Invoke-Addx500FromContact -MatchingPrimary $ResultObject | Out-GridView -OutputMode Multiple -Title "Choose Recipients to add X500s then click OK - To select use Ctrl/Shift + click (individual) or Ctrl + A (All)"
             $UserSelection = Add-ProxyToRecipient -Type RemoteMailbox -AddProxyList $AddProxyList
