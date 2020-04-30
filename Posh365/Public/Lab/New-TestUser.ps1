@@ -9,6 +9,10 @@ function New-TestUser {
 
         [Parameter()]
         [switch]
+        $SkipMailContact,
+
+        [Parameter()]
+        [switch]
         $SkipAzUser,
 
         [Parameter()]
@@ -24,7 +28,7 @@ function New-TestUser {
 
         [Parameter()]
         $Domain
-        )
+    )
 
     if ($Domain) {
         $Dom = $Domain
@@ -35,8 +39,19 @@ function New-TestUser {
     $GeneratedPW = [System.Web.Security.Membership]::GeneratePassword(10, 3)
     $Pass = ConvertTo-SecureString -String $GeneratedPW -AsPlainText:$true -Force
     $LicenseList = [System.Collections.Generic.List[string]]::New()
-    foreach ($i in ($Start..($Start + $Count))) {
-        if (-not $SkipMailUser){
+    $Total = $Start + $Count
+    foreach ($i in ($Start..($Total))) {
+        if (-not $SkipMailContact) {
+            $ContactParams = @{
+                ExternalEmailAddress = '{0}{1:d3}@{2}' -f $prefix, $i, $Dom
+                Name                 = '{0}{1:d3}' -f $prefix, $i
+                DisplayName          = '{0}{1:d3}' -f $prefix, $i
+                Alias                = '{0}{1:d3}' -f $prefix, $i
+            }
+            $MC = New-MailContact @ContactParams
+            Write-Host "[$i of $Total] MailContact :`t$($MC.DisplayName)" -ForegroundColor Cyan
+        }
+        if (-not $SkipMailUser) {
             $MeuParams = @{
                 PrimarySmtpAddress        = '{0}{1:d3}@{2}' -f $prefix, $i, $Dom
                 Name                      = '{0}{1:d3}' -f $prefix, $i
@@ -46,7 +61,7 @@ function New-TestUser {
                 ExternalEmailAddress      = 'kevin@thenext.net'
             }
             $meu = New-MailUser @MeuParams
-            Write-Host "[$i of $Count] MailUser :`t$($Meu.DisplayName)" -ForegroundColor Green
+            Write-Host "[$i of $Total] MailUser :`t$($Meu.DisplayName)" -ForegroundColor Green
         }
 
         if (-not $SkipAzUser) {
@@ -60,8 +75,9 @@ function New-TestUser {
                 AccountEnabled    = $true
             }
             $AzUser = New-AzureADUser @AzUserParams
-            Write-Host "[$i of $Count] AzureUser:`t$($AzUser.DisplayName)" -ForegroundColor DarkCyan
+            Write-Host "[$i of $Total] AzureUser:`t$($AzUser.DisplayName)" -ForegroundColor DarkCyan
         }
+
         if (-not $SkipMailboxPrefixed) {
             $PasswordProfile = [Microsoft.Open.AzureAD.Model.PasswordProfile]::new()
             $PasswordProfile.Password = $pass
@@ -74,7 +90,7 @@ function New-TestUser {
             }
             $AzUser = New-AzureADUser @AzUserParams
             $LicenseList.Add($AzUser.UserPrincipalName)
-            Write-Host "[$i of $Count] AzureUser:`t$($AzUser.DisplayName)" -ForegroundColor DarkCyan
+            Write-Host "[$i of $Total] AzureUser:`t$($AzUser.DisplayName)" -ForegroundColor DarkCyan
         }
     }
     if ($LicenseList.count -gt 1) {
