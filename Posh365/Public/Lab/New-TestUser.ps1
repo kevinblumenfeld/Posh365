@@ -99,20 +99,20 @@ function New-TestUser {
         if (-not $SkipRemoteMailbox) {
             $ParamNew = @{
                 OnPremisesOrganizationalUnit = $OU
-                DisplayName                  = '{0}{1:d3}' -f $prefix, $i
-                Name                         = '{0}{1:d3}' -f $prefix, $i
-                UserPrincipalName            = '{0}@{1}' -f $FirstName, $Domain
-                PrimarySMTPAddress           = '{0}@{1}' -f $FirstName, $Domain
+                DisplayName                  = '{0}RM{1:d3}' -f $prefix, $i
+                Name                         = '{0}RM{1:d3}' -f $prefix, $i
+                UserPrincipalName            = '{0}RM{1:d3}@{2}' -f $prefix, $i, $Dom
+                PrimarySMTPAddress           = '{0}RM{1:d3}@{2}' -f $prefix, $i, $Dom
                 SamAccountName               = '{0}{1:d3}' -f $prefix, $i
                 Alias                        = '{0}{1:d3}' -f $prefix, $i
                 Password                     = $Pass
             }
             New-RemoteMailbox @ParamNew
-            $ParamSet = @{
-                Identity       = $UPN
-                EmailAddresses = @{add = ('{0}@{1}' -f $FirstName, $Tenant) }
-            }
-            Set-RemoteMailbox @ParamSet
+            # $ParamSet = @{
+            #     Identity       = $UPN
+            #     EmailAddresses = @{add = ('{0}@{1}' -f $FirstName, $Tenant) }
+            # }
+            # Set-RemoteMailbox @ParamSet
         }
         if (-not $SkipCloudOnlyMailbox) {
             $PasswordProfile = [Microsoft.Open.AzureAD.Model.PasswordProfile]::new()
