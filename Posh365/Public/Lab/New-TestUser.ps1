@@ -6,6 +6,9 @@ function New-TestUser {
         $Start,
 
         [Parameter()]
+        $OU,
+
+        [Parameter()]
         $Count = 10,
 
         [Parameter()]
@@ -107,12 +110,8 @@ function New-TestUser {
                 Alias                        = '{0}{1:d3}' -f $prefix, $i
                 Password                     = $Pass
             }
-            New-RemoteMailbox @ParamNew
-            # $ParamSet = @{
-            #     Identity       = $UPN
-            #     EmailAddresses = @{add = ('{0}@{1}' -f $FirstName, $Tenant) }
-            # }
-            # Set-RemoteMailbox @ParamSet
+            $RMailbox = New-RemoteMailbox @ParamNew
+            Write-Host "[$i of $Total] RemoteMailbox:`t$($RMailbox.DisplayName)" -ForegroundColor DarkCyan
         }
         if (-not $SkipCloudOnlyMailbox) {
             $PasswordProfile = [Microsoft.Open.AzureAD.Model.PasswordProfile]::new()
