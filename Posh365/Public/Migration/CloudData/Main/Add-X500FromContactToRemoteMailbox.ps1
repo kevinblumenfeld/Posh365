@@ -52,7 +52,7 @@ function Add-X500FromContactToRemoteMailbox {
             $UserSelection = Add-ProxyToRecipient -Type RemoteMailbox -AddProxyList $AddProxyList
             $UserSelection | Out-GridView -Title 'Results of adding Email Addresses to Target Remote Mailboxes'
             $UserSelection | Export-Csv $TargetResult -NoTypeInformation -Encoding UTF8 -Append
-            Write-Host "Log has been exported to: " -ForegroundColor Cyan -NoNewline
+            Write-Host "`t`n`t`nLog has been exported to: " -ForegroundColor Cyan -NoNewline
             Write-Host "$TargetResult" -ForegroundColor Green
         }
         1 { return }

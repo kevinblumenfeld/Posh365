@@ -56,6 +56,9 @@ function New-TestUser {
                 DisplayName          = '{0}{1:d3}' -f $prefix, $i
                 Alias                = '{0}{1:d3}' -f $prefix, $i
             }
+            if ($OU) {
+                $ContactParams['OrganizationalUnit'] = $OU
+            }
             $NewMC = New-MailContact @ContactParams
             Write-Host "[$i of $Total] MailContact :`t$($NewMC.DisplayName)" -ForegroundColor Cyan
         }
