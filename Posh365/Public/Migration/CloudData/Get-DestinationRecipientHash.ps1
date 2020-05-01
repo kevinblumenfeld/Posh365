@@ -10,18 +10,23 @@ function Get-DestinationRecipientHash {
     if (-not (Test-Path $PoshPath)) {
         $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
+    
+    # Get-Recipient -ResultSize Unlimited -RecipientTypeDetails $Recip | Select-Object * | Export-Clixml -Path $RemoteXML
     if ($Type -eq 'RemoteMailbox') {
-        $File = 'TargetRemoteMailbox.xml'
+        $File = ('TargetRemoteMailbox_{0}.xml' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
         $HashFile = 'TargetRemoteMailboxHash.xml'
-        $Recip = @('RemoteUserMailbox', 'RemoteRoomMailbox', 'RemoteEquipmentMailbox', 'RemoteSharedMailbox')
+        $RemoteXML = Join-Path -Path $PoshPath -ChildPath $File
+        Get-RemoteMailbox -ResultSize Unlimited | Export-Clixml $RemoteXML
+        # $Recip = @('RemoteUserMailbox', 'RemoteRoomMailbox', 'RemoteEquipmentMailbox', 'RemoteSharedMailbox')
     }
     else {
         $File = ('TargetContact_{0}.xml' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
         $HashFile = 'TargetContactHash.xml'
-        $Recip = @('MailContact')
+        $RemoteXML = Join-Path -Path $PoshPath -ChildPath $File
+        Get-MailContact -ResultSize Unlimited | Export-Clixml $RemoteXML
+        # $Recip = @('MailContact')
     }
-    $RemoteXML = Join-Path -Path $PoshPath -ChildPath $File
-    Get-Recipient -ResultSize Unlimited -RecipientTypeDetails $Recip | Select-Object * | Export-Clixml -Path $RemoteXML
+
 
     Write-Host "Using the XML to create a hashtable . . . " -ForegroundColor White
     $RecipientList = Import-Clixml $RemoteXML
@@ -34,6 +39,7 @@ function Get-DestinationRecipientHash {
             Alias                = $Recipient.Alias
             DisplayName          = $Recipient.DisplayName
             Name                 = $Recipient.Name
+            EmailAddresses       = @($Recipient.EmailAddresses) -ne '' -join '|'
         }
     }
     $OutputXml = Join-Path -Path $PoshPath -ChildPath $HashFile

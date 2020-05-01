@@ -17,45 +17,49 @@ function Add-ProxyToRecipient {
             $Guid = $Add.TargetGUID.ToString()
             try {
                 Set-RemoteMailbox -Identity $Guid -EmailAddresses @{add = $Add.LegacyExchangeDN }
+                $Check = Get-RemoteMailbox -Identity $Guid
                 [PSCustomObject]@{
-                    Num                = '[{0} of {1}]' -f $i, $Count
-                    Result             = 'SUCCESS'
-                    TargetDisplayName  = $Add.TargetDisplayName
-                    PrimarySmtpAddress = $Add.PrimarySmtpAddress
-                    Added              = $Add.LegacyExchangeDN
-                    GUID               = $Guid
-                    Identity           = $Add.TargetIdentity
-                    SourceDisplayName  = $Add.SourceDisplayName
-                    Log                = 'SUCCESS'
+                    Num                         = '[{0} of {1}]' -f $i, $Count
+                    Result                      = 'SUCCESS'
+                    TargetDisplayName           = $Add.TargetDisplayName
+                    PrimarySmtpAddress          = $Add.PrimarySmtpAddress
+                    PrimarySmtpAddressUnchanged = $Check.PrimarySmtpAddress -eq $Add.PrimarySmtpAddress
+                    Added                       = $Add.LegacyExchangeDN
+                    GUID                        = $Guid
+                    Identity                    = $Add.TargetIdentity
+                    SourceDisplayName           = $Add.SourceDisplayName
+                    Log                         = 'SUCCESS'
                 }
                 if ($Add.X500) {
                     foreach ($X in ($Add.X500).split('|')) {
                         Set-RemoteMailbox -Identity $Guid -EmailAddresses @{add = $X }
                         [PSCustomObject]@{
-                            Num                = '[{0} of {1}]' -f $i, $Count
-                            Result             = 'SUCCESS'
-                            TargetDisplayName  = $Add.TargetDisplayName
-                            PrimarySmtpAddress = $Add.PrimarySmtpAddress
-                            Added              = $X
-                            GUID               = $Guid
-                            Identity           = $Add.TargetIdentity
-                            SourceDisplayName  = $Add.SourceDisplayName
-                            Log                = 'SUCCESS'
+                            Num                         = '[{0} of {1}]' -f $i, $Count
+                            Result                      = 'SUCCESS'
+                            TargetDisplayName           = $Add.TargetDisplayName
+                            PrimarySmtpAddress          = $Add.PrimarySmtpAddress
+                            PrimarySmtpAddressUnchanged = 'CHECKEDPREVIOUSLY'
+                            Added                       = $X
+                            GUID                        = $Guid
+                            Identity                    = $Add.TargetIdentity
+                            SourceDisplayName           = $Add.SourceDisplayName
+                            Log                         = 'SUCCESS'
                         }
                     }
                 }
             }
             catch {
                 [PSCustomObject]@{
-                    Num                = '[{0} of {1}]' -f $i, $Count
-                    Result             = 'FAILED'
-                    TargetDisplayName  = $Add.TargetDisplayName
-                    PrimarySmtpAddress = $Add.PrimarySmtpAddress
-                    Added              = $X
-                    GUID               = $Guid
-                    Identity           = $Add.TargetIdentity
-                    SourceDisplayName  = $Add.SourceDisplayName
-                    Log                = $_.Exception.Message
+                    Num                         = '[{0} of {1}]' -f $i, $Count
+                    Result                      = 'FAILED'
+                    TargetDisplayName           = $Add.TargetDisplayName
+                    PrimarySmtpAddress          = $Add.PrimarySmtpAddress
+                    PrimarySmtpAddressUnchanged = 'FAILED'
+                    Added                       = $X
+                    GUID                        = $Guid
+                    Identity                    = $Add.TargetIdentity
+                    SourceDisplayName           = $Add.SourceDisplayName
+                    Log                         = $_.Exception.Message
                 }
             }
         }
@@ -66,44 +70,47 @@ function Add-ProxyToRecipient {
             try {
                 Set-MailContact -Identity $Guid -EmailAddresses @{add = $Add.LegacyExchangeDN }
                 [PSCustomObject]@{
-                    Num                = '[{0} of {1}]' -f $i, $Count
-                    Result             = 'SUCCESS'
-                    TargetDisplayName  = $Add.TargetDisplayName
-                    PrimarySmtpAddress = $Add.PrimarySmtpAddress
-                    Added              = $Add.LegacyExchangeDN
-                    GUID               = $Guid
-                    Identity           = $Add.TargetIdentity
-                    SourceDisplayName  = $Add.SourceDisplayName
-                    Log                = 'SUCCESS'
+                    Num                         = '[{0} of {1}]' -f $i, $Count
+                    Result                      = 'SUCCESS'
+                    TargetDisplayName           = $Add.TargetDisplayName
+                    PrimarySmtpAddress          = $Add.PrimarySmtpAddress
+                    PrimarySmtpAddressUnchanged = $Check.PrimarySmtpAddress -eq $Add.PrimarySmtpAddress
+                    Added                       = $Add.LegacyExchangeDN
+                    GUID                        = $Guid
+                    Identity                    = $Add.TargetIdentity
+                    SourceDisplayName           = $Add.SourceDisplayName
+                    Log                         = 'SUCCESS'
                 }
                 if ($Add.X500) {
                     foreach ($X in ($Add.X500).split('|')) {
                         Set-MailContact -Identity $Guid -EmailAddresses @{add = $X }
                         [PSCustomObject]@{
-                            Num                = '[{0} of {1}]' -f $i, $Count
-                            Result             = 'SUCCESS'
-                            TargetDisplayName  = $Add.TargetDisplayName
-                            PrimarySmtpAddress = $Add.PrimarySmtpAddress
-                            Added              = $X
-                            GUID               = $Guid
-                            Identity           = $Add.TargetIdentity
-                            SourceDisplayName  = $Add.SourceDisplayName
-                            Log                = 'SUCCESS'
+                            Num                         = '[{0} of {1}]' -f $i, $Count
+                            Result                      = 'SUCCESS'
+                            TargetDisplayName           = $Add.TargetDisplayName
+                            PrimarySmtpAddress          = $Add.PrimarySmtpAddress
+                            PrimarySmtpAddressUnchanged = 'CHECKEDPREVIOUSLY'
+                            Added                       = $X
+                            GUID                        = $Guid
+                            Identity                    = $Add.TargetIdentity
+                            SourceDisplayName           = $Add.SourceDisplayName
+                            Log                         = 'SUCCESS'
                         }
                     }
                 }
             }
             catch {
                 [PSCustomObject]@{
-                    Num                = $Add.Num
-                    Result             = 'FAILED'
-                    TargetDisplayName  = $Add.TargetDisplayName
-                    PrimarySmtpAddress = $Add.PrimarySmtpAddress
-                    Added              = $X
-                    GUID               = $Guid
-                    Identity           = $Add.TargetIdentity
-                    SourceDisplayName  = $Add.SourceDisplayName
-                    Log                = $_.Exception.Message
+                    Num                         = $Add.Num
+                    Result                      = 'FAILED'
+                    TargetDisplayName           = $Add.TargetDisplayName
+                    PrimarySmtpAddress          = $Add.PrimarySmtpAddress
+                    PrimarySmtpAddressUnchanged = 'FAILED'
+                    Added                       = $X
+                    GUID                        = $Guid
+                    Identity                    = $Add.TargetIdentity
+                    SourceDisplayName           = $Add.SourceDisplayName
+                    Log                         = $_.Exception.Message
                 }
             }
         }

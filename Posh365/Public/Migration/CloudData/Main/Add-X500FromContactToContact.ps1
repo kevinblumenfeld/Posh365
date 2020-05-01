@@ -2,19 +2,16 @@ using namespace System.Management.Automation.Host
 function Add-X500FromContactToContact {
     [CmdletBinding()]
     param (
-
         [Parameter()]
         [switch]
         $DontViewEntireForest
     )
-
     Get-PSSession | Remove-PSSession
     Connect-Exchange -DontViewEntireForest:$DontViewEntireForest -PromptConfirm
 
     Get-DestinationRecipientHash -Type MailContact
 
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
-
     if (-not (Test-Path $PoshPath)) {
         $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
@@ -31,8 +28,7 @@ function Add-X500FromContactToContact {
         $Target = Import-Clixml $TargetHash
         $Source = Import-Clixml $SourceHash
     }
-
-    $MatchingPrimaryCSV = Join-Path -Path $PoshPath -ChildPath 'MatchingPrimary-Contacts.csv'
+    $MatchingPrimaryCSV = Join-Path -Path $PoshPath -ChildPath ('MatchingPrimary-Contacts_{0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $ResultObject = Compare-AddX500FromContact -Target $Target -Source $Source | Sort-Object TargetDisplayName
 
     $ResultObject | Out-GridView -Title "Results of comparison between source and target - Looking for Source ExternalEmailAddress matches with Target PrimarySmtpAddress"
@@ -49,14 +45,20 @@ function Add-X500FromContactToContact {
     $YesNo = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
     switch ($YesNo) {
         0 {
-            $TargetResult = Join-Path -Path $PoshPath -ChildPath 'TargetResult-Contacts.csv'
+            $TargetResult = Join-Path -Path $PoshPath -ChildPath ('Target_Results_Contacts_{0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
             Write-Host "Choose Recipients to add X500s then click OK - To select use Ctrl/Shift + click (individual) or Ctrl + A (All)" -ForegroundColor Black -BackgroundColor White
             $AddProxyList = Invoke-Addx500FromContact -MatchingPrimary $ResultObject | Out-GridView -OutputMode Multiple -Title "Choose Recipients to add X500s then click OK - To select use Ctrl/Shift + click (individual) or Ctrl + A (All)"
             $UserSelection = Add-ProxyToRecipient -Type MailContact -AddProxyList $AddProxyList
-            $UserSelection | Out-GridView -Title 'Results of adding Email Addresses to Target Mail Contacts'
-            $UserSelection | Export-Csv $TargetResult -NoTypeInformation -Encoding UTF8 -Append
-            Write-Host "Log has been exported to: " -ForegroundColor Cyan -NoNewline
-            Write-Host "$TargetResult" -ForegroundColor Green
+            if ($UserSelection) {
+                $UserSelection | Out-GridView -Title 'Results of adding Email Addresses to Target Mail Contacts'
+                $UserSelection | Export-Csv $TargetResult -NoTypeInformation -Encoding UTF8 -Append
+                Write-Host "Log has been exported to: " -ForegroundColor Cyan -NoNewline
+                Write-Host "$TargetResult" -ForegroundColor Green
+            }
+            else {
+                Write-Host "No changes are required. Halting script" -ForegroundColor Cyan
+            }
+            
         }
         1 { return }
     }

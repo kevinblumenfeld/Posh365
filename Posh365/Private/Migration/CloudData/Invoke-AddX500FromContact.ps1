@@ -11,16 +11,18 @@ function Invoke-AddX500FromContact {
     foreach ($Item in $AllFound) {
         $i++
         [PSCustomObject]@{
-            Num                = '[{0} of {1}]' -f $i, $Count
-            TargetDisplayName  = $Item.TargetDisplayName
-            SourceDisplayName  = $Item.SourceDisplayName
-            TargetType         = $Item.TargetType
-            PrimarySmtpAddress = $Item.PrimarySmtpAddress
-            LegacyExchangeDN   = $Item.LegacyExchangeDN
-            X500               = $Item.X500
-            TargetGUID         = $Item.TargetGUID
-            TargetIdentity     = $Item.TargetIdentity
-            SourceName         = $Item.SourceName
+            Num                  = '[{0} of {1}]' -f $i, $Count
+            TargetDisplayName    = $Item.TargetDisplayName
+            SourceDisplayName    = $Item.SourceDisplayName
+            TargetType           = $Item.TargetType
+            PrimarySmtpAddress   = $Item.PrimarySmtpAddress
+            LegacyExchangeDN     = $Item.LegacyExchangeDN
+            X500                 = $Item.X500
+            TargetGUID           = $Item.TargetGUID
+            TargetIdentity       = $Item.TargetIdentity
+            SourceName           = $Item.SourceName
+            SourceEmailAddresses = $Item.SourceEmailAddresses
+            TargetEmailAddresses = $Item.TargetEmailAddresses
         }
     }
 }
