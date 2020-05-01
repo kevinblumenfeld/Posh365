@@ -38,6 +38,7 @@ function Get-SourceContactHash {
             DisplayName      = $Contact.DisplayName
             Name             = $Contact.Name
             X500             = @($Contact.EmailAddresses) -match 'x500:' -join '|'
+            EmailAddresses   = @($Contact.EmailAddresses) -ne '' -join '|'
         }
     }
     $OutputXml = Join-Path -Path $PoshPath -ChildPath 'SourceContactHash.xml'

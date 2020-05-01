@@ -35,11 +35,7 @@ function Remove-GroupAddress {
             'UserPrincipalName'
             @{
                 Name       = 'EmailList'
-                Expression = {
-                    $_.emailaddresses | Where-Object {
-                        @($_ -match ([Regex]::Escape($Domains)))
-                    }
-                }
+                Expression = { @($_.emailaddresses) -match ([Regex]::Escape($Domains)) }
             }
             'ExchangeGuid'
             'Guid'
