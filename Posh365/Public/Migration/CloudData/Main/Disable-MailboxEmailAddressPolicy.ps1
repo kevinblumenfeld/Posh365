@@ -60,7 +60,7 @@ function Disable-MailboxEmailAddressPolicy {
     $ChoiceCSV = Join-Path -Path $PoshPath -ChildPath ('Before Disable EAP {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $Choice | Export-Csv $ChoiceCSV -NoTypeInformation -Encoding UTF8
 
-    if ($Choice) { Get-DecisionbyOGV } else { Write-Host "Halting as nothing was selected" ; continue }
+    if ($Choice) { Get-DecisionbyOGV } else { Write-Host 'Halting as nothing was selected' ; continue }
 
     $Result = Invoke-DisableMailboxEmailAddressPolicy -Choice $Choice -Hash $RMHash
     
