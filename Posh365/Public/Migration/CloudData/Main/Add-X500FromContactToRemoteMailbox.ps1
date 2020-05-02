@@ -29,7 +29,7 @@ function Add-X500FromContactToRemoteMailbox {
         $Source = Import-Clixml $SourceHash
     }
 
-    $MatchingPrimaryCSV = Join-Path -Path $PoshPath -ChildPath ('MatchingPrimary-RemoteMailbox_{0}.csv' -f  [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+    $MatchingPrimaryCSV = Join-Path -Path $PoshPath -ChildPath ('MatchingPrimary-RemoteMailbox_{0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $ResultObject = Compare-AddX500FromContact -Target $Target -Source $Source | Sort-Object TargetDisplayName
 
     $ResultObject | Out-GridView -Title "Results of comparison between source and target - Looking for (Source) ExternalEmailAddress matching (Target) PrimarySmtpAddress"
@@ -51,10 +51,15 @@ function Add-X500FromContactToRemoteMailbox {
             $AddProxyList = Invoke-Addx500FromContact -MatchingPrimary $ResultObject | Out-GridView -OutputMode Multiple -Title "Choose Recipients to add X500s then click OK - To select use Ctrl/Shift + click (individual) or Ctrl + A (All)"
             if ($AddProxyList) { Get-DecisionbyOGV } else { Write-Host "Halting as nothing was selected" ; continue }
             $UserSelection = Add-ProxyToRecipient -Type RemoteMailbox -AddProxyList $AddProxyList
-            $UserSelection | Out-GridView -Title 'Results of adding Email Addresses to Target Remote Mailboxes'
-            $UserSelection | Export-Csv $TargetResult -NoTypeInformation -Encoding UTF8 -Append
-            Write-Host "`t`n`t`nLog has been exported to: " -ForegroundColor Cyan -NoNewline
-            Write-Host "$TargetResult" -ForegroundColor Green
+            if ($UserSelection) {
+                $UserSelection | Out-GridView -Title 'Results of adding Email Addresses to Target Remote Mailboxes'
+                $UserSelection | Export-Csv $TargetResult -NoTypeInformation -Encoding UTF8 -Append
+                Write-Host "`t`n`t`nLog has been exported to: " -ForegroundColor Cyan -NoNewline
+                Write-Host "$TargetResult" -ForegroundColor Green
+            }
+            else {
+                Write-Host "No changes are required. Halting script" -ForegroundColor Cyan
+            }
         }
         1 { return }
     }

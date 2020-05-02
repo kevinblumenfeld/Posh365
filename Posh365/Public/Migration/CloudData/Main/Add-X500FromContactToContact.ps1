@@ -46,8 +46,9 @@ function Add-X500FromContactToContact {
     switch ($YesNo) {
         0 {
             $TargetResult = Join-Path -Path $PoshPath -ChildPath ('Target_Results_Contacts_{0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
-            Write-Host "Choose Recipients to add X500s then click OK - To select use Ctrl/Shift + click (individual) or Ctrl + A (All)" -ForegroundColor Black -BackgroundColor White
+            Write-Host "Choose Recipients to add X500s then click OK - To select use Ctrl/Shift + click (individual) or Ctrl + A (all)" -ForegroundColor Black -BackgroundColor White
             $AddProxyList = Invoke-Addx500FromContact -MatchingPrimary $ResultObject | Out-GridView -OutputMode Multiple -Title "Choose Recipients to add X500s then click OK - To select use Ctrl/Shift + click (individual) or Ctrl + A (All)"
+            if ($AddProxyList) { Get-DecisionbyOGV } else { Write-Host "Halting as nothing was selected" ; continue }
             $UserSelection = Add-ProxyToRecipient -Type MailContact -AddProxyList $AddProxyList
             if ($UserSelection) {
                 $UserSelection | Out-GridView -Title 'Results of adding Email Addresses to Target Mail Contacts'
