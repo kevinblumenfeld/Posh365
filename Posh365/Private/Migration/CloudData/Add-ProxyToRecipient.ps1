@@ -50,7 +50,7 @@ function Add-ProxyToRecipient {
                             TargetDisplayName           = $Add.TargetDisplayName
                             PreviousPrimarySmtpAddress  = $Add.PrimarySmtpAddress
                             CurrentPrimarySmtpAddress   = $RMCheck.PrimarySmtpAddress
-                            PrimarySmtpAddressUnchanged = 'PREVIOUSLYCHECKED'
+                            PrimarySmtpAddressUnchanged = 'ALREADYVALIDATED'
                             Added                       = $X
                             GUID                        = $Guid
                             Identity                    = $Add.TargetIdentity
@@ -116,7 +116,7 @@ function Add-ProxyToRecipient {
                             Result                      = 'SUCCESS'
                             TargetDisplayName           = $Add.TargetDisplayName
                             PrimarySmtpAddress          = $Add.PrimarySmtpAddress
-                            PrimarySmtpAddressUnchanged = 'PREVIOUSLYCHECKED'
+                            PrimarySmtpAddressUnchanged = 'ALREADYVALIDATED'
                             Added                       = $X
                             GUID                        = $Guid
                             Identity                    = $Add.TargetIdentity

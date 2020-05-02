@@ -45,4 +45,5 @@ function Get-SourceContactHash {
     $Hash | Export-Clixml $OutputXml
     Write-Host "Hash has been exported as an XML file here: " -ForegroundColor Cyan -NoNewline
     Write-Host "$OutputXml" -ForegroundColor Green
+    Invoke-Item -Path $PoshPath
 }
