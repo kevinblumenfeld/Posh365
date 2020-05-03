@@ -11,7 +11,7 @@ function Get-DestinationRecipientHash {
         $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
     if ($Type -eq 'RemoteMailbox') {
-        $File = ('TargetRemoteMailbox_{0}.xml' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+        $File = ('BACKUP Target Remote Mailboxes_{0}.xml' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
         $HashFile = 'TargetRemoteMailboxHash.xml'
         $RemoteXML = Join-Path -Path $PoshPath -ChildPath $File
         Get-RemoteMailbox -ResultSize Unlimited | Export-Clixml $RemoteXML
@@ -31,7 +31,7 @@ function Get-DestinationRecipientHash {
         }
     }
     else {
-        $File = ('TargetContact_{0}.xml' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+        $File = ('BACKUP Target Contacts_{0}.xml' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
         $HashFile = 'TargetContactHash.xml'
         $RemoteXML = Join-Path -Path $PoshPath -ChildPath $File
         Get-MailContact -ResultSize Unlimited | Export-Clixml $RemoteXML

@@ -28,7 +28,7 @@ function Add-X500FromContactToContact {
         $Target = Import-Clixml $TargetHash
         $Source = Import-Clixml $SourceHash
     }
-    $MatchingPrimaryCSV = Join-Path -Path $PoshPath -ChildPath ('SourceContact Matching TargetContact_{0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+    $MatchingPrimaryCSV = Join-Path -Path $PoshPath -ChildPath ('REPORT SourceContact Matching TargetContact_{0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $ResultObject = Compare-AddX500FromContact -Target $Target -Source $Source | Sort-Object TargetDisplayName
 
     $ResultObject | Out-GridView -Title "Results of comparison between source and target - Looking for Source ExternalEmailAddress matches with Target ExternalEmailAddress"
@@ -45,7 +45,7 @@ function Add-X500FromContactToContact {
     $YesNo = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
     switch ($YesNo) {
         0 {
-            $TargetResult = Join-Path -Path $PoshPath -ChildPath ('Results of adding x500s to Target Contacts_{0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+            $TargetResult = Join-Path -Path $PoshPath -ChildPath ('REPORT Results of adding x500s to Target Contacts_{0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
             Write-Host "Choose Recipients to add X500s then click OK - To select use Ctrl/Shift + click (individual) or Ctrl + A (all)" -ForegroundColor Black -BackgroundColor White
             $AddProxyList = Invoke-Addx500FromContact -MatchingPrimary $ResultObject | Out-GridView -OutputMode Multiple -Title "Choose Recipients to add X500s then click OK - To select use Ctrl/Shift + click (individual) or Ctrl + A (All)"
             if ($AddProxyList) { Get-DecisionbyOGV } else { Write-Host 'Halting as nothing was selected' ; continue }
