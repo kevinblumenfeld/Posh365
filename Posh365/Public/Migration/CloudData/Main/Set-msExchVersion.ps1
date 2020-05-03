@@ -18,7 +18,6 @@ function Set-msExchVersion {
         [switch]
         $DontViewEntireForest
     )
-
     if (-not (Get-Module ActiveDirectory -ListAvailable)) {
         Write-Host 'Active Directory PowerShell Module not found.  Halting Script.' -ForegroundColor Red
         continue
@@ -70,7 +69,6 @@ function Set-msExchVersion {
         Get-PSSession | Remove-PSSession
         Connect-Exchange @PSBoundParameters -PromptConfirm
     }
-
     $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath 'RemoteMailbox_msExchVersion.xml'
     Write-Host 'Fetching Remote Mailboxes...' -ForegroundColor Cyan
 
@@ -93,7 +91,6 @@ function Set-msExchVersion {
 
     if ($Choice) { Get-DecisionbyOGV } else { Write-Host 'Halting as nothing was selected' ; continue }
 
-
     $VersionDecision = @(
         [PSCustomObject]@{
             Version       = 'Exchange2007'
@@ -111,7 +108,7 @@ function Set-msExchVersion {
             Version       = 'Exchange2016'
             msExchVersion = '1125899906842624'
         }) | Out-GridView -OutputMode Single -Title 'Choose the msExchVersion to apply to the mailboxes you just selected'
-    if ($Choice) { Get-DecisionbyOGV } else { Write-Host 'Halting as nothing was selected' ; continue }
+    if ($VersionDecision) { Get-DecisionbyOGV } else { Write-Host 'Halting as nothing was selected' ; continue }
 
     $Result = Invoke-SetmsExchVersion -Choice $Choice -RMHash $RMHash -UserHash $UserHash -VersionDecision $VersionDecision.msExchVersion
 
