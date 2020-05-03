@@ -31,7 +31,7 @@ function Add-X500FromContactToContact {
     $MatchingPrimaryCSV = Join-Path -Path $PoshPath -ChildPath ('MatchingPrimary-Contacts_{0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $ResultObject = Compare-AddX500FromContact -Target $Target -Source $Source | Sort-Object TargetDisplayName
 
-    $ResultObject | Out-GridView -Title "Results of comparison between source and target - Looking for Source ExternalEmailAddress matches with Target PrimarySmtpAddress"
+    $ResultObject | Out-GridView -Title "Results of comparison between source and target - Looking for Source ExternalEmailAddress matches with Target ExternalEmailAddress"
     $ResultObject | Export-Csv $MatchingPrimaryCSV -NoTypeInformation -Encoding UTF8
     Write-Host "Comparison has been exported to: " -ForegroundColor Cyan -NoNewline
     Write-Host "$MatchingPrimaryCSV`t`n`t`n" -ForegroundColor Green
@@ -40,7 +40,7 @@ function Add-X500FromContactToContact {
     $Yes = [ChoiceDescription]::new('&Yes', 'WriteX500: Yes')
     $No = [ChoiceDescription]::new('&No', 'WriteX500: No')
     $Options = [ChoiceDescription[]]($Yes, $No)
-    $Title = 'Please inspect the results comparing Source ExternalEmailAddress to Target PrimarySmtpAddress'
+    $Title = 'Please inspect the results comparing Source ExternalEmailAddress to Target ExternalEmailAddress'
     $Question = 'Select ( Y ) to choose the mailboxes where x500 addresses will be added. The x500s will be added from the LegacyExchageDN column and x500 column (if present)'
     $YesNo = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
     switch ($YesNo) {
@@ -59,7 +59,7 @@ function Add-X500FromContactToContact {
             else {
                 Write-Host "No changes are required. Halting script" -ForegroundColor Cyan
             }
-            
+
         }
         1 { return }
     }
