@@ -17,7 +17,7 @@ function Add-ProxyToRecipient {
             $i++
             $Guid = $Add.TargetGUID.ToString()
             try {
-                Set-RemoteMailbox -Identity $Guid -EmailAddresses @{add = $Add.LegacyExchangeDN }
+                Set-RemoteMailbox -Identity $Guid -EmailAddresses @{add = $Add.LegacyExchangeDN } -ErrorAction Stop
                 $RMCheck = Get-RemoteMailbox -Identity $Guid
                 $RMPrimaryUnchanged = $RMCheck.PrimarySmtpAddress -eq $Add.PrimarySmtpAddress
                 Write-Host "[$i of $Count] Success Set Remote Mailbox x500 (LegacyExchangeDN) $($RMCheck.DisplayName) - PrimarySmtpAddress unchanged? " -ForegroundColor Green -NoNewline
@@ -42,7 +42,7 @@ function Add-ProxyToRecipient {
                 }
                 if ($Add.X500) {
                     foreach ($X in ($Add.X500).split('|')) {
-                        Set-RemoteMailbox -Identity $Guid -EmailAddresses @{add = $X }
+                        Set-RemoteMailbox -Identity $Guid -EmailAddresses @{add = $X } -ErrorAction Stop
                         Write-Host "[$i of $Count] Success Set Remote Mailbox x500 $($RMCheck.DisplayName)" -ForegroundColor Cyan
                         [PSCustomObject]@{
                             Num                         = '[{0} of {1}]' -f $i, $Count
@@ -61,7 +61,7 @@ function Add-ProxyToRecipient {
                 }
             }
             catch {
-                Write-Host "[$i of $Count] Failed Setting Remote Mailbox x500 $($RMCheck.DisplayName)" -ForegroundColor Red
+                Write-Host "[$i of $Count] Failed Setting Remote Mailbox x500 $($RMCheck.DisplayName) Error: $($_.Exception.Message)" -ForegroundColor Red
                 [PSCustomObject]@{
                     Num                         = '[{0} of {1}]' -f $i, $Count
                     Result                      = 'FAILED'
@@ -84,7 +84,7 @@ function Add-ProxyToRecipient {
             $i++
             $Guid = ($Add.TargetGUID).ToString()
             try {
-                Set-MailContact -Identity $Guid -EmailAddresses @{add = $Add.LegacyExchangeDN }
+                Set-MailContact -Identity $Guid -EmailAddresses @{add = $Add.LegacyExchangeDN } -ErrorAction Stop
                 $ContactCheck = Get-MailContact -Identity $Guid
                 $ContactPrimaryUnchanged = $ContactCheck.PrimarySmtpAddress -eq $Add.PrimarySmtpAddress
                 Write-Host "[$i of $Count] Success Set Mail Contact x500 (LegacyExchangeDN) $($ContactCheck.DisplayName) - PrimarySmtpAddress unchanged? " -ForegroundColor Green -NoNewline
@@ -109,7 +109,7 @@ function Add-ProxyToRecipient {
                 }
                 if ($Add.X500) {
                     foreach ($X in ($Add.X500).split('|')) {
-                        Set-MailContact -Identity $Guid -EmailAddresses @{add = $X }
+                        Set-MailContact -Identity $Guid -EmailAddresses @{add = $X } -ErrorAction Stop
                         Write-Host "[$i of $Count] Success Set Mail Contact x500 $($RMCheck.DisplayName)" -ForegroundColor Cyan
                         [PSCustomObject]@{
                             Num                         = '[{0} of {1}]' -f $i, $Count
@@ -127,9 +127,9 @@ function Add-ProxyToRecipient {
                 }
             }
             catch {
-                Write-Host "[$i of $Count] Failed Setting Mail Contact x500 $($RMCheck.DisplayName)" -ForegroundColor Red
+                Write-Host "[$i of $Count] Failed Setting Mail Contact x500 $($RMCheck.DisplayName) Error: $($_.Exception.Message)" -ForegroundColor Red
                 [PSCustomObject]@{
-                    Num                         = $Add.Num
+                    Num                         = '[{0} of {1}]' -f $i, $Count
                     Result                      = 'FAILED'
                     TargetDisplayName           = $Add.TargetDisplayName
                     PrimarySmtpAddress          = $Add.PrimarySmtpAddress
