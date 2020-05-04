@@ -30,6 +30,11 @@ function Connect-Exchange {
         $Server,
 
         [Parameter()]
+        [Alias('External')]
+        [switch]
+        $Basic,
+
+        [Parameter()]
         [switch]
         $DeleteExchangeCreds,
 
@@ -82,12 +87,24 @@ function Connect-Exchange {
     else {
         [System.Management.Automation.PSCredential]$Credential = Import-Clixml -Path $CredFile
     }
-    $SessionSplat = @{
-        Name              = "OnPremExchange"
-        ConfigurationName = 'Microsoft.Exchange'
-        ConnectionUri     = ("http://" + $Server + "/PowerShell/")
-        Authentication    = 'Kerberos'
-        Credential        = $Credential
+    if (-not $Basic) {
+        $SessionSplat = @{
+            Name              = "OnPremExchange"
+            ConfigurationName = 'Microsoft.Exchange'
+            ConnectionUri     = ("http://" + $Server + "/PowerShell/")
+            Authentication    = 'Kerberos'
+            Credential        = $Credential
+        }
+    }
+    else {
+        $SessionSplat = @{
+            Name              = "OnPremExchange"
+            ConfigurationName = 'Microsoft.Exchange'
+            ConnectionUri     = ("https://" + $Server + "/PowerShell")
+            Authentication    = 'Basic'
+            Credential        = $Credential
+            AllowRedirection  = $true
+        }
     }
     $Session = New-PSSession @SessionSplat
     $SessionModule = Import-PSSession -AllowClobber -DisableNameChecking -Session $Session

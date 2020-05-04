@@ -97,7 +97,7 @@ function New-TestUser {
                 Name                      = '{0}{1:d3}' -f $prefix, $i
                 DisplayName               = '{0}{1:d3}' -f $prefix, $i
                 MicrosoftOnlineServicesID = '{0}{1:d3}@{2}' -f $prefix, $i, $Dom
-                Password                  = $pass
+                Password                  = $ConPass
                 ExternalEmailAddress      = 'kevin@thenext.net'
             }
             $NewMEU = New-MailUser @MeuParams
@@ -111,7 +111,7 @@ function New-TestUser {
             $AzUserParams = @{
                 DisplayName       = '{0}{1:d3}' -f $prefix, $i
                 UserPrincipalName = $UPN
-                MailNickName      = '{0}{1:d3}' -f $prefix, $i
+                MailNickName      = '{0}{1:d3}' -f $prefix, $mailuser
                 PasswordProfile   = $PasswordProfile
                 AccountEnabled    = $true
             }
@@ -120,6 +120,10 @@ function New-TestUser {
         }
 
         if ($RemoteMailbox) {
+            if (-not $Domain) {
+                Write-Host "Please rerun with -Domain parameter" -ForegroundColor Red
+                continue
+            }
             $UPN = '{0}{1:d3}@{2}' -f $prefix, $i, $Dom
             $RMParams = @{
                 DisplayName        = '{0}{1:d3}' -f $prefix, $i
@@ -128,7 +132,7 @@ function New-TestUser {
                 PrimarySMTPAddress = '{0}{1:d3}@{2}' -f $prefix, $i, $Dom
                 SamAccountName     = '{0}{1:d3}' -f $prefix, $i
                 Alias              = '{0}{1:d3}' -f $prefix, $i
-                Password           = $Pass
+                Password           = $ConPass
             }
             if ($OU) {
                 $RMParams['OnPremisesOrganizationalUnit'] = $OU
