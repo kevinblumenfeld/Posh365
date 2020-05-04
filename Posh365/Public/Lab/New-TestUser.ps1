@@ -9,7 +9,7 @@ function New-TestUser {
         $OU,
 
         [Parameter()]
-        $Count = 10,
+        $Count = 1,
 
         [Parameter()]
         [switch]
@@ -46,16 +46,29 @@ function New-TestUser {
         $SecondaryAddressPrefix,
 
         [Parameter()]
+        $Password,
+
+        [Parameter()]
         $PasswordLength = 10
     )
 
     if ($Domain) { $Dom = $Domain }
-    else { $Dom = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName }
+    else { $Dom = ((Get-AcceptedDomain) | Where-Object { $_.InitialDomain }).DomainName }
 
-    $GeneratedPW = [System.Web.Security.Membership]::GeneratePassword($PasswordLength, 3)
-    $Pass = ConvertTo-SecureString -String $GeneratedPW -AsPlainText:$true -Force
+    if ($Password) {
+        $SSPass = ConvertTo-SecureString -String $Password -AsPlainText:$true -Force
+        $PSCred = [System.Management.Automation.PSCredential]::New('PlaceHolder', $SSPass)
+        $Pass = $PSCred.Password
+    }
+    else {
+        $Pass = [System.Web.Security.Membership]::GeneratePassword($PasswordLength, 3)
+    }
+    $ConPass = ConvertTo-SecureString -String $Pass -AsPlainText:$true -Force
+
     $LicenseList = [System.Collections.Generic.List[string]]::New()
-    $Total = $Start + $Count
+    $SubTotal = $Start + $Count
+    if ($Count -eq 0) { $Total = $SubTotal }
+    else { $Total = $SubTotal - 1 }
     foreach ($i in ($Start..($Total))) {
         $NewMC, $NewMEU, $NewAz, $NewRM = $null
         if ($MailContact) {
@@ -93,23 +106,25 @@ function New-TestUser {
 
         if ($AzUser) {
             $PasswordProfile = [Microsoft.Open.AzureAD.Model.PasswordProfile]::new()
-            $PasswordProfile.Password = $pass
+            $PasswordProfile.Password = $ConPass
+            $UPN = '{0}{1:d3}@{2}' -f $prefix, $i, $Dom
             $AzUserParams = @{
                 DisplayName       = '{0}{1:d3}' -f $prefix, $i
-                UserPrincipalName = '{0}{1:d3}@{2}' -f $prefix, $i, $Dom
+                UserPrincipalName = $UPN
                 MailNickName      = '{0}{1:d3}' -f $prefix, $i
                 PasswordProfile   = $PasswordProfile
                 AccountEnabled    = $true
             }
-            $NewAz = New-AzureADUser @AzUserParams
-            Write-Host "[$i of $Total] AzureUser:`t$($NewAz.DisplayName)" -ForegroundColor DarkCyan
+            New-AzureADUser @AzUserParams > $null
+            Write-Host "[$i of $Total] AzureADUser:`t$UPN" -ForegroundColor DarkCyan
         }
 
         if ($RemoteMailbox) {
+            $UPN = '{0}{1:d3}@{2}' -f $prefix, $i, $Dom
             $RMParams = @{
                 DisplayName        = '{0}{1:d3}' -f $prefix, $i
                 Name               = '{0}{1:d3}' -f $prefix, $i
-                UserPrincipalName  = '{0}{1:d3}@{2}' -f $prefix, $i, $Dom
+                UserPrincipalName  = $UPN
                 PrimarySMTPAddress = '{0}{1:d3}@{2}' -f $prefix, $i, $Dom
                 SamAccountName     = '{0}{1:d3}' -f $prefix, $i
                 Alias              = '{0}{1:d3}' -f $prefix, $i
@@ -130,20 +145,21 @@ function New-TestUser {
         }
         if ($CloudOnlyMailbox) {
             $PasswordProfile = [Microsoft.Open.AzureAD.Model.PasswordProfile]::new()
-            $PasswordProfile.Password = $pass
+            $PasswordProfile.Password = $ConPass
+            $UPN = '{0}{1:d3}@{2}' -f $prefix, $i, $Dom
             $AzUserParams = @{
                 DisplayName       = '{0}{1:d3}' -f $prefix, $i
-                UserPrincipalName = '{0}{1:d3}@{2}' -f $prefix, $i, $Dom
+                UserPrincipalName = $UPN
                 MailNickName      = '{0}{1:d3}' -f $prefix, $i
                 PasswordProfile   = $PasswordProfile
                 AccountEnabled    = $true
             }
-            $AzUser = New-AzureADUser @AzUserParams
-            $LicenseList.Add($AzUser.UserPrincipalName)
-            Write-Host "[$i of $Total] AzureUser:`t$($AzUser.DisplayName)" -ForegroundColor DarkCyan
+            New-AzureADUser @AzUserParams > $null
+            $LicenseList.Add($UPN)
+            Write-Host "[$i of $Total] AzureADUserToBeLicensed:`t$UPN" -ForegroundColor DarkCyan
         }
     }
-    if ($LicenseList.count -gt 1) {
+    if (@($LicenseList).count -gt 0) {
         $LicenseList | Set-CloudLicense -AddOptions
     }
 }
