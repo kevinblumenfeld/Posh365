@@ -1,4 +1,4 @@
-function Connect-Graph {
+function Connect-PoshGraph {
     [CmdletBinding()]
     param(
 
@@ -45,7 +45,6 @@ function Connect-Graph {
         [System.Management.Automation.PSCredential]$Script:AzureCredential = Import-Clixml ($KeyPath + "$($TenantAndID).AzureXml")
         $ClientID = $AzureCredential.GetNetworkCredential().username
         $Secret = $AzureCredential.GetNetworkCredential().Password
-
     }
     else {
         [System.Management.Automation.PSCredential]$Script:AzureCredential = Get-Credential -Message "Enter Application ID (client id) as Username and API Secret as Password"

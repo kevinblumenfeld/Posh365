@@ -15,7 +15,7 @@ function Get-GraphUser {
     }
     process {
         foreach ($CurUserPrincipalName in $UserPrincipalName) {
-            $Token = Connect-Graph -Tenant $Tenant
+            $Token = Connect-PoshGraph -Tenant $Tenant
             $Headers = @{
                 "Authorization" = "Bearer $Token"
             }

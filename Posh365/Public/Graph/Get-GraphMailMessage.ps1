@@ -18,7 +18,7 @@ function Get-GraphMailMessage {
             $FolderName = $CurMailboxAndFolder.DisplayName
             $WellKnownFolderName = $CurMailboxAndFolder.WellKnownName
             $FolderId = $CurMailboxAndFolder.FolderId
-            $Token = Connect-Graph -Tenant $Tenant
+            $Token = Connect-PoshGraph -Tenant $Tenant
 
             $Headers = @{
                 "Authorization" = "Bearer $Token"

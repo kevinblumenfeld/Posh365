@@ -40,7 +40,7 @@ function Get-GraphMailFolderPathId {
     }
     process {
         foreach ($CurUser in $User) {
-            $Token = Connect-Graph -Tenant $Tenant
+            $Token = Connect-PoshGraph -Tenant $Tenant
             $DisplayName = $CurUser.DisplayName
             $UPN = $CurUser.UserPrincipalName
             $Mail = $CurUser.Mail
@@ -57,7 +57,7 @@ function Get-GraphMailFolderPathId {
                 Method  = 'Get'
             }
             for ($i = 1; $i -lt $FolderArray.Length; $i++) {
-                $Token = Connect-Graph -Tenant $Tenant
+                $Token = Connect-PoshGraph -Tenant $Tenant
                 $FolderName = $FolderArray[$i]
                 $Headers = @{
                     "Authorization" = "Bearer $Token"

@@ -13,7 +13,7 @@ function Get-GraphSecureScore {
 
     )
 
-    $Token = Connect-Graph -Tenant $Tenant #-Identifier $Identifier
+    $Token = Connect-PoshGraph -Tenant $Tenant #-Identifier $Identifier
 
     $Headers = @{
         "Authorization" = "Bearer $Token"
@@ -26,7 +26,7 @@ function Get-GraphSecureScore {
     }
 
     do {
-        $Token = Connect-Graph -Tenant $Tenant #-Identifier $Identifier
+        $Token = Connect-PoshGraph -Tenant $Tenant #-Identifier $Identifier
         try {
             $Response = Invoke-RestMethod @RestSplat -Verbose:$false -ErrorAction Stop
             $ScoreList = $Response.value

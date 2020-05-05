@@ -7,7 +7,11 @@ function Convert-CloudData {
         $FilePath,
 
         [Parameter()]
-        $SourceData
+        $SourceData,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        $InitialDomain
     )
 
     $InitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
@@ -15,7 +19,6 @@ function Convert-CloudData {
     if (-not $SourceData) {
         $SourceData = Import-Csv -Path $FilePath
     }
-
     foreach ($Source in $SourceData) {
         $AddressList = [System.Collections.Generic.List[string]]::New()
         if ($Source.InitialAddress) {
@@ -32,7 +35,6 @@ function Convert-CloudData {
             $LegacyExchangeDN = ''
         }
         $AddressList.Add((@($Source.EmailAddresses -split [Regex]::Escape('|') ).where{ $_ -like "x500:*" }))
-
         if ($Source.RecipientTypeDetails -eq 'MailUser') {
             $TargetPrimarySmtpAddress = $Source.PrimarySmtpAddress
         }
@@ -66,7 +68,6 @@ function Convert-CloudData {
             SourceEmailAddresses      = $Source.EmailAddresses
             SourceExchangeGuid        = $Source.ExchangeGuid
             SourceArchiveGuid         = $Source.ArchiveGuid
-
         }
     }
 }

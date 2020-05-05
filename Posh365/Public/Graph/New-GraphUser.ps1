@@ -12,7 +12,7 @@ function New-GraphUser {
     }
     process {
         foreach ($User in $UserList) {
-            $Token = Connect-Graph -Tenant $Tenant
+            $Token = Connect-PoshGraph -Tenant $Tenant
             $Headers = @{
                 'Authorization' = "Bearer $Token"
                 'Content-Type'  = 'application/json'

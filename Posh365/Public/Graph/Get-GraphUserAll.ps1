@@ -5,7 +5,7 @@ function Get-GraphUserAll {
         [string] $Tenant
     )
     begin {
-        $Token = Connect-Graph -Tenant $Tenant
+        $Token = Connect-PoshGraph -Tenant $Tenant
 
         $Headers = @{
             "Authorization" = "Bearer $Token"
@@ -16,7 +16,7 @@ function Get-GraphUserAll {
             Method  = 'Get'
         }
         do {
-            $Token = Connect-Graph -Tenant $Tenant
+            $Token = Connect-PoshGraph -Tenant $Tenant
             try {
                 $Response = Invoke-RestMethod @RestSplat -Verbose:$false -ErrorAction Stop
                 $User = $Response.value

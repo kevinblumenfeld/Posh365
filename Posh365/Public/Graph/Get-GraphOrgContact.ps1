@@ -9,7 +9,7 @@ function Get-GraphOrgContact {
         $SelectString = 'DisplayName, mail, id'
     }
     process {
-        $Token = Connect-Graph -Tenant $Tenant
+        $Token = Connect-PoshGraph -Tenant $Tenant
         $Headers = @{
             "Authorization" = "Bearer $Token"
         }

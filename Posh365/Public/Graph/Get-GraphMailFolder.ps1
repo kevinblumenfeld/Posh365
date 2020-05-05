@@ -18,7 +18,7 @@ function Get-GraphMailFolder {
     }
     process {
         foreach ($CurUser in $User) {
-            $Token = Connect-Graph -Tenant $Tenant
+            $Token = Connect-PoshGraph -Tenant $Tenant
             $DisplayName = $CurUser.DisplayName
             $UPN = $CurUser.UserPrincipalName
             $Mail = $CurUser.Mail
@@ -31,7 +31,7 @@ function Get-GraphMailFolder {
                 Uri     = 'https://graph.microsoft.com/beta/users/{0}/mailFolders' -f $Id
                 Headers = $Headers
                 Method  = 'Get'
-            }  
+            }
             $RestSplat = @{
                 Uri     = "https://graph.microsoft.com/beta/users/{0}/mailFolders('{1}')/messages" -f $Id, $WellKnownFolder
                 Headers = $Headers
@@ -50,13 +50,13 @@ function Get-GraphMailFolder {
                 Headers = $Headers
                 Method  = 'Get'
             }
-            
+
             do {
-                $Token = Connect-Graph -Tenant $Tenant
+                $Token = Connect-PoshGraph -Tenant $Tenant
                 try {
                     $Response = Invoke-RestMethod @RestSplat -Verbose:$false -ErrorAction Stop
                     $Folder = $Response.value
-                    <#                    
+                    <#
                     if ($WellKnownFolder) {
                         $Folder = $Folder.Where{$_.wellKnownName -eq $WellKnownFolder}
                     }

@@ -3,95 +3,38 @@ function Sync-CloudData {
     [CmdletBinding()]
     param (
         [Parameter()]
-        [switch]
-        $Mailboxes,
-
-        [Parameter()]
-        [switch]
-        $MailUsers,
-
-        [Parameter()]
-        [switch]
-        $AzureADUsers,
-
-        [Parameter()]
         $ResultSize = 'Unlimited'
     )
-    [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-    $Yes = [ChoiceDescription]::new('&Yes', 'Connect: Yes')
-    $No = [ChoiceDescription]::new('&No', 'Connect: No')
-    $Title = 'Please make a selection'
-    $Question = 'Connect to Exchange Online and AzureAD?'
-    $Options = [ChoiceDescription[]]($Yes, $No)
-    $ConnectMenu = $host.ui.PromptForChoice($Title, $Question, $Options, 0)
-
-    switch ($ConnectMenu) {
-        0 {
-            Get-PSSession | Remove-PSSession
-            if ($AzureADUsers) {
-                try { Disconnect-AzureAD -ErrorAction Stop } catch { }
-                if (-not ($null = Get-Module -Name 'AzureAD', 'AzureADPreview' -ListAvailable)) {
-                    Install-Module -Name AzureAD -Scope CurrentUser -Force -AllowClobber
-                }
-                Write-Host "`r`nEnter credentials for Source Azure AD`r`n" -ForegroundColor Cyan
-                $null = Connect-AzureAD
-                $AzDomain = ((Get-AzureADDomain).where{ $_.IsInitial }).Name
-                Write-Host "`r`nConnected to Azure AD Tenant: $AzDomain`r`n" -ForegroundColor Green
-            }
-            if ($Mailboxes -or $MailUsers) {
-                $Script:RestartConsole = $null
-                Connect-CloudModuleImport -EXO2
-                if ($RestartConsole) {
-                    return
-                }
-                Write-Host "`r`nEnter credentials for Source Tenant Exchange Online`r`n" -ForegroundColor Cyan
-                Connect-ExchangeOnline
-                $InitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
-                Write-Host "`r`nConnected to Exchange Online Tenant: $InitialDomain`r`n" -ForegroundColor Green
-            }
-        }
-        1 { }
-    }
-    if ($InitialDomain -or $AzDomain) {
-        $Yes = [ChoiceDescription]::new('&Yes', 'Source Domain: Yes')
-        $No = [ChoiceDescription]::new('&No', 'Source Domain: No')
-        $Title = 'Please make a selection'
-        $Question = 'Is this the source tenant {0} | {1}?' -f $InitialDomain, $AzDomain
-        $Options = [ChoiceDescription[]]($Yes, $No)
-        $Menu = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
-
-        switch ($Menu) {
-            0 { }
-            1 { return }
-        }
-    }
-    else {
-        Write-Host 'Halting script: Not connected to Exchange Online' -ForegroundColor Red
-        return
-    }
-
+    <#
+    #Region Paths
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
     $SourcePath = Join-Path -Path $PoshPath -ChildPath $InitialDomain
-    $SourceFile = Join-Path -Path $SourcePath -ChildPath ('{0}.csv' -f $InitialDomain)
-
     if (-not ($null = Test-Path $SourcePath)) {
-        $ItemSplat = @{
-            Type        = 'Directory'
-            Force       = $true
-            ErrorAction = 'SilentlyContinue'
-        }
-        $null = New-Item $PoshPath @ItemSplat
-        $null = New-Item $SourcePath @ItemSplat
+        $null = New-Item $PoshPath -Type Directory -Force -ErrorAction SilentlyContinue
+        $null = New-Item $SourcePath -Type Directory -Force -ErrorAction SilentlyContinue
     }
-
-    Write-Host ('{0}Connected to source: ' -f [Environment]::NewLine) -ForegroundColor Cyan -NoNewline
-    Write-Host ('{0}{1}' -f $InitialDomain, [Environment]::NewLine) -ForegroundColor Green
-    Write-Host 'Writing to: ' -ForegroundColor Cyan -NoNewline
-    Write-Host ('{0}{1}' -f $SourceFile, [Environment]::NewLine) -ForegroundColor Green
-
-    $SourceData = Invoke-GetCloudData -ResultSize $ResultSize -InitialDomain $InitialDomain
+    #EndRegion Paths
+    [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+    Get-PSSession | Remove-PSSession
+    #Region Choose Recipient
+    while (-not $TypeChoice) {
+        $Type = foreach ($Item in 'Mailboxes', 'MailUsers', 'AzureADUsers') {
+            [PSCustomObject]@{
+                RecipientType = $Item
+            }
+        }
+        $TypeObject = $Type | Out-GridView -OutputMode Single -Title "Choose Recipient Type"
+        $TypeChoice = $TypeObject.RecipientType
+    }
+    #EndRegion Choose Recipient
+    $InitialDomain = Select-CloudDataConnection -Type $TypeChoice -TenantLocation Source
+    Write-Host "`r`nConnected to Source Tenant: $InitialDomain" -ForegroundColor Green
+    $CsvFile = Join-Path -Path $SourcePath -ChildPath ('{0}.csv' -f $InitialDomain)
+    $SourceData = Invoke-GetCloudData -ResultSize $ResultSize -InitialDomain $InitialDomain -Type $TypeChoice
+    $SourceData | Export-Csv -Path $CsvFile -NoTypeInformation
+    Write-Host ('$TenantLocation objects written to file: {0} {1}' -f $CsvFile, [Environment]::NewLine) -ForegroundColor Green
+    $SourceData = Invoke-GetCloudData -ResultSize $ResultSize -InitialDomain $InitialDomain -Type $TypeChoice
     $SourceData | Export-Csv -Path $SourceFile -NoTypeInformation
-
     Write-Host ('Source objects written to file: {0} {1}' -f $SourceFile, [Environment]::NewLine) -ForegroundColor Green
 
     $Yes = [ChoiceDescription]::new('&Yes', 'Convert Cloud Data: Yes')
@@ -103,31 +46,7 @@ function Sync-CloudData {
 
     switch ($Menu) {
         0 {
-            Get-PSSession | Remove-PSSession
-            try { Disconnect-AzureAD -ErrorAction Stop } catch { }
-
-            Write-Host "`r`nEnter credentials for Target Tenant Exchange Online`r`n" -ForegroundColor Cyan
-            Connect-ExchangeOnline
-            $TargetInitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
-            Write-Host "`r`nConnected to Exchange Online Tenant: $TargetInitialDomain`r`n" -ForegroundColor Green
-
-            Write-Host "`r`nEnter credentials for Target Azure AD`r`n" -ForegroundColor Cyan
-            $null = Connect-AzureAD
-            $TargetAzDomain = ((Get-AzureADDomain).where{ $_.IsInitial }).Name
-            Write-Host "`r`nConnected to Azure AD Tenant: $TargetAzDomain`r`n" -ForegroundColor Green
-
-
-            if ($TargetInitialDomain -ne $TargetAzDomain) {
-                Write-Host "Halting script: $TargetInitialDomain does not match $TargetAzDomain" -ForegroundColor Red
-                return
-            }
-            $TargetFile = Join-Path -Path $SourcePath -ChildPath ('{0}.csv' -f $TargetInitialDomain)
-
-            Write-Host 'Connected to target: ' -ForegroundColor Cyan -NoNewline
-            Write-Host ('{0}{1}' -f $TargetInitialDomain, [Environment]::NewLine) -ForegroundColor Green
-            Write-Host 'Converted target file: ' -ForegroundColor Cyan -NoNewline
-            Write-Host ('{0}{1}' -f $TargetFile, [Environment]::NewLine) -ForegroundColor Green
-
+            $InitialDomain = Select-CloudDataConnection -Type $TypeChoice -SourcePath $SourcePath -TenantLocation Target
             $ConvertedData = Convert-CloudData -SourceData $SourceData
             $ConvertedData | Out-GridView -Title "Data converted for import into Target: $TargetInitialDomain"
             $ConvertedData | Export-Csv -Path $TargetFile -NoTypeInformation
@@ -137,13 +56,11 @@ function Sync-CloudData {
             return
         }
     }
-
     $Yes = [ChoiceDescription]::new('&Yes', 'Import: Yes')
     $No = [ChoiceDescription]::new('&No', 'Import: No')
     $Question = 'Write converted data to Target Tenant?'
     $Options = [ChoiceDescription[]]($Yes, $No)
     $Menu = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
-
     switch ($Menu) {
         0 {
             $FileStamp = 'Sync_Result_{0}_{1}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'), $TargetInitialDomain
@@ -157,5 +74,5 @@ function Sync-CloudData {
             Write-Host 'Halting Script' -ForegroundColor Red
             return
         }
-    }
+    } #>
 }

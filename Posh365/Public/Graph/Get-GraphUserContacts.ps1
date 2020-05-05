@@ -13,7 +13,7 @@ function Get-GraphUserContacts {
     begin {
     }
     process {
-        $Token = Connect-Graph -Tenant $Tenant
+        $Token = Connect-PoshGraph -Tenant $Tenant
         $Headers = @{
             "Authorization" = "Bearer $Token"
         }
