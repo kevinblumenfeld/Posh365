@@ -10,6 +10,8 @@ function Select-CloudDataConnection {
         [ValidateSet('Source', 'Target')]
         $TenantLocation
     )
+    [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+    Get-PSSession | Remove-PSSession
     if ($TypeChoice -eq 'AzureADUsers') {
         try { Disconnect-AzureAD -ErrorAction Stop } catch { }
         if (-not ($null = Get-Module -Name 'AzureAD', 'AzureADPreview' -ListAvailable)) {

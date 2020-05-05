@@ -14,8 +14,6 @@ function Sync-CloudData {
         $null = New-Item $SourcePath -Type Directory -Force -ErrorAction SilentlyContinue
     }
     #EndRegion Paths
-    [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-    Get-PSSession | Remove-PSSession
     #Region Choose Recipient
     while (-not $TypeChoice) {
         $Type = foreach ($Item in 'Mailboxes', 'MailUsers', 'AzureADUsers') {
@@ -27,9 +25,9 @@ function Sync-CloudData {
         $TypeChoice = $TypeObject.RecipientType
     }
     #EndRegion Choose Recipient
-    #Region SOURCE Connect to Service
+    #Region SOURCE Connect to Service ($InitialDomain) returned
     $InitialDomain = Select-CloudDataConnection -Type $TypeChoice -TenantLocation Source
-    Write-Host "`r`nConnected to Source Tenant: $InitialDomain" -ForegroundColor Green
+
     #EndRegion SOURCE Connect to Service
     #Region Invoke-GetCloudData ($SourceData) returned
     $CsvFile = Join-Path -Path $SourcePath -ChildPath ('SOURCE_SYNC_{0}_{1}.csv' -f $TypeChoice, $InitialDomain)
@@ -47,12 +45,20 @@ function Sync-CloudData {
     #EndRegion Ask if ready to convert
     switch ($Menu) {
         0 {
-            #Region TARGET Connect to Service
-            $InitialDomain = Select-CloudDataConnection -Type $TypeChoice -SourcePath $SourcePath -TenantLocation Target
+            #Region TARGET Connect to Service ($InitialDomain) returned
+            $SourceIntialDomain = $InitialDomain ; $InitialDomain = $null
+            $InitialDomain = Select-CloudDataConnection -Type $TypeChoice -TenantLocation Target
+            while ($SourceIntialDomain -eq $InitialDomain) {
+                Write-Warning 'Source Tenant cannot be the same as the Target Tenant. Please connect to Target Tenant now.'
+                $InitialDomain = Select-CloudDataConnection -Type $TypeChoice -TenantLocation Target
+            }
+
             #EndRegion TARGET Connect to Service
+            #Region TARGET Convert Source Data ($ConvertedData) returned
             $ConvertedData = Convert-CloudData -SourceData $SourceData
             $ConvertedData | Out-GridView -Title "Data converted for import into Target: $TargetInitialDomain"
             $ConvertedData | Export-Csv -Path $TargetFile -NoTypeInformation
+            #EndRegion TARGET Convert Source Data ($ConvertedData) returned
         }
         1 {
             Write-Host 'Halting Script' -ForegroundColor Red
