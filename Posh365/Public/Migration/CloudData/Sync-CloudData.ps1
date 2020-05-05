@@ -5,7 +5,7 @@ function Sync-CloudData {
         [Parameter()]
         $ResultSize = 'Unlimited'
     )
-    <#
+
     #Region Paths
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
     $SourcePath = Join-Path -Path $PoshPath -ChildPath $InitialDomain
@@ -27,26 +27,29 @@ function Sync-CloudData {
         $TypeChoice = $TypeObject.RecipientType
     }
     #EndRegion Choose Recipient
+    #Region SOURCE Connect to Service
     $InitialDomain = Select-CloudDataConnection -Type $TypeChoice -TenantLocation Source
     Write-Host "`r`nConnected to Source Tenant: $InitialDomain" -ForegroundColor Green
-    $CsvFile = Join-Path -Path $SourcePath -ChildPath ('{0}.csv' -f $InitialDomain)
+    #EndRegion SOURCE Connect to Service
+    #Region Invoke-GetCloudData ($SourceData) returned
+    $CsvFile = Join-Path -Path $SourcePath -ChildPath ('SOURCE_SYNC_{0}_{1}.csv' -f $TypeChoice, $InitialDomain)
     $SourceData = Invoke-GetCloudData -ResultSize $ResultSize -InitialDomain $InitialDomain -Type $TypeChoice
     $SourceData | Export-Csv -Path $CsvFile -NoTypeInformation
-    Write-Host ('$TenantLocation objects written to file: {0} {1}' -f $CsvFile, [Environment]::NewLine) -ForegroundColor Green
-    $SourceData = Invoke-GetCloudData -ResultSize $ResultSize -InitialDomain $InitialDomain -Type $TypeChoice
-    $SourceData | Export-Csv -Path $SourceFile -NoTypeInformation
-    Write-Host ('Source objects written to file: {0} {1}' -f $SourceFile, [Environment]::NewLine) -ForegroundColor Green
-
+    Write-Host "Source $TypeChoice objects written to file: $CsvFile`r`n" -ForegroundColor Green
+    #EndRegion Invoke-GetCloudData
+    #Region Ask if ready to convert
     $Yes = [ChoiceDescription]::new('&Yes', 'Convert Cloud Data: Yes')
     $No = [ChoiceDescription]::new('&No', 'Convert Cloud Data: No')
     $Title = 'Please make a selection'
     $Question = 'Convert data? (We only create a CSV in this step)'
     $Options = [ChoiceDescription[]]($Yes, $No)
     $Menu = $host.ui.PromptForChoice($Title, $Question, $Options, 0)
-
+    #EndRegion Ask if ready to convert
     switch ($Menu) {
         0 {
+            #Region TARGET Connect to Service
             $InitialDomain = Select-CloudDataConnection -Type $TypeChoice -SourcePath $SourcePath -TenantLocation Target
+            #EndRegion TARGET Connect to Service
             $ConvertedData = Convert-CloudData -SourceData $SourceData
             $ConvertedData | Out-GridView -Title "Data converted for import into Target: $TargetInitialDomain"
             $ConvertedData | Export-Csv -Path $TargetFile -NoTypeInformation
@@ -74,5 +77,5 @@ function Sync-CloudData {
             Write-Host 'Halting Script' -ForegroundColor Red
             return
         }
-    } #>
+    }
 }

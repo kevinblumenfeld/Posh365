@@ -7,14 +7,17 @@ function Convert-CloudData {
         $FilePath,
 
         [Parameter()]
-        $SourceData,
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        $InitialDomain
+        $SourceData
     )
 
-    $InitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName
+    if ($InitialDomain = ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName) {
+        Write-Host "Connect to: $IntialDomain"
+    }
+    else {
+        Write-Host "Not connected.  Please connect and retry"
+        return
+    }
+
 
     if (-not $SourceData) {
         $SourceData = Import-Csv -Path $FilePath
