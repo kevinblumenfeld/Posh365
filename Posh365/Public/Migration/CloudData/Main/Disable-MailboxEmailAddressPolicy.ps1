@@ -40,7 +40,7 @@ function Disable-MailboxEmailAddressPolicy {
     )
     if (-not $SkipConnection) {
         Get-PSSession | Remove-PSSession
-        Connect-Exchange @PSBoundParameters -PromptConfirm
+        Connect-Exchange -DontViewEntireForest:$DontViewEntireForest -PromptConfirm
     }
 
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
