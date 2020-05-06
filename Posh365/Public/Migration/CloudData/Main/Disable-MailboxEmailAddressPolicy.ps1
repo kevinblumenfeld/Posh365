@@ -28,7 +28,7 @@ function Disable-MailboxEmailAddressPolicy {
     param (
         [Parameter()]
         [switch]
-        $All,
+        $SkipMailboxesWhereEAPisFalse,
 
         [Parameter()]
         [switch]
@@ -51,13 +51,13 @@ function Disable-MailboxEmailAddressPolicy {
 
     Write-Host "Fetching Remote Mailboxes..." -ForegroundColor Cyan
 
-    if ($All) {
-        $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath 'RemoteMailbox_ALL.xml'
-        Get-RemoteMailbox -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
-    }
-    else {
+    if ($SkipMailboxesWhereEAPisFalse) {
         $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath 'RemoteMailbox_EAP_TRUE.xml'
         Get-RemoteMailbox -Filter "EmailAddressPolicyEnabled -eq '$true'" -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
+    }
+    else {
+        $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath 'RemoteMailbox_ALL.xml'
+        Get-RemoteMailbox -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
     }
     $RemoteMailboxList = Import-Clixml $RemoteMailboxXML | Sort-Object DisplayName, OrganizationalUnit
     $RMHash = Get-RemoteMailboxHash -Key Guid -RemoteMailboxList $RemoteMailboxList
