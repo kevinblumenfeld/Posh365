@@ -28,6 +28,10 @@ function Disable-MailboxEmailAddressPolicy {
     param (
         [Parameter()]
         [switch]
+        $All,
+
+        [Parameter()]
+        [switch]
         $SkipConnection,
 
         [Parameter()]
@@ -44,10 +48,17 @@ function Disable-MailboxEmailAddressPolicy {
     if (-not (Test-Path $PoshPath)) {
         $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
-    $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath 'RemoteMailboxEAPTrue.xml'
+
     Write-Host "Fetching Remote Mailboxes..." -ForegroundColor Cyan
 
-    Get-RemoteMailbox -Filter "EmailAddressPolicyEnabled -eq '$true'" -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
+    if ($All) {
+        $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath 'RemoteMailbox_ALL.xml'
+        Get-RemoteMailbox -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
+    }
+    else {
+        $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath 'RemoteMailbox_EAP_TRUE.xml'
+        Get-RemoteMailbox -Filter "EmailAddressPolicyEnabled -eq '$true'" -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
+    }
     $RemoteMailboxList = Import-Clixml $RemoteMailboxXML | Sort-Object DisplayName, OrganizationalUnit
     $RMHash = Get-RemoteMailboxHash -Key Guid -RemoteMailboxList $RemoteMailboxList
 
@@ -63,7 +74,7 @@ function Disable-MailboxEmailAddressPolicy {
     if ($Choice) { Get-DecisionbyOGV } else { Write-Host 'Halting as nothing was selected' ; continue }
 
     $Result = Invoke-DisableMailboxEmailAddressPolicy -Choice $Choice -Hash $RMHash
-    
+
     $Result | Out-GridView -Title ('Results of Disabling Email Address Policy  [ Count: {0} ]' -f $Result.Count)
     $ResultCSV = Join-Path -Path $PoshPath -ChildPath ('After Disable EAP {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $Result | Export-Csv $ResultCSV -NoTypeInformation
