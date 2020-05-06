@@ -5,7 +5,7 @@ function Sync-CloudData {
         [Parameter()]
         $ResultSize = 'Unlimited'
     )
-
+<#
     #Region Paths
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
     $SourcePath = Join-Path -Path $PoshPath -ChildPath $InitialDomain
@@ -85,5 +85,5 @@ function Sync-CloudData {
             Write-Host 'Halting Script' -ForegroundColor Red
             return
         }
-    }
+    } #>
 }
