@@ -76,7 +76,7 @@ function Disable-MailboxEmailAddressPolicy {
     }
     Write-Host "Choose which Remote Mailboxes in which to disable their Email Address Policy" -ForegroundColor Black -BackgroundColor White
     Write-Host "To select use Ctrl/Shift + click (Individual) or Ctrl + A (All)" -ForegroundColor Black -BackgroundColor White
-    $SelectParams = @{RemoteMailboxList = $RemoteMailboxList }
+    $SelectParams = @{ RemoteMailboxList = $RemoteMailboxList }
     if ($OnlyEAPEnabled) { $SelectParams['BadPolicyHash'] = $BadPolicyHash }
     $Choice = Select-DisableMailboxEmailAddressPolicy @SelectParams |
     Out-GridView -OutputMode Multiple -Title "Choose which Remote Mailboxes in which to disable their Email Address Policy"
@@ -86,12 +86,12 @@ function Disable-MailboxEmailAddressPolicy {
 
     if ($Choice) { Get-DecisionbyOGV } else { Write-Host 'Halting as nothing was selected' ; continue }
 
-    $ClearResult = Clear-ADEmailAddressPolicyAttributes -Choice $Choice -Hash $RMHash -BadPolicyHash $BadPolicyHash
+    $ClearResult = Clear-ADEmailAddressPolicyAttributes -Choice $Choice -Hash $RMHash -BadPolicyHash $BadPolicyHash -DomainController $DomainController
     $ClearResult | Out-GridView -Title ('Results of Clearing EAP Policy Attributes in AD  [ Count: {0} ]' -f @($ClearResult).Count)
     $ClearResultCSV = Join-Path -Path $PoshPath -ChildPath ('After Clearing EAP Policy Attributes {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $ClearResult | Export-Csv $ClearResultCSV -NoTypeInformation
 
-    $Result = Invoke-DisableMailboxEmailAddressPolicy -Choice $Choice -Hash $RMHash
+    $Result = Invoke-DisableMailboxEmailAddressPolicy -Choice $Choice -Hash $RMHash -DomainController $DomainController
     $Result | Out-GridView -Title ('Results of Disabling Email Address Policy  [ Count: {0} ]' -f @($Result).Count)
     $ResultCSV = Join-Path -Path $PoshPath -ChildPath ('After Disable EAP {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $Result | Export-Csv $ResultCSV -NoTypeInformation

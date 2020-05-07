@@ -15,7 +15,7 @@ function Get-ADEmailAddressPolicyHash {
         if ($ADUser.msExchPoliciesIncluded -or
             $ADUser.msExchPoliciesExcluded.Count -gt 1 -or
             ($ADUser.msExchPoliciesExcluded -and $ADUser.msExchPoliciesExcluded -ne '{26491CFC-9E50-4857-861B-0CB8DF22B5D7}')) {
-            $BadEAPHash[$ADUser.ObjectGUID] = @{
+            $BadEAPHash[$ADUser.ObjectGUID.ToString()] = @{
                 msExchPoliciesIncluded = $ADUser.msExchPoliciesIncluded
                 msExchPoliciesExcluded = $ADUser.msExchPoliciesExcluded
                 DisplayName            = $ADUser.DisplayName

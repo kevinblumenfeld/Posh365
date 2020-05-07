@@ -17,10 +17,10 @@ function Invoke-DisableMailboxEmailAddressPolicy {
         $AfterSuccess = $null
         $i++
         try {
-            Set-RemoteMailbox -DomainController $DomainController -Identity $Item.Guid -EmailAddressPolicyEnabled:$false -ErrorAction Stop
+            Set-RemoteMailbox -DomainController $DomainController -Identity $Item.Guid.ToString() -EmailAddressPolicyEnabled:$false -ErrorAction Stop
             Write-Host ('[{0} of {1}] {2} Success Disabling EAP - All emails unchanged? ' -f $i, $Count, $item.DisplayName) -ForegroundColor Green -NoNewline
-            $AfterSuccess = Get-RemoteMailbox -DomainController $DomainController -Identity $item.Guid -ErrorAction Stop
-            $AllAddressesUnchanged = $Hash[$item.Guid]['AllEmailAddresses'] -eq (@($AfterSuccess.EmailAddresses) -ne '' -join '|')
+            $AfterSuccess = Get-RemoteMailbox -DomainController $DomainController -Identity $Item.Guid.ToString() -ErrorAction Stop
+            $AllAddressesUnchanged = $Hash[$Item.Guid.ToString()]['AllEmailAddresses'] -eq (@($AfterSuccess.EmailAddresses) -ne '' -join '|')
             if ($AllAddressesUnchanged) {
                 Write-Host $AllAddressesUnchanged -ForegroundColor White -BackgroundColor DarkMagenta
             }
@@ -32,22 +32,22 @@ function Invoke-DisableMailboxEmailAddressPolicy {
                 Num                           = '[{0} of {1}]' -f $i, $Count
                 Result                        = 'SUCCESS'
                 Action                        = 'EAPDISABLED'
-                PrimarySmtpAddressUnchanged   = $Hash[$item.Guid]['PrimarySmtpAddress'] -eq $AfterSuccess.PrimarySmtpAddress
+                PrimarySmtpAddressUnchanged   = $Hash[$Item.Guid.ToString()]['PrimarySmtpAddress'] -eq $AfterSuccess.PrimarySmtpAddress
                 AllEmailsUnchanged            = $AllAddressesUnchanged
                 DisplayName                   = $AfterSuccess.DisplayName
                 CurrentPolicyEnabled          = $AfterSuccess.EmailAddressPolicyEnabled
-                PreviousPolicyEnabled         = $Hash[$item.Guid]['EmailAddressPolicyEnabled']
+                PreviousPolicyEnabled         = $Hash[$Item.Guid.ToString()]['EmailAddressPolicyEnabled']
                 OrganizationalUnit            = $AfterSuccess.OnPremisesOrganizationalUnit
                 Alias                         = $AfterSuccess.Alias
                 CurrentPrimarySmtpAddress     = $AfterSuccess.PrimarySmtpAddress
-                PreviousPrimarySmtpAddress    = $Hash[$item.Guid]['PrimarySmtpAddress']
-                EmailCountChange              = $AfterSuccess.EmailAddresses.Count - $Hash[$item.Guid]['EmailCount']
+                PreviousPrimarySmtpAddress    = $Hash[$Item.Guid.ToString()]['PrimarySmtpAddress']
+                EmailCountChange              = $AfterSuccess.EmailAddresses.Count - $Hash[$Item.Guid.ToString()]['EmailCount']
                 CurrentEmailCount             = $AfterSuccess.EmailAddresses.Count
-                PreviousEmailCount            = $Hash[$item.Guid]['EmailCount']
+                PreviousEmailCount            = $Hash[$Item.Guid.ToString()]['EmailCount']
                 CurrentEmailAddresses         = @($AfterSuccess.EmailAddresses) -match 'smtp:' -join '|'
-                PreviousEmailAddresses        = $Hash[$item.Guid]['EmailAddresses']
+                PreviousEmailAddresses        = $Hash[$Item.Guid.ToString()]['EmailAddresses']
                 CurrentEmailAddressesNotSmtp  = @($AfterSuccess.EmailAddresses) -notmatch 'smtp:' -join '|'
-                PreviousEmailAddressesNotSmtp = $Hash[$item.Guid]['EmailAddressesNotSmtp']
+                PreviousEmailAddressesNotSmtp = $Hash[$Item.Guid.ToString()]['EmailAddressesNotSmtp']
                 Guid                          = $AfterSuccess.Guid.ToString()
                 Log                           = 'SUCCESS'
             }
@@ -60,20 +60,20 @@ function Invoke-DisableMailboxEmailAddressPolicy {
                 Action                        = 'EAPDISABLED'
                 PrimarySmtpAddressUnchanged   = 'FAILED'
                 AllEmailsUnchanged            = 'FAILED'
-                DisplayName                   = $Hash[$item.Guid]['DisplayName']
+                DisplayName                   = $Hash[$Item.Guid.ToString()]['DisplayName']
                 CurrentPolicyEnabled          = 'FAILED'
-                PreviousPolicyEnabled         = $Hash[$item.Guid]['EmailAddressPolicyEnabled']
+                PreviousPolicyEnabled         = $Hash[$Item.Guid.ToString()]['EmailAddressPolicyEnabled']
                 OrganizationalUnit            = 'FAILED'
                 Alias                         = 'FAILED'
                 CurrentPrimarySmtpAddress     = 'FAILED'
-                PreviousPrimarySmtpAddress    = $Hash[$item.Guid]['PrimarySmtpAddress']
+                PreviousPrimarySmtpAddress    = $Hash[$Item.Guid.ToString()]['PrimarySmtpAddress']
                 EmailCountChange              = 'FAILED'
                 CurrentEmailCount             = 'FAILED'
-                PreviousEmailCount            = $Hash[$item.Guid]['EmailCount']
+                PreviousEmailCount            = $Hash[$Item.Guid.ToString()]['EmailCount']
                 CurrentEmailAddresses         = 'FAILED'
-                PreviousEmailAddresses        = $Hash[$item.Guid]['EmailAddresses']
+                PreviousEmailAddresses        = $Hash[$Item.Guid.ToString()]['EmailAddresses']
                 CurrentEmailAddressesNotSmtp  = 'FAILED'
-                PreviousEmailAddressesNotSmtp = $Hash[$item.Guid]['EmailAddressesNotSmtp']
+                PreviousEmailAddressesNotSmtp = $Hash[$Item.Guid.ToString()]['EmailAddressesNotSmtp']
                 Guid                          = 'FAILED'
                 Log                           = $_.Exception.Message
             }
