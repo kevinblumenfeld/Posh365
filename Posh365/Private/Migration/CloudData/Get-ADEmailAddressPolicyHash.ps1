@@ -10,7 +10,7 @@ function Get-ADEmailAddressPolicyHash {
         contine
     }
     $BadEAPHash = @{ }
-    $ADUserList = Get-ADUser -server $DomainController -Filter * -Properties msExchPoliciesIncluded, msExchPoliciesExcluded, DisplayName
+    $ADUserList = Get-ADUser -server $DomainController -ResultSetSize $null -Filter * -Properties msExchPoliciesIncluded, msExchPoliciesExcluded, DisplayName
     foreach ($ADUser in $ADUserList) {
         if ($ADUser.msExchPoliciesIncluded -or
             $ADUser.msExchPoliciesExcluded.Count -ne 1 -or
