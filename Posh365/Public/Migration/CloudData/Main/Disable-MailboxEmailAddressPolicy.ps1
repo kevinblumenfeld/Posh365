@@ -1,34 +1,42 @@
 function Disable-MailboxEmailAddressPolicy {
     <#
-    .SYNOPSIS
-    Sets Email Address Policy of On-Prem Remote Mailboxes only (for now)
-    Disables by default
+        .SYNOPSIS
+            Sets Email Address Policy of On-Prem Remote Mailboxes only (for now)
+            Disables by default
 
-    .DESCRIPTION
-    Sets Email Address Policy of On-Prem Remote Mailboxes only (for now)
-    Disables by default
+        .DESCRIPTION
+            Sets Email Address Policy of On-Prem Remote Mailboxes only (for now)
+            Disables by default
 
-    .PARAMETER OnPremExchangeServer
-    Parameter description
+        .PARAMETER DomainController
+        Parameter description
 
-    .PARAMETER DeleteExchangeCreds
-    Parameter description
+        .PARAMETER SkipMailboxesWhereEAPisFalse
+        Parameter description
 
-    .PARAMETER DontViewEntireForest
-    Parameter description
+        .PARAMETER SkipConnection
+        Parameter description
 
-    .EXAMPLE
-    An example
+        .PARAMETER DontViewEntireForest
+        Parameter description
 
-    .NOTES
-    General notes
-    #>
+        .EXAMPLE
+        Disable-MailboxEmailAddressPolicy -DomainController DC01
 
+        .NOTES
+        General notes
+        #>
     [CmdletBinding()]
     param (
+
+        [Parameter(Mandatory)]
+        [ValidateScript( { Get-ADDomainController -identity $_ } )]
+        [string]
+        $DomainController,
+
         [Parameter()]
         [switch]
-        $SkipMailboxesWhereEAPisFalse,
+        $OnlyEAPEnabled,
 
         [Parameter()]
         [switch]
@@ -51,31 +59,40 @@ function Disable-MailboxEmailAddressPolicy {
 
     Write-Host "Fetching Remote Mailboxes..." -ForegroundColor Cyan
 
-    if ($SkipMailboxesWhereEAPisFalse) {
-        $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath 'RemoteMailbox_EAP_TRUE.xml'
-        Get-RemoteMailbox -Filter "EmailAddressPolicyEnabled -eq '$true'" -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
+    if ($OnlyEAPEnabled) {
+        $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath 'RemoteMailbox_OnlyEAPEnabled.xml'
+        Get-RemoteMailbox -DomainController $DomainController -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
+        $RemoteMailboxList = Import-Clixml $RemoteMailboxXML | Sort-Object DisplayName, OrganizationalUnit
+        Write-Host "Caching ADUser Hashtable..." -ForegroundColor Cyan
+        $BadPolicyHash = Get-ADEmailAddressPolicyHash -DomainController $DomainController
+        Write-Host "Caching Remote Mailbox Hashtable..." -ForegroundColor Cyan
+        $RMHash = Get-RemoteMailboxHash -Key Guid -RemoteMailboxList $RemoteMailboxList
     }
     else {
         $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath 'RemoteMailbox_ALL.xml'
-        Get-RemoteMailbox -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
+        Get-RemoteMailbox -DomainController $DomainController -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
+        $RemoteMailboxList = Import-Clixml $RemoteMailboxXML | Sort-Object DisplayName, OrganizationalUnit
+        $RMHash = Get-RemoteMailboxHash -Key Guid -RemoteMailboxList $RemoteMailboxList
     }
-    $RemoteMailboxList = Import-Clixml $RemoteMailboxXML | Sort-Object DisplayName, OrganizationalUnit
-    $RMHash = Get-RemoteMailboxHash -Key Guid -RemoteMailboxList $RemoteMailboxList
-
     Write-Host "Choose which Remote Mailboxes in which to disable their Email Address Policy" -ForegroundColor Black -BackgroundColor White
     Write-Host "To select use Ctrl/Shift + click (Individual) or Ctrl + A (All)" -ForegroundColor Black -BackgroundColor White
-
-    $Choice = Select-DisableMailboxEmailAddressPolicy -RemoteMailboxList $RemoteMailboxList |
+    $SelectParams = @{RemoteMailboxList = $RemoteMailboxList }
+    if ($OnlyEAPEnabled) { $SelectParams['BadPolicyHash'] = $BadPolicyHash }
+    $Choice = Select-DisableMailboxEmailAddressPolicy @SelectParams |
     Out-GridView -OutputMode Multiple -Title "Choose which Remote Mailboxes in which to disable their Email Address Policy"
 
-    $ChoiceCSV = Join-Path -Path $PoshPath -ChildPath ('Before Disable EAP {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+    $ChoiceCSV = Join-Path -Path $PoshPath -ChildPath ('Before EAP Changes {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $Choice | Export-Csv $ChoiceCSV -NoTypeInformation -Encoding UTF8
 
     if ($Choice) { Get-DecisionbyOGV } else { Write-Host 'Halting as nothing was selected' ; continue }
 
-    $Result = Invoke-DisableMailboxEmailAddressPolicy -Choice $Choice -Hash $RMHash
+    $ClearResult = Clear-ADEmailAddressPolicyAttributes -Choice $Choice -Hash $RMHash -BadPolicyHash $BadPolicyHash
+    $ClearResult | Out-GridView -Title ('Results of Clearing EAP Policy Attributes in AD  [ Count: {0} ]' -f @($ClearResult).Count)
+    $ClearResultCSV = Join-Path -Path $PoshPath -ChildPath ('After Clearing EAP Policy Attributes {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+    $ClearResult | Export-Csv $ClearResultCSV -NoTypeInformation
 
-    $Result | Out-GridView -Title ('Results of Disabling Email Address Policy  [ Count: {0} ]' -f $Result.Count)
+    $Result = Invoke-DisableMailboxEmailAddressPolicy -Choice $Choice -Hash $RMHash
+    $Result | Out-GridView -Title ('Results of Disabling Email Address Policy  [ Count: {0} ]' -f @($Result).Count)
     $ResultCSV = Join-Path -Path $PoshPath -ChildPath ('After Disable EAP {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $Result | Export-Csv $ResultCSV -NoTypeInformation
 }
