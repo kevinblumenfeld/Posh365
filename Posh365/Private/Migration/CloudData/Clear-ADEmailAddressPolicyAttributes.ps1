@@ -21,13 +21,13 @@ function Clear-ADEmailAddressPolicyAttributes {
         $i++
         try {
             $UserParams = @{
-                Server                    = $DomainController
-                Identity                  = $Item.Guid.ToString()
-                ErrorAction               = 'Stop'
-                Clear                     = 'msExchPoliciesIncluded', 'msExchPoliciesExcluded'
+                Server      = $DomainController
+                Identity    = $Item.Guid.ToString()
+                ErrorAction = 'Stop'
+                Clear       = 'msExchPoliciesIncluded', 'msExchPoliciesExcluded'
             }
             Set-ADUser @UserParams
-            Write-Host ('[{0} of {1}] {2} Success clearing msExchPoliciesIncluded and msExchPoliciesExcluded - All emails unchanged? ' -f $i, $Count, $Item.DisplayName) -ForegroundColor Green -NoNewline
+            Write-Host ('[{0} of {1}] {2} Success clearing msExchPoliciesIncluded and msExchPoliciesExcluded - All emails unchanged? ' -f $i, $Count, $Item.DisplayName) -ForegroundColor Cyan -NoNewline
             $ADAfter = Get-ADUser -server $DomainController -Identity $Item.Guid.ToString() -Properties msExchPoliciesIncluded, msExchPoliciesExcluded
             $RMAfter = Get-RemoteMailbox -DomainController $DomainController -Identity $Item.Guid.ToString()
 
@@ -46,10 +46,10 @@ function Clear-ADEmailAddressPolicyAttributes {
                 PrimarySmtpAddressUnchanged    = $Hash[$Item.Guid.ToString()]['PrimarySmtpAddress'] -eq $RMAfter.PrimarySmtpAddress
                 AllEmailsUnchanged             = $AllAddressesUnchanged
                 DisplayName                    = $RMAfter.DisplayName
-                msExchPoliciesIncluded         = $ADAfter.msExchPoliciesIncluded
-                msExchPoliciesExcluded         = $ADAfter.msExchPoliciesExcluded
-                PreviousmsExchPoliciesIncluded = $BadPolicyHash[$Item.Guid.ToString()]['msExchPoliciesIncluded']
-                PreviousmsExchPoliciesExcluded = $BadPolicyHash[$Item.Guid.ToString()]['msExchPoliciesExcluded']
+                msExchPoliciesIncluded         = @($ADAfter.msExchPoliciesIncluded) -ne '' -join '|'
+                msExchPoliciesExcluded         = @($ADAfter.msExchPoliciesExcluded) -ne '' -join '|'
+                PreviousmsExchPoliciesIncluded = @($BadPolicyHash[$Item.Guid.ToString()]['msExchPoliciesIncluded']) -ne '' -join '|'
+                PreviousmsExchPoliciesExcluded = @($BadPolicyHash[$Item.Guid.ToString()]['msExchPoliciesExcluded']) -ne '' -join '|'
                 CurrentPolicyEnabled           = $RMAfter.EmailAddressPolicyEnabled
                 PreviousPolicyEnabled          = $Hash[$Item.Guid.ToString()]['EmailAddressPolicyEnabled']
                 OrganizationalUnit             = $RMAfter.OnPremisesOrganizationalUnit
@@ -78,8 +78,8 @@ function Clear-ADEmailAddressPolicyAttributes {
                 DisplayName                    = $Hash[$Item.Guid.ToString()]['DisplayName']
                 msExchPoliciesIncluded         = 'FAILED'
                 msExchPoliciesExcluded         = 'FAILED'
-                PreviousmsExchPoliciesIncluded = $BadPolicyHash[$Item.Guid.ToString()]['msExchPoliciesIncluded']
-                PreviousmsExchPoliciesExcluded = $BadPolicyHash[$Item.Guid.ToString()]['msExchPoliciesExcluded']
+                PreviousmsExchPoliciesIncluded = @($BadPolicyHash[$Item.Guid.ToString()]['msExchPoliciesIncluded']) -ne '' -join '|'
+                PreviousmsExchPoliciesExcluded = @($BadPolicyHash[$Item.Guid.ToString()]['msExchPoliciesExcluded']) -ne '' -join '|'
                 CurrentPolicyEnabled           = 'FAILED'
                 PreviousPolicyEnabled          = $Hash[$Item.Guid.ToString()]['EmailAddressPolicyEnabled']
                 OrganizationalUnit             = 'FAILED'

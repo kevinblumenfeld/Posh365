@@ -81,17 +81,25 @@ function Disable-MailboxEmailAddressPolicy {
     $Choice = Select-DisableMailboxEmailAddressPolicy @SelectParams |
     Out-GridView -OutputMode Multiple -Title "Choose which Remote Mailboxes in which to disable their Email Address Policy"
 
-    $ChoiceCSV = Join-Path -Path $PoshPath -ChildPath ('Before EAP Changes {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+    if ($OnlyEAPEnabled) {
+        $ChoiceCSV = Join-Path -Path $PoshPath -ChildPath ('Before Clearing EAP Policy Attributes {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+    }
+    else {
+        $ChoiceCSV = Join-Path -Path $PoshPath -ChildPath ('Before EAP Changes {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+    }
     $Choice | Export-Csv $ChoiceCSV -NoTypeInformation -Encoding UTF8
 
     if ($Choice) { Get-DecisionbyOGV } else { Write-Host 'Halting as nothing was selected' ; continue }
-
-    $ClearResult = Clear-ADEmailAddressPolicyAttributes -Choice $Choice -Hash $RMHash -BadPolicyHash $BadPolicyHash -DomainController $DomainController
-    $ClearResult | Out-GridView -Title ('Results of Clearing EAP Policy Attributes in AD  [ Count: {0} ]' -f @($ClearResult).Count)
-    $ClearResultCSV = Join-Path -Path $PoshPath -ChildPath ('After Clearing EAP Policy Attributes {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
-    $ClearResult | Export-Csv $ClearResultCSV -NoTypeInformation
-
-    $Result = Invoke-DisableMailboxEmailAddressPolicy -Choice $Choice -Hash $RMHash -DomainController $DomainController
+    if ($OnlyEAPEnabled) {
+        $ClearResult = Clear-ADEmailAddressPolicyAttributes -Choice $Choice -Hash $RMHash -BadPolicyHash $BadPolicyHash -DomainController $DomainController
+        $ClearResult | Out-GridView -Title ('Results of Clearing EAP Policy Attributes in AD  [ Count: {0} ]' -f @($ClearResult).Count)
+        $ClearResultCSV = Join-Path -Path $PoshPath -ChildPath ('After Clearing EAP Policy Attributes {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+        $ClearResult | Export-Csv $ClearResultCSV -NoTypeInformation
+        $Result = Invoke-DisableMailboxEmailAddressPolicy -CheckADeap -Choice $Choice -Hash $RMHash -DomainController $DomainController
+    }
+    else {
+        $Result = Invoke-DisableMailboxEmailAddressPolicy -Choice $Choice -Hash $RMHash -DomainController $DomainController
+    }
     $Result | Out-GridView -Title ('Results of Disabling Email Address Policy  [ Count: {0} ]' -f @($Result).Count)
     $ResultCSV = Join-Path -Path $PoshPath -ChildPath ('After Disable EAP {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     $Result | Export-Csv $ResultCSV -NoTypeInformation
