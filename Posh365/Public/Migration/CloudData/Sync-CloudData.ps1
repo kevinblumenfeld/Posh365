@@ -5,7 +5,6 @@ function Sync-CloudData {
         [Parameter()]
         $ResultSize = 'Unlimited'
     )
-<#
     #Region Paths
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
     $SourcePath = Join-Path -Path $PoshPath -ChildPath $InitialDomain
@@ -67,11 +66,13 @@ function Sync-CloudData {
             return
         }
     }
+    #Region Y/N Write Converted Data to Target Tenant
     $Yes = [ChoiceDescription]::new('&Yes', 'Import: Yes')
     $No = [ChoiceDescription]::new('&No', 'Import: No')
     $Question = 'Write converted data to Target Tenant?'
     $Options = [ChoiceDescription[]]($Yes, $No)
     $Menu = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
+    #EndRegion Y/N Write Converted Data to Target Tenant
     switch ($Menu) {
         0 {
             $FileStamp = 'Sync_Result_{0}_{1}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'), $TargetInitialDomain
@@ -85,5 +86,5 @@ function Sync-CloudData {
             Write-Host 'Halting Script' -ForegroundColor Red
             return
         }
-    } #>
+    }
 }
