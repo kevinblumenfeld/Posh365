@@ -78,7 +78,7 @@ function Sync-CloudData {
             $FileStamp = 'Sync_Result_{0}_{1}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'), $TargetInitialDomain
             $ResultFile = Join-Path -Path $SourcePath -ChildPath $FileStamp
 
-            New-CloudData -SourceData $ConvertedData | Export-Csv $ResultFile -NoTypeInformation
+            New-CloudData -SourceData $ConvertedData -TypeChoice $TypeChoice | Export-Csv $ResultFile -NoTypeInformation
             $ResultObject = Import-Csv $ResultFile
             $ResultObject | Out-GridView -Title $FileStamp
         }
