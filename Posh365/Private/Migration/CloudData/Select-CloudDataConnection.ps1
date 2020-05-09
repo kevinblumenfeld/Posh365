@@ -12,7 +12,7 @@ function Select-CloudDataConnection {
     )
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
     Get-PSSession | Remove-PSSession
-    if ($TypeChoice -eq 'AzureADUsers') {
+    if ($Type -match 'AzureADUsers|MailUsers|Mailboxes') {
         try { Disconnect-AzureAD -ErrorAction Stop } catch { }
         if (-not ($null = Get-Module -Name 'AzureAD', 'AzureADPreview' -ListAvailable)) {
             Install-Module -Name AzureAD -Scope CurrentUser -Force -AllowClobber
@@ -22,7 +22,7 @@ function Select-CloudDataConnection {
         $InitialDomain = ((Get-AzureADDomain).where{ $_.IsInitial }).Name
         Write-Host "`r`nConnected to Azure AD Tenant: $InitialDomain`r`n" -ForegroundColor Green
     }
-    if ($TypeChoice -match 'Mailboxes|MailUsers') {
+    if ($Type -match 'Mailboxes|MailUsers') {
         $Script:RestartConsole = $null
         Connect-CloudModuleImport -EXO2
         if ($RestartConsole) { return }
