@@ -32,8 +32,9 @@ function Sync-CloudData {
     #Region Invoke-GetCloudData ($SourceData) returned
     $SourceCsvFile = Join-Path -Path $SourcePath -ChildPath ('SOURCE_SYNC_{0}_{1}.csv' -f $TypeChoice, $InitialDomain)
     $SourceData = Invoke-GetCloudData -ResultSize $ResultSize -InitialDomain $InitialDomain -Type $TypeChoice
-    $SourceData | Export-Csv -Path $SourceCsvFile -NoTypeInformation
-    Write-Host "Source $TypeChoice objects written to file: $SourceCsvFile`r`n" -ForegroundColor Green
+    $SourceDataChoice = $SourceData | Out-GridView -Title "Choose objects to convert - no changes are made to any tenant on this step" -OutputMode Multiple
+    $SourceDataChoice | Export-Csv -Path $SourceCsvFile -NoTypeInformation
+    Write-Host "Source $TypeChoice objects chosen written to file: $SourceCsvFile`r`n" -ForegroundColor Green
     #EndRegion Invoke-GetCloudData
     #Region Ask if ready to convert
     $Yes = [ChoiceDescription]::new('&Yes', 'Convert Cloud Data: Yes')
@@ -46,9 +47,9 @@ function Sync-CloudData {
     switch ($Menu) {
         0 {
             #Region TARGET Connect to Service ($InitialDomain) returned
-            $SourceIntialDomain = $InitialDomain ; $InitialDomain = $null
+            $SourceInitialDomain = $InitialDomain ; $InitialDomain = $null
             $InitialDomain = Select-CloudDataConnection -Type $TypeChoice -TenantLocation Target
-            while ($SourceIntialDomain -eq $InitialDomain -or -not $InitialDomain) {
+            while ($SourceInitialDomain -eq $InitialDomain -or -not $InitialDomain) {
                 Write-Host "`r`nSource Tenant cannot be the same as the Target Tenant. Please connect to Target Tenant now.`r`n" -ForegroundColor White -BackgroundColor DarkMagenta
                 $InitialDomain = Select-CloudDataConnection -Type $TypeChoice -TenantLocation Target
             }
@@ -56,7 +57,7 @@ function Sync-CloudData {
             #EndRegion TARGET Connect to Service
             #Region TARGET Convert Source Data ($ConvertedData) returned
             $TargetCsvFile = Join-Path -Path $SourcePath -ChildPath ('SOURCE_SYNC_CONVERTED_TO_TARGET_{0}_{1}.csv' -f $TypeChoice, $InitialDomain)
-            $ConvertedData = Convert-CloudData -SourceData $SourceData
+            $ConvertedData = Convert-CloudData -SourceData $SourceDataChoice
             $ConvertedData | Out-GridView -Title "Data converted for import into Target: $TargetInitialDomain"
             $ConvertedData | Export-Csv -Path $TargetCsvFile -NoTypeInformation
             #EndRegion TARGET Convert Source Data ($ConvertedData) returned

@@ -11,7 +11,7 @@ function Convert-CloudData {
     )
 
     if ($InitialDomain = try { ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName } catch { }) {
-        Write-Host "Connect to: $IntialDomain"
+        Write-Host "Connect to: $InitialDomain"
     }
     else {
         Write-Host "Not connected.  Please connect and retry" -ForegroundColor Red
