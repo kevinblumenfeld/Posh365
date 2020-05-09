@@ -22,7 +22,7 @@ function Select-CloudDataConnection {
         $InitialDomain = ((Get-AzureADDomain).where{ $_.IsInitial }).Name
         Write-Host "`r`nConnected to Azure AD Tenant: $InitialDomain`r`n" -ForegroundColor Green
     }
-    if ($Type -match 'Mailboxes|MailUsers') {
+    if ($Type -match 'Mailboxes|MailUsers' -or ($Type -eq 'AzureADUsers' -and $TenantLocation -eq 'Source')) {
         $Script:RestartConsole = $null
         Connect-CloudModuleImport -EXO2
         if ($RestartConsole) { return }

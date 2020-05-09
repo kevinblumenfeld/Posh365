@@ -67,16 +67,12 @@ function Invoke-GetCloudData {
             }
         }
     }
-    ############################################################
-    # Need to handle existing AzureADUser from Source and Target
-    # Build a hashSET of all recipients by GUID pull all AzureAD users -notin hashSET
-    ############################################################
     if ($Type -eq 'AzureADUsers') {
         $RecipientGuidSet = [System.Collections.Generic.HashSet[string]]::new()
         $RecipientList = Get-Recipient -ResultSize unlimited
-        $RecipientList.ForEach( { $RecipientGuidSet.Add($_.ExternalDirectoryObjectId) })
-        $AzureADUserList = Get-AzureADUser -All:$True | Where-Object { $_.DisplayName -ne 'On-Premises Directory Synchronization Service Account' -and -not $_.ImmutableId -and $_.UserPrincipalName -notlike "*#EXT#*" -and
-            -not $_.ObjectId -notin $RecipientGuidSet
+        $RecipientList | ForEach-Object { $null = $RecipientGuidSet.Add($_.ExternalDirectoryObjectId) }
+        $AzureADUserList = Get-AzureADUser -All:$True | Where-Object { $_.DisplayName -ne 'On-Premises Directory Synchronization Service Account' -and
+            -not $_.ImmutableId -and $_.UserPrincipalName -notlike "*#EXT#*" -and -not $_.ObjectId -notin $RecipientGuidSet
         }
         $Count = @($AzureADUserList).Count
         foreach ($AzureADUser in $AzureADUserList) {
