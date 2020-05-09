@@ -19,7 +19,7 @@ function Invoke-NewCloudData {
             $NewParams = @{
                 Name                      = $Converted.Name
                 DisplayName               = $Converted.DisplayName
-                MicrosoftOnlineServicesID = $Converted.PrimarySmtpAddress
+                MicrosoftOnlineServicesID = $Converted.UserPrincipalName
                 PrimarySMTPAddress        = $Converted.PrimarySmtpAddress
                 Alias                     = $Converted.Alias
                 Password                  = ConvertTo-SecureString -String $GeneratedPW -AsPlainText:$true -Force

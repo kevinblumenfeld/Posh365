@@ -45,25 +45,25 @@ function Invoke-GetCloudData {
             $iUP++
             [PSCustomObject]@{
                 Num                       = '[{0} of {1}]' -f $iUP, $Count
-                DisplayName               = $Mailbox.DisplayName
-                Name                      = $Mailbox.Name
+                DisplayName               = $MailUser.DisplayName
+                Name                      = $MailUser.Name
                 Type                      = 'Recipient'
-                RecipientType             = $Mailbox.RecipientType
-                RecipientTypeDetails      = $Mailbox.RecipientTypeDetails
-                UserPrincipalName         = $Mailbox.UserPrincipalName
-                ExternalEmailAddress      = $Mailbox.ExternalEmailAddress
-                Alias                     = $Mailbox.Alias
-                PrimarySmtpAddress        = $Mailbox.PrimarySmtpAddress
-                ExchangeGuid              = $Mailbox.ExchangeGuid
-                ArchiveGuid               = $Mailbox.ArchiveGuid
-                LegacyExchangeDN          = $Mailbox.LegacyExchangeDN
+                RecipientType             = $MailUser.RecipientType
+                RecipientTypeDetails      = $MailUser.RecipientTypeDetails
+                UserPrincipalName         = $MailUser.UserPrincipalName
+                ExternalEmailAddress      = $MailUser.ExternalEmailAddress
+                Alias                     = $MailUser.Alias
+                PrimarySmtpAddress        = $MailUser.PrimarySmtpAddress
+                ExchangeGuid              = $MailUser.ExchangeGuid
+                ArchiveGuid               = $MailUser.ArchiveGuid
+                LegacyExchangeDN          = $MailUser.LegacyExchangeDN
                 # VERIFY THIS
-                InitialAddress            = if ($InitialAddress = ($Mailbox.EmailAddresses -like "smtp:*@$InitialDomain")[0] -replace 'smtp:', '') {
+                InitialAddress            = if ($InitialAddress = ($MailUser.EmailAddresses -like "smtp:*@$InitialDomain")[0] -replace 'smtp:', '') {
                     $InitialAddress
                 }
-                else { '{0}@{1}' -f ($Mailbox.UserPrincipalName -split '@')[0], $InitialDomain }
-                EmailAddresses            = @($Mailbox.EmailAddresses) -notmatch "SPO:|SIP:" -join '|'
-                ExternalDirectoryObjectId = $Mailbox.ExternalDirectoryObjectId
+                else { '{0}@{1}' -f ($MailUser.UserPrincipalName -split '@')[0], $InitialDomain }
+                EmailAddresses            = @($MailUser.EmailAddresses) -notmatch "SPO:|SIP:" -join '|'
+                ExternalDirectoryObjectId = $MailUser.ExternalDirectoryObjectId
             }
         }
     }
