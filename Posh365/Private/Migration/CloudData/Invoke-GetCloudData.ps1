@@ -40,6 +40,7 @@ function Invoke-GetCloudData {
     }
     if ($Type -eq 'MailUsers') {
         $MailUserList = (Get-MailUser -Filter "IsDirSynced -eq '$false'" -ResultSize $ResultSize).where{ $_.UserPrincipalName -notlike "*#EXT#*" }
+        $Count = @($MailUserList).Count
         foreach ($MailUser in $MailUserList) {
             $iUP++
             [PSCustomObject]@{
@@ -71,60 +72,35 @@ function Invoke-GetCloudData {
     # Build a hashSET of all recipients by GUID pull all AzureAD users -notin hashSET
     ############################################################
     if ($Type -eq 'AzureADUsers') {
-        Get-AzureADUser -All:$true | Where-Object { $_.DisplayName -ne 'On-Premises Directory Synchronization Service Account' -and
-            -not $_.ImmutableId -and $_.UserPrincipalName -notlike "*#EXT#*" -and -not $MailandMEU.Contains($_.UserPrincipalName)
-        } | Select-Object @(
-            'DisplayName'
-            @{
-                Name       = 'Name'
-                Expression = { '' }
+        $RecipientGuidSet = [System.Collections.Generic.HashSet[string]]::new()
+        $RecipientList = Get-Recipient -ResultSize unlimited
+        $RecipientList.ForEach( { $RecipientGuidSet.Add($_.ExternalDirectoryObjectId) })
+        $AzureADUserList = Get-AzureADUser -All:$True | Where-Object {
+            $_.DisplayName -ne 'On-Premises Directory Synchronization Service Account' -and
+            -not $_.ImmutableId -and $_.UserPrincipalName -notlike "*#EXT#*" -and
+            -not $_.ObjectId -notin $RecipientGuidSet
+        }
+        $Count = @($AzureADUserList).Count
+        foreach ($AzureADUser in $AzureADUserList) {
+            $iUP++
+            [PSCustomObject]@{
+                Num                       = '[{0} of {1}]' -f $iUP, $Count
+                DisplayName               = $AzureADUser.DisplayName
+                Name                      = ''
+                Type                      = 'AzureADUser'
+                RecipientType             = ''
+                RecipientTypeDetails      = ''
+                UserPrincipalName         = ''
+                ExternalEmailAddress      = ''
+                Alias                     = $AzureADUser.MailNickName
+                PrimarySmtpAddress        = @(@($AzureADUser.ProxyAddresses ) -cmatch 'SMTP:') -ne '' -join '|'
+                ExchangeGuid              = ''
+                ArchiveGuid               = ''
+                LegacyExchangeDN          = ''
+                InitialAddress            = ($AzureADUser.ProxyAddresses -like "smtp:*@$InitialDomain")[0] -replace 'smtp:', ''
+                EmailAddresses            = @(@($AzureADUser.ProxyAddresses) -notmatch "SPO:|SIP:") -ne '' -join '|'
+                ExternalDirectoryObjectId = $AzureADUser.ObjectId
             }
-            @{
-                Name       = 'Type'
-                Expression = { 'AzureADUser' }
-            }
-            @{
-                Name       = 'RecipientType'
-                Expression = { '' }
-            }
-            @{
-                Name       = 'RecipientTypeDetails'
-                Expression = { '' }
-            }
-            'UserPrincipalName'
-            'ExternalEmailAddress'
-            @{
-                Name       = 'Alias'
-                Expression = { $_.MailNickName }
-            }
-            @{
-                Name       = 'PrimarySmtpAddress'
-                Expression = { (@($_.ProxyAddresses ) -cmatch 'SMTP:') -ne '' -join '|' }
-            }
-            @{
-                Name       = 'ExchangeGuid'
-                Expression = { '' }
-            }
-            @{
-                Name       = 'ArchiveGuid'
-                Expression = { '' }
-            }
-            @{
-                Name       = 'LegacyExchangeDN'
-                Expression = { '' }
-            }
-            @{
-                Name       = 'InitialAddress'
-                Expression = { ($_.ProxyAddresses -like "smtp:*@$InitialDomain")[0] -replace 'smtp:', '' }
-            }
-            @{
-                Name       = 'EmailAddresses'
-                Expression = { (@($_.ProxyAddresses) -notmatch "SPO:|SIP:") -ne '' -join '|' }
-            }
-            @{
-                Name       = 'ExternalDirectoryObjectId'
-                Expression = { $_.ObjectId }
-            }
-        )
+        }
     }
 }
