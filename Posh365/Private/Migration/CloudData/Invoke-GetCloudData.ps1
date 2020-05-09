@@ -12,75 +12,64 @@ function Invoke-GetCloudData {
         [ValidateNotNullOrEmpty()]
         $InitialDomain
     )
+    $iUP = 0
     if ($Type -eq 'Mailboxes') {
         $MailboxList = Get-Mailbox -Filter "IsDirSynced -eq '$false'" -RecipientTypeDetails UserMailbox, SharedMailbox, RoomMailbox, EquipmentMailbox -ResultSize $ResultSize
-        $MailboxList | Select-Object @(
-            'DisplayName'
-            'Name'
-            @{
-                Name       = 'Type'
-                Expression = { 'Recipient' }
+        $Count = @($MailboxList).Count
+        foreach ($Mailbox in $MailboxList) {
+            $iUP++
+            [PSCustomObject]@{
+                Num                       = '[{0} of {1}]' -f $iUP, $Count
+                DisplayName               = $Mailbox.DisplayName
+                Name                      = $Mailbox.Name
+                Type                      = 'Recipient'
+                RecipientType             = $Mailbox.RecipientType
+                RecipientTypeDetails      = $Mailbox.RecipientTypeDetails
+                UserPrincipalName         = $Mailbox.UserPrincipalName
+                ExternalEmailAddress      = $Mailbox.ExternalEmailAddress
+                Alias                     = $Mailbox.Alias
+                PrimarySmtpAddress        = $Mailbox.PrimarySmtpAddress
+                ExchangeGuid              = $Mailbox.ExchangeGuid
+                ArchiveGuid               = $Mailbox.ArchiveGuid
+                LegacyExchangeDN          = $Mailbox.LegacyExchangeDN
+                InitialAddress            = @($Mailbox.EmailAddresses -like "smtp:*@$InitialDomain")[0] -replace 'smtp:', ''
+                EmailAddresses            = @($Mailbox.EmailAddresses) -notmatch "SPO:|SIP:" -join '|'
+                ExternalDirectoryObjectId = $Mailbox.ExternalDirectoryObjectId
             }
-            'RecipientType'
-            'RecipientTypeDetails'
-            'UserPrincipalName'
-            'ExternalEmailAddress'
-            'Alias'
-            'PrimarySmtpAddress'
-            'ExchangeGuid'
-            'ArchiveGuid'
-            'LegacyExchangeDN'
-            @{
-                Name       = 'InitialAddress'
-                Expression = { ($_.EmailAddresses -like "smtp:*@$InitialDomain")[0] -replace 'smtp:', '' }
-            }
-            @{
-                Name       = 'EmailAddresses'
-                Expression = { @($_.EmailAddresses) -notmatch "SPO:|SIP:" -join '|' }
-            }
-            'ExternalDirectoryObjectId'
-        )
+        }
     }
     if ($Type -eq 'MailUsers') {
         $MailUserList = (Get-MailUser -Filter "IsDirSynced -eq '$false'" -ResultSize $ResultSize).where{ $_.UserPrincipalName -notlike "*#EXT#*" }
-        $MailUserList | Select-Object @(
-            'DisplayName'
-            'Name'
-            @{
-                Name       = 'Type'
-                Expression = { 'Recipient' }
-            }
-            'RecipientType'
-            'RecipientTypeDetails'
-            'UserPrincipalName'
-            'ExternalEmailAddress'
-            'Alias'
-            'PrimarySmtpAddress'
-            'ExchangeGuid'
-            'ArchiveGuid'
-            'LegacyExchangeDN'
-            @{
-                Name       = 'InitialAddress'
-                Expression = {
-                    if ($InitialAddress -eq ($_.EmailAddresses -like "smtp:*@$InitialDomain")[0] -replace 'smtp:', '') {
-                        $InitialAddress
-                    }
-                    else {
-                        '{0}@{1}' -f ($_.UserPrincipalName -split '@')[0], $InitialDomain
-                    }
+        foreach ($MailUser in $MailUserList) {
+            $iUP++
+            [PSCustomObject]@{
+                Num                       = '[{0} of {1}]' -f $iUP, $Count
+                DisplayName               = $Mailbox.DisplayName
+                Name                      = $Mailbox.Name
+                Type                      = 'Recipient'
+                RecipientType             = $Mailbox.RecipientType
+                RecipientTypeDetails      = $Mailbox.RecipientTypeDetails
+                UserPrincipalName         = $Mailbox.UserPrincipalName
+                ExternalEmailAddress      = $Mailbox.ExternalEmailAddress
+                Alias                     = $Mailbox.Alias
+                PrimarySmtpAddress        = $Mailbox.PrimarySmtpAddress
+                ExchangeGuid              = $Mailbox.ExchangeGuid
+                ArchiveGuid               = $Mailbox.ArchiveGuid
+                LegacyExchangeDN          = $Mailbox.LegacyExchangeDN
+                # VERIFY THIS
+                InitialAddress            = if ($InitialAddress = ($Mailbox.EmailAddresses -like "smtp:*@$InitialDomain")[0] -replace 'smtp:', '') {
+                    $InitialAddress
                 }
+                else { '{0}@{1}' -f ($Mailbox.UserPrincipalName -split '@')[0], $InitialDomain }
+                EmailAddresses            = @($Mailbox.EmailAddresses) -notmatch "SPO:|SIP:" -join '|'
+                ExternalDirectoryObjectId = $Mailbox.ExternalDirectoryObjectId
             }
-            @{
-                Name       = 'EmailAddresses'
-                Expression = { @($_.EmailAddresses) -notmatch "SPO:|SIP:" -join '|' }
-            }
-            'ExternalDirectoryObjectId'
-        )
-        $MailandMEU = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
-        foreach ($entry in @($MailUserList; $MailboxList)) {
-            $null = $MailandMEU.Add($entry.UserPrincipalName)
         }
     }
+    ############################################################
+    # Need to handle existing AzureADUser from Source and Target
+    # Build a hashSET of all recipients by GUID pull all AzureAD users -notin hashSET
+    ############################################################
     if ($Type -eq 'AzureADUsers') {
         Get-AzureADUser -All:$true | Where-Object { $_.DisplayName -ne 'On-Premises Directory Synchronization Service Account' -and
             -not $_.ImmutableId -and $_.UserPrincipalName -notlike "*#EXT#*" -and -not $MailandMEU.Contains($_.UserPrincipalName)
