@@ -12,7 +12,7 @@ function Select-CloudDataConnection {
     )
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
     Get-PSSession | Remove-PSSession
-    if ($Type -match 'AzureADUsers|MailUsers|Mailboxes') {
+    if ($Type -eq 'AzureADUsers' or $TenantLocation -eq 'Target') {
         try { Disconnect-AzureAD -ErrorAction Stop } catch { }
         if (-not ($null = Get-Module -Name 'AzureAD', 'AzureADPreview' -ListAvailable)) {
             Install-Module -Name AzureAD -Scope CurrentUser -Force -AllowClobber
