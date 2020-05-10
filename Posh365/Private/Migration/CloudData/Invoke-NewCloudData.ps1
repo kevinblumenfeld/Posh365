@@ -150,44 +150,28 @@ function Invoke-NewCloudData {
                 $NewAzADUser = New-AzureADUser @AzUserParams
                 Write-Host "[$iUP of $Count] Success New AzureADUser: $($NewAzADUser.DisplayName)" -ForegroundColor Green
                 [PSCustomObject]@{
-                    ResultNew                 = 'SUCCESS'
-                    ResultSet                 = 'SUCCESS'
-                    Name                      = $ConvertedAz.DisplayName
-                    DisplayName               = $NewAzADUser.DisplayName
-                    SourceType                = $ConvertedAz.Type
-                    MicrosoftOnlineServicesID = ''
-                    UserPrincipalName         = $NewAzADUser.UserPrincipalName
-                    PrimarySMTPAddress        = ''
-                    Alias                     = $ConvertedAz.Alias
-                    SourceId                  = $ConvertedAz.ExternalDirectoryObjectId
-                    TargetId                  = $NewAzADUser.ObjectId
-                    Password                  = $GeneratedPW
-                    TargetEmailAddresses      = ''
-                    SourcePrimarySmtpAddress  = $ConvertedAz.SourcePrimarySmtpAddress
-                    SourceUserPrincipalName   = $ConvertedAz.SourceUserPrincipalName
-                    SourceEmailAddresses      = $ConvertedAz.SourceEmailAddresses
-                    Log                       = 'SUCCESS'
+                    ResultNew         = 'SUCCESS'
+                    DisplayName       = $NewAzADUser.DisplayName
+                    SourceType        = 'AzureADUser'
+                    UserPrincipalName = $NewAzADUser.UserPrincipalName
+                    MailNickName      = $ConvertedAz.MailNickName
+                    SourceObjectId    = $ConvertedAz.ObjectId
+                    TargetObjectId    = $NewAzADUser.ObjectId
+                    Password          = $GeneratedPW
+                    Log               = 'SUCCESS'
                 }
             }
             catch {
                 [PSCustomObject]@{
-                    ResultNew                 = 'FAILED'
-                    ResultSet                 = 'FAILED'
-                    Name                      = $ConvertedAz.DisplayName
-                    DisplayName               = $ConvertedAz.DisplayName
-                    SourceType                = $ConvertedAz.Type
-                    MicrosoftOnlineServicesID = ''
-                    UserPrincipalName         = $ConvertedAz.UserPrincipalName
-                    PrimarySMTPAddress        = ''
-                    Alias                     = ($ConvertedAz.UserPrincipalName -split '@')[0]
-                    SourceId                  = $ConvertedAz.ExternalDirectoryObjectId
-                    TargetId                  = ''
-                    Password                  = $GeneratedPW
-                    TargetEmailAddresses      = ''
-                    SourcePrimarySmtpAddress  = $ConvertedAz.SourcePrimarySmtpAddress
-                    SourceUserPrincipalName   = $ConvertedAz.SourceUserPrincipalName
-                    SourceEmailAddresses      = $ConvertedAz.SourceEmailAddresses
-                    Log                       = $_.Exception.Message
+                    ResultNew         = 'FAILED'
+                    DisplayName       = $NewAzADUser.DisplayName
+                    SourceType        = 'FAILED'
+                    UserPrincipalName = 'FAILED'
+                    MailNickName      = $ConvertedAz.MailNickName
+                    SourceObjectId    = $ConvertedAz.ObjectId
+                    TargetObjectId    = 'FAILED'
+                    Password          = $GeneratedPW
+                    Log               = $_.Exception.Message
                 }
                 Write-Host "[$iUP of $Count] Failed New AzureADUser: $($ConvertedAz.DisplayName) <$($_.Exception.Message)>" -ForegroundColor Red
             }

@@ -78,15 +78,15 @@ function Invoke-GetCloudData {
         foreach ($AzureADUser in $AzureADUserList) {
             $iUP++
             [PSCustomObject]@{
-                Num                       = '[{0} of {1}]' -f $iUP, $Count
-                DisplayName               = $AzureADUser.DisplayName
-                Type                      = 'AzureADUser'
-                MailNickName              = $AzureADUser.MailNickName
-                UserPrincipalName         = $AzureADUser.UserPrincipalName
-                PrimarySmtpAddress        = @(@($AzureADUser.ProxyAddresses ) -cmatch 'SMTP:') -ne '' -join '|'
-                InitialAddress            = ($AzureADUser.ProxyAddresses -like "smtp:*@$InitialDomain")[0] -replace 'smtp:', ''
-                EmailAddresses            = @(@($AzureADUser.ProxyAddresses) -notmatch "SPO:|SIP:") -ne '' -join '|'
-                ExternalDirectoryObjectId = $AzureADUser.ObjectId
+                Num                = '[{0} of {1}]' -f $iUP, $Count
+                DisplayName        = $AzureADUser.DisplayName
+                Type               = 'AzureADUser'
+                MailNickName       = $AzureADUser.MailNickName
+                UserPrincipalName  = $AzureADUser.UserPrincipalName
+                PrimarySmtpAddress = @(@($AzureADUser.ProxyAddresses ) -cmatch 'SMTP:') -ne '' -join '|'
+                InitialAddress     = ($AzureADUser.ProxyAddresses -like "smtp:*@$InitialDomain")[0] -replace 'smtp:', ''
+                EmailAddresses     = @(@($AzureADUser.ProxyAddresses) -notmatch "SPO:|SIP:") -ne '' -join '|'
+                ObjectId           = $AzureADUser.ObjectId
             }
         }
     }

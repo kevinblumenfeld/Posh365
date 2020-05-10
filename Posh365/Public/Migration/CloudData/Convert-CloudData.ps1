@@ -84,6 +84,7 @@ function Convert-CloudData {
                 DisplayName       = $Source.DisplayName
                 Mailnickname      = $Source.Mailnickname
                 UserPrincipalName = '{0}@{1}' -f ($Source.UserPrincipalName -split '@')[0], $InitialDomain
+                ObjectId          = $Source.ObjectId
             }
         }
     }
