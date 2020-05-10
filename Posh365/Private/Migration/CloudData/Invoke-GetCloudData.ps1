@@ -81,7 +81,8 @@ function Invoke-GetCloudData {
                 Num                       = '[{0} of {1}]' -f $iUP, $Count
                 DisplayName               = $AzureADUser.DisplayName
                 Type                      = 'AzureADUser'
-                Alias                     = $AzureADUser.MailNickName
+                MailNickName              = $AzureADUser.MailNickName
+                UserPrincipalName         = $AzureADUser.UserPrincipalName
                 PrimarySmtpAddress        = @(@($AzureADUser.ProxyAddresses ) -cmatch 'SMTP:') -ne '' -join '|'
                 InitialAddress            = ($AzureADUser.ProxyAddresses -like "smtp:*@$InitialDomain")[0] -replace 'smtp:', ''
                 EmailAddresses            = @(@($AzureADUser.ProxyAddresses) -notmatch "SPO:|SIP:") -ne '' -join '|'
