@@ -80,17 +80,9 @@ function Invoke-GetCloudData {
             [PSCustomObject]@{
                 Num                       = '[{0} of {1}]' -f $iUP, $Count
                 DisplayName               = $AzureADUser.DisplayName
-                Name                      = ''
                 Type                      = 'AzureADUser'
-                RecipientType             = ''
-                RecipientTypeDetails      = ''
-                UserPrincipalName         = ''
-                ExternalEmailAddress      = ''
                 Alias                     = $AzureADUser.MailNickName
                 PrimarySmtpAddress        = @(@($AzureADUser.ProxyAddresses ) -cmatch 'SMTP:') -ne '' -join '|'
-                ExchangeGuid              = ''
-                ArchiveGuid               = ''
-                LegacyExchangeDN          = ''
                 InitialAddress            = ($AzureADUser.ProxyAddresses -like "smtp:*@$InitialDomain")[0] -replace 'smtp:', ''
                 EmailAddresses            = @(@($AzureADUser.ProxyAddresses) -notmatch "SPO:|SIP:") -ne '' -join '|'
                 ExternalDirectoryObjectId = $AzureADUser.ObjectId
