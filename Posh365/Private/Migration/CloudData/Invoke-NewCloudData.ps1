@@ -142,7 +142,7 @@ function Invoke-NewCloudData {
                 $AzUserParams = @{
                     DisplayName       = $ConvertedAz.DisplayName
                     UserPrincipalName = $ConvertedAz.UserPrincipalName
-                    MailNickName      = $ConvertedAz.Alias
+                    MailNickName      = $ConvertedAz.MailNickName
                     PasswordProfile   = $PasswordProfile
                     AccountEnabled    = $true
                     ErrorAction       = 'Stop'

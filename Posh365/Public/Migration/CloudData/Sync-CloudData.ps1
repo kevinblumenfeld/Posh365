@@ -59,7 +59,6 @@ function Sync-CloudData {
                 Write-Host "`r`nSource Tenant cannot be the same as the Target Tenant. Please connect to Target Tenant now.`r`n" -ForegroundColor White -BackgroundColor DarkMagenta
                 $InitialDomain = Select-CloudDataConnection -Type $Type -TenantLocation Target
             }
-
             #EndRegion TARGET Connect to Service
             #Region TARGET Convert Source Data ($ConvertedData) returned
             $TargetCsvFile = Join-Path -Path $SourcePath -ChildPath ('SOURCE_SYNC_CONVERTED_TO_TARGET_{0}_{1}.csv' -f $Type, $InitialDomain)
