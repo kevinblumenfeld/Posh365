@@ -7,15 +7,20 @@ function Convert-CloudData {
         $FilePath,
 
         [Parameter()]
-        $SourceData
-    )
+        $SourceData,
 
-    if ($InitialDomain = try { ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName } catch { }) {
-        Write-Host "Connect to: $InitialDomain"
+        [Parameter()]
+        $Type
+    )
+    if ($Type -eq 'AzureADUsers' -and ($InitialDomain = try { ((Get-AzureADDomain).where{ $_.IsInitial }).Name } catch { })) {
+        Write-Host "Connected to: $InitialDomain"
     }
-    else {
-        Write-Host "Not connected.  Please connect and retry" -ForegroundColor Red
-        return
+    elseif ($InitialDomain = try { ((Get-AcceptedDomain).where{ $_.InitialDomain }).DomainName } catch { }) {
+        Write-Host "Connected to: $InitialDomain"
+    }
+    if (-not $InitialDomain) {
+        Write-Host "Halting as not connected.  Please connect and retry" -ForegroundColor Red
+        break
     }
     if (-not $SourceData) {
         $SourceData = Import-Csv -Path $FilePath

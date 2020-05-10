@@ -3,7 +3,11 @@ function Sync-CloudData {
     [CmdletBinding()]
     param (
         [Parameter()]
-        $ResultSize = 'Unlimited'
+        $ResultSize = 'Unlimited',
+
+        [parameter()]
+        [switch]
+        $SkipSourceLogon
     )
     #Region Paths
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
@@ -25,8 +29,10 @@ function Sync-CloudData {
     }
     #EndRegion Choose Recipient
     #Region SOURCE Connect to Service ($InitialDomain) returned
-    while (-not $InitialDomain) {
-        $InitialDomain = Select-CloudDataConnection -Type $TypeChoice -TenantLocation Source
+    if (-not $SkipSourceLogin) {
+        while (-not $InitialDomain) {
+            $InitialDomain = Select-CloudDataConnection -Type $TypeChoice -TenantLocation Source
+        }
     }
     #EndRegion SOURCE Connect to Service
     #Region Invoke-GetCloudData ($SourceData) returned
@@ -57,7 +63,7 @@ function Sync-CloudData {
             #EndRegion TARGET Connect to Service
             #Region TARGET Convert Source Data ($ConvertedData) returned
             $TargetCsvFile = Join-Path -Path $SourcePath -ChildPath ('SOURCE_SYNC_CONVERTED_TO_TARGET_{0}_{1}.csv' -f $TypeChoice, $InitialDomain)
-            $ConvertedData = Convert-CloudData -SourceData $SourceDataChoice
+            $ConvertedData = Convert-CloudData -SourceData $SourceDataChoice -Type $TypeChoice
             $ConvertedData | Out-GridView -Title "Data converted for import into Target: $TargetInitialDomain"
             $ConvertedData | Export-Csv -Path $TargetCsvFile -NoTypeInformation
             #EndRegion TARGET Convert Source Data ($ConvertedData) returned

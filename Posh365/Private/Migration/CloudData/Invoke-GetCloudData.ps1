@@ -70,9 +70,9 @@ function Invoke-GetCloudData {
     if ($Type -eq 'AzureADUsers') {
         $RecipientGuidSet = [System.Collections.Generic.HashSet[string]]::new()
         $RecipientList = Get-Recipient -ResultSize unlimited
-        $RecipientList | ForEach-Object { $null = $RecipientGuidSet.Add($_.ExternalDirectoryObjectId) }
+        $RecipientList | ForEach-Object { $null = $RecipientGuidSet.Add(($_.ExternalDirectoryObjectId).ToString()) }
         $AzureADUserList = Get-AzureADUser -All:$True | Where-Object { $_.DisplayName -ne 'On-Premises Directory Synchronization Service Account' -and
-            -not $_.ImmutableId -and $_.UserPrincipalName -notlike "*#EXT#*" -and -not $_.ObjectId -notin $RecipientGuidSet
+            (-not $_.ImmutableId) -and $_.UserPrincipalName -notlike "*#EXT#*" -and -not $RecipientGuidSet.Contains($_.ObjectId.ToString())
         }
         $Count = @($AzureADUserList).Count
         foreach ($AzureADUser in $AzureADUserList) {

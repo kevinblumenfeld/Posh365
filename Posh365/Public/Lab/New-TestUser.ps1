@@ -111,7 +111,7 @@ function New-TestUser {
             $AzUserParams = @{
                 DisplayName       = '{0}{1:d3}' -f $prefix, $i
                 UserPrincipalName = $UPN
-                MailNickName      = '{0}{1:d3}' -f $prefix, $mailuser
+                MailNickName      = '{0}{1:d3}' -f $prefix, $i
                 PasswordProfile   = $PasswordProfile
                 AccountEnabled    = $true
             }
