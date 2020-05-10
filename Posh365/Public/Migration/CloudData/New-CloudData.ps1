@@ -8,18 +8,19 @@ function New-CloudData {
         [ValidateScript( { Test-Path $_ })]
         $FilePath,
 
-        [Parameter()]
-        $TypeChoice,
+        [Parameter(Mandatory)]
+        [ValidateSet('Mailboxes', 'MailUsers', 'AzureADUsers')]
+        $Type,
 
         [Parameter()]
         $SourceData
     )
 
     while (-not $InitialDomain) {
-        $InitialDomain = Select-CloudDataConnection -Type $TypeChoice -TenantLocation Target
+        $InitialDomain = Select-CloudDataConnection -Type $Type -TenantLocation Target
     }
     if (-not $SourceData) {
         $SourceData = Import-Csv -Path $FilePath
     }
-    Invoke-NewCloudData -ConvertedData $SourceData
+    Invoke-NewCloudData -ConvertedData $SourceData -Type $Type
 }

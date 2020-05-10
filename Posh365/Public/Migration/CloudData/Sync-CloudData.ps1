@@ -18,29 +18,29 @@ function Sync-CloudData {
     }
     #EndRegion Paths
     #Region Choose Recipient
-    while (-not $TypeChoice) {
-        $Type = foreach ($Item in 'Mailboxes', 'MailUsers', 'AzureADUsers') {
+    while (-not $TypeGrid) {
+        $TypeGrid = foreach ($Item in 'Mailboxes', 'MailUsers', 'AzureADUsers') {
             [PSCustomObject]@{
                 RecipientType = $Item
             }
         }
-        $TypeObject = $Type | Out-GridView -OutputMode Single -Title "Choose Recipient Type"
-        $TypeChoice = $TypeObject.RecipientType
+        $TypeObject = $TypeGrid | Out-GridView -OutputMode Single -Title "Choose Recipient Type"
+        $Type = $TypeObject.RecipientType
     }
     #EndRegion Choose Recipient
     #Region SOURCE Connect to Service ($InitialDomain) returned
     if (-not $SkipSourceLogin) {
         while (-not $InitialDomain) {
-            $InitialDomain = Select-CloudDataConnection -Type $TypeChoice -TenantLocation Source
+            $InitialDomain = Select-CloudDataConnection -Type $Type -TenantLocation Source
         }
     }
     #EndRegion SOURCE Connect to Service
     #Region Invoke-GetCloudData ($SourceData) returned
-    $SourceCsvFile = Join-Path -Path $SourcePath -ChildPath ('SOURCE_SYNC_{0}_{1}.csv' -f $TypeChoice, $InitialDomain)
-    $SourceData = Invoke-GetCloudData -ResultSize $ResultSize -InitialDomain $InitialDomain -Type $TypeChoice
+    $SourceCsvFile = Join-Path -Path $SourcePath -ChildPath ('SOURCE_SYNC_{0}_{1}.csv' -f $Type, $InitialDomain)
+    $SourceData = Invoke-GetCloudData -ResultSize $ResultSize -InitialDomain $InitialDomain -Type $Type
     $SourceDataChoice = $SourceData | Out-GridView -Title "Choose objects to convert - no changes are made to any tenant on this step" -OutputMode Multiple
     $SourceDataChoice | Export-Csv -Path $SourceCsvFile -NoTypeInformation
-    Write-Host "Source $TypeChoice objects chosen written to file: $SourceCsvFile`r`n" -ForegroundColor Green
+    Write-Host "Source $Type objects chosen written to file: $SourceCsvFile`r`n" -ForegroundColor Green
     #EndRegion Invoke-GetCloudData
     #Region Ask if ready to convert
     $Yes = [ChoiceDescription]::new('&Yes', 'Convert Cloud Data: Yes')
@@ -54,16 +54,16 @@ function Sync-CloudData {
         0 {
             #Region TARGET Connect to Service ($InitialDomain) returned
             $SourceInitialDomain = $InitialDomain ; $InitialDomain = $null
-            $InitialDomain = Select-CloudDataConnection -Type $TypeChoice -TenantLocation Target
+            $InitialDomain = Select-CloudDataConnection -Type $Type -TenantLocation Target
             while ($SourceInitialDomain -eq $InitialDomain -or -not $InitialDomain) {
                 Write-Host "`r`nSource Tenant cannot be the same as the Target Tenant. Please connect to Target Tenant now.`r`n" -ForegroundColor White -BackgroundColor DarkMagenta
-                $InitialDomain = Select-CloudDataConnection -Type $TypeChoice -TenantLocation Target
+                $InitialDomain = Select-CloudDataConnection -Type $Type -TenantLocation Target
             }
 
             #EndRegion TARGET Connect to Service
             #Region TARGET Convert Source Data ($ConvertedData) returned
-            $TargetCsvFile = Join-Path -Path $SourcePath -ChildPath ('SOURCE_SYNC_CONVERTED_TO_TARGET_{0}_{1}.csv' -f $TypeChoice, $InitialDomain)
-            $ConvertedData = Convert-CloudData -SourceData $SourceDataChoice -Type $TypeChoice
+            $TargetCsvFile = Join-Path -Path $SourcePath -ChildPath ('SOURCE_SYNC_CONVERTED_TO_TARGET_{0}_{1}.csv' -f $Type, $InitialDomain)
+            $ConvertedData = Convert-CloudData -SourceData $SourceDataChoice -Type $Type
             $ConvertedData | Out-GridView -Title "Data converted for import into Target: $TargetInitialDomain"
             $ConvertedData | Export-Csv -Path $TargetCsvFile -NoTypeInformation
             #EndRegion TARGET Convert Source Data ($ConvertedData) returned
@@ -85,7 +85,7 @@ function Sync-CloudData {
             $FileStamp = 'Sync_Result_{0}_{1}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'), $TargetInitialDomain
             $ResultFile = Join-Path -Path $SourcePath -ChildPath $FileStamp
 
-            New-CloudData -SourceData $ConvertedData -TypeChoice $TypeChoice | Export-Csv $ResultFile -NoTypeInformation
+            New-CloudData -SourceData $ConvertedData -Type $Type | Export-Csv $ResultFile -NoTypeInformation
             $ResultObject = Import-Csv $ResultFile
             $ResultObject | Out-GridView -Title $FileStamp
         }
