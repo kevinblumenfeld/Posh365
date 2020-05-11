@@ -24,10 +24,10 @@ function Invoke-SetmsExchVersion {
         $AfterSuccessAD, $AfterSuccessRM = $null
         $i++
         try {
-            Set-ADUser -Identity $Item.Guid -Replace @{ msExchVersion = $VersionDecision } -ErrorAction Stop
+            Set-ADUser -Server $DomainController -Identity $Item.Guid -Replace @{ msExchVersion = $VersionDecision } -ErrorAction Stop
             Write-Host ('[{0} of {1}] {2} Success modifying msExchVersion -  All emails unchanged? ' -f $i, $Count, $item.DisplayName) -ForegroundColor Green -NoNewline
             $AfterSuccessAD = Get-ADUser -Server $DomainController -Identity $item.Guid -Properties DisplayName, msExchVersion -ErrorAction Stop
-            $AfterSuccessRM = Get-RemoteMailbox -Identity $item.Guid -ErrorAction Stop | Select-Object *
+            $AfterSuccessRM = Get-RemoteMailbox -DomainController $DomainController -Identity $item.Guid -ErrorAction Stop | Select-Object *
 
             $AllAddressesUnchanged = $RMHash[$item.Guid]['AllEmailAddresses'] -eq (@($AfterSuccessRM.EmailAddresses) -ne '' -join '|')
             if ($AllAddressesUnchanged) {
