@@ -1,13 +1,13 @@
 function Sync-Guid {
     [CmdletBinding()]
     param (
-        [Parameter()]
-        [switch]
-        $DontViewEntireForest,
-
         [Parameter(Mandatory)]
         [string]
-        $DomainController
+        $DomainController,
+
+        [Parameter()]
+        [switch]
+        $DontViewEntireForest
     )
     $Script:RestartConsole = $null
     Connect-CloudModuleImport -EXO2
@@ -19,7 +19,7 @@ function Sync-Guid {
         Write-Host "Enter the name of the Exchange Server. Example: ExServer01.domain.com" -ForegroundColor Cyan
         $Server = Read-Host "Exchange Server Name"
     }
-    Connect-Exchange @PSBoundParameters -PromptConfirm -Server $Server
+    Connect-Exchange -DontViewEntireForest:$DontViewEntireForest -PromptConfirm -Server $Server
 
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
     $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath ('RemoteMailboxSyncGuid_{0}.xml' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
@@ -61,7 +61,7 @@ function Sync-Guid {
     $AddGuidListNumbered = Invoke-CompareGuid -Numbered $AddGuidListTrimmed
     $AddGuidList = $AddGuidListNumbered | Out-GridView -OutputMode Multiple -Title 'Please choose which Remote Mailbox to modify to match Exchange Online'
     if ($AddGuidList) {
-        Connect-Exchange @PSBoundParameters -Server $Server
+        Connect-Exchange -DontViewEntireForest:$DontViewEntireForest -Server $Server
 
         $GuidResult = Set-ExchangeGuid -AddGuidList $AddGuidList -RMHash $RMHash
 
