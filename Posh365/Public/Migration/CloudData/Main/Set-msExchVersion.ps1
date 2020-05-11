@@ -2,6 +2,10 @@ function Set-msExchVersion {
 
     [CmdletBinding()]
     param (
+        [Parameter(Mandatory)]
+        [string]
+        $DomainController,
+
         [Parameter()]
         [switch]
         $ShowVersionCountOnly,
@@ -41,6 +45,7 @@ function Set-msExchVersion {
             LDAPFilter    = '(|(msExchRecipientTypeDetails=8589934592)(msExchRecipientTypeDetails=2147483648)(msExchRecipientTypeDetails=17179869184)(msExchRecipientTypeDetails=34359738368))'
             Properties    = 'msExchVersion', 'DisplayName', 'UserPrincipalName', 'ObjectGuid'
             ResultSetSize = $null
+            Server        = $domainController
         }
         $UserList = Get-ADUser @ADParams | Select-Object *
         $UserList | Export-Clixml $ADUserXML
@@ -67,12 +72,12 @@ function Set-msExchVersion {
     if ($ShowVersionCountOnly) { continue }
     if (-not $SkipConnection) {
         Get-PSSession | Remove-PSSession
-        Connect-Exchange @PSBoundParameters -PromptConfirm
+        Connect-Exchange -DontViewEntireForest:$DontViewEntireForest -PromptConfirm
     }
     $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath 'RemoteMailbox_msExchVersion.xml'
     Write-Host 'Fetching Remote Mailboxes...' -ForegroundColor Cyan
 
-    Get-RemoteMailbox -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
+    Get-RemoteMailbox -DomainController $DomainController -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
     $RemoteMailboxList = Import-Clixml $RemoteMailboxXML | Sort-Object DisplayName, OrganizationalUnit
 
     Write-Host " Remote Mailboxes found in Active Directory (via msExchRecipientTypeDetails). Count:  $($UserList.Count)  " -ForegroundColor DarkBlue -BackgroundColor White
@@ -110,7 +115,7 @@ function Set-msExchVersion {
         }) | Out-GridView -OutputMode Single -Title 'Choose the msExchVersion to apply to the mailboxes you just selected'
     if ($VersionDecision) { Get-DecisionbyOGV } else { Write-Host 'Halting as nothing was selected' ; continue }
 
-    $Result = Invoke-SetmsExchVersion -Choice $Choice -RMHash $RMHash -UserHash $UserHash -VersionDecision $VersionDecision.msExchVersion
+    $Result = Invoke-SetmsExchVersion -DomainController $DomainController -Choice $Choice -RMHash $RMHash -UserHash $UserHash -VersionDecision $VersionDecision.msExchVersion
 
     $Result | Out-GridView -Title ('Results of modifying msExchVersion to version: {0}  [ Count: {1} ]' -f $VersionDecision.msExchVersion, $Result.Count)
     $ResultCSV = Join-Path -Path $PoshPath -ChildPath ('After modify msExchVersion {0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
