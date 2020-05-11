@@ -63,7 +63,7 @@ function Sync-Guid {
     if ($AddGuidList) {
         Connect-Exchange -DontViewEntireForest:$DontViewEntireForest -Server $Server
 
-        $GuidResult = Set-ExchangeGuid -AddGuidList $AddGuidList -RMHash $RMHash
+        $GuidResult = Set-ExchangeGuid -AddGuidList $AddGuidList -RMHash $RMHash -DomainController $DomainController
 
         $GuidResult | Out-GridView -Title "Results of Adding Guid to Tenant: $InitialDomain"
         $ResultFile = Join-Path -Path $SourcePath -ChildPath ('Guid_Result_{0}_{1}.csv' -f $InitialDomain, [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
