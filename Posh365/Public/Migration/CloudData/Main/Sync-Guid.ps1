@@ -3,7 +3,11 @@ function Sync-Guid {
     param (
         [Parameter()]
         [switch]
-        $DontViewEntireForest
+        $DontViewEntireForest,
+
+        [Parameter(Mandatory)]
+        [string]
+        $DomainController
     )
     $Script:RestartConsole = $null
     Connect-CloudModuleImport -EXO2
@@ -23,8 +27,8 @@ function Sync-Guid {
 
     Get-RemoteMailbox -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
     $RemoteMailboxList = Import-Clixml $RemoteMailboxXML | Sort-Object DisplayName, OrganizationalUnit
-    $RMHash = Get-RemoteMailboxHash -Key UserPrincipalName -RemoteMailboxList $RemoteMailboxList
-    
+    $RMHash = Get-RemoteMailboxHash -DomainController $DomainController -Key UserPrincipalName -RemoteMailboxList $RemoteMailboxList
+
     Get-PSSession | Remove-PSSession
 
     # Cloud ( Mailbox )

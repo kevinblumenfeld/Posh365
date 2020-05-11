@@ -11,7 +11,11 @@ function Set-ExchangeGuid {
         $AddGuidList,
 
         [Parameter(Mandatory)]
-        $RMHash
+        $RMHash,
+
+        [Parameter(Mandatory)]
+        [string]
+        $DomainController
 
     )
 
@@ -27,8 +31,9 @@ function Set-ExchangeGuid {
         $Stamped = $null
         $iUP++
         $SetParams = @{
-            Identity    = $AddGuid.UserPrincipalName
-            ErrorAction = 'Stop'
+            Identity         = $AddGuid.UserPrincipalName
+            ErrorAction      = 'Stop'
+            DomainController = $DomainController
         }
         if (-not $AddGuid.ExchangeGuidMatch) {
             $SetParams['ExchangeGuid'] = $AddGuid.ExchangeGuidCloud
@@ -38,7 +43,7 @@ function Set-ExchangeGuid {
         }
         try {
             Set-RemoteMailbox @SetParams
-            $Stamped = Get-RemoteMailbox -Identity $AddGuid.UserPrincipalName
+            $Stamped = Get-RemoteMailbox -Identity $AddGuid.UserPrincipalName -DomainController $DomainController
             Write-Host "[$iUP of $Count] Success Set Guid $($AddGuid.DisplayName) - All emails unchanged? " -ForegroundColor Green -NoNewline
 
             $AllAddressesUnchanged = $RMHash[$AddGuid.UserPrincipalName]['AllEmailAddresses'] -eq (@($Stamped.EmailAddresses) -ne '' -join '|')
