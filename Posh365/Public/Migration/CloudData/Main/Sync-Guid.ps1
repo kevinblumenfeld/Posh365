@@ -25,9 +25,9 @@ function Sync-Guid {
     $RemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath ('RemoteMailboxSyncGuid_{0}.xml' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
     Write-Host "Fetching Remote Mailboxes..." -ForegroundColor Cyan
 
-    Get-RemoteMailbox -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
+    Get-RemoteMailbox -DomainController $DomainController -ResultSize Unlimited | Select-Object * | Export-Clixml $RemoteMailboxXML
     $RemoteMailboxList = Import-Clixml $RemoteMailboxXML | Sort-Object DisplayName, OrganizationalUnit
-    $RMHash = Get-RemoteMailboxHash -DomainController $DomainController -Key UserPrincipalName -RemoteMailboxList $RemoteMailboxList
+    $RMHash = Get-RemoteMailboxHash -Key UserPrincipalName -RemoteMailboxList $RemoteMailboxList
 
     Get-PSSession | Remove-PSSession
 
