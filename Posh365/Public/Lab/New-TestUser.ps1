@@ -27,6 +27,11 @@ function New-TestUser {
         [switch]
         $RemoteMailbox,
 
+
+        [Parameter()]
+        [switch]
+        $MailboxOnPrem,
+
         [Parameter()]
         [switch]
         $MailUser,
@@ -49,28 +54,28 @@ function New-TestUser {
         $Password,
 
         [Parameter()]
-        $PasswordLength = 10
+        $PasswordLength = 10,
+
+        [Parameter()]
+        [switch]
+        $UseEmailAddressPolicy
     )
 
     if ($Domain) { $Dom = $Domain }
     else { $Dom = ((Get-AcceptedDomain) | Where-Object { $_.InitialDomain }).DomainName }
 
-    if ($Password) {
-        $SSPass = ConvertTo-SecureString -String $Password -AsPlainText:$true -Force
-        $PSCred = [System.Management.Automation.PSCredential]::New('PlaceHolder', $SSPass)
-        $Pass = $PSCred.Password
+    if (-not $Password) {
+        $Password = [System.Web.Security.Membership]::GeneratePassword($PasswordLength, 3)
     }
-    else {
-        $Pass = [System.Web.Security.Membership]::GeneratePassword($PasswordLength, 3)
-    }
-    $ConPass = ConvertTo-SecureString -String $Pass -AsPlainText:$true -Force
+    $ConPass = ConvertTo-SecureString -String $Password -Force -AsPlainText
+
 
     $LicenseList = [System.Collections.Generic.List[string]]::New()
     $SubTotal = $Start + $Count
     if ($Count -eq 0) { $Total = $SubTotal }
     else { $Total = $SubTotal - 1 }
     foreach ($i in ($Start..($Total))) {
-        $NewMC, $NewMEU, $NewAz, $NewRM = $null
+        $NewOnPrem, $NewMC, $NewMEU, $NewAz, $NewRM = $null
         if ($MailContact) {
             $ContactParams = @{
                 ExternalEmailAddress = '{0}{1:d3}@{2}' -f $prefix, $i, $Dom
@@ -105,12 +110,11 @@ function New-TestUser {
             if ($SecondaryAddressCount -and $NewMEU) {
                 foreach ($Secondary in (1..$SecondaryAddressCount)) {
                     $CalculatedAddress = ('{0}:{1}{2:d3}{3}@{4}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 100 -Maximum 999), $Dom)
-                    $NewMEU| Set-MailUser -EmailAddresses @{Add = $CalculatedAddress }
+                    $NewMEU | Set-MailUser -EmailAddresses @{Add = $CalculatedAddress }
                     Write-Host "[$i of $Total] Secondary $Secondary :`t$CalculatedAddress" -ForegroundColor Cyan
                 }
             }
         }
-
         if ($AzUser) {
             $PasswordProfile = [Microsoft.Open.AzureAD.Model.PasswordProfile]::new()
             $PasswordProfile.Password = $ConPass
@@ -125,7 +129,6 @@ function New-TestUser {
             New-AzureADUser @AzUserParams > $null
             Write-Host "[$i of $Total] AzureADUser:`t$UPN" -ForegroundColor DarkCyan
         }
-
         if ($RemoteMailbox) {
             if (-not $Domain) {
                 Write-Host "Please rerun with -Domain parameter" -ForegroundColor Red
@@ -150,6 +153,36 @@ function New-TestUser {
                 foreach ($Secondary in (1..$SecondaryAddressCount)) {
                     $CalculatedAddress = ('{0}:{1}{2:d3}{3}@{4}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 100 -Maximum 999), $Dom)
                     $NewRM | Set-RemoteMailbox -EmailAddresses @{Add = $CalculatedAddress }
+                    Write-Host "[$i of $Total] Secondary $Secondary :`t$CalculatedAddress" -ForegroundColor Cyan
+                }
+            }
+        }
+        if ($MailboxOnPrem) {
+            if (-not $Domain) {
+                Write-Host "Please rerun with -Domain parameter" -ForegroundColor Red
+                continue
+            }
+            $UPN = '{0}{1:d3}@{2}' -f $prefix, $i, $Dom
+            $OnPremParams = @{
+                DisplayName       = '{0}{1:d3}' -f $prefix, $i
+                Name              = '{0}{1:d3}' -f $prefix, $i
+                UserPrincipalName = $UPN
+                SamAccountName    = '{0}{1:d3}' -f $prefix, $i
+                Alias             = '{0}{1:d3}' -f $prefix, $i
+                Password          = $ConPass
+            }
+            if ($OU) {
+                $OnPremParams['OrganizationalUnit'] = $OU
+            }
+            if (-not $UseEmailAddressPolicy) {
+                $OnPremParams['PrimarySMTPAddress'] = '{0}{1:d3}@{2}' -f $prefix, $i, $Dom
+            }
+            $NewOnPrem = New-Mailbox @OnPremParams
+            Write-Host "[$i of $Total] MailboxOnPremises:`t$($NewOnPrem.DisplayName)" -ForegroundColor DarkCyan
+            if ($SecondaryAddressCount -and $NewOnPrem) {
+                foreach ($Secondary in (1..$SecondaryAddressCount)) {
+                    $CalculatedAddress = ('{0}:{1}{2:d3}{3}@{4}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 100 -Maximum 999), $Dom)
+                    $NewOnPrem | Set-Mailbox -EmailAddresses @{Add = $CalculatedAddress }
                     Write-Host "[$i of $Total] Secondary $Secondary :`t$CalculatedAddress" -ForegroundColor Cyan
                 }
             }
