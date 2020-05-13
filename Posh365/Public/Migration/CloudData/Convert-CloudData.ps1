@@ -41,7 +41,10 @@ function Convert-CloudData {
             else {
                 $LegacyExchangeDN = ''
             }
-            $AddressList.Add((@($Source.EmailAddresses -split [Regex]::Escape('|') ).where{ $_ -like "x500:*" }))
+            $x500List = $Source.EmailAddresses -split '\|' -like 'x500:*'
+            foreach ($x500 in $x500List ) {
+                $AddressList.Add($x500)
+            }
             if ($Source.RecipientTypeDetails -eq 'MailUser') {
                 $TargetPrimarySmtpAddress = $Source.PrimarySmtpAddress
             }
