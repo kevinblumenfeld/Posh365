@@ -102,6 +102,13 @@ function New-TestUser {
             }
             $NewMEU = New-MailUser @MeuParams
             Write-Host "[$i of $Total] MailUser :`t$($NewMEU.DisplayName)" -ForegroundColor Green
+            if ($SecondaryAddressCount -and $NewMEU) {
+                foreach ($Secondary in (1..$SecondaryAddressCount)) {
+                    $CalculatedAddress = ('{0}:{1}{2:d3}{3}@{4}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 100 -Maximum 999), $Dom)
+                    $NewMEU| Set-MailUser -EmailAddresses @{Add = $CalculatedAddress }
+                    Write-Host "[$i of $Total] Secondary $Secondary :`t$CalculatedAddress" -ForegroundColor Cyan
+                }
+            }
         }
 
         if ($AzUser) {
