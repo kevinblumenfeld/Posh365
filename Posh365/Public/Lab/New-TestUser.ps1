@@ -136,7 +136,7 @@ function New-TestUser {
         if ($RemoteMailbox) {
             if (-not $Domain) {
                 Write-Host "Please rerun with -Domain parameter" -ForegroundColor Red
-                continue
+                break
             }
             $UPN = '{0}{1:d3}@{2}' -f $prefix, $i, $Dom
             $RMParams = @{
