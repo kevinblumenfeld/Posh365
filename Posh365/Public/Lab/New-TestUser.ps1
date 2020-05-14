@@ -58,7 +58,11 @@ function New-TestUser {
 
         [Parameter()]
         [switch]
-        $UseEmailAddressPolicy
+        $UseEmailAddressPolicy,
+
+        [Parameter()]
+        [switch]
+        $AddAdditionalEmails
     )
 
     if ($Domain) { $Dom = $Domain }
@@ -205,5 +209,27 @@ function New-TestUser {
     }
     if (@($LicenseList).count -gt 0) {
         $LicenseList | Set-CloudLicense -AddOptions
+    }
+    if ($AddAdditionalEmails) {
+        $i = 0
+        $RecipientList = Get-Recipient -ResultSize Unlimited | Select-Object DisplayName, RecipientTypeDetails, PrimarySmtpAddress | Out-GridView -Title "Add email addresses" -OutputMode Multiple
+        $Total = @($RecipientList).count
+        foreach ($Recipient in $RecipientList) {
+            $i++
+            if ($Recipient.RecipientTypeDetails -like '*Mailbox') {
+                foreach ($Secondary in (1..$SecondaryAddressCount)) {
+                    $CalculatedAddress = ('{0}:{1}{2:d3}{3}@{4}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 100 -Maximum 999), $Dom)
+                    Set-Mailbox -Identity $Recipient.PrimarySmtpAddress -EmailAddresses @{Add = $CalculatedAddress }
+                    Write-Host "[$i of $Total] Secondary $Secondary :`t$CalculatedAddress" -ForegroundColor Cyan
+                }
+            }
+            if ($Recipient.RecipientTypeDetails -eq 'MailUser') {
+                foreach ($Secondary in (1..$SecondaryAddressCount)) {
+                    $CalculatedAddress = ('{0}:{1}{2:d3}{3}@{4}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 100 -Maximum 999), $Dom)
+                    Set-MailUser -Identity $Recipient.PrimarySmtpAddress -EmailAddresses @{Add = $CalculatedAddress }
+                    Write-Host "[$i of $Total] Secondary $Secondary :`t$CalculatedAddress" -ForegroundColor Cyan
+                }
+            }
+        }
     }
 }
