@@ -38,6 +38,9 @@ function Invoke-NewCloudData {
                     EmailAddresses = @{Add = $Converted.EmailAddresses -split [regex]::Escape('|') }
                     ErrorAction    = 'Stop'
                 }
+                if ($Type -eq 'Mailboxes') {
+                    $SetParams['ExchangeGuid'] = $Converted.SourceExchangeGuid
+                }
                 $i = 0
                 while (-not ($null = Get-MailUser -Filter ('PrimarySmtpAddress -eq "{0}"' -f $Converted.PrimarySmtpAddress) -ErrorAction SilentlyContinue) -and $i -lt 20) {
                     Write-Host ('Waiting for {0}' -f $Converted.PrimarySmtpAddress) -ForegroundColor White
@@ -58,6 +61,7 @@ function Invoke-NewCloudData {
                     UserPrincipalName         = $MeuSet.UserPrincipalName
                     PrimarySMTPAddress        = $MeuSet.PrimarySMTPAddress
                     Alias                     = $MeuSet.Alias
+                    ExchangeGuid              = $MeuSet.ExchangeGuid
                     SourceId                  = $Converted.ExternalDirectoryObjectId
                     TargetId                  = $MeuSet.ExternalDirectoryObjectId
                     Password                  = $GeneratedPW
@@ -80,6 +84,7 @@ function Invoke-NewCloudData {
                         UserPrincipalName         = $MeuCreated.UserPrincipalName
                         PrimarySMTPAddress        = $MeuCreated.PrimarySMTPAddress
                         Alias                     = $MeuCreated.Alias
+                        ExchangeGuid              = 'FAILED'
                         SourceId                  = $Converted.ExternalDirectoryObjectId
                         TargetId                  = $MeuCreated.ExternalDirectoryObjectId
                         Password                  = $GeneratedPW
@@ -102,6 +107,7 @@ function Invoke-NewCloudData {
                         UserPrincipalName         = $Converted.UserPrincipalName
                         PrimarySMTPAddress        = $Converted.PrimarySMTPAddress
                         Alias                     = $Converted.Alias
+                        ExchangeGuid              = 'FAILED'
                         SourceId                  = $Converted.ExternalDirectoryObjectId
                         TargetId                  = 'FAILED'
                         Password                  = $GeneratedPW

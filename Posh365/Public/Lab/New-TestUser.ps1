@@ -1,5 +1,70 @@
 Add-Type -AssemblyName System.Web
 function New-TestUser {
+    <#
+    .SYNOPSIS
+    Short description
+
+    .DESCRIPTION
+    Long description
+
+    .PARAMETER Start
+    Parameter description
+
+    .PARAMETER OU
+    Parameter description
+
+    .PARAMETER Count
+    Parameter description
+
+    .PARAMETER MailContact
+    Parameter description
+
+    .PARAMETER AzUser
+    Parameter description
+
+    .PARAMETER CloudOnlyMailbox
+    Parameter description
+
+    .PARAMETER RemoteMailbox
+    Parameter description
+
+    .PARAMETER MailboxOnPrem
+    Parameter description
+
+    .PARAMETER MailUser
+    Parameter description
+
+    .PARAMETER Prefix
+    Parameter description
+
+    .PARAMETER Domain
+    Parameter description
+
+    .PARAMETER SecondaryAddressCount
+    Parameter description
+
+    .PARAMETER SecondaryAddressPrefix
+    Parameter description
+
+    .PARAMETER Password
+    Parameter description
+
+    .PARAMETER PasswordLength
+    Parameter description
+
+    .PARAMETER UseEmailAddressPolicy
+    Parameter description
+
+    .PARAMETER AddAdditionalEmails
+    Parameter description
+
+    .EXAMPLE
+    New-TestUser -Start 20 -AddAdditionalEmails -SecondaryAddressCount 2 -SecondaryAddressPrefix smtp
+
+    .NOTES
+    General notes
+    #>
+
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

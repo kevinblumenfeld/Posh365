@@ -45,15 +45,7 @@ function Convert-CloudData {
             foreach ($x500 in $x500List ) {
                 $AddressList.Add($x500)
             }
-            if ($Source.RecipientTypeDetails -eq 'MailUser') {
-                $TargetPrimarySmtpAddress = $Source.PrimarySmtpAddress
-            }
-            elseif ($Source.PrimarySmtpAddress) {
-                $TargetPrimarySmtpAddress = '{0}@{1}' -f ($Source.PrimarySmtpAddress -split '@')[0], $InitialDomain
-            }
-            else {
-                $TargetPrimarySmtpAddress = ''
-            }
+            $TargetPrimarySmtpAddress = $Source.PrimarySmtpAddress
             if ($Source.Name) { $Name = $Source.Name } else { $Name = '' }
             [PSCustomObject]@{
                 DisplayName               = $Source.DisplayName
@@ -68,10 +60,7 @@ function Convert-CloudData {
                 LegacyExchangeDN          = $LegacyExchangeDN
                 InitialAddress            = $TargetInitial
                 EmailAddresses            = @($AddressList) -ne '' -join '|'
-                UPNPrimaryMismatch        = if ( $Source.PrimarySmtpAddress -and ($Source.PrimarySmtpAddress -split '@')[0] -ne ($Source.UserPrincipalName -split '@')[0]) {
-                    $Source.UserPrincipalName
-                }
-                else { '' }
+                UPNMatchesPrimary         = $Source.PrimarySmtpAddress -eq $Source.UserPrincipalName
                 ExternalDirectoryObjectId = $Source.ExternalDirectoryObjectId
                 SourceUserPrincipalName   = $Source.UserPrincipalName
                 SourcePrimarySmtpAddress  = $Source.PrimarySmtpAddress
