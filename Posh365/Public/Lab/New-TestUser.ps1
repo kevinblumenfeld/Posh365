@@ -172,7 +172,7 @@ function New-TestUser {
                 DisplayName               = '{0}{1:d3}' -f $prefix, $i
                 MicrosoftOnlineServicesID = '{0}{1:d3}@{2}' -f $prefix, $i, $Dom
                 Password                  = $ConPass
-                ExternalEmailAddress      = 'kevin@thenext.net'
+                ExternalEmailAddress      = 'fake@externalemailaddressfake123.net'
             }
             $NewMEU = New-MailUser @MeuParams
             Write-Host "[$i of $Total] MailUser :`t$($NewMEU.DisplayName)" -ForegroundColor Green

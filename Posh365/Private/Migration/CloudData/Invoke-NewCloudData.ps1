@@ -61,6 +61,7 @@ function Invoke-NewCloudData {
                     UserPrincipalName         = $MeuSet.UserPrincipalName
                     PrimarySMTPAddress        = $MeuSet.PrimarySMTPAddress
                     Alias                     = $MeuSet.Alias
+                    ExternalEmailAddress      = $MeuSet.ExternalEmailAddress
                     ExchangeGuid              = $MeuSet.ExchangeGuid
                     SourceId                  = $Converted.ExternalDirectoryObjectId
                     TargetId                  = $MeuSet.ExternalDirectoryObjectId
@@ -84,6 +85,7 @@ function Invoke-NewCloudData {
                         UserPrincipalName         = $MeuCreated.UserPrincipalName
                         PrimarySMTPAddress        = $MeuCreated.PrimarySMTPAddress
                         Alias                     = $MeuCreated.Alias
+                        ExternalEmailAddress      = $MeuCreated.ExternalEmailAddress
                         ExchangeGuid              = 'FAILED'
                         SourceId                  = $Converted.ExternalDirectoryObjectId
                         TargetId                  = $MeuCreated.ExternalDirectoryObjectId
@@ -107,6 +109,7 @@ function Invoke-NewCloudData {
                         UserPrincipalName         = $Converted.UserPrincipalName
                         PrimarySMTPAddress        = $Converted.PrimarySMTPAddress
                         Alias                     = $Converted.Alias
+                        ExternalEmailAddress      = $Converted.ExternalEmailAddress
                         ExchangeGuid              = 'FAILED'
                         SourceId                  = $Converted.ExternalDirectoryObjectId
                         TargetId                  = 'FAILED'
