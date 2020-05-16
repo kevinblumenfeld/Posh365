@@ -12,7 +12,9 @@ function Invoke-CompleteMailboxMove {
 
     )
     begin {
-
+        # CompleteAfter:$false
+        # Remove Suspendwhenreadytocomplete
+        # No need to resume if Complete is $False
         if ($CompleteAfter) {
             $LocalTime = $CompleteAfter.ToLocalTime()
             $UTCTime = $CompleteAfter

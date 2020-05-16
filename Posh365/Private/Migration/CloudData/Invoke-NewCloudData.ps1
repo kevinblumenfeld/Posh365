@@ -12,6 +12,7 @@ function Invoke-NewCloudData {
     $ErrorActionPreference = 'stop'
     $Count = @($ConvertedData).Count
     $iUP = 0
+    $Time = [DateTime]::Now.ToString('yyyy-MM-dd-hhmm')
     if ($Type -match 'Mailboxes|MailUsers') {
         foreach ($Converted in $ConvertedData) {
             $iUP++
@@ -52,6 +53,7 @@ function Invoke-NewCloudData {
                 Write-Host "[$iUP of $Count] Success Set MailUser: $($MeuSet.DisplayName)" -ForegroundColor Green
 
                 [PSCustomObject]@{
+                    Time                      = $Time
                     ResultNew                 = 'SUCCESS'
                     ResultSet                 = 'SUCCESS'
                     Name                      = $MeuSet.Name
@@ -76,6 +78,7 @@ function Invoke-NewCloudData {
             catch {
                 if ($MeuCreated -and -not $MeuSet) {
                     [PSCustomObject]@{
+                        Time                      = $Time
                         ResultNew                 = 'SUCCESS'
                         ResultSet                 = 'FAILED'
                         Name                      = $MeuCreated.Name
@@ -100,6 +103,7 @@ function Invoke-NewCloudData {
                 }
                 else {
                     [PSCustomObject]@{
+                        Time                      = $Time
                         ResultNew                 = 'FAILED'
                         ResultSet                 = 'FAILED'
                         Name                      = $Converted.DisplayName
@@ -159,6 +163,7 @@ function Invoke-NewCloudData {
                 $NewAzADUser = New-AzureADUser @AzUserParams
                 Write-Host "[$iUP of $Count] Success New AzureADUser: $($NewAzADUser.DisplayName)" -ForegroundColor Green
                 [PSCustomObject]@{
+                    Time              = $Time
                     ResultNew         = 'SUCCESS'
                     DisplayName       = $NewAzADUser.DisplayName
                     SourceType        = 'AzureADUser'
@@ -172,6 +177,7 @@ function Invoke-NewCloudData {
             }
             catch {
                 [PSCustomObject]@{
+                    Time              = $Time
                     ResultNew         = 'FAILED'
                     DisplayName       = $NewAzADUser.DisplayName
                     SourceType        = 'FAILED'
