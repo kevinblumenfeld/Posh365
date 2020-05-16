@@ -3,11 +3,7 @@ function Sync-CloudData {
     [CmdletBinding()]
     param (
         [Parameter()]
-        $ResultSize = 'Unlimited',
-
-        [parameter()]
-        [switch]
-        $SkipSourceLogon
+        $ResultSize = 'Unlimited'
     )
     #Region Paths
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
@@ -34,10 +30,8 @@ function Sync-CloudData {
 
     #EndRegion Choose Recipient
     #Region SOURCE Connect to Service ($InitialDomain) returned
-    if (-not $SkipSourceLogin) {
-        while (-not $InitialDomain) {
-            $InitialDomain = Select-CloudDataConnection -Type $Type -TenantLocation Source
-        }
+    while (-not $InitialDomain) {
+        $InitialDomain = Select-CloudDataConnection -Type $Type -TenantLocation Source
     }
     #EndRegion SOURCE Connect to Service
     #Region Invoke-GetCloudData ($SourceData) returned

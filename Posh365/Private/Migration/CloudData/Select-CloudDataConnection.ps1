@@ -8,11 +8,15 @@ function Select-CloudDataConnection {
 
         [Parameter(Mandatory)]
         [ValidateSet('Source', 'Target')]
-        $TenantLocation
+        $TenantLocation,
+
+        [Parameter()]
+        [switch]
+        $OnlyEXO
     )
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
     Get-PSSession | Remove-PSSession
-    if ($Type -eq 'AzureADUsers' -or $TenantLocation -eq 'Target') {
+    if ($Type -eq 'AzureADUsers' -or $TenantLocation -eq 'Target' -and -not $OnlyEXO) {
         try { Disconnect-AzureAD -ErrorAction Stop } catch { }
         if (-not ($null = Get-Module -Name 'AzureAD', 'AzureADPreview' -ListAvailable)) {
             Install-Module -Name AzureAD -Scope CurrentUser -Force -AllowClobber
