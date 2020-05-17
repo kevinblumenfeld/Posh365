@@ -59,7 +59,7 @@ function New-TestUser {
     Parameter description
 
     .EXAMPLE
-    New-TestUser -Start 20 -AddAdditionalEmails -SecondaryAddressCount 2 -SecondaryAddressPrefix smtp
+    New-TestUser -AddAdditionalEmails -SecondaryAddressCount 2 -SecondaryAddressPrefix smtp
 
     .NOTES
     General notes
@@ -67,7 +67,7 @@ function New-TestUser {
 
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)]
+        [Parameter()]
         $Start,
 
         [Parameter()]
@@ -159,7 +159,12 @@ function New-TestUser {
             Write-Host "[$i of $Total] MailContact :`t$($NewMC.DisplayName)" -ForegroundColor Green
             if ($SecondaryAddressCount -and $NewMC) {
                 foreach ($Secondary in (1..$SecondaryAddressCount)) {
-                    $CalculatedAddress = ('{0}:{1}{2:d3}{3}@{4}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 100 -Maximum 999), $Dom)
+                    if ($SecondaryAddressPrefix -eq 'x500') {
+                        $CalculatedAddress = '{0}:/o=fake/ou=fake (FYDIBOHF23SPDLT)/cn=Recipients/{1}{2:d3}{3}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 10000 -Maximum 99999)
+                    }
+                    else {
+                        $CalculatedAddress = '{0}:{1}{2:d3}{3}@{4}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 100 -Maximum 999), $Dom
+                    }
                     $NewMC | Set-MailContact -EmailAddresses @{Add = $CalculatedAddress }
                     Write-Host "[$i of $Total] Secondary $Secondary :`t$CalculatedAddress" -ForegroundColor Cyan
                 }
@@ -178,7 +183,12 @@ function New-TestUser {
             Write-Host "[$i of $Total] MailUser :`t$($NewMEU.DisplayName)" -ForegroundColor Green
             if ($SecondaryAddressCount -and $NewMEU) {
                 foreach ($Secondary in (1..$SecondaryAddressCount)) {
-                    $CalculatedAddress = ('{0}:{1}{2:d3}{3}@{4}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 100 -Maximum 999), $Dom)
+                    if ($SecondaryAddressPrefix -eq 'x500') {
+                        $CalculatedAddress = '{0}:/o=fake/ou=fake (FYDIBOHF23SPDLT)/cn=Recipients/{1}{2:d3}{3}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 10000 -Maximum 99999)
+                    }
+                    else {
+                        $CalculatedAddress = '{0}:{1}{2:d3}{3}@{4}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 100 -Maximum 999), $Dom
+                    }
                     $NewMEU | Set-MailUser -EmailAddresses @{Add = $CalculatedAddress }
                     Write-Host "[$i of $Total] Secondary $Secondary :`t$CalculatedAddress" -ForegroundColor Cyan
                 }
@@ -220,7 +230,12 @@ function New-TestUser {
             Write-Host "[$i of $Total] RemoteMailbox:`t$($NewRM.DisplayName)" -ForegroundColor DarkCyan
             if ($SecondaryAddressCount -and $NewRM) {
                 foreach ($Secondary in (1..$SecondaryAddressCount)) {
-                    $CalculatedAddress = ('{0}:{1}{2:d3}{3}@{4}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 100 -Maximum 999), $Dom)
+                    if ($SecondaryAddressPrefix -eq 'x500') {
+                        $CalculatedAddress = '{0}:/o=fake/ou=fake (FYDIBOHF23SPDLT)/cn=Recipients/{1}{2:d3}{3}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 10000 -Maximum 99999)
+                    }
+                    else {
+                        $CalculatedAddress = '{0}:{1}{2:d3}{3}@{4}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 100 -Maximum 999), $Dom
+                    }
                     $NewRM | Set-RemoteMailbox -EmailAddresses @{Add = $CalculatedAddress }
                     Write-Host "[$i of $Total] Secondary $Secondary :`t$CalculatedAddress" -ForegroundColor Cyan
                 }
@@ -250,7 +265,12 @@ function New-TestUser {
             Write-Host "[$i of $Total] MailboxOnPremises:`t$($NewOnPrem.DisplayName)" -ForegroundColor DarkCyan
             if ($SecondaryAddressCount -and $NewOnPrem) {
                 foreach ($Secondary in (1..$SecondaryAddressCount)) {
-                    $CalculatedAddress = ('{0}:{1}{2:d3}{3}@{4}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 100 -Maximum 999), $Dom)
+                    if ($SecondaryAddressPrefix -eq 'x500') {
+                        $CalculatedAddress = '{0}:/o=fake/ou=fake (FYDIBOHF23SPDLT)/cn=Recipients/{1}{2:d3}{3}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 10000 -Maximum 99999)
+                    }
+                    else {
+                        $CalculatedAddress = '{0}:{1}{2:d3}{3}@{4}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 100 -Maximum 999), $Dom
+                    }
                     $NewOnPrem | Set-Mailbox -EmailAddresses @{Add = $CalculatedAddress }
                     Write-Host "[$i of $Total] Secondary $Secondary :`t$CalculatedAddress" -ForegroundColor Cyan
                 }
@@ -283,14 +303,24 @@ function New-TestUser {
             $i++
             if ($Recipient.RecipientTypeDetails -like '*Mailbox') {
                 foreach ($Secondary in (1..$SecondaryAddressCount)) {
-                    $CalculatedAddress = ('{0}:{1}{2:d3}{3}@{4}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 100 -Maximum 999), $Dom)
+                    if ($SecondaryAddressPrefix -eq 'x500') {
+                        $CalculatedAddress = '{0}:/o=fake/ou=fake (FYDIBOHF23SPDLT)/cn=Recipients/{1}{2:d3}{3}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 10000 -Maximum 99999)
+                    }
+                    else {
+                        $CalculatedAddress = '{0}:{1}{2:d3}{3}@{4}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 100 -Maximum 999), $Dom
+                    }
                     Set-Mailbox -Identity $Recipient.PrimarySmtpAddress -EmailAddresses @{Add = $CalculatedAddress }
                     Write-Host "[$i of $Total] Secondary $Secondary :`t$CalculatedAddress" -ForegroundColor Cyan
                 }
             }
             if ($Recipient.RecipientTypeDetails -eq 'MailUser') {
                 foreach ($Secondary in (1..$SecondaryAddressCount)) {
-                    $CalculatedAddress = ('{0}:{1}{2:d3}{3}@{4}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 100 -Maximum 999), $Dom)
+                    if ($SecondaryAddressPrefix -eq 'x500') {
+                        $CalculatedAddress = '{0}:/o=fake/ou=fake (FYDIBOHF23SPDLT)/cn=Recipients/{1}{2:d3}{3}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 10000 -Maximum 99999)
+                    }
+                    else {
+                        $CalculatedAddress = '{0}:{1}{2:d3}{3}@{4}' -f $SecondaryAddressPrefix, $prefix, $i, (Get-Random -Minimum 100 -Maximum 999), $Dom
+                    }
                     Set-MailUser -Identity $Recipient.PrimarySmtpAddress -EmailAddresses @{Add = $CalculatedAddress }
                     Write-Host "[$i of $Total] Secondary $Secondary :`t$CalculatedAddress" -ForegroundColor Cyan
                 }
