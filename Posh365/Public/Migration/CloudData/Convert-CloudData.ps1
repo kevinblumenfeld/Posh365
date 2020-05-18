@@ -62,6 +62,7 @@ function Convert-CloudData {
                 EmailAddresses            = @($AddressList) -ne '' -join '|'
                 UPNMatchesPrimary         = $Source.PrimarySmtpAddress -eq $Source.UserPrincipalName
                 ExternalDirectoryObjectId = $Source.ExternalDirectoryObjectId
+                MicrosoftOnlineServicesID = $Source.MicrosoftOnlineServicesID
                 SourceUserPrincipalName   = $Source.UserPrincipalName
                 SourcePrimarySmtpAddress  = $Source.PrimarySmtpAddress
                 SourceEmailAddresses      = $Source.EmailAddresses

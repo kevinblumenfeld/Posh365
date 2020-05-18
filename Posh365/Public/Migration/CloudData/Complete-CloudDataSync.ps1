@@ -25,8 +25,9 @@ function Complete-CloudDataSync {
     $Converted = Convert-CompleteCloudDataSync -ResultObject $ResultObject
     $ChoiceList = $Converted | Out-GridView -OutputMode Multiple -Title 'Choose which objects to modify at Target'
     if ($ChoiceList){
-        $WriteResultFile = Join-Path -Path $SourcePath -ChildPath 'CompleteCloudData_Results.csv'
+        $ChoiceList | Export-Csv (Join-Path -Path $SourcePath -ChildPath 'ConvertCloudData_Converted.csv') -NoTypeInformation
         $WriteResult = Invoke-CompleteCloudDataSync -ChoiceList $ChoiceList
+        $WriteResultFile = Join-Path -Path $SourcePath -ChildPath 'CompleteCloudData_Results.csv'
         $WriteResult | Out-GridView -Title $WriteResultFile
         $WriteResult | Export-Csv $WriteResultFile -NoTypeInformation -Append
     }

@@ -15,6 +15,7 @@ function Invoke-NewCloudData {
     $Time = [DateTime]::Now.ToString('yyyy-MM-dd-hhmm')
     if ($Type -match 'Mailboxes|MailUsers') {
         foreach ($Converted in $ConvertedData) {
+            $FlagAz = $null
             $iUP++
             $MeuCreated, $MeuSet = $null
             $GeneratedPW = [System.Web.Security.Membership]::GeneratePassword(16, 3)
