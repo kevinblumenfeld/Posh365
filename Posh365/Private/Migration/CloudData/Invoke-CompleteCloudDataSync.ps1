@@ -12,21 +12,23 @@ function Invoke-CompleteCloudDataSync {
         $CurrentPrimary, $PreEmailChange, $PostEmailChange, $PrePrimaryChange, $PostPrimaryChange, $PreUPNChange, $PostUPNChange, $PostPrimaryChange = $null
         $iUP++
         #Region PRIMARY CHANGE
+        Write-Host ('[{0} of {1}] {2} ({3}) | PrimarySmtpAddress Change - ' -f $iUP, $Count, $Choice.DisplayName, $Choice.SourceType) -ForegroundColor Cyan -NoNewline
         try {
             if ($Choice.SourceType -like '*Mailbox') {
                 $PrePrimaryChange = Get-Mailbox -Identity $Choice.TargetId
                 $CurrentPrimary = 'SMTP:{0}' -f $PrePrimaryChange.PrimarySmtpAddress
-                Set-Mailbox -Identity $Choice.TargetId -EmailAddresses @{
+                Set-Mailbox -Identity $Choice.TargetId -WarningAction SilentlyContinue -EmailAddresses @{
                     Remove = $CurrentPrimary
-                    Add    = $Choice.SourcePrimarySmtpAddress
+                    Add    = 'SMTP:{0}' -f $Choice.SourcePrimarySmtpAddress
                 }
                 $PostPrimaryChange = Get-Mailbox -Identity $Choice.TargetId
             }
             elseif ($Choice.SourceType -eq 'MailUser') {
                 $PrePrimaryChange = Get-MailUser -Identity $Choice.TargetId
-                Set-MailUser -Identity $Choice.TargetId -PrimarySmtpAddress $Choice.SourcePrimarySmtpAddress
+                Set-MailUser -Identity $Choice.TargetId -PrimarySmtpAddress $Choice.SourcePrimarySmtpAddress -WarningAction SilentlyContinue
                 $PostPrimaryChange = Get-MailUser -Identity $Choice.TargetId
             }
+            Write-Host ('SUCCESS PRIMARY FROM: {0} TO: {1}' -f $PrePrimaryChange.PrimarySMTPAddress, $PostPrimaryChange.PrimarySMTPAddress) -ForegroundColor Green
             [PSCustomObject]@{
                 Num                              = '[{0} of {1}]' -f $iUP, $Count
                 Action                           = 'CHANGEPRIMARY'
@@ -34,7 +36,7 @@ function Invoke-CompleteCloudDataSync {
                 Time                             = $Time
                 DisplayName                      = $Choice.DisplayName
                 SourceType                       = $Choice.SourceType
-                ChangeRequested                  = $Choice.PrimarySmtpAddress
+                ChangeRequested                  = $Choice.SourcePrimarySmtpAddress
                 PreChange                        = $PrePrimaryChange.PrimarySMTPAddress
                 PostChange                       = $PostPrimaryChange.PrimarySMTPAddress
                 SourceEmailAddresses             = $Choice.SourceEmailAddresses
@@ -60,6 +62,7 @@ function Invoke-CompleteCloudDataSync {
             }
         }
         catch {
+            Write-Host "FAILED $($_.Exception.Message)" -ForegroundColor Red
             [PSCustomObject]@{
                 Num                              = '[{0} of {1}]' -f $iUP, $Count
                 Action                           = 'CHANGEPRIMARY'
@@ -67,7 +70,7 @@ function Invoke-CompleteCloudDataSync {
                 Time                             = $Time
                 DisplayName                      = $Choice.DisplayName
                 SourceType                       = $Choice.SourceType
-                ChangeRequested                  = $Choice.PrimarySmtpAddress
+                ChangeRequested                  = $Choice.SourcePrimarySmtpAddress
                 PreChange                        = $PrePrimaryChange.PrimarySMTPAddress
                 PostChange                       = 'FAILED'
                 SourceEmailAddresses             = $Choice.SourceEmailAddresses
@@ -94,17 +97,19 @@ function Invoke-CompleteCloudDataSync {
         }
         #EndRegion PRIMARY CHANGE
         #Region UPN CHANGE
+        Write-Host ('[{0} of {1}] {2} ({3}) | UPN Change - ' -f $iUP, $Count, $Choice.DisplayName, $Choice.SourceType) -ForegroundColor Cyan -NoNewline
         try {
             if ($Choice.SourceType -like '*Mailbox') {
                 $PreUPNChange = Get-Mailbox -Identity $Choice.TargetId
-                Set-Mailbox -Identity $Choice.TargetId -MicrosoftOnlineServicesID $Choice.SourceUserPrincipalName
+                Set-Mailbox -Identity $Choice.TargetId -MicrosoftOnlineServicesID $Choice.SourceUserPrincipalName -WarningAction SilentlyContinue
                 $PostUPNChange = Get-Mailbox -Identity $Choice.TargetId
             }
             elseif ($Choice.SourceType -eq 'MailUser') {
                 $PreUPNChange = Get-MailUser -Identity $Choice.TargetId
-                Set-MailUser -Identity $Choice.TargetId -PrimarySmtpAddress $Choice.SourcePrimarySmtpAddress
+                Set-MailUser -Identity $Choice.TargetId -PrimarySmtpAddress $Choice.SourcePrimarySmtpAddress -WarningAction SilentlyContinue
                 $PostUPNChange = Get-MailUser -Identity $Choice.TargetId
             }
+            Write-Host ('SUCCESS UPN FROM: {0} TO: {1}' -f $PreUPNChange.UserPrincipalName, $PostUPNChange.UserPrincipalName) -ForegroundColor Green
             [PSCustomObject]@{
                 Num                              = '[{0} of {1}]' -f $iUP, $Count
                 Action                           = 'UPNCHANGE'
@@ -112,7 +117,7 @@ function Invoke-CompleteCloudDataSync {
                 Time                             = $Time
                 DisplayName                      = $Choice.DisplayName
                 SourceType                       = $Choice.SourceType
-                ChangeRequested                  = $Choice.SourcePrimarySmtpAddress
+                ChangeRequested                  = $Choice.SourceUserPrincipalName
                 PreChange                        = $PreUPNChange.UserPrincipalName
                 PostChange                       = $PostUPNChange.UserPrincipalName
                 SourceEmailAddresses             = $Choice.SourceEmailAddresses
@@ -138,6 +143,7 @@ function Invoke-CompleteCloudDataSync {
             }
         }
         catch {
+            Write-Host "FAILED $($_.Exception.Message)" -ForegroundColor Red
             [PSCustomObject]@{
                 Num                              = '[{0} of {1}]' -f $iUP, $Count
                 Action                           = 'UPNCHANGE'
@@ -145,7 +151,7 @@ function Invoke-CompleteCloudDataSync {
                 Time                             = $Time
                 DisplayName                      = $Choice.DisplayName
                 SourceType                       = $Choice.SourceType
-                ChangeRequested                  = $Choice.SourcePrimarySmtpAddress
+                ChangeRequested                  = $Choice.UserPrincipalName
                 PreChange                        = $PreUPNChange.PrimarySMTPAddress
                 PostChange                       = 'FAILED'
                 SourceEmailAddresses             = $Choice.SourceEmailAddresses
@@ -172,6 +178,7 @@ function Invoke-CompleteCloudDataSync {
         }
         #EndRegion UPN CHANGE
         #Region SECONDARY EMAILS CHANGE
+        Write-Host ('[{0} of {1}] {2} ({3}) | Secondary Adds - ' -f $iUP, $Count, $Choice.DisplayName, $Choice.SourceType) -ForegroundColor Cyan -NoNewline
         try {
             if ($Choice.SourceType -like '*Mailbox') {
                 $PreEmailChange = Get-Mailbox -Identity $Choice.TargetId
@@ -183,13 +190,14 @@ function Invoke-CompleteCloudDataSync {
             $smtpList = $Choice.SourceEmailAddresses -split '\|' -clike 'smtp:*'
             foreach ($smtp in $smtpList) {
                 if ($Choice.SourceType -like '*Mailbox') {
-                    Set-Mailbox -Identity $Choice.TargetId -EmailAddresses @{Add = $smtp }
+                    Set-Mailbox -Identity $Choice.TargetId -EmailAddresses @{Add = $smtp } -WarningAction SilentlyContinue
                     $PostEmailChange = Get-Mailbox -Identity $Choice.TargetId
                 }
                 elseif ($Choice.SourceType -eq 'MailUser') {
                     Set-MailUser -Identity $Choice.TargetId -EmailAddresses @{Add = $smtp }
                     $PostEmailChange = Get-Mailbox -Identity $Choice.TargetId
                 }
+                Write-Host ('SUCCESS SECONDARY ADD: {0} Added: {1}' -f $smtp, $smtp -in $PostEmailChange.EmailAddresses) -ForegroundColor Green
                 [PSCustomObject]@{
                     Num                              = '[{0} of {1}]' -f $iUP, $Count
                     Action                           = 'ADDSECONDARY'
@@ -224,6 +232,7 @@ function Invoke-CompleteCloudDataSync {
             }
         }
         catch {
+            Write-Host "FAILED $($_.Exception.Message)" -ForegroundColor Red
             [PSCustomObject]@{
                 Num                              = '[{0} of {1}]' -f $iUP, $Count
                 Action                           = 'ADDSECONDARY'
