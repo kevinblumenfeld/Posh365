@@ -11,6 +11,7 @@ function Invoke-CompleteCloudDataSync {
     foreach ($Choice in $ChoiceList) {
         $CurrentPrimary, $PreEmailChange, $PostEmailChange, $PrePrimaryChange, $PostPrimaryChange, $PreUPNChange, $PostUPNChange, $PostPrimaryChange = $null
         $iUP++
+        #Region PRIMARY CHANGE
         try {
             if ($Choice.SourceType -like '*Mailbox') {
                 $PrePrimaryChange = Get-Mailbox -Identity $Choice.TargetId
@@ -28,7 +29,7 @@ function Invoke-CompleteCloudDataSync {
             }
             [PSCustomObject]@{
                 Num                              = '[{0} of {1}]' -f $iUP, $Count
-                Action                           = 'CHANGEUPN'
+                Action                           = 'CHANGEPRIMARY'
                 Log                              = 'SUCCESS'
                 Time                             = $Time
                 DisplayName                      = $Choice.DisplayName
@@ -47,7 +48,7 @@ function Invoke-CompleteCloudDataSync {
                 CurrentWindowsEmailAddress       = $PostPrimaryChange.WindowsEmailAddress
                 CurrentExternalEmailAddress      = $PostPrimaryChange.ExternalEmailAddress
                 TargetId                         = $Choice.TargetId
-                SourceId                         = $Choice.ExternalDirectoryObjectId
+                SourceId                         = $Choice.SourceID
                 UserPrincipalName                = $Choice.UserPrincipalName
                 Name                             = $Choice.Name
                 MicrosoftOnlineServicesID        = $Choice.MicrosoftOnlineServicesID
@@ -61,8 +62,8 @@ function Invoke-CompleteCloudDataSync {
         catch {
             [PSCustomObject]@{
                 Num                              = '[{0} of {1}]' -f $iUP, $Count
-                Action                           = 'CHANGEUPN'
-                Log                              = 'FAILED'
+                Action                           = 'CHANGEPRIMARY'
+                Log                              = $_.Exception.Message
                 Time                             = $Time
                 DisplayName                      = $Choice.DisplayName
                 SourceType                       = $Choice.SourceType
@@ -80,7 +81,7 @@ function Invoke-CompleteCloudDataSync {
                 CurrentWindowsEmailAddress       = 'FAILED'
                 CurrentExternalEmailAddress      = 'FAILED'
                 TargetId                         = $Choice.TargetId
-                SourceId                         = $Choice.ExternalDirectoryObjectId
+                SourceId                         = $Choice.SourceID
                 UserPrincipalName                = $Choice.UserPrincipalName
                 Name                             = $Choice.Name
                 MicrosoftOnlineServicesID        = $Choice.MicrosoftOnlineServicesID
@@ -91,6 +92,8 @@ function Invoke-CompleteCloudDataSync {
                 TargetEmailAddresses             = $Choice.TargetEmailAddresses
             }
         }
+        #EndRegion PRIMARY CHANGE
+        #Region UPN CHANGE
         try {
             if ($Choice.SourceType -like '*Mailbox') {
                 $PreUPNChange = Get-Mailbox -Identity $Choice.TargetId
@@ -104,7 +107,7 @@ function Invoke-CompleteCloudDataSync {
             }
             [PSCustomObject]@{
                 Num                              = '[{0} of {1}]' -f $iUP, $Count
-                Action                           = 'ADDPRIMARY'
+                Action                           = 'UPNCHANGE'
                 Log                              = 'SUCCESS'
                 Time                             = $Time
                 DisplayName                      = $Choice.DisplayName
@@ -123,7 +126,7 @@ function Invoke-CompleteCloudDataSync {
                 CurrentWindowsEmailAddress       = $PostUPNChange.WindowsEmailAddress
                 CurrentExternalEmailAddress      = $PostUPNChange.ExternalEmailAddress
                 TargetId                         = $Choice.TargetId
-                SourceId                         = $Choice.ExternalDirectoryObjectId
+                SourceId                         = $Choice.SourceID
                 UserPrincipalName                = $Choice.UserPrincipalName
                 Name                             = $Choice.Name
                 MicrosoftOnlineServicesID        = $Choice.MicrosoftOnlineServicesID
@@ -137,8 +140,8 @@ function Invoke-CompleteCloudDataSync {
         catch {
             [PSCustomObject]@{
                 Num                              = '[{0} of {1}]' -f $iUP, $Count
-                Action                           = 'ADDPRIMARY'
-                Log                              = 'FAILED'
+                Action                           = 'UPNCHANGE'
+                Log                              = $_.Exception.Message
                 Time                             = $Time
                 DisplayName                      = $Choice.DisplayName
                 SourceType                       = $Choice.SourceType
@@ -156,7 +159,7 @@ function Invoke-CompleteCloudDataSync {
                 CurrentWindowsEmailAddress       = 'FAILED'
                 CurrentExternalEmailAddress      = 'FAILED'
                 TargetId                         = $Choice.TargetId
-                SourceId                         = $Choice.ExternalDirectoryObjectId
+                SourceId                         = $Choice.SourceID
                 UserPrincipalName                = $Choice.UserPrincipalName
                 Name                             = $Choice.Name
                 MicrosoftOnlineServicesID        = $Choice.MicrosoftOnlineServicesID
@@ -167,12 +170,14 @@ function Invoke-CompleteCloudDataSync {
                 TargetEmailAddresses             = $Choice.TargetEmailAddresses
             }
         }
+        #EndRegion UPN CHANGE
+        #Region SECONDARY EMAILS CHANGE
         try {
             if ($Choice.SourceType -like '*Mailbox') {
-                $PremEmailChange = Get-Mailbox -Identity $Choice.TargetId
+                $PreEmailChange = Get-Mailbox -Identity $Choice.TargetId
             }
             elseif ($Choice.SourceType -eq 'MailUser') {
-                $PremEmailChange = Get-MailUser -Identity $Choice.TargetId
+                $PreEmailChange = Get-MailUser -Identity $Choice.TargetId
             }
             $smtpList = $null
             $smtpList = $Choice.SourceEmailAddresses -split '\|' -clike 'smtp:*'
@@ -193,8 +198,8 @@ function Invoke-CompleteCloudDataSync {
                     DisplayName                      = $Choice.DisplayName
                     SourceType                       = $Choice.SourceType
                     ChangeRequested                  = $smtp
-                    PreChange                        = $PremEmailChange.UserPrincipalName
-                    PostChange                       = $PostEmailChange.UserPrincipalName
+                    PreChange                        = @($PreEmailChange.EmailAddresses) -ne '' -join '|'
+                    PostChange                       = @($PostEmailChange.EmailAddresses) -ne '' -join '|'
                     SourceEmailAddresses             = $Choice.SourceEmailAddresses
                     SourcePrimarySmtpAddress         = $Choice.SourcePrimarySmtpAddress
                     SourceUserPrincipalName          = $Choice.SourceUserPrincipalName
@@ -206,7 +211,7 @@ function Invoke-CompleteCloudDataSync {
                     CurrentWindowsEmailAddress       = $PostEmailChange.WindowsEmailAddress
                     CurrentExternalEmailAddress      = $PostEmailChange.ExternalEmailAddress
                     TargetId                         = $Choice.TargetId
-                    SourceId                         = $Choice.ExternalDirectoryObjectId
+                    SourceId                         = $Choice.SourceID
                     UserPrincipalName                = $Choice.UserPrincipalName
                     Name                             = $Choice.Name
                     MicrosoftOnlineServicesID        = $Choice.MicrosoftOnlineServicesID
@@ -222,12 +227,12 @@ function Invoke-CompleteCloudDataSync {
             [PSCustomObject]@{
                 Num                              = '[{0} of {1}]' -f $iUP, $Count
                 Action                           = 'ADDSECONDARY'
-                Log                              = 'FAILED'
+                Log                              = $_.Exception.Message
                 Time                             = $Time
                 DisplayName                      = $Choice.DisplayName
                 SourceType                       = $Choice.SourceType
                 ChangeRequested                  = $smtp
-                PreChange                        = $PremEmailChange.PrimarySMTPAddress
+                PreChange                        = @($PreEmailChange.EmailAddresses) -ne '' -join '|'
                 PostChange                       = 'FAILED'
                 SourceEmailAddresses             = $Choice.SourceEmailAddresses
                 SourcePrimarySmtpAddress         = $Choice.SourcePrimarySmtpAddress
@@ -240,7 +245,7 @@ function Invoke-CompleteCloudDataSync {
                 CurrentWindowsEmailAddress       = 'FAILED'
                 CurrentExternalEmailAddress      = 'FAILED'
                 TargetId                         = $Choice.TargetId
-                SourceId                         = $Choice.ExternalDirectoryObjectId
+                SourceId                         = $Choice.SourceID
                 UserPrincipalName                = $Choice.UserPrincipalName
                 Name                             = $Choice.Name
                 MicrosoftOnlineServicesID        = $Choice.MicrosoftOnlineServicesID
@@ -251,6 +256,7 @@ function Invoke-CompleteCloudDataSync {
                 TargetEmailAddresses             = $Choice.TargetEmailAddresses
             }
         }
+        #EndRegion SECONDARY EMAILS CHANGE
     }
     $ErrorActionPreference = 'continue'
 }
