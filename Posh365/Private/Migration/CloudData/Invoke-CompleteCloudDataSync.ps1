@@ -28,7 +28,7 @@ function Invoke-CompleteCloudDataSync {
                 Set-MailUser -Identity $Choice.TargetId -PrimarySmtpAddress $Choice.SourcePrimarySmtpAddress -WarningAction SilentlyContinue
                 $PostPrimaryChange = Get-MailUser -Identity $Choice.TargetId
             }
-            Write-Host ('SUCCESS {0}    {1}t:' -f $PrePrimaryChange.PrimarySMTPAddress, "`t") -ForegroundColor Green -NoNewline
+            Write-Host ('SUCCESS f:{0} {1}t:' -f $PrePrimaryChange.PrimarySMTPAddress, "`t") -ForegroundColor Green -NoNewline
             Write-Host "$($PostPrimaryChange.PrimarySMTPAddress)" -ForegroundColor White
             [PSCustomObject]@{
                 Num                              = '[{0} of {1}]' -f $iUP, $Count
@@ -110,7 +110,7 @@ function Invoke-CompleteCloudDataSync {
                 Set-MailUser -Identity $Choice.TargetId -PrimarySmtpAddress $Choice.SourcePrimarySmtpAddress -WarningAction SilentlyContinue
                 $PostUPNChange = Get-MailUser -Identity $Choice.TargetId
             }
-            Write-Host ('SUCCESS {0}    {1}t:' -f $PreUPNChange.UserPrincipalName, "`t") -ForegroundColor Green -NoNewline
+            Write-Host ('SUCCESS f:{0} {1}t:' -f $PreUPNChange.UserPrincipalName, "`t") -ForegroundColor Green -NoNewline
             Write-Host "$($PostUPNChange.UserPrincipalName)" -ForegroundColor White
             [PSCustomObject]@{
                 Num                              = '[{0} of {1}]' -f $iUP, $Count
