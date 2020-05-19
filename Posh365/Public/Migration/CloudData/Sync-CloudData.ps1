@@ -74,7 +74,7 @@ function Sync-CloudData {
     #Region Y/N Write Converted Data to Target Tenant
     $Yes = [ChoiceDescription]::new('&Yes', 'Import: Yes')
     $No = [ChoiceDescription]::new('&No', 'Import: No')
-    $Question = 'Write converted data to Target Tenant?'
+    $Question = 'Write converted data to Target Tenant and you made sure SyncCloudData_Results.csv is closed?'
     $Options = [ChoiceDescription[]]($Yes, $No)
     $Menu = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
     #EndRegion Y/N Write Converted Data to Target Tenant
@@ -89,6 +89,7 @@ function Sync-CloudData {
             New-CloudData -SourceData $ConvertedData -Type $Type | Export-Csv $ResultFile -NoTypeInformation -Append
             $ResultObject = Import-Csv $ResultFile
             $ResultObject | Out-GridView -Title $ResultFile
+            $ResultObject | Export-PoshExcel (Join-Path -Path $SourcePath -ChildPath ('SyncCloudData_Results_EXCEL_{0}.xlsx' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm') ))
         }
         1 {
             Write-Host 'Halting Script' -ForegroundColor Red

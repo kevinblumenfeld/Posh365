@@ -1,4 +1,4 @@
-function Convert-CompleteCloudDataSync {
+function Select-CompleteCloudDataSync {
     [CmdletBinding()]
     param (
         [Parameter()]
