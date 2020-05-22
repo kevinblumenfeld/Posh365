@@ -182,16 +182,17 @@ function Invoke-CompleteCloudDataSync {
         }
         #EndRegion UPN CHANGE
         #Region SECONDARY EMAILS CHANGE
-        try {
-            if ($Choice.SourceType -like '*Mailbox') {
-                $PreEmailChange = Get-Mailbox -Identity $Choice.TargetId -ErrorAction Stop
-            }
-            elseif ($Choice.SourceType -eq 'MailUser') {
-                $PreEmailChange = Get-MailUser -Identity $Choice.TargetId -ErrorAction Stop
-            }
-            $smtpList = $null
-            $smtpList = $Choice.SourceEmailAddresses -split '\|' -clike 'smtp:*'
-            foreach ($smtp in $smtpList) {
+
+        if ($Choice.SourceType -like '*Mailbox') {
+            $PreEmailChange = Get-Mailbox -Identity $Choice.TargetId -ErrorAction Stop
+        }
+        elseif ($Choice.SourceType -eq 'MailUser') {
+            $PreEmailChange = Get-MailUser -Identity $Choice.TargetId -ErrorAction Stop
+        }
+        $smtpList = $null
+        $smtpList = $Choice.SourceEmailAddresses -split '\|' -clike 'smtp:*'
+        foreach ($smtp in $smtpList) {
+            try {
                 Write-Host ('[{0} of {1}] {2} ({3}) | Secondary{4}' -f $iUP, $Count, $Choice.DisplayName, $Choice.SourceType, "`t") -ForegroundColor Cyan -NoNewline
                 if ($Choice.SourceType -like '*Mailbox') {
                     Set-Mailbox -Identity $Choice.TargetId -EmailAddresses @{Add = $smtp } -WarningAction SilentlyContinue -ErrorAction Stop
@@ -235,43 +236,42 @@ function Invoke-CompleteCloudDataSync {
                     TargetEmailAddresses             = $Choice.TargetEmailAddresses
                 }
             }
-        }
-        catch {
-            Write-Host "FAILED $($_.Exception.Message)" -ForegroundColor Red
-            [PSCustomObject]@{
-                Num                              = '[{0} of {1}]' -f $iUP, $Count
-                Action                           = 'ADDSECONDARY'
-                Log                              = $_.Exception.Message
-                Time                             = $Time
-                DisplayName                      = $Choice.DisplayName
-                SourceType                       = $Choice.SourceType
-                ChangeRequested                  = $smtp
-                PreChange                        = @($PreEmailChange.EmailAddresses) -ne '' -join '|'
-                PostChange                       = 'FAILED'
-                SourceEmailAddresses             = $Choice.SourceEmailAddresses
-                SourcePrimarySmtpAddress         = $Choice.SourcePrimarySmtpAddress
-                SourceUserPrincipalName          = $Choice.SourceUserPrincipalName
-                CurrentUserPrincipalName         = 'FAILED'
-                CurrentPrimarySmtpAddress        = 'FAILED'
-                CurrentEmailAddresses            = 'FAILED'
-                CurrentMicrosoftOnlineServicesID = 'FAILED'
-                CurrentWindowsLiveID             = 'FAILED'
-                CurrentWindowsEmailAddress       = 'FAILED'
-                CurrentExternalEmailAddress      = 'FAILED'
-                TargetId                         = $Choice.TargetId
-                SourceId                         = $Choice.SourceID
-                UserPrincipalName                = $Choice.UserPrincipalName
-                Name                             = $Choice.Name
-                MicrosoftOnlineServicesID        = $Choice.MicrosoftOnlineServicesID
-                PrimarySMTPAddress               = $Choice.PrimarySMTPAddress
-                Alias                            = $Choice.Alias
-                ExternalEmailAddress             = $Choice.ExternalEmailAddress
-                ExchangeGuid                     = $Choice.ExchangeGuid
-                TargetEmailAddresses             = $Choice.TargetEmailAddresses
+            catch {
+                Write-Host "FAILED $($_.Exception.Message)" -ForegroundColor Red
+                [PSCustomObject]@{
+                    Num                              = '[{0} of {1}]' -f $iUP, $Count
+                    Action                           = 'ADDSECONDARY'
+                    Log                              = $_.Exception.Message
+                    Time                             = $Time
+                    DisplayName                      = $Choice.DisplayName
+                    SourceType                       = $Choice.SourceType
+                    ChangeRequested                  = $smtp
+                    PreChange                        = @($PreEmailChange.EmailAddresses) -ne '' -join '|'
+                    PostChange                       = 'FAILED'
+                    SourceEmailAddresses             = $Choice.SourceEmailAddresses
+                    SourcePrimarySmtpAddress         = $Choice.SourcePrimarySmtpAddress
+                    SourceUserPrincipalName          = $Choice.SourceUserPrincipalName
+                    CurrentUserPrincipalName         = 'FAILED'
+                    CurrentPrimarySmtpAddress        = 'FAILED'
+                    CurrentEmailAddresses            = 'FAILED'
+                    CurrentMicrosoftOnlineServicesID = 'FAILED'
+                    CurrentWindowsLiveID             = 'FAILED'
+                    CurrentWindowsEmailAddress       = 'FAILED'
+                    CurrentExternalEmailAddress      = 'FAILED'
+                    TargetId                         = $Choice.TargetId
+                    SourceId                         = $Choice.SourceID
+                    UserPrincipalName                = $Choice.UserPrincipalName
+                    Name                             = $Choice.Name
+                    MicrosoftOnlineServicesID        = $Choice.MicrosoftOnlineServicesID
+                    PrimarySMTPAddress               = $Choice.PrimarySMTPAddress
+                    Alias                            = $Choice.Alias
+                    ExternalEmailAddress             = $Choice.ExternalEmailAddress
+                    ExchangeGuid                     = $Choice.ExchangeGuid
+                    TargetEmailAddresses             = $Choice.TargetEmailAddresses
+                }
             }
+            #EndRegion SECONDARY EMAILS CHANGE
+            Write-Host "`r`n"
         }
-        #EndRegion SECONDARY EMAILS CHANGE
-        Write-Host "`r`n"
+        $ErrorActionPreference = 'continue'
     }
-    $ErrorActionPreference = 'continue'
-}
