@@ -74,7 +74,7 @@ function Sync-CloudData {
     #Region Y/N Write Converted Data to Target Tenant
     $Yes = [ChoiceDescription]::new('&Yes', 'Import: Yes')
     $No = [ChoiceDescription]::new('&No', 'Import: No')
-    $Question = 'Write converted data to Target Tenant and you made sure SyncCloudData_Results.csv is closed?'
+    $Question = 'Write converted data to Target Tenant (if you opened it, verify SyncCloudData_Results.csv is closed)?'
     $Options = [ChoiceDescription[]]($Yes, $No)
     $Menu = $host.ui.PromptForChoice($Title, $Question, $Options, 1)
     #EndRegion Y/N Write Converted Data to Target Tenant

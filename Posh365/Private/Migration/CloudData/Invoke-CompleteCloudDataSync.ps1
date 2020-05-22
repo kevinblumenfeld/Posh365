@@ -15,17 +15,17 @@ function Invoke-CompleteCloudDataSync {
         Write-Host ('[{0} of {1}] {2} ({3}) | Primary{4}' -f $iUP, $Count, $Choice.DisplayName, $Choice.SourceType, "`t") -ForegroundColor Cyan -NoNewline
         try {
             if ($Choice.SourceType -like '*Mailbox') {
-                $PrePrimaryChange = Get-Mailbox -Identity $Choice.TargetId
+                $PrePrimaryChange = Get-Mailbox -Identity $Choice.TargetId -ErrorAction Stop
                 $CurrentPrimary = 'SMTP:{0}' -f $PrePrimaryChange.PrimarySmtpAddress
-                Set-Mailbox -Identity $Choice.TargetId -WarningAction SilentlyContinue -EmailAddresses @{
-                    Remove = $CurrentPrimary
-                    Add    = 'SMTP:{0}' -f $Choice.SourcePrimarySmtpAddress
+                Set-Mailbox -Identity $Choice.TargetId -WarningAction SilentlyContinue -ErrorAction Stop -EmailAddresses @{
+                    Remove      = $CurrentPrimary
+                    Add         = 'SMTP:{0}' -f $Choice.SourcePrimarySmtpAddress
                 }
                 $PostPrimaryChange = Get-Mailbox -Identity $Choice.TargetId
             }
             elseif ($Choice.SourceType -eq 'MailUser') {
-                $PrePrimaryChange = Get-MailUser -Identity $Choice.TargetId
-                Set-MailUser -Identity $Choice.TargetId -PrimarySmtpAddress $Choice.SourcePrimarySmtpAddress -WarningAction SilentlyContinue
+                $PrePrimaryChange = Get-MailUser -Identity $Choice.TargetId -ErrorAction Stop
+                Set-MailUser -Identity $Choice.TargetId -PrimarySmtpAddress $Choice.SourcePrimarySmtpAddress -WarningAction SilentlyContinue -ErrorAction Stop
                 $PostPrimaryChange = Get-MailUser -Identity $Choice.TargetId
             }
             Write-Host 'SUCCESS' -ForegroundColor Green
@@ -102,14 +102,14 @@ function Invoke-CompleteCloudDataSync {
         Write-Host ('[{0} of {1}] {2} ({3}) | UserPrin{4}' -f $iUP, $Count, $Choice.DisplayName, $Choice.SourceType, "`t") -ForegroundColor Cyan -NoNewline
         try {
             if ($Choice.SourceType -like '*Mailbox') {
-                $PreUPNChange = Get-Mailbox -Identity $Choice.TargetId
+                $PreUPNChange = Get-Mailbox -Identity $Choice.TargetId -ErrorAction Stop
                 Set-Mailbox -Identity $Choice.TargetId -MicrosoftOnlineServicesID $Choice.SourceUserPrincipalName -WarningAction SilentlyContinue
-                $PostUPNChange = Get-Mailbox -Identity $Choice.TargetId
+                $PostUPNChange = Get-Mailbox -Identity $Choice.TargetId -ErrorAction Stop
             }
             elseif ($Choice.SourceType -eq 'MailUser') {
-                $PreUPNChange = Get-MailUser -Identity $Choice.TargetId
-                Set-MailUser -Identity $Choice.TargetId -PrimarySmtpAddress $Choice.SourcePrimarySmtpAddress -WarningAction SilentlyContinue
-                $PostUPNChange = Get-MailUser -Identity $Choice.TargetId
+                $PreUPNChange = Get-MailUser -Identity $Choice.TargetId -ErrorAction Stop
+                Set-MailUser -Identity $Choice.TargetId -MicrosoftOnlineServicesID $Choice.SourcePrimarySmtpAddress -WarningAction SilentlyContinue -ErrorAction Stop
+                $PostUPNChange = Get-MailUser -Identity $Choice.TargetId -ErrorAction Stop
             }
             Write-Host 'SUCCESS' -ForegroundColor Green
             Write-Host "`tBEFORE:`t$($PreUPNChange.UserPrincipalName)" -ForegroundColor White
@@ -184,22 +184,22 @@ function Invoke-CompleteCloudDataSync {
         #Region SECONDARY EMAILS CHANGE
         try {
             if ($Choice.SourceType -like '*Mailbox') {
-                $PreEmailChange = Get-Mailbox -Identity $Choice.TargetId
+                $PreEmailChange = Get-Mailbox -Identity $Choice.TargetId -ErrorAction Stop
             }
             elseif ($Choice.SourceType -eq 'MailUser') {
-                $PreEmailChange = Get-MailUser -Identity $Choice.TargetId
+                $PreEmailChange = Get-MailUser -Identity $Choice.TargetId -ErrorAction Stop
             }
             $smtpList = $null
             $smtpList = $Choice.SourceEmailAddresses -split '\|' -clike 'smtp:*'
             foreach ($smtp in $smtpList) {
                 Write-Host ('[{0} of {1}] {2} ({3}) | Secondary{4}' -f $iUP, $Count, $Choice.DisplayName, $Choice.SourceType, "`t") -ForegroundColor Cyan -NoNewline
                 if ($Choice.SourceType -like '*Mailbox') {
-                    Set-Mailbox -Identity $Choice.TargetId -EmailAddresses @{Add = $smtp } -WarningAction SilentlyContinue
-                    $PostEmailChange = Get-Mailbox -Identity $Choice.TargetId
+                    Set-Mailbox -Identity $Choice.TargetId -EmailAddresses @{Add = $smtp } -WarningAction SilentlyContinue -ErrorAction Stop
+                    $PostEmailChange = Get-Mailbox -Identity $Choice.TargetId  -ErrorAction Stop
                 }
                 elseif ($Choice.SourceType -eq 'MailUser') {
-                    Set-MailUser -Identity $Choice.TargetId -EmailAddresses @{Add = $smtp } -WarningAction SilentlyContinue
-                    $PostEmailChange = Get-MailUser -Identity $Choice.TargetId
+                    Set-MailUser -Identity $Choice.TargetId -EmailAddresses @{Add = $smtp } -WarningAction SilentlyContinue  -ErrorAction Stop
+                    $PostEmailChange = Get-MailUser -Identity $Choice.TargetId  -ErrorAction Stop
                 }
                 Write-Host 'SUCCESS' -ForegroundColor Green
                 Write-Host ('{0}FOUND ({1}) {2}' -f "`t", $smtp, ($smtp -in $PostEmailChange.EmailAddresses)) -ForegroundColor DarkCyan
@@ -271,7 +271,7 @@ function Invoke-CompleteCloudDataSync {
             }
         }
         #EndRegion SECONDARY EMAILS CHANGE
-    Write-Host "`r`n"
+        Write-Host "`r`n"
     }
     $ErrorActionPreference = 'continue'
 }

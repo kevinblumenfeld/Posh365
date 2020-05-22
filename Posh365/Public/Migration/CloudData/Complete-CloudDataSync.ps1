@@ -22,10 +22,14 @@ function Complete-CloudDataSync {
     $ResultObject = Import-Csv $ResultFile
     $Converted = Select-CompleteCloudDataSync -ResultObject $ResultObject
     $ChoiceList = $Converted | Out-GridView -OutputMode Multiple -Title 'Choose which objects to modify at Target'
-    if ($ChoiceList){
+    if ($ChoiceList) {
         $ChoiceList | Export-Csv (Join-Path -Path $PoshPath -ChildPath 'ConvertCloudData_Converted.csv') -NoTypeInformation
-        $ChoiceList2 = Import-Csv (Join-Path -Path $PoshPath -ChildPath 'ConvertCloudData_Converted.csv')
-        $WriteResult = Invoke-CompleteCloudDataSync -ChoiceList $ChoiceList2
+        $InitialDomain = Select-CloudDataConnection -Type Mailboxes -TenantLocation Target -OnlyEXO
+        while (-not $InitialDomain) {
+            Write-Host "`r`nPlease connect to Target Tenant now." -ForegroundColor White -BackgroundColor DarkMagenta
+            $InitialDomain = Select-CloudDataConnection -Type Mailboxes -TenantLocation Target -OnlyEXO
+        }
+        $WriteResult = Invoke-CompleteCloudDataSync -ChoiceList $ChoiceList
         $WriteResultFile = Join-Path -Path $PoshPath -ChildPath 'CompleteCloudData_Results.csv'
         $WriteResult | Out-GridView -Title $WriteResultFile
         $WriteResult | Export-Csv $WriteResultFile -NoTypeInformation -Append
