@@ -28,6 +28,12 @@ function Convert-CloudData {
     if ($Type -match 'Mailboxes|MailUsers') {
         foreach ($Source in $SourceData) {
             $AddressList = [System.Collections.Generic.List[string]]::New()
+            if ($Type -eq 'Mailboxes') {
+                $ExternalEmailAddress = $Source.InitialAddress
+            }
+            else {
+                $ExternalEmailAddress = $Source.ExternalEmailAddress
+            }
             if ($Source.InitialAddress) {
                 $TargetInitial = '{0}@{1}' -f ($Source.InitialAddress -split '@')[0], $InitialDomain
             }
@@ -45,8 +51,8 @@ function Convert-CloudData {
             foreach ($x500 in $x500List ) {
                 $AddressList.Add($x500)
             }
-            $TargetPrimarySmtpAddress = $Source.PrimarySmtpAddress
             if ($Source.Name) { $Name = $Source.Name } else { $Name = '' }
+
             [PSCustomObject]@{
                 DisplayName               = $Source.DisplayName
                 Name                      = $Name
@@ -54,15 +60,15 @@ function Convert-CloudData {
                 RecipientType             = $Source.RecipientType
                 RecipientTypeDetails      = $Source.RecipientTypeDetails
                 UserPrincipalName         = '{0}@{1}' -f ($Source.UserPrincipalName -split '@')[0], $InitialDomain
-                ExternalEmailAddress      = $Source.ExternalEmailAddress
+                ExternalEmailAddress      = $ExternalEmailAddress
                 Alias                     = $Source.Alias
-                PrimarySmtpAddress        = $TargetPrimarySmtpAddress
+                PrimarySmtpAddress        = $Source.PrimarySmtpAddress
                 LegacyExchangeDN          = $LegacyExchangeDN
                 InitialAddress            = $TargetInitial
                 EmailAddresses            = @($AddressList) -ne '' -join '|'
                 UPNMatchesPrimary         = $Source.PrimarySmtpAddress -eq $Source.UserPrincipalName
                 ExternalDirectoryObjectId = $Source.ExternalDirectoryObjectId
-                MicrosoftOnlineServicesID = $Source.MicrosoftOnlineServicesID
+                MicrosoftOnlineServicesID = '{0}@{1}' -f ($Source.UserPrincipalName -split '@')[0], $InitialDomain
                 SourceUserPrincipalName   = $Source.UserPrincipalName
                 SourcePrimarySmtpAddress  = $Source.PrimarySmtpAddress
                 SourceEmailAddresses      = $Source.EmailAddresses
