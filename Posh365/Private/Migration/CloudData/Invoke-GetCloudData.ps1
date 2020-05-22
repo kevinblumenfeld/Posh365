@@ -34,7 +34,7 @@ function Invoke-GetCloudData {
                 LegacyExchangeDN          = $Mailbox.LegacyExchangeDN
                 MicrosoftOnlineServicesID = $Mailbox.MicrosoftOnlineServicesID
                 InitialAddress            = @($Mailbox.EmailAddresses -like "smtp:*@$InitialDomain")[0] -replace 'smtp:', ''
-                EmailAddresses            = @($Mailbox.EmailAddresses) -notmatch "SPO:|SIP:" -join '|'
+                EmailAddresses            = @($Mailbox.EmailAddresses) -notmatch "SPO:|SIP:|onmicrosoft\.com" -join '|'
                 ExternalDirectoryObjectId = $Mailbox.ExternalDirectoryObjectId
             }
         }

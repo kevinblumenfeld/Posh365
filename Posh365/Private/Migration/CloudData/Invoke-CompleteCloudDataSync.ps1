@@ -18,8 +18,8 @@ function Invoke-CompleteCloudDataSync {
                 $PrePrimaryChange = Get-Mailbox -Identity $Choice.TargetId -ErrorAction Stop
                 $CurrentPrimary = 'SMTP:{0}' -f $PrePrimaryChange.PrimarySmtpAddress
                 Set-Mailbox -Identity $Choice.TargetId -WarningAction SilentlyContinue -ErrorAction Stop -EmailAddresses @{
-                    Remove      = $CurrentPrimary
-                    Add         = 'SMTP:{0}' -f $Choice.SourcePrimarySmtpAddress
+                    Remove = $CurrentPrimary
+                    Add    = 'SMTP:{0}' -f $Choice.SourcePrimarySmtpAddress
                 }
                 $PostPrimaryChange = Get-Mailbox -Identity $Choice.TargetId
             }
