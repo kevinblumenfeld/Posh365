@@ -103,7 +103,7 @@ function Invoke-CompleteCloudDataSync {
         try {
             if ($Choice.SourceType -like '*Mailbox') {
                 $PreUPNChange = Get-Mailbox -Identity $Choice.TargetId -ErrorAction Stop
-                Set-Mailbox -Identity $Choice.TargetId -MicrosoftOnlineServicesID $Choice.SourceUserPrincipalName -WarningAction SilentlyContinue
+                Set-Mailbox -Identity $Choice.TargetId -MicrosoftOnlineServicesID $Choice.SourceUserPrincipalName -WarningAction SilentlyContinue -ErrorAction Stop
                 $PostUPNChange = Get-Mailbox -Identity $Choice.TargetId -ErrorAction Stop
             }
             elseif ($Choice.SourceType -eq 'MailUser') {
@@ -195,11 +195,11 @@ function Invoke-CompleteCloudDataSync {
                 Write-Host ('[{0} of {1}] {2} ({3}) | Secondary{4}' -f $iUP, $Count, $Choice.DisplayName, $Choice.SourceType, "`t") -ForegroundColor Cyan -NoNewline
                 if ($Choice.SourceType -like '*Mailbox') {
                     Set-Mailbox -Identity $Choice.TargetId -EmailAddresses @{Add = $smtp } -WarningAction SilentlyContinue -ErrorAction Stop
-                    $PostEmailChange = Get-Mailbox -Identity $Choice.TargetId  -ErrorAction Stop
+                    $PostEmailChange = Get-Mailbox -Identity $Choice.TargetId -ErrorAction Stop
                 }
                 elseif ($Choice.SourceType -eq 'MailUser') {
-                    Set-MailUser -Identity $Choice.TargetId -EmailAddresses @{Add = $smtp } -WarningAction SilentlyContinue  -ErrorAction Stop
-                    $PostEmailChange = Get-MailUser -Identity $Choice.TargetId  -ErrorAction Stop
+                    Set-MailUser -Identity $Choice.TargetId -EmailAddresses @{Add = $smtp } -WarningAction SilentlyContinue -ErrorAction Stop
+                    $PostEmailChange = Get-MailUser -Identity $Choice.TargetId -ErrorAction Stop
                 }
                 Write-Host 'SUCCESS' -ForegroundColor Green
                 Write-Host ('{0}FOUND ({1}) {2}' -f "`t", $smtp, ($smtp -in $PostEmailChange.EmailAddresses)) -ForegroundColor DarkCyan
