@@ -235,6 +235,7 @@ function Invoke-CompleteCloudDataSync {
                     ExchangeGuid                     = $Choice.ExchangeGuid
                     TargetEmailAddresses             = $Choice.TargetEmailAddresses
                 }
+
             }
             catch {
                 Write-Host "FAILED $($_.Exception.Message)" -ForegroundColor Red
@@ -270,8 +271,9 @@ function Invoke-CompleteCloudDataSync {
                     TargetEmailAddresses             = $Choice.TargetEmailAddresses
                 }
             }
-            #EndRegion SECONDARY EMAILS CHANGE
-            Write-Host "`r`n"
         }
-        $ErrorActionPreference = 'continue'
+        #EndRegion SECONDARY EMAILS CHANGE
+        Write-Host "`r`n"
     }
+    $ErrorActionPreference = 'continue'
+}
