@@ -40,8 +40,12 @@ function New-MailboxMove {
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'SharePoint')]
-    [Alias('Sync-Mailbox')]
+    [Alias('NMM')]
     param (
+        [Parameter()]
+        [switch]
+        $TenantToTenant,
+
         [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
         [ValidateNotNullOrEmpty()]
         [string]
@@ -59,11 +63,13 @@ function New-MailboxMove {
 
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
+        [Alias('RemoteTenant')]
         [string]
         $RemoteHost,
 
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
+        [Alias('TargetDeliveryDomain')]
         [string]
         $Tenant,
 
@@ -82,38 +88,52 @@ function New-MailboxMove {
         [string[]]
         $GroupsToAddUserTo
     )
-    end {
-        if ($Tenant -notmatch '.mail.onmicrosoft.com') {
+    if ($TenantToTenant) {
+        if ($Tenant -notmatch '\.onmicrosoft\.com') {
+            $Tenant = '{0}.onmicrosoft.com' -f $Tenant
+        }
+        if ($RemoteHost -notmatch '\.onmicrosoft\.com') {
+            $RemoteHost = '{0}.onmicrosoft.com' -f $RemoteHost
+        }
+
+    }
+    else {
+        if ($Tenant -notmatch '\.mail\.onmicrosoft\.com') {
             $Tenant = '{0}.mail.onmicrosoft.com' -f $Tenant
         }
-        switch ($PSCmdlet.ParameterSetName) {
-            'SharePoint' {
-                $SharePointSplat = @{
-                    SharePointURL = $SharePointURL
-                    ExcelFile     = $ExcelFile
-                }
-                $UserChoice = Import-SharePointExcelDecision @SharePointSplat
+    }
+    switch ($PSCmdlet.ParameterSetName) {
+        'SharePoint' {
+            $SharePointSplat = @{
+                SharePointURL = $SharePointURL
+                ExcelFile     = $ExcelFile
             }
-            'CSV' {
-                $UserChoice = Import-MailboxCsvDecision -MailboxCSV $MailboxCSV
-            }
+            $UserChoice = Import-SharePointExcelDecision @SharePointSplat
         }
-        if ($UserChoice -ne 'Quit' ) {
-            $Sync = @{
-                RemoteHost = $RemoteHost
-                Tenant     = $Tenant
-            }
-            if ($BadItemLimit) {
-                $Sync.Add('BadItemLimit', $BadItemLimit)
-            }
-            if ($LargeItemLimit) {
-                $Sync.Add('LargeItemLimit', $LargeItemLimit)
-            }
+        'CSV' {
+            $UserChoice = Import-MailboxCsvDecision -MailboxCSV $MailboxCSV
+        }
+    }
+    if ($UserChoice -ne 'Quit' ) {
+        $Sync = @{
+            RemoteHost = $RemoteHost
+            Tenant     = $Tenant
+        }
+        if ($BadItemLimit) {
+            $Sync.Add('BadItemLimit', $BadItemLimit)
+        }
+        if ($LargeItemLimit) {
+            $Sync.Add('LargeItemLimit', $LargeItemLimit)
+        }
+        if ($TenantToTenant) {
+            $UserChoice | Invoke-T2TMailboxMove @Sync | Out-GridView -Title "Results of New Tenant to Tenant Mailbox Move"
+        }
+        else {
             $UserChoice | Invoke-NewMailboxMove @Sync | Out-GridView -Title "Results of New Mailbox Move"
-            foreach ($Group in $GroupsToAddUserTo) {
-                $GuidList = $UserChoice | Get-ADUserGuid
-                $GuidList | Add-UserToADGroup -Group $Group
-            }
+        }
+        foreach ($Group in $GroupsToAddUserTo) {
+            $GuidList = $UserChoice | Get-ADUserGuid
+            $GuidList | Add-UserToADGroup -Group $Group
         }
     }
 }

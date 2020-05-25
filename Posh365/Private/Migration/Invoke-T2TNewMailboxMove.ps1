@@ -38,17 +38,16 @@ function Invoke-T2TNewMailboxMove {
     process {
         foreach ($User in $UserList) {
             $Param = @{
-                Identity                   = $User.UserPrincipalName
-                RemoteCredential           = $RemoteCred
-                Remote                     = $true
-                RemoteHostName             = $RemoteHost
-                BatchName                  = $User.BatchName
-                TargetDeliveryDomain       = $Tenant
-                SuspendWhenReadyToComplete = $true
-                BadItemLimit               = $BadItemLimit
-                LargeItemLimit             = $LargeItemLimit
-                AcceptLargeDataLoss        = $true
-                # New-MoveRequest –OutBound -Identity <mailboxguid> -RemoteTenant "Contoso.onmicrosoft.com" -TargetDeliveryDomain Contoso.onmicrosoft.com -BadItemLimit 50 -CompleteAfter (Get-Date).AddMonths(12) -IncrementalSyncInterval '24:00:00'
+                BatchName               = $User.BatchName
+                Identity                = $User.ExchangeGuid
+                Outbound                = $true
+                RemoteTenant            = $RemoteHost
+                TargetDeliveryDomain    = $Tenant
+                BadItemLimit            = $BadItemLimit
+                LargeItemLimit          = $LargeItemLimit
+                CompleteAfter           = (Get-Date).AddMonths(12)
+                IncrementalSyncInterval = '24:00:00'
+                AcceptLargeDataLoss     = $true
             }
             try {
                 $Result = New-MoveRequest @Param -WarningAction SilentlyContinue -ErrorAction Stop

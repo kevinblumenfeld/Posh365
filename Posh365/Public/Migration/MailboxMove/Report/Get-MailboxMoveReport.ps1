@@ -16,11 +16,9 @@ Function Get-MailboxMoveReport {
 
     #>
     [CmdletBinding()]
-    [Alias('Get-EXOMoveRequestStatistics')]
+    [Alias('GMMR')]
     param
-    (
-
-    )
+    (    )
 
     $MoveRequest = Get-MoveRequest -ResultSize Unlimited
     $MoveRequestDetails = foreach ($Move in $MoveRequest) {

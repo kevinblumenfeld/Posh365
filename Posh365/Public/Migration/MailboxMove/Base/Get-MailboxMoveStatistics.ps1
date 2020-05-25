@@ -21,6 +21,7 @@ Function Get-MailboxMoveStatistics {
     #>
 
     [CmdletBinding()]
+    [Alias('GMMS')]
     param
     (
         [Parameter()]

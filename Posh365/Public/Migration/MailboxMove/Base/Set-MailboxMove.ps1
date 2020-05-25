@@ -24,6 +24,10 @@ Function Set-MailboxMove {
     (
         [Parameter()]
         [switch]
+        $TenantToTenant,
+
+        [Parameter()]
+        [switch]
         $SuspendWhenReadyToComplete,
 
         [Parameter()]
@@ -34,16 +38,19 @@ Function Set-MailboxMove {
         [int]
         $BadItemLimit
     )
-    end {
+    if ($TenantToTenant) {
+        $SetSplat = @{ }
+    }
+    else {
         $SetSplat = @{
             SuspendWhenReadyToComplete = $SuspendWhenReadyToComplete
         }
-        if ($LargeItemLimit) {
-            $SetSplat.Add('LargeItemLimit', $LargeItemLimit)
-        }
-        if ($BadItemLimit) {
-            $SetSplat.Add('BadItemLimit', $BadItemLimit)
-        }
-        Invoke-SetMailboxMove @SetSplat | Out-GridView -Title "Results of Set Mailbox Move"
     }
+    if ($LargeItemLimit) {
+        $SetSplat.Add('LargeItemLimit', $LargeItemLimit)
+    }
+    if ($BadItemLimit) {
+        $SetSplat.Add('BadItemLimit', $BadItemLimit)
+    }
+    Invoke-SetMailboxMove @SetSplat | Out-GridView -Title "Results of Set Mailbox Move"
 }

@@ -25,20 +25,25 @@ function Complete-MailboxMove {
 
         [Parameter()]
         [switch]
-        $Schedule
+        $Schedule,
+
+        [Parameter()]
+        [switch]
+        $TenantToTenant
 
     )
-    end {
-        $UserChoice = Import-MailboxMoveDecision -NotCompleted
-
-        if ($UserChoice -ne 'Quit' ) {
-            if ($Schedule) {
-                $UTCTimeandDate = Get-ScheduleDecision
-                $UserChoice | Invoke-CompleteMailboxMove -CompleteAfter $UTCTimeandDate | Out-GridView -Title "Scheduling of complete mailbox move results"
-            }
-            else {
-                $UserChoice | Invoke-CompleteMailboxMove | Out-GridView -Title "Completion of mailbox move results"
-            }
+    $UserChoice = Import-MailboxMoveDecision -NotCompleted
+    if ($UserChoice -ne 'Quit' ) {
+        if ($TenantToTenant) {
+            $UserChoice | Invoke-T2TCompleteMailboxMove | Out-GridView -Title "Completion of Tenant To Tenant mailbox move results"
+            return
+        }
+        if ($Schedule) {
+            $UTCTimeandDate = Get-ScheduleDecision
+            $UserChoice | Invoke-CompleteMailboxMove -CompleteAfter $UTCTimeandDate | Out-GridView -Title "Scheduling of complete mailbox move results"
+        }
+        else {
+            $UserChoice | Invoke-CompleteMailboxMove | Out-GridView -Title "Completion of mailbox move results"
         }
     }
 }

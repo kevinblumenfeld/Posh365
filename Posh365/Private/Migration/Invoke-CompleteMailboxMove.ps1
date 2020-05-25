@@ -12,9 +12,6 @@ function Invoke-CompleteMailboxMove {
 
     )
     begin {
-        # CompleteAfter:$false
-        # Remove Suspendwhenreadytocomplete
-        # No need to resume if Complete is $False
         if ($CompleteAfter) {
             $LocalTime = $CompleteAfter.ToLocalTime()
             $UTCTime = $CompleteAfter
@@ -28,7 +25,6 @@ function Invoke-CompleteMailboxMove {
     process {
         foreach ($User in $UserList) {
             try {
-
                 $Param = @{
                     Identity                   = $User.Guid
                     BatchName                  = $User.BatchName
@@ -37,7 +33,6 @@ function Invoke-CompleteMailboxMove {
                     CompleteAfter              = $LocalTime
                     ErrorAction                = 'Stop'
                 }
-
                 Set-MoveRequest @Param
                 [PSCustomObject]@{
                     DisplayName      = $User.DisplayName

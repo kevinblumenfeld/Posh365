@@ -39,7 +39,7 @@ function Set-MailboxMoveLicense {
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'PlaceHolder')]
-    [Alias('Set-MMLicense')]
+    [Alias('SMML')]
     param (
         [Parameter(Mandatory, ParameterSetName = 'SharePoint')]
         [ValidateNotNullOrEmpty()]
