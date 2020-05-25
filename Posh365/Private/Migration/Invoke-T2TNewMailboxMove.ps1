@@ -22,18 +22,15 @@ function Invoke-T2TNewMailboxMove {
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [int]
-        $LargeItemLimit
+        $LargeItemLimit,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [int]
+        $IncrementalSyncIntervalHours
     )
     begin {
-        $CredentialPath = "${env:\userprofile}\$Tenant.Migrations.Cred"
-
-        if (Test-Path $CredentialPath) {
-            $RemoteCred = Import-Clixml -Path $CredentialPath
-        }
-        else {
-            $RemoteCred = Get-Credential -Message "Enter Credentials for Remote Host DOMAIN\User (On-Premises Migration Endpoint)"
-            $RemoteCred | Export-Clixml -Path $CredentialPath
-        }
+       $SyncTime =  [timespan]::new($IncrementalSyncIntervalHours, 00, 00)
     }
     process {
         foreach ($User in $UserList) {
@@ -46,9 +43,11 @@ function Invoke-T2TNewMailboxMove {
                 BadItemLimit            = $BadItemLimit
                 LargeItemLimit          = $LargeItemLimit
                 CompleteAfter           = (Get-Date).AddMonths(12)
-                IncrementalSyncInterval = '24:00:00'
+                IncrementalSyncInterval = $SyncTime
                 AcceptLargeDataLoss     = $true
             }
+            # New-MoveRequest –OutBound -Identity <mailboxguid> -RemoteTenant "Contoso.onmicrosoft.com" -TargetDeliveryDomain Contoso.onmicrosoft.com -BadItemLimit 50 -CompleteAfter (Get-Date).AddMonths(12) -IncrementalSyncInterval '24:00:00'
+
             try {
                 $Result = New-MoveRequest @Param -WarningAction SilentlyContinue -ErrorAction Stop
                 [PSCustomObject]@{

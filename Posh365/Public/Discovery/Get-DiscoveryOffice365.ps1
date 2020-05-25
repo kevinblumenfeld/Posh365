@@ -763,6 +763,8 @@ function Get-DiscoveryOffice365 {
                 Import-Csv $EXO_Mailboxes | Select-Object @(
                     'DisplayName'
                     'Migrate'
+                    'ExchangeGuid'
+                    'ArchiveGuid'
                     'ArchiveOnly'
                     'DeploymentPro'
                     'DeploymentProMethod'

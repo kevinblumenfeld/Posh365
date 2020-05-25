@@ -85,6 +85,11 @@ function New-MailboxMove {
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
+        [int]
+        $IncrementalSyncIntervalHours = 24,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
         [string[]]
         $GroupsToAddUserTo
     )
@@ -95,7 +100,6 @@ function New-MailboxMove {
         if ($RemoteHost -notmatch '\.onmicrosoft\.com') {
             $RemoteHost = '{0}.onmicrosoft.com' -f $RemoteHost
         }
-
     }
     else {
         if ($Tenant -notmatch '\.mail\.onmicrosoft\.com') {
@@ -126,7 +130,8 @@ function New-MailboxMove {
             $Sync.Add('LargeItemLimit', $LargeItemLimit)
         }
         if ($TenantToTenant) {
-            $UserChoice | Invoke-T2TMailboxMove @Sync | Out-GridView -Title "Results of New Tenant to Tenant Mailbox Move"
+            $Sync.Add('IncrementalSyncInterval',$IncrementalSyncIntervalHours)
+            $UserChoice | Invoke-T2TNewMailboxMove @Sync | Out-GridView -Title "Results of New Tenant to Tenant Mailbox Move"
         }
         else {
             $UserChoice | Invoke-NewMailboxMove @Sync | Out-GridView -Title "Results of New Mailbox Move"
