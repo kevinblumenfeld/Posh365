@@ -20,6 +20,7 @@ Function Get-MailboxMove {
     Connect-CloudMFA -Tenant Contoso -ExchangeOnline
     #>
     [CmdletBinding()]
+    [Alias('GMM')]
     param
     (
         [Parameter()]

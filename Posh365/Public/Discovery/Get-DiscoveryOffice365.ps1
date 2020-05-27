@@ -95,7 +95,6 @@ function Get-DiscoveryOffice365 {
                 return
             }
         }
-
         $Script:ConnectHash = @{ }
         $ConnectHash.Add('Tenant', $tenant)
         if ($Menu.DiscoveryItems -match 'ExchangeOnline|Permission' ) { $ConnectHash.Add('EXO2', $true) }
@@ -172,6 +171,7 @@ function Get-DiscoveryOffice365 {
             'AcceptMessagesOnlyFromDLMembers', 'ForwardingAddress', 'ForwardingSmtpAddress', 'DeliverToMailboxAndForward'
             'UserPrincipalName', 'PrimarySmtpAddress', 'Identity', 'AddressBookPolicy', 'Guid', 'LitigationHoldEnabled'
             'LitigationHoldDuration', 'LitigationHoldOwner', 'InPlaceHolds', 'x500', 'EmailAddresses', 'ExchangeObjectId'
+            'ExchangeGuid','ArchiveGuid'
         )
         $EXOContactsProperties = @(
             'DisplayName', 'PrimarySmtpAddress', 'WindowsEmailAddress', 'ExternalEmailAddress', 'EmailAddresses'
