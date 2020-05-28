@@ -106,7 +106,7 @@ function Sync-RemoteRoutingAddress {
             Write-Host ('[{0} of {1}] Move Request {2} ExchangeGuid is 00000000-0000-0000-0000-000000000000: {3}' -f $i, $Total, $MoveHash[$MoveKey]['DisplayName'], ($MoveKey -eq '00000000-0000-0000-0000-000000000000'))
         }
     }
-    $ResultCsv = Join-Path -Path $PoshPath -ChildPath ('Sync-RRA_Target_RemoteMailbox_RESULTS.xml' -f $InitialDomain, [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+    $ResultCsv = Join-Path -Path $PoshPath -ChildPath 'Sync-RRA_Target_RemoteMailbox_RESULTS.csv'
     $RemoteMailboxChoice = $MailboxMatchMove | Out-GridView -OutputMode Multiple -Title 'Choose the Remote Mailboxes to stamp with RequestedRRA'
     while ($RemoteMailboxChoice) {
         $Result = Invoke-SyncRemoteRoutingAddress -RemoteMailboxChoice $RemoteMailboxChoice
