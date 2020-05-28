@@ -509,7 +509,7 @@ function Get-DiscoveryOffice365 {
 
                 if (-not $SkipMailboxReport) {
                     Write-Verbose "Gathering Exchange Online Mailboxes"
-                    Get-EXOnlineMailbox -DetailedReport | Export-Csv $EXO_Mailboxes_Detailed @ExportCSVSplat -Append
+                    Get-EXOnlineMailbox -DetailedReport | Export-Csv $EXO_Mailboxes_Detailed @ExportCSVSplat
                 }
                 $MailboxDetails = Import-Csv $EXO_Mailboxes_Detailed | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' }
                 $MailboxDetails | Select-Object $EXOMailboxProperties | Sort-Object DisplayName | Export-Csv $EXO_Mailboxes @ExportCSVSplat
@@ -680,7 +680,7 @@ function Get-DiscoveryOffice365 {
                 if ($ConfirmCount -eq 'n' -or $ConfirmCount -eq 'y') {
                     $AllRecipients = Get-Recipient -ResultSize Unlimited
                     Get-EXOMailboxFolderPerms -MailboxList $MailboxDetails -AllRecipients $AllRecipients |
-                    Export-Csv $EXO_FolderPermissions @ExportCSVSplat -Append
+                    Export-Csv $EXO_FolderPermissions @ExportCSVSplat
                 }
             }
             { $menu.DiscoveryItems -contains 'Compliance' -or $Compliance } {
@@ -761,6 +761,10 @@ function Get-DiscoveryOffice365 {
                 }
 
                 Import-Csv $EXO_Mailboxes | Select-Object @(
+                     @{
+                        Name       = 'BatchName'
+                        Expression = {'zNOBATCH'}
+                    }
                     'DisplayName'
                     'Migrate'
                     'ExchangeGuid'
