@@ -4,6 +4,10 @@ function Sync-RemoteRoutingAddress {
     param (
     )
 
+    # Consider using AD so we dont tickle Mailboxes!!!
+    ##########
+    # ADD SERVER !!!!!! for RM or AD
+
     $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
 
     if (-not (Test-Path $PoshPath)) {
@@ -51,7 +55,7 @@ function Sync-RemoteRoutingAddress {
             }
         }
     }
-    Get-PSSesion | Remove-PSSession
+    Get-PSSession | Remove-PSSession
     Connect-Exchange -PromptConfirm
 
     $SourceRemoteMailboxXML = Join-Path -Path $PoshPath -ChildPath ('Sync-RRA_Source_RemoteMailbox_{0}_{1}.xml' -f $InitialDomain, [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
@@ -75,6 +79,7 @@ function Sync-RemoteRoutingAddress {
     }
     $RMmatchMR = foreach ($MRKey in $MRHash.keys) {
         if ($RemoteMailboxHash.ContainsKey($MRKey) -and $MRKey -ne '00000000-0000-0000-0000-000000000000') {
+            # THIS IS THROWING ERROR ###
             [PSCustomObject]@{
                 DisplayName                  = $RemoteMailboxHash[$MRKey]['DisplayName']
                 OnPremisesOrganizationalUnit = $RemoteMailboxHash[$MRKey]['OnPremisesOrganizationalUnit']
