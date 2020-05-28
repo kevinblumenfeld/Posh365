@@ -1,4 +1,3 @@
-using namespace System.Management.Automation.Host
 function Sync-RemoteRoutingAddress {
     [CmdletBinding()]
     param (
@@ -22,24 +21,24 @@ function Sync-RemoteRoutingAddress {
     $MEUList | Select-Object * | Export-Clixml -Path $SourceMeuXML
 
     $SourceMoveRequestXML = Join-Path -Path $PoshPath -ChildPath ('Sync-RRA_Source_MoveRequests_{0}_{1}.xml' -f $InitialDomain, [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
-    $MRList = Get-MoveRequest -ResultSize Unlimited | Out-GridView -Title 'Choose Move Requests. To be matched to Remote Mailboxes' -OutputMode Multiple
-    $MRList | Select-Object * | Export-Clixml -Path $SourceMoveRequestXML
+    $MoveChoice = Get-MoveRequest -ResultSize Unlimited | Out-GridView -Title 'Choose - COMPLETED - Move Requests. To be matched to Remote Mailboxes' -OutputMode Multiple
+    $MoveChoice | Select-Object * | Export-Clixml -Path $SourceMoveRequestXML
 
-    $MRHash = @{ }
-    foreach ($MR in $MRList) {
-        $MRHash[$MR.ExchangeGuid] = @{
-            DisplayName               = $MR.DisplayName
-            Alias                     = $MR.Alias
-            Guid                      = $MR.Guid
-            ExternalDirectoryObjectId = $MR.ExternalDirectoryObjectId
-            Identity                  = $MR.Identity
-            Status                    = $MR.Identity
+    $MoveHash = @{ }
+    foreach ($Move in $MoveChoice) {
+        $MoveHash[$Move.ExchangeGuid] = @{
+            DisplayName               = $Move.DisplayName
+            Alias                     = $Move.Alias
+            Guid                      = $Move.Guid
+            ExternalDirectoryObjectId = $Move.ExternalDirectoryObjectId
+            Identity                  = $Move.Identity
+            Status                    = $Move.Identity
         }
     }
     # MailUser is added to the MEUHash only if the ExchangeGUID is found in a move request
     $MeuHash = @{ }
     foreach ($Meu in $MEUList) {
-        if ($MRHash.ContainsKey($Meu.ExchangeGuid)) {
+        if ($MoveHash.ContainsKey($Meu.ExchangeGuid)) {
             $MeuHash[$Meu.ExchangeGuid] = @{
                 DisplayName               = $Meu.DisplayName
                 ExternalEmailAddress      = $Meu.ExternalEmailAddress
@@ -77,33 +76,44 @@ function Sync-RemoteRoutingAddress {
             OnPremisesOrganizationalUnit = $RemoteMailbox.OnPremisesOrganizationalUnit
         }
     }
-    $RMmatchMR = foreach ($MRKey in $MRHash.keys) {
-        if ($RemoteMailboxHash.ContainsKey($MRKey) -and $MRKey -ne '00000000-0000-0000-0000-000000000000') {
-            # THIS IS THROWING ERROR ###
+    $i = 0
+    $Total = @($MoveHash.Keys).count
+    $MailboxMatchMove = foreach ($MoveKey in $MoveHash.keys) {
+        $i++
+        if ($RemoteMailboxHash.ContainsKey($MoveKey) -and
+            $MeuHash.ContainsKey($MoveKey) -and
+            $MoveKey -ne '00000000-0000-0000-0000-000000000000') {
             [PSCustomObject]@{
-                DisplayName                  = $RemoteMailboxHash[$MRKey]['DisplayName']
-                OnPremisesOrganizationalUnit = $RemoteMailboxHash[$MRKey]['OnPremisesOrganizationalUnit']
-                RequestedRRA                 = $MeuHash[$MRKey]['ExternalEmailAddress']
-                CurrentRRA                   = $RemoteMailboxHash[$MRKey]['RemoteRoutingAddress']
-                PrimarySmtpAddress           = $RemoteMailboxHash[$MRKey]['PrimarySmtpAddress']
-                UserPrincipalName            = $RemoteMailboxHash[$MRKey]['UserPrincipalName']
-                ForwardingAddress            = $RemoteMailboxHash[$MRKey]['ForwardingAddress']
-                ExchangeGuid                 = $MRKey
-                ArchiveGuid                  = $RemoteMailboxHash[$MRKey]['ArchiveGuid']
-                EmailAddresses               = $RemoteMailboxHash[$MRKey]['EmailAddresses']
-                RMGuid                       = $RemoteMailboxHash[$MRKey]['Guid']
-                MEUGuid                      = $MeuHash[$MRKey]['Guid']
+                Num                          = '[{0} of {1}]' -f $i, $Total
+                DisplayName                  = $RemoteMailboxHash[$MoveKey]['DisplayName']
+                OnPremisesOrganizationalUnit = $RemoteMailboxHash[$MoveKey]['OnPremisesOrganizationalUnit']
+                RequestedRRA                 = $MeuHash[$MoveKey]['ExternalEmailAddress']
+                CurrentRRA                   = $RemoteMailboxHash[$MoveKey]['RemoteRoutingAddress']
+                PrimarySmtpAddress           = $RemoteMailboxHash[$MoveKey]['PrimarySmtpAddress']
+                UserPrincipalName            = $RemoteMailboxHash[$MoveKey]['UserPrincipalName']
+                ForwardingAddress            = $RemoteMailboxHash[$MoveKey]['ForwardingAddress']
+                ExchangeGuid                 = $MoveKey
+                ArchiveGuid                  = $RemoteMailboxHash[$MoveKey]['ArchiveGuid']
+                EmailAddresses               = $RemoteMailboxHash[$MoveKey]['EmailAddresses']
+                RMGuid                       = $RemoteMailboxHash[$MoveKey]['Guid']
+                MEUGuid                      = $MeuHash[$MoveKey]['Guid']
             }
+        }
+        else {
+            Write-Host ('[{0} of {1}] Move Request {2} missing from MEU or RemoteMailbox hashtables' -f $i, $Total, $MoveHash[$MoveKey]['DisplayName']) -ForegroundColor Red
+            Write-Host ('[{0} of {1}] Move Request {2} found in MEU hashtable: {3}' -f $i, $Total, $MoveHash[$MoveKey]['DisplayName'], $MeuHash.ContainsKey($MoveKey))
+            Write-Host ('[{0} of {1}] Move Request {2} found in RemoteMailbox hashtable: {3}' -f $i, $Total, $MoveHash[$MoveKey]['DisplayName'], $RemoteMailboxHash.ContainsKey($MoveKey))
+            Write-Host ('[{0} of {1}] Move Request {2} ExchangeGuid is 00000000-0000-0000-0000-000000000000: {3}' -f $i, $Total, $MoveHash[$MoveKey]['DisplayName'], $MoveKey -eq '00000000-0000-0000-0000-000000000000')
         }
     }
     $ResultCsv = Join-Path -Path $PoshPath -ChildPath ('Sync-RRA_Target_RemoteMailbox_RESULTS.xml' -f $InitialDomain, [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
-    $RMChoice = $RMmatchMR | Sort-Object DisplayName, OnPremisesOrganizationalUnit |
+    $RemoteMailboxChoice = $MailboxMatchMove | Sort-Object DisplayName, OnPremisesOrganizationalUnit |
     Out-GridView -OutputMode Multiple -Title 'Choose the Remote Mailboxes to stamp with RequestedRRA'
-    while ($RMChoice) {
-        $Result = Select-SyncRemoteRoutingAddress -RMChoice $RMChoice
+    while ($RemoteMailboxChoice) {
+        $Result = Invoke-SyncRemoteRoutingAddress -RemoteMailboxChoice $RemoteMailboxChoice
         $Result | Export-Csv $ResultCsv -NoTypeInformation -Append -Force
         $Result | Out-GridView -Title 'Results of RRA stamping'
-        $RMChoice = $RMmatchMR | Sort-Object DisplayName, OnPremisesOrganizationalUnit |
+        $RemoteMailboxChoice = $MailboxMatchMove | Sort-Object DisplayName, OnPremisesOrganizationalUnit |
         Out-GridView -OutputMode Multiple -Title 'Choose the Remote Mailboxes to stamp with RequestedRRA'
     }
 

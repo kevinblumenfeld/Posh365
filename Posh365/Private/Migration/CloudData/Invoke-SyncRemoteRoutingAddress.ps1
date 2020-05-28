@@ -1,37 +1,37 @@
-function Select-SyncRemoteRoutingAddress {
+function Invoke-SyncRemoteRoutingAddress {
     [CmdletBinding()]
     param (
 
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        $RMChoice
+        $RemoteMailboxChoice
     )
 
     $i = 0
-    $Total = @($RMChoice).count
-    foreach ($RMItem in $RMChoice) {
+    $Total = @($RemoteMailboxChoice).count
+    foreach ($RM in $RemoteMailboxChoice) {
         $i++
         try {
             $RemoteMailboxLookup = $null
-            $RemoteMailboxLookup = Get-RemoteMailbox -filter "ExchangeGuid -eq '$($RMItem.ExchangeGuid)'"
+            $RemoteMailboxLookup = Get-RemoteMailbox -filter "ExchangeGuid -eq '$($RM.ExchangeGuid)'"
             if ($RemoteMailboxLookup) {
-                $RemoteMailboxLookup | Set-RemoteMailbox -RemoteRoutingAddress $RMItem.RequestedRRA -ErrorAction Stop
+                $RemoteMailboxLookup | Set-RemoteMailbox -RemoteRoutingAddress $RM.RequestedRRA -ErrorAction Stop
                 $PostRMSet = $null
-                $PostRMSet = Get-RemoteMailbox -filter "ExchangeGuid -eq '$($RMItem.ExchangeGuid)'"
+                $PostRMSet = Get-RemoteMailbox -filter "ExchangeGuid -eq '$($RM.ExchangeGuid)'"
                 [PSCustomObject]@{
                     Num                        = '[{0} of {1}]' -f $i, $Total
                     DisplayName                = $PostRMSet.DisplayName
                     Log                        = 'SUCCESS'
-                    RequestedRRA               = $RMItem.RequestedRRA
-                    PreviousRRA                = $RMItem.CurrentRRA
+                    RequestedRRA               = $RM.RequestedRRA
+                    PreviousRRA                = $RM.CurrentRRA
                     CurrentRRA                 = $PostRMSet.RemoteRoutingAddress
-                    RRATaskSuccess             = $RMItem.RequestedRRA -eq ($PostRMSet.RemoteRoutingAddress).split(':')[1]
-                    PrimaryUnchanged           = $RemoteMailboxHash[$RMItem.ExchangeGuid]['PrimarySmtpAddress'] -eq $PostRMSet.PrimarySmtpAddress
-                    EmailsUnchanged            = @($PostRMSet.EmailAddresses) -ne '' -join '|' -eq $RemoteMailboxHash[$RMItem.ExchangeGuid]['EmailAddresses']
+                    RRATaskSuccess             = $RM.RequestedRRA -eq ($PostRMSet.RemoteRoutingAddress).split(':')[1]
+                    PrimaryUnchanged           = $RemoteMailboxHash[$RM.ExchangeGuid]['PrimarySmtpAddress'] -eq $PostRMSet.PrimarySmtpAddress
+                    EmailsUnchanged            = @($PostRMSet.EmailAddresses) -ne '' -join '|' -eq $RemoteMailboxHash[$RM.ExchangeGuid]['EmailAddresses']
                     CurrentPrimarySmtpAddress  = $PostRMSet.PrimarySmtpAddress
-                    PreviousPrimarySmtpAddress = $RMItem.PrimarySmtpAddress
+                    PreviousPrimarySmtpAddress = $RM.PrimarySmtpAddress
                     CurrentEmailAddresses      = @($PostRMSet.EmailAddresses) -ne '' -join '|'
-                    PreviousEmailAddresses     = $RMItem.EmailAddresses
+                    PreviousEmailAddresses     = $RM.EmailAddresses
                 }
             }
         }
@@ -40,8 +40,8 @@ function Select-SyncRemoteRoutingAddress {
                 Num                        = '[{0} of {1}]' -f $i, $Total
                 DisplayName                = $PostRMSet.DisplayName
                 Log                        = $_.Exception.Message
-                RequestedRRA               = $RMItem.RequestedRRA
-                PreviousRRA                = $RMItem.CurrentRRA
+                RequestedRRA               = $RM.RequestedRRA
+                PreviousRRA                = $RM.CurrentRRA
                 CurrentRRA                 = 'FAILED'
                 RRATaskSuccess             = 'FAILED'
                 PrimaryUnchanged           = 'FAILED'
@@ -49,7 +49,7 @@ function Select-SyncRemoteRoutingAddress {
                 CurrentPrimarySmtpAddress  = 'FAILED'
                 PreviousPrimarySmtpAddress = 'FAILED'
                 CurrentEmailAddresses      = 'FAILED'
-                PreviousEmailAddresses     = $RemoteMailboxHash[$RMItem.ExchangeGuid]['EmailAddresses']
+                PreviousEmailAddresses     = $RemoteMailboxHash[$RM.ExchangeGuid]['EmailAddresses']
             }
         }
     }
