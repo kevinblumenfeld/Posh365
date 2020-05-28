@@ -100,15 +100,14 @@ function Sync-RemoteRoutingAddress {
             }
         }
         else {
-            Write-Host ('[{0} of {1}] Move Request {2} missing from MEU or RemoteMailbox hashtables' -f $i, $Total, $MoveHash[$MoveKey]['DisplayName']) -ForegroundColor Red
+            Write-Host ('[{0} of {1}] Move Request {2} ExchangeGuid is all zeros, missing from MEU or RemoteMailbox hashtables' -f $i, $Total, $MoveHash[$MoveKey]['DisplayName']) -ForegroundColor Red
             Write-Host ('[{0} of {1}] Move Request {2} found in MEU hashtable: {3}' -f $i, $Total, $MoveHash[$MoveKey]['DisplayName'], $MeuHash.ContainsKey($MoveKey))
             Write-Host ('[{0} of {1}] Move Request {2} found in RemoteMailbox hashtable: {3}' -f $i, $Total, $MoveHash[$MoveKey]['DisplayName'], $RemoteMailboxHash.ContainsKey($MoveKey))
-            Write-Host ('[{0} of {1}] Move Request {2} ExchangeGuid is 00000000-0000-0000-0000-000000000000: {3}' -f $i, $Total, $MoveHash[$MoveKey]['DisplayName'], $MoveKey -eq '00000000-0000-0000-0000-000000000000')
+            Write-Host ('[{0} of {1}] Move Request {2} ExchangeGuid is 00000000-0000-0000-0000-000000000000: {3}' -f $i, $Total, $MoveHash[$MoveKey]['DisplayName'], ($MoveKey -eq '00000000-0000-0000-0000-000000000000'))
         }
     }
     $ResultCsv = Join-Path -Path $PoshPath -ChildPath ('Sync-RRA_Target_RemoteMailbox_RESULTS.xml' -f $InitialDomain, [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
-    $RemoteMailboxChoice = $MailboxMatchMove | Sort-Object DisplayName, OnPremisesOrganizationalUnit |
-    Out-GridView -OutputMode Multiple -Title 'Choose the Remote Mailboxes to stamp with RequestedRRA'
+    $RemoteMailboxChoice = $MailboxMatchMove | Out-GridView -OutputMode Multiple -Title 'Choose the Remote Mailboxes to stamp with RequestedRRA'
     while ($RemoteMailboxChoice) {
         $Result = Invoke-SyncRemoteRoutingAddress -RemoteMailboxChoice $RemoteMailboxChoice
         $Result | Export-Csv $ResultCsv -NoTypeInformation -Append -Force
