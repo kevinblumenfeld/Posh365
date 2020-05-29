@@ -86,7 +86,7 @@ function New-MailboxMove {
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [int]
-        $IncrementalSyncIntervalHours = 24,
+        $IncrementalSyncIntervalHours,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
@@ -134,6 +134,9 @@ function New-MailboxMove {
             $UserChoice | Invoke-T2TNewMailboxMove @Sync | Out-GridView -Title "Results of New Tenant to Tenant Mailbox Move"
         }
         else {
+            if ($IncrementalSyncIntervalHours) {
+                $Sync.Add('IncrementalSyncInterval', $IncrementalSyncIntervalHours)
+            }
             $UserChoice | Invoke-NewMailboxMove @Sync | Out-GridView -Title "Results of New Mailbox Move"
         }
         foreach ($Group in $GroupsToAddUserTo) {

@@ -47,7 +47,6 @@ function Invoke-T2TNewMailboxMove {
                 AcceptLargeDataLoss     = $true
             }
             # New-MoveRequest –OutBound -Identity <mailboxguid> -RemoteTenant "Contoso.onmicrosoft.com" -TargetDeliveryDomain Contoso.onmicrosoft.com -BadItemLimit 50 -CompleteAfter (Get-Date).AddMonths(12) -IncrementalSyncInterval '24:00:00'
-
             try {
                 $Result = New-MoveRequest @Param -WarningAction SilentlyContinue -ErrorAction Stop
                 [PSCustomObject]@{

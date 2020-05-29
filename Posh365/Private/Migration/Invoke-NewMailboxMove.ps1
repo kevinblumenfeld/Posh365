@@ -44,7 +44,12 @@ function Invoke-NewMailboxMove {
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [int]
-        $LargeItemLimit
+        $LargeItemLimit,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [int]
+        $IncrementalSyncIntervalHours
     )
     begin {
         $CredentialPath = "${env:\userprofile}\$Tenant.Migrations.Cred"
@@ -56,6 +61,9 @@ function Invoke-NewMailboxMove {
             $RemoteCred = Get-Credential -Message "Enter Credentials for Remote Host DOMAIN\User (On-Premises Migration Endpoint)"
             $RemoteCred | Export-Clixml -Path $CredentialPath
         }
+        if ($IncrementalSyncIntervalHours) {
+            $SyncTime = [timespan]::new($IncrementalSyncIntervalHours, 00, 00)
+        }
     }
     process {
         foreach ($User in $UserList) {
@@ -66,11 +74,16 @@ function Invoke-NewMailboxMove {
                 RemoteHostName             = $RemoteHost
                 BatchName                  = $User.BatchName
                 TargetDeliveryDomain       = $Tenant
-                SuspendWhenReadyToComplete = $true
                 BadItemLimit               = $BadItemLimit
                 LargeItemLimit             = $LargeItemLimit
                 AcceptLargeDataLoss        = $true
-                # New-MoveRequest –OutBound -Identity <mailboxguid> -RemoteTenant "Contoso.onmicrosoft.com" -TargetDeliveryDomain Contoso.onmicrosoft.com -BadItemLimit 50 -CompleteAfter (Get-Date).AddMonths(12) -IncrementalSyncInterval '24:00:00'
+            }
+            if ($IncrementalSyncIntervalHours) {
+                $Param.Add('CompleteAfter',(Get-Date).AddMonths(12))
+                $Param.Add('IncrementalSyncInterval', $SyncTime)
+            }
+            else {
+                $Param.Add('SuspendWhenReadyToComplete', $true)
             }
             try {
                 $Result = New-MoveRequest @Param -WarningAction SilentlyContinue -ErrorAction Stop
