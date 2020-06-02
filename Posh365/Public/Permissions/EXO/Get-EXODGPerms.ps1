@@ -81,22 +81,24 @@
         }
     }
     end {
-        $AllDGDNs = ($allRecipients | Where-Object { $_.RecipientTypeDetails -in 'MailUniversalDistributionGroup', 'MailUniversalSecurityGroup' }).ExternalDirectoryObjectId
-
+        $AllDGDNs = $allRecipients | Where-Object { $_.RecipientTypeDetails -in 'MailUniversalDistributionGroup', 'MailUniversalSecurityGroup', 'MailNonUniversalGroup' }
+        $AllDGSA = $AllDGDNs.ExternalDirectoryObjectId
+        $AllDGSOB = $AllDGDNs
         Write-Verbose "Caching hash tables needed"
         $RecipientHash = $AllRecipients | Get-RecipientHash
         $RecipientMailHash = $AllRecipients | Get-RecipientMailHash
         $RecipientDNHash = $AllRecipients | Get-RecipientDNHash
         $RecipientLiveIDHash = $AllRecipients | Get-RecipientLiveIDHash
+        $RecipientNameHash = $AllRecipients | Get-RecipientNameHash
 
         if (-not $SkipSendAs) {
             Write-Verbose "Getting SendAs permissions for each Distribution Group and writing to file"
-            $AllDGDNs | Get-EXOSendAsPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientLiveIDHash $RecipientLiveIDHash |
+            $AllDGSA | Get-EXOSendAsPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientLiveIDHash $RecipientLiveIDHash |
             Export-Csv (Join-Path $Path "EXO_DGSendAs.csv") -NoTypeInformation
         }
         if (-not $SkipSendOnBehalf) {
             Write-Verbose "Getting SendOnBehalf permissions for each Distribution Group and writing to file"
-            $AllDGDNs | Get-EXOSendOnBehalfPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientDNHash $RecipientDNHash |
+            $AllDGSOB | Get-EXODGSendOnBehalfPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientDNHash $RecipientDNHash -RecipientNameHash $RecipientNameHash |
             Export-Csv (Join-Path $Path "EXO_DGSendOnBehalf.csv") -NoTypeInformation
         }
     }
