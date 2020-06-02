@@ -177,7 +177,7 @@ function Import-EXOGroup {
             }
 
             if ($CurGroup.EmailAddresses) {
-                ($CurGroup.EmailAddresses -split [regex]::Escape('|') -notmatch 'onmicrosoft.com') | ForEach-Object {
+                ($CurGroup.EmailAddresses -split [regex]::Escape('|') -match '(?i)x500:.*|smtp:.*@(?!(.*onmicrosoft\.com)).*') | ForEach-Object {
                     Set-DistributionGroup -Identity $CurGroup.Identity -emailaddresses @{Add = "$_" }
                 }
             }
@@ -186,20 +186,19 @@ function Import-EXOGroup {
                     Set-DistributionGroup -Identity $CurGroup.Identity -emailaddresses @{Add = "$_" }
                 }
             }#>
-            if ($CurGroup.EmailAddresses) {
-                $CurGroup.EmailAddresses -split [regex]::Escape('|') | Where-Object { !($_ -clike "SMTP:*") } | ForEach-Object {
-                    Set-DistributionGroup -Identity $CurGroup.Identity -emailaddresses @{Add = "$_" }
-                }
-            }
+            # if ($CurGroup.EmailAddresses) {
+            #     $CurGroup.EmailAddresses -split [regex]::Escape('|') | Where-Object { !($_ -clike "SMTP:*") } | ForEach-Object {
+            #         Set-DistributionGroup -Identity $CurGroup.Identity -emailaddresses @{Add = "$_" }
+            #     }
+            # }
             if ($CurGroup.x500) {
                 Set-DistributionGroup -Identity $CurGroup.Identity -emailaddresses @{Add = "$($CurGroup.x500)" }
             }
-            <#            # Move to its own function!
             if ($CurGroup.membersSMTP) {
                 $CurGroup.membersSMTP -split [regex]::Escape('|') | ForEach-Object {
                     Add-DistributionGroupMember -Identity $CurGroup.Identity -member "$_"
                 }
-            }#>
+            }
         }
     }
     End {
