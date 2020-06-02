@@ -30,7 +30,7 @@ function Invoke-T2TNewMailboxMove {
         $IncrementalSyncIntervalHours
     )
     begin {
-       $SyncTime =  [timespan]::new($IncrementalSyncIntervalHours, 00, 00)
+        $SyncTime = [timespan]::new($IncrementalSyncIntervalHours, 00, 00)
     }
     process {
         foreach ($User in $UserList) {
@@ -50,24 +50,28 @@ function Invoke-T2TNewMailboxMove {
             try {
                 $Result = New-MoveRequest @Param -WarningAction SilentlyContinue -ErrorAction Stop
                 [PSCustomObject]@{
-                    'DisplayName'       = $User.DisplayName
-                    'UserPrincipalName' = $User.UserPrincipalName
-                    'Result'            = 'SUCCESS'
-                    'MailboxSize'       = [regex]::Matches("$($Result.TotalMailboxSize)", "^[^(]*").value
-                    'ArchiveSize'       = [regex]::Matches("$($Result.TotalArchiveSize)", "^[^(]*").value
-                    'Log'               = $Result.StatusDetail
-                    'Action'            = 'NEW'
+                    'DisplayName'        = $User.DisplayName
+                    'UserPrincipalName'  = $User.UserPrincipalName
+                    'Result'             = 'SUCCESS'
+                    'MailboxSize'        = [regex]::Matches("$($Result.TotalMailboxSize)", "^[^(]*").value
+                    'ArchiveSize'        = [regex]::Matches("$($Result.TotalArchiveSize)", "^[^(]*").value
+                    'SourceExchangeGuid' = $User.ExchangeGuid
+                    'TargetExchangeGuid' = $Result.ExchangeGuid
+                    'Log'                = $Result.StatusDetail
+                    'Action'             = 'NEW'
                 }
             }
             catch {
                 [PSCustomObject]@{
-                    'DisplayName'       = $User.DisplayName
-                    'UserPrincipalName' = $User.UserPrincipalName
-                    'Result'            = 'FAILED'
-                    'MailboxSize'       = ''
-                    'ArchiveSize'       = ''
-                    'Log'               = $_.Exception.Message
-                    'Action'            = 'NEW'
+                    'DisplayName'        = $User.DisplayName
+                    'UserPrincipalName'  = $User.UserPrincipalName
+                    'Result'             = 'FAILED'
+                    'MailboxSize'        = ''
+                    'ArchiveSize'        = ''
+                    'SourceExchangeGuid' = $User.ExchangeGuid
+                    'TargetExchangeGuid' = $Result.ExchangeGuid
+                    'Log'                = $_.Exception.Message
+                    'Action'             = 'NEW'
                 }
             }
         }
