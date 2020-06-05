@@ -23,7 +23,8 @@ function Get-EXOGroup {
     Get-Content "c:\scripts\groups.txt" | Get-EXOGroup | Export-Csv c:\scripts\365GroupExport.csv -notypeinformation -encoding UTF8
 
     .EXAMPLE
-    (Get-DistributionGroup -Filter "IsDirSynced -eq '$false'" -ResultSize Unlimited).Guid | Get-EXOGroup | Export-Csv c:\scripts\365GroupExport.csv -notypeinformation -encoding UTF8
+    (Get-DistributionGroup -Filter "IsDirSynced -eq '$false'" -ResultSize Unlimited).Guid | Get-EXOGroup -DetailedReport |
+        Export-Csv c:\scripts\365GroupExport.csv -notypeinformation -encoding UTF8
 
     Example of groups.txt
     #####################
@@ -88,9 +89,9 @@ function Get-EXOGroup {
                 @{n = "x500" ; e = { "x500:" + $_.LegacyExchangeDN } },
                 @{n = "membersName" ; e = { @($Members.name) -ne '' -join '|' } },
                 @{n = "membersSmtp" ; e = { @($Members.PrimarySmtpAddress) -ne '' -join '|' } },
-                @{n = "ExchangeObjectId" ; e = { ($_.ExchangeObjectId).Guid } }
+                @{n = "ExchangeObjectId" ; e = { ($_.ExchangeObjectId).Guid } },
                 @{n = "Guid" ; e = { ($_.Guid).Guid } }
-                @{n = "ExternalDirectoryObjectId" ; e = { ($_.ExternalDirectoryObjectId).Guid } }
+
             )
         }
         else {
