@@ -62,7 +62,6 @@ function Get-EXOGroup {
                 'ReportToManagerEnabled', 'ReportToOriginatorEnabled', 'RequireSenderAuthenticationEnabled'
                 'SendOofMessageToOriginatorEnabled'
             )
-
             $CalculatedProps = @(
                 @{n = "AcceptMessagesOnlyFrom" ; e = { @($_.AcceptMessagesOnlyFrom) -ne '' -join '|' } },
                 @{n = "AcceptMessagesOnlyFromDLMembers" ; e = { @($_.AcceptMessagesOnlyFromDLMembers) -ne '' -join '|' } },
@@ -90,6 +89,8 @@ function Get-EXOGroup {
                 @{n = "membersName" ; e = { @($Members.name) -ne '' -join '|' } },
                 @{n = "membersSmtp" ; e = { @($Members.PrimarySmtpAddress) -ne '' -join '|' } },
                 @{n = "ExchangeObjectId" ; e = { ($_.ExchangeObjectId).Guid } }
+                @{n = "Guid" ; e = { ($_.Guid).Guid } }
+                @{n = "ExternalDirectoryObjectId" ; e = { ($_.ExternalDirectoryObjectId).Guid } }
             )
         }
         else {
