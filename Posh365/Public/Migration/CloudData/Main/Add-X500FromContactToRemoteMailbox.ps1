@@ -47,19 +47,23 @@ function Add-X500FromContactToRemoteMailbox {
     switch ($YesNo) {
         0 {
             $TargetResult = Join-Path -Path $PoshPath -ChildPath ('REPORT Results of adding x500s to Target Remote Mailboxes_{0}.csv' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
-            Write-Host "Choose Recipients to add X500s then click OK - To select use Ctrl/Shift + click (individual) or Ctrl + A (all)" -ForegroundColor Black -BackgroundColor White
-            $AddProxyList = Invoke-Addx500FromContact -MatchingPrimary $ResultObject | Out-GridView -OutputMode Multiple -Title "Choose Recipients to add X500s then click OK - To select use Ctrl/Shift + click (individual) or Ctrl + A (All)"
-            if ($AddProxyList) { Get-DecisionbyOGV } else { Write-Host 'Halting as nothing was selected' ; continue }
-            $UserSelection = Add-ProxyToRecipient -Type RemoteMailbox -AddProxyList $AddProxyList
-            if ($UserSelection) {
-                $UserSelection | Out-GridView -Title 'Results of adding Email Addresses to Target Remote Mailboxes'
-                $UserSelection | Export-Csv $TargetResult -NoTypeInformation -Encoding UTF8 -Append
-                Write-Host "`t`n`t`nLog has been exported to: " -ForegroundColor Cyan -NoNewline
-                Write-Host "$TargetResult" -ForegroundColor Green
-            }
-            else {
-                Write-Host "No changes are required. Halting script" -ForegroundColor Cyan
-            }
+            do {
+                Write-Host "Choose Recipients to add X500s then click OK - To select use Ctrl/Shift + click (individual) or Ctrl + A (all)" -ForegroundColor Black -BackgroundColor White
+                $AddProxyList = Invoke-Addx500FromContact -MatchingPrimary $ResultObject | Out-GridView -OutputMode Multiple -Title "Choose Recipients to add X500s then click OK - To select use Ctrl/Shift + click (individual) or Ctrl + A (All)"
+                if ($AddProxyList) { Get-DecisionbyOGV } else { Write-Host 'Halting as nothing was selected' ; continue }
+                $UserSelection = Add-ProxyToRecipient -Type RemoteMailbox -AddProxyList $AddProxyList
+                if ($UserSelection) {
+                    $UserSelection | Out-GridView -Title 'Results of adding Email Addresses to Target Remote Mailboxes'
+                    $UserSelection | Export-Csv $TargetResult -NoTypeInformation -Encoding UTF8 -Append
+                    Write-Host "`t`n`t`nLog has been exported to: " -ForegroundColor Cyan -NoNewline
+                    Write-Host "$TargetResult" -ForegroundColor Green
+                }
+                else {
+                    Write-Host "No changes are required. Halting script" -ForegroundColor Cyan
+                    $AddProxyList = $null
+                }
+            } while ($AddProxyList)
+
         }
         1 { return }
     }
