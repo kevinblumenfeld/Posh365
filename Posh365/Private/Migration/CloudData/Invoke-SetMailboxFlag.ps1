@@ -29,6 +29,7 @@ function Invoke-SetMailboxFlag {
                 $Post = Get-ADUser -LdapFilter "(msDS-ExternalDirectoryObjectId=$Mailbox)" -Properties 'msDS-ExternalDirectoryObjectId', 'msExchELCMailboxFlags'
                 [PSCustomObject]@{
                     'DisplayName'                    = $ADUser.DisplayName
+                    'CloudDisplayName'               = $QuotaHash[$Mailbox]['DisplayName']
                     'Log'                            = 'SUCCESS'
                     'msDS-ExternalDirectoryObjectId' = $Mailbox
                     'BeforeChange'                   = $ADUser.msExchELCMailboxFlags
@@ -41,6 +42,7 @@ function Invoke-SetMailboxFlag {
                 Write-Host "FAILED  ERROR==> $($_.Exception.Message)" -ForegroundColor Red
                 [PSCustomObject]@{
                     'DisplayName'                    = $ADUser.DisplayName
+                    'CloudDisplayName'               = $QuotaHash[$Mailbox]['DisplayName']
                     'Log'                            = $_.Exception.Message
                     'msDS-ExternalDirectoryObjectId' = $Mailbox
                     'BeforeChange'                   = $ADUser.msExchELCMailboxFlags
@@ -53,7 +55,8 @@ function Invoke-SetMailboxFlag {
         else {
             Write-Host "msDS-ExternalDirectoryObjectId: $Mailbox NOT FOUND $($QuotaHash[$Mailbox]['DisplayName'])!!" -ForegroundColor Yellow
             [PSCustomObject]@{
-                'DisplayName'                    = $QuotaHash[$Mailbox]['DisplayName']
+                'DisplayName'                    = ''
+                'CloudDisplayName'               = $QuotaHash[$Mailbox]['DisplayName']
                 'Log'                            = 'msDS-ExternalDirectoryObjectId NOT FOUND'
                 'msDS-ExternalDirectoryObjectId' = $Mailbox
                 'BeforeChange'                   = ''
