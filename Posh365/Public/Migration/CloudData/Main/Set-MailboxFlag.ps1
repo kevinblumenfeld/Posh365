@@ -14,53 +14,5 @@ function Set-MailboxFlag {
     if (-not (Test-Path $PoshPath)) {
         $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
-    $SourceQuotaXML = Join-Path -Path $PoshPath -ChildPath 'SourceQuota.xml'
-
-    $QuotaHash = Import-Clixml $SourceQuotaXML
-
-    foreach ($Mailbox in $QuotaHash.keys) {
-        $ADUser = $null
-        $ADUser = Get-ADUser -LdapFilter "(msDS-ExternalDirectoryObjectId=$Mailbox)" -Properties 'msDS-ExternalDirectoryObjectId', 'msExchELCMailboxFlags'
-        if ($ADUser) {
-            try {
-                Write-Host "$($ADUser.DisplayName) Setting msExchELCMailboxFlags to $ELCMailboxFlags   -   " -ForegroundColor White -NoNewline
-                $ADUser | Set-ADUser -replace @{ msExchELCMailboxFlags = $ELCMailboxFlags } -ErrorAction Stop
-                Write-Host 'SUCCESS' -ForegroundColor Green
-                $Post = Get-ADUser -LdapFilter "(msDS-ExternalDirectoryObjectId=$Mailbox)" -Properties 'msDS-ExternalDirectoryObjectId', 'msExchELCMailboxFlags'
-                [PSCustomObject]@{
-                    'DisplayName'                    = $ADUser.DisplayName
-                    'Log'                            = 'SUCCESS'
-                    'msDS-ExternalDirectoryObjectId' = $Mailbox
-                    'BeforeChange'                   = $ADUser.msExchELCMailboxFlags
-                    'AfterChange'                    = $Post.msExchELCMailboxFlags
-                    'PrimarySmtpAddress'             = $QuotaHash[$Mailbox]['PrimarySmtpAddress']
-                    'UserPrincipalName'              = $QuotaHash[$Mailbox]['UserPrincipalName']
-                }
-            }
-            catch {
-                Write-Host "FAILED  ERROR==> $($_.Exception.Message)" -ForegroundColor Red
-                [PSCustomObject]@{
-                    'DisplayName'                    = $ADUser.DisplayName
-                    'Log'                            = $_.Exception.Message
-                    'msDS-ExternalDirectoryObjectId' = $Mailbox
-                    'BeforeChange'                   = $ADUser.msExchELCMailboxFlags
-                    'AfterChange'                    = ''
-                    'PrimarySmtpAddress'             = $QuotaHash[$Mailbox]['PrimarySmtpAddress']
-                    'UserPrincipalName'              = $QuotaHash[$Mailbox]['UserPrincipalName']
-                }
-            }
-        }
-        else {
-            Write-Host "msDS-ExternalDirectoryObjectId: $Mailbox NOT FOUND $($QuotaHash[$Mailbox]['DisplayName'])!!" -ForegroundColor Yellow
-            [PSCustomObject]@{
-                'DisplayName'                    = $QuotaHash[$Mailbox]['DisplayName']
-                'Log'                            = 'msDS-ExternalDirectoryObjectId NOT FOUND'
-                'msDS-ExternalDirectoryObjectId' = $Mailbox
-                'BeforeChange'                   = ''
-                'AfterChange'                    = ''
-                'PrimarySmtpAddress'             = $QuotaHash[$Mailbox]['PrimarySmtpAddress']
-                'UserPrincipalName'              = $QuotaHash[$Mailbox]['UserPrincipalName']
-            }
-        }
-    }
+    Invoke-SetMailboxFlag -ELCMailboxFlags $ELCMailboxFlags | Out-GridView -Title 'Results of Setting flag'
 }
