@@ -24,6 +24,10 @@ function Get-SourceQuotaHash {
                 'UserPrincipalName'            = $Mailbox.UserPrincipalName
                 'RecoverableItemsQuota'        = $Mailbox.RecoverableItemsQuota
                 'RecoverableItemsWarningQuota' = $Mailbox.RecoverableItemsWarningQuota
+                'LitigationHoldEnabled'        = $Mailbox.LitigationHoldEnabled
+                'LitigationHoldDate'           = $Mailbox.LitigationHoldDate
+                'LitigationHoldOwner'          = $Mailbox.LitigationHoldOwner
+                'LitigationHoldDuration'       = $Mailbox.LitigationHoldDuration
             }
         }
     }
