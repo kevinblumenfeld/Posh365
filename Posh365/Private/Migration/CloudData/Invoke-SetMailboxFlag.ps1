@@ -17,16 +17,17 @@ function Invoke-SetMailboxFlag {
     $SourceQuotaXML = Join-Path -Path $PoshPath -ChildPath 'SourceQuota.xml'
 
     $QuotaHash = Import-Clixml $SourceQuotaXML
-
+    $Props = @('msDS-ExternalDirectoryObjectId', 'msExchELCMailboxFlags', 'DisplayName')
     foreach ($Mailbox in $QuotaHash.keys) {
         $ADUser = $null
-        $ADUser = Get-ADUser -LdapFilter "(msDS-ExternalDirectoryObjectId=$Mailbox)" -Properties 'msDS-ExternalDirectoryObjectId', 'msExchELCMailboxFlags'
+        $ADUser = Get-ADUser -LdapFilter "(msDS-ExternalDirectoryObjectId=$Mailbox)" -Properties $Props
+
         if ($ADUser) {
             try {
                 Write-Host "$($ADUser.DisplayName) Setting msExchELCMailboxFlags to $ELCMailboxFlags   -   " -ForegroundColor White -NoNewline
                 $ADUser | Set-ADUser -replace @{ msExchELCMailboxFlags = $ELCMailboxFlags } -ErrorAction Stop
                 Write-Host 'SUCCESS' -ForegroundColor Green
-                $Post = Get-ADUser -LdapFilter "(msDS-ExternalDirectoryObjectId=$Mailbox)" -Properties 'msDS-ExternalDirectoryObjectId', 'msExchELCMailboxFlags'
+                $Post = Get-ADUser -LdapFilter "(msDS-ExternalDirectoryObjectId=$Mailbox)" -Properties $Props
                 [PSCustomObject]@{
                     'DisplayName'                    = $ADUser.DisplayName
                     'CloudDisplayName'               = $QuotaHash[$Mailbox]['DisplayName']
