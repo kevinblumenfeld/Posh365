@@ -22,11 +22,11 @@ function Get-EXODGSendOnBehalfPerms {
     }
     Process {
         $SendOB = $_
-        Write-Host "Inspecting: `t $_" -ForegroundColor Cyan
+        Write-Host "Inspecting: `t $_"
         (Get-DistributionGroup -Identity $_.PrimarySmtpAddress -Verbose:$false).GrantSendOnBehalfTo | where-object { $_ -ne $null } | ForEach-Object {
             $CurGranted = $_
             $Type = $null
-            Write-Host "Has Send On Behalf: `t $CurGranted" -ForegroundColor White
+            Write-Host "Has Send On Behalf: `t $CurGranted"
             if ($RecipientMailHash.ContainsKey($_)) {
                 $CurGranted = $RecipientMailHash[$_].Name
                 $Type = $RecipientMailHash[$_].RecipientTypeDetails
