@@ -25,7 +25,6 @@ function Invoke-SetMailboxFlag {
         [PSCustomObject]@{
             'Num'                            = "[$iUP of $Count]"
             'msDS-ExternalDirectoryObjectId' = $key
-            'DisplayName'                    = $ADUser.DisplayName
             'CloudDisplayName'               = $QuotaHash[$Mailbox]['DisplayName']
         }
     }
