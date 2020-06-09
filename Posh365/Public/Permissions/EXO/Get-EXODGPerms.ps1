@@ -15,9 +15,6 @@
     Output CSVs headers:
     "Object","PrimarySmtpAddress","Granted","GrantedSMTP","RecipientTypeDetails","Permission"
 
-    .PARAMETER Path
-    Parameter description
-
     .PARAMETER SpecificUsersandGroups
     Parameter description
 
@@ -28,27 +25,14 @@
     Parameter description
 
     .EXAMPLE
-    Get-EXODGPerms -Tenant Contoso -Path C:\PermsReports -Verbose
+    Get-EXODGPerms
 
     .EXAMPLE
-    Get-Recipient -Filter {EmailAddresses -like "*contoso.com"} -ResultSize Unlimited | Select -ExpandProperty name | Get-EXODGPerms -Tenant Contoso -Path C:\PermsReports
-
-    .EXAMPLE
-    Get-EXODGPerms -Tenant Contoso -Path C:\PermsReports -SkipFullAccess -Verbose
-
-    .EXAMPLE
-    Get-EXODGPerms -Tenant Contoso -Path C:\PermsReports -SkipSendOnBehalf -Verbose
-
-    .EXAMPLE
-    Get-EXODGPerms -Tenant Contoso -Path C:\PermsReports -SkipSendAs -SkipFullAccess -Verbose
+    Get-Recipient -Filter {EmailAddresses -like "*contoso.com"} -ResultSize Unlimited | Select -ExpandProperty name | Get-EXODGPerms
 
     #>
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory)]
-        [string]
-        $Path,
-
         [Parameter()]
         [switch]
         $SkipSendAs,
@@ -63,9 +47,12 @@
     )
     begin {
         $allrecipients = [System.Collections.Generic.List[PSObject]]::new()
+        $PoshPath = (Join-Path -Path ([Environment]::GetFolderPath('Desktop')) -ChildPath Posh365 )
+        if (-not (Test-Path $PoshPath)) {
+            $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
+        }
     }
     process {
-        New-Item -ItemType Directory -Path $Path -ErrorAction SilentlyContinue
 
         if ($SpecificUsersandGroups) {
             $each = foreach ($CurUserGroup in $SpecificUsersandGroups) {
@@ -84,7 +71,7 @@
         $AllDGDNs = $allRecipients | Where-Object { $_.RecipientTypeDetails -in 'MailUniversalDistributionGroup', 'MailUniversalSecurityGroup', 'MailNonUniversalGroup' }
         $AllDGSA = $AllDGDNs.ExternalDirectoryObjectId
         $AllDGSOB = $AllDGDNs
-        Write-Verbose "Caching hash tables needed"
+        Write-Host "Caching hash tables needed"
         $RecipientHash = $AllRecipients | Get-RecipientHash
         $RecipientMailHash = $AllRecipients | Get-RecipientMailHash
         $RecipientDNHash = $AllRecipients | Get-RecipientDNHash
@@ -92,14 +79,14 @@
         $RecipientNameHash = $AllRecipients | Get-RecipientNameHash
 
         if (-not $SkipSendAs) {
-            Write-Verbose "Getting SendAs permissions for each Distribution Group and writing to file"
+            Write-Host "Getting SendAs permissions for each Distribution Group and writing to file"
             $AllDGSA | Get-EXOSendAsPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientLiveIDHash $RecipientLiveIDHash |
-            Export-Csv (Join-Path $Path "EXO_DGSendAs.csv") -NoTypeInformation
+            Export-Csv (Join-Path $PoshPath "EXO_DGSendAs.csv") -NoTypeInformation
         }
         if (-not $SkipSendOnBehalf) {
-            Write-Verbose "Getting SendOnBehalf permissions for each Distribution Group and writing to file"
+            Write-Host "Getting SendOnBehalf permissions for each Distribution Group and writing to file"
             $AllDGSOB | Get-EXODGSendOnBehalfPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientDNHash $RecipientDNHash -RecipientNameHash $RecipientNameHash |
-            Export-Csv (Join-Path $Path "EXO_DGSendOnBehalf.csv") -NoTypeInformation
+            Export-Csv (Join-Path $PoshPath "EXO_DGSendOnBehalf.csv") -NoTypeInformation
         }
     }
 }
