@@ -18,9 +18,23 @@ function Invoke-SetMailboxFlag {
 
     $QuotaHash = Import-Clixml $SourceQuotaXML
     $Props = @('msDS-ExternalDirectoryObjectId', 'msExchELCMailboxFlags', 'DisplayName')
+    $Count = $QuotaHash.keys.Count
+    $iUP = 0
+    $Choice = foreach ($key in $QuotaHash.keys) {
+        $iUP++
+        [PSCustomObject]@{
+            'Num'                            = "[$iUP of $Count]"
+            'msDS-ExternalDirectoryObjectId' = $key
+            'DisplayName'                    = $ADUser.DisplayName
+            'CloudDisplayName'               = $QuotaHash[$Mailbox]['DisplayName']
+        }
+    }
+    $Choice | Out-GridView -OutputMode Multiple -Title 'Choose which AD Users to set msExchELCMailboxFlags'
+    if (-not $Choice) { return }
     $iUP = 0
     $Count = $QuotaHash.keys.Count
-    foreach ($Mailbox in $QuotaHash.keys) {
+    $Total = $Choice.'msDS-ExternalDirectoryObjectId'.count
+    foreach ($Mailbox in $Choice.'msDS-ExternalDirectoryObjectId') {
         $iUP++
         $ADUser = $null
         $ADUser = Get-ADUser -LdapFilter "(msDS-ExternalDirectoryObjectId=$Mailbox)" -Properties $Props
@@ -31,7 +45,7 @@ function Invoke-SetMailboxFlag {
                 Write-Host 'SUCCESS' -ForegroundColor Green
                 $Post = Get-ADUser -LdapFilter "(msDS-ExternalDirectoryObjectId=$Mailbox)" -Properties $Props
                 [PSCustomObject]@{
-                    'Num'                            = "[$iUP of $Count]"
+                    'Num'                            = "[$iUP of $Total]"
                     'DisplayName'                    = $ADUser.DisplayName
                     'CloudDisplayName'               = $QuotaHash[$Mailbox]['DisplayName']
                     'Log'                            = 'SUCCESS'
@@ -51,7 +65,7 @@ function Invoke-SetMailboxFlag {
             catch {
                 Write-Host "FAILED  ERROR==> $($_.Exception.Message)" -ForegroundColor Red
                 [PSCustomObject]@{
-                    'Num'                            = "[$iUP of $Count]"
+                    'Num'                            = "[$iUP of $Total]"
                     'DisplayName'                    = $ADUser.DisplayName
                     'CloudDisplayName'               = $QuotaHash[$Mailbox]['DisplayName']
                     'Log'                            = $_.Exception.Message
@@ -72,7 +86,7 @@ function Invoke-SetMailboxFlag {
         else {
             Write-Host "msDS-ExternalDirectoryObjectId: $Mailbox NOT FOUND $($QuotaHash[$Mailbox]['DisplayName'])!!" -ForegroundColor Yellow
             [PSCustomObject]@{
-                'Num'                            = "[$iUP of $Count]"
+                'Num'                            = "[$iUP of $Total]"
                 'DisplayName'                    = ''
                 'CloudDisplayName'               = $QuotaHash[$Mailbox]['DisplayName']
                 'Log'                            = 'msDS-ExternalDirectoryObjectId NOT FOUND'
