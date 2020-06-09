@@ -25,7 +25,7 @@ function Invoke-SetMailboxFlag {
         [PSCustomObject]@{
             'Num'                            = "[$iUP of $Count]"
             'msDS-ExternalDirectoryObjectId' = $key
-            'CloudDisplayName'               = $QuotaHash[$Mailbox]['DisplayName']
+            'CloudDisplayName'               = $QuotaHash[$key]['DisplayName']
         }
     }
     $Choice | Out-GridView -OutputMode Multiple -Title 'Choose which AD Users to set msExchELCMailboxFlags'
