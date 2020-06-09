@@ -28,6 +28,7 @@ function Get-SourceQuotaHash {
                 'LitigationHoldDate'           = $Mailbox.LitigationHoldDate
                 'LitigationHoldOwner'          = $Mailbox.LitigationHoldOwner
                 'LitigationHoldDuration'       = $Mailbox.LitigationHoldDuration
+                'InPlaceHolds'                 = $Mailbox.InPlaceHolds
             }
         }
     }

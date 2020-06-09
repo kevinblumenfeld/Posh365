@@ -59,6 +59,7 @@ function Invoke-SetMailboxFlag {
                     'LitigationHoldDate'             = $QuotaHash[$Mailbox]['LitigationHoldDate']
                     'LitigationHoldOwner'            = $QuotaHash[$Mailbox]['LitigationHoldOwner']
                     'LitigationHoldDuration'         = $QuotaHash[$Mailbox]['LitigationHoldDuration']
+                    'InPlaceHolds'                   = @($QuotaHash[$Mailbox]['InPlaceHolds']) -ne '' -join '|'
                 }
             }
             catch {
@@ -79,6 +80,7 @@ function Invoke-SetMailboxFlag {
                     'LitigationHoldDate'             = $QuotaHash[$Mailbox]['LitigationHoldDate']
                     'LitigationHoldOwner'            = $QuotaHash[$Mailbox]['LitigationHoldOwner']
                     'LitigationHoldDuration'         = $QuotaHash[$Mailbox]['LitigationHoldDuration']
+                    'InPlaceHolds'                   = @($QuotaHash[$Mailbox]['InPlaceHolds']) -ne '' -join '|'
                 }
             }
         }
@@ -100,6 +102,7 @@ function Invoke-SetMailboxFlag {
                 'LitigationHoldDate'             = $QuotaHash[$Mailbox]['LitigationHoldDate']
                 'LitigationHoldOwner'            = $QuotaHash[$Mailbox]['LitigationHoldOwner']
                 'LitigationHoldDuration'         = $QuotaHash[$Mailbox]['LitigationHoldDuration']
+                'InPlaceHolds'                   = @($QuotaHash[$Mailbox]['InPlaceHolds']) -ne '' -join '|'
             }
         }
     }
