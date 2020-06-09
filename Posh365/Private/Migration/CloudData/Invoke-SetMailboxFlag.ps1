@@ -20,7 +20,7 @@ function Invoke-SetMailboxFlag {
     $Props = @('msDS-ExternalDirectoryObjectId', 'msExchELCMailboxFlags', 'DisplayName')
     $Count = $QuotaHash.keys.Count
     $iUP = 0
-    $Choice = foreach ($key in $QuotaHash.keys) {
+    $ChoiceList = foreach ($key in $QuotaHash.keys) {
         $iUP++
         [PSCustomObject]@{
             'Num'                            = "[$iUP of $Count]"
@@ -28,7 +28,7 @@ function Invoke-SetMailboxFlag {
             'CloudDisplayName'               = $QuotaHash[$key]['DisplayName']
         }
     }
-    $Choice | Out-GridView -OutputMode Multiple -Title 'Choose which AD Users to set msExchELCMailboxFlags'
+    $Choice = $ChoiceList | Out-GridView -OutputMode Multiple -Title 'Choose which AD Users to set msExchELCMailboxFlags'
     if (-not $Choice) { return }
     $iUP = 0
     $Count = $QuotaHash.keys.Count
