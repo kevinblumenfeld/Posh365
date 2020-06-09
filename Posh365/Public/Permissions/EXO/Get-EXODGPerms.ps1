@@ -53,7 +53,6 @@
         }
     }
     process {
-
         if ($SpecificUsersandGroups) {
             $each = foreach ($CurUserGroup in $SpecificUsersandGroups) {
                 $filter = { name -eq '{0}' } -f $CurUserGroup
@@ -79,12 +78,12 @@
         $RecipientNameHash = $AllRecipients | Get-RecipientNameHash
 
         if (-not $SkipSendAs) {
-            Write-Host "Getting SendAs permissions for each Distribution Group and writing to file"
+            Write-Host "`r`n`r`nGetting SendAs permissions for each Distribution Group and writing to file`r`n" -ForegroundColor Yellow
             $AllDGSA | Get-EXOSendAsPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientLiveIDHash $RecipientLiveIDHash |
             Export-Csv (Join-Path $PoshPath "EXO_DGSendAs.csv") -NoTypeInformation
         }
         if (-not $SkipSendOnBehalf) {
-            Write-Host "Getting SendOnBehalf permissions for each Distribution Group and writing to file"
+            Write-Host "`r`n`r`nGetting SendOnBehalf permissions for each Distribution Group and writing to file`r`n" -ForegroundColor Yellow
             $AllDGSOB | Get-EXODGSendOnBehalfPerms -RecipientHash $RecipientHash -RecipientMailHash $RecipientMailHash -RecipientDNHash $RecipientDNHash -RecipientNameHash $RecipientNameHash |
             Export-Csv (Join-Path $PoshPath "EXO_DGSendOnBehalf.csv") -NoTypeInformation
         }
