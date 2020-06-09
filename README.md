@@ -21,12 +21,16 @@ Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
 Install-Module Posh365 -Force -Scope CurrentUser
 ```
 
+## Create supporting files
+| Document to add to SharePoint | Paste code on-premises (not EMS) |      Notes      |
+|:-----------------------------:|:--------------------------------:|:---------------:|
+|                  Batches.xlsx | https://bit.ly/corebatches       |                 |
+|              Permissions.xlsx | http://bit.ly/corepermissions    |                 |
+|              Permissions.xlsx | http://bit.ly/PermissionsScaled  | >6000 Mailboxes |
 
-## Function Examples
-_Syntax_: https://github.com/kevinblumenfeld/Posh365Demo
 
 ### Connect
-* **Connect-CloudMFA** Connect to EXO, MSOnline, AzureAD, SharePoint, Compliance.
+* **Connect-CloudMFA** Connect to EXOv2, MSOnline, AzureAD, SharePoint, Compliance.
 
 ### Migrate
 * **New-MailboxMove** Creates new move requests
@@ -46,6 +50,21 @@ _Syntax_: https://github.com/kevinblumenfeld/Posh365Demo
 * **Get-MailboxMoveLicense** Reports on user licenses.
 * **Get-MailboxMoveLicenseCount** Reports on a tenant's skus and options.
 * **Get-MailboxMoveLicenseReport** Reports on each user's assigned skus and options.
+
+### Sample Syntax
+_https://github.com/kevinblumenfeld/Posh365Demo_
+* Connect-CloudMFA mkevin
+* New-MailboxMove -SharePointURL 'https://CoreBTStest.sharepoint.com/sites/mkevin' -ExcelFile 'Batches.xlsx' -Tenant mkevin -RemoteHost mail.oktakevin.com
+* Get-MailboxMove
+* Get-MailboxMove -IncludeCompleted
+* Set-MailboxMove -LargeItemLimit 100 -BadItemLimit 200
+* Complete-MailboxMove
+* Complete-MailboxMove -Schedule
+* Suspend-MailboxMove
+* Resume-MailboxMove
+* Resume-MailboxMove -DontAutoComplete
+* Remove-MailboxMove
+
 
 ### Office365 Endpoints
 * **Get-OfficeEndpoints** URLs and IPs, initial and "changes since"
