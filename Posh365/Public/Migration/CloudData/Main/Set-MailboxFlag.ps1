@@ -14,5 +14,7 @@ function Set-MailboxFlag {
     if (-not (Test-Path $PoshPath)) {
         $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
-    Invoke-SetMailboxFlag -ELCMailboxFlags $ELCMailboxFlags | Out-GridView -Title 'Results of Setting flag'
+    $Result = Invoke-SetMailboxFlag -ELCMailboxFlags $ELCMailboxFlags
+    $Result | Out-GridView -Title 'Results of Setting flag'
+    $Result | Export-Csv (Join-Path $PoshPath 'RESULTS_SetMailboxFlag.csv') -NoTypeInformation -Append
 }

@@ -10,7 +10,7 @@ function Get-SourceQuotaHash {
         $null = New-Item $PoshPath -type Directory -Force:$true -ErrorAction SilentlyContinue
     }
     $QuotaMailboxBackupXML = Join-Path -Path $PoshPath -ChildPath ('SourceQuota_Mailbox_Backup_{0}.xml' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
-    $SourceQuotaXML = Join-Path -Path $PoshPath -ChildPath 'SourceQuota.xml'
+    $SourceQuotaXML = Join-Path -Path $PoshPath -ChildPath 'SourceQuotaHash.xml'
 
     Get-EXOMailbox -ResultSize Unlimited -PropertySets All | Export-Clixml $QuotaMailboxBackupXML
     $MailboxList = Import-Clixml $QuotaMailboxBackupXML
