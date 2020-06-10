@@ -60,7 +60,7 @@ function Set-CloudDataRegionalSettings {
                 SourceTimeZone     = $Mailbox.TimeZone
                 DateFormat         = $Mailbox.DateFormat
                 TimeFormat         = $Mailbox.TimeFormat
-                Log                = 'FAILED'
+                Log                = $_.Exception.Message
             }
         }
     }
