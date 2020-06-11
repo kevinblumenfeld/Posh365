@@ -26,7 +26,7 @@ function Set-CloudDataRegionalSettings {
     )
 
     if (Test-Path $CSVFilePath) {
-        $MailboxList = Import-Csv $CSVFilePath | Where-Object { $_.Language -and $_.DateFormat }
+        $MailboxList = Import-Csv $CSVFilePath | Where-Object { $_.Language -and $_.TimeZone }
     }
     else {
         Write-Warning "Path, $CSVFilePath not found. Please try again with the CSV's proper path"
