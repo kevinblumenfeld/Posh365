@@ -7,13 +7,20 @@ function Import-EXOGroup {
     Import Office 365 Distribution Groups
 
     .PARAMETER CSVFilePath
-    CSV of new groups and attributes to create.
+    CSV of new groups and attributes to create
+
+    .PARAMETER ConvertSourceOnMicrosoftPrimaryToTarget
+    CSV of new groups and attributes to create
 
     .EXAMPLE
     Import-EXOGroup -CSVFilePath .\importgroups.csv | Export-csv .\results.csv -nti
 
+    .EXAMPLE
+    Import-EXOGroup -CSVFilePath .\importgroups.csv -ConvertSourceOnMicrosoftPrimaryToTarget | Export-csv .\results.csv -nti
+
     .NOTES
-    General notes
+    EmailAddresses excluded from import are all onmicrosoft.com addressess
+    Included are all smtp addresses
     #>
 
 
@@ -21,9 +28,39 @@ function Import-EXOGroup {
     Param
     (
         [Parameter(Mandatory)]
-        $CSVFilePath
+        $CSVFilePath,
+
+        [Parameter()]
+        [switch]
+        $ConvertSourceOnMicrosoftPrimaryToTarget
     )
     $GroupList = Import-Csv $CSVFilePath
+    if ($ConvertSourceOnMicrosoftPrimaryToTarget) {
+        $InitialDomain = (Get-AcceptedDomain | Where-Object { $_.InitialDomain }).DomainName
+        $GroupList = $GroupList | Select-Object -ExcludeProperty PrimarySmtpAddress, WindowsEmailAddress @(
+            @{
+                Name       = 'PrimarySmtpAddress'
+                Expression = { if (($_.PrimarySmtpAddress).split('@')[1] -like '*.onmicrosoft.com' ) {
+                        '{0}@{1}' -f ($_.PrimarySmtpAddress).split('@')[0], $InitialDomain
+                    }
+                    else {
+                        $_.PrimarySmtpAddress
+                    }
+                }
+            }
+            @{
+                Name       = 'WindowsEmailAddress'
+                Expression = { if (($_.WindowsEmailAddress).split('@')[1] -like '*.onmicrosoft.com' ) {
+                        '{0}@{1}' -f ($_.WindowsEmailAddress).split('@')[0], $InitialDomain
+                    }
+                    else {
+                        $_.WindowsEmailAddress
+                    }
+                }
+            }
+            '*'
+        )
+    }
     ForEach ($Group in $GroupList) {
         $newhash = @{
             Alias                              = $Group.Alias
