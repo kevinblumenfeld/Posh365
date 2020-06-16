@@ -163,7 +163,7 @@ function Import-EXOGroup {
                 SourceGuid    = $Group.Guid
                 TargetGuid    = ''
             }
-            return
+            continue
         }
         if ($Target) {
             try {
