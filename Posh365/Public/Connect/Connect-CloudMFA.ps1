@@ -76,25 +76,6 @@ function Connect-CloudMFA {
                     [System.Management.Automation.PSCredential]$Credential = Import-Clixml -Path $CredFile
                 }
             }
-            { $PSBoundParameters.Count -eq 1 } {
-                Connect-CloudModuleImport -ExchangeOnline
-                Import-Module (Connect-EXOPSSession) -Global -WarningAction SilentlyContinue -DisableNameChecking
-                Write-Host "Connected to Exchange Online" -ForegroundColor Green
-                Connect-CloudModuleImport -AzureAD
-                Connect-AzureAD
-                Write-Host "Connected to Azure AD" -ForegroundColor Green
-            }
-            { $ExchangeOnline -or $Compliance } {
-                Connect-CloudModuleImport -ExchangeOnline
-            }
-            $ExchangeOnline {
-                Import-Module (Connect-EXOPSSession) -Global -WarningAction SilentlyContinue -DisableNameChecking
-                Write-Host "Connected to Exchange Online" -ForegroundColor Green
-            }
-            $Compliance {
-                Import-Module (Connect-IPPSSession) -Global
-                Write-Host "Connected to Security & Compliance" -ForegroundColor Green
-            }
             $MSOnline {
                 Connect-CloudModuleImport -MSOnline
                 Connect-MsolService
@@ -115,13 +96,19 @@ function Connect-CloudMFA {
                 Connect-CloudModuleImport -Teams
                 Connect-MicrosoftTeams
             }
-            $EXO2 {
+            { $EXO2 -or $ExchangeOnline -or $Compliance } {
                 $Script:RestartConsole = $null
                 Connect-CloudModuleImport -EXO2
-                if ($RestartConsole) {
-                    return
+                if ($RestartConsole) { return }
+                if ($EXO2 -or $ExchangeOnline) {
+                    Connect-ExchangeOnline -UserPrincipalName $Credential.UserName -ShowBanner:$false
+                    Write-Host "Connected to Exchange Online" -foregroundcolor Green
                 }
-                Connect-ExchangeOnline -UserPrincipalName $Credential.UserName
+                if ($Compliance) {
+                    Get-PSSession | Remove-PSSession
+                    Connect-ExchangeOnline -ConnectionUri 'https://ps.compliance.protection.outlook.com/powershell-liveid' @Splat
+                    Write-Host "Connected to Security & Compliance Center" -foregroundcolor Green
+                }
             }
             default { }
         }
