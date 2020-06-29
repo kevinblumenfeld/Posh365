@@ -1,77 +1,164 @@
 function MessageSearch {
-    <#
-    .SYNOPSIS
-    Short description
+        <#
+        .SYNOPSIS
+        Search for content with Micrsoft's compliance search and optionally delete said content
 
-    .DESCRIPTION
-    Long description
+        .DESCRIPTION
+        Search for content with Micrsoft's compliance search and optionally delete said content
 
-    .PARAMETER _ExchangeServer
-    Parameter description
+        Currently supports the Exchange workflow. Workflows like SharePoint, OneDrive
 
-    .PARAMETER RequiredSearchName
-    Parameter description
+        .PARAMETER _ExchangeServer
+        Add the fqdn to the on-premises Exchange Server
 
-    .PARAMETER _From
-    Parameter description
+        .PARAMETER _ExchangeServerBasicAuth
+        Check this checkbox if connecting from a domain that is different from where the Exchange Server lives.
 
-    .PARAMETER _Subject
-    Parameter description
+        .PARAMETER _ExchangeOnline
+        Check this checkbox to connect to the Office 365 Security and Compliance Center (SCC)
 
-    .PARAMETER _DateStart
+        .PARAMETER RequiredSearchName
+        A unique name for your organization.
 
-    A date (and optionally a time) in the past from when you wish to start the search
+        Feel free to use spaces, and dates for uniqueness
 
-    Use the format: YYYY-MM-DDThh:mm:ss
+        .PARAMETER __HardDelete
+        Parameter description
 
-    A few examples:
+        .PARAMETER _From
+        Accepts a single email address
 
-    2020-06-25
-    2020-06-25T14:00
-    2020-06-25T14:00:12
+        .PARAMETER _To
 
-    .PARAMETER _DateEnd
-    A date (and optionally a time) in the past from when you wish to end the search
+        Accepts one more more email addresses separated by commas
 
-    NOTE: Must be more recent that _DateStart
+        Examples:
 
-    Use the format: YYYY-MM-DDThh:mm:ss
+        1. jane@contoso.com
 
-    A few examples:
+        - The search will find email with just Jane
+        - The search will find email with Jane and Joe
+        - The search will find email with Jane, Joe, and Pat
 
-    2020-06-25
-    2020-06-25T15:00
-    2020-06-25T15:00:12
+        2. jane@contoso.com, joe@contoso.com
 
-    .PARAMETER AttachmentName
-    Parameter description
+        - The search will not find email with just Jane
+        - The search will find email with Jane and Joe
+        - The search will find email with Jane, Joe, and Pat
 
-    .PARAMETER MailboxesToSearch
-    Parameter description
+        .PARAMETER _SubjectContainsIsCommaSeparated
+        Check this checkbox to look for more than one word in the subject
 
-    .PARAMETER ExceptionList
-    Parameter description
+        Example:
 
-    .PARAMETER ExceptionFile
-    Parameter description
+        1. You check this checkbox.
+        2. In the "Subject" field you type:
 
-    .EXAMPLE
-    An example
+            Apple, Pear, Orange
 
-    .NOTES
+        - The search will find this subject:
 
-    #>
+            The Apple, Pear and Orange
+
+        - The search will not find:
+
+            The Apple, Pear and Banana
+
+        .PARAMETER _SubjectContains
+        Parameter description
+
+        .PARAMETER _SubjectDoesNotContain
+        Parameter description
+
+        .PARAMETER _DateStart
+
+        A date (and optionally a time) in the past from when you wish to start the search
+
+        Use the format: YYYY-MM-DDThh:mm:ss
+
+        A few examples:
+
+        2020-06-25
+        2020-06-25T14:00
+        2020-06-25T14:00:12
+
+        .PARAMETER _DateEnd
+        A date (and optionally a time) in the past from when you wish to end the search
+
+        NOTE: Must be more recent that _DateStart
+
+        Use the format: YYYY-MM-DDThh:mm:ss
+
+        A few examples:
+
+        2020-06-25
+        2020-06-25T15:00
+        2020-06-25T15:00:12
+
+        .PARAMETER AttachmentName
+        Find any emails with the AttachmentName specified
+
+        Only one attachment name can be specified per search
+
+        Examples:
+
+        1. Attachment Test.txt
+        2. AttachmentTest.txt
+
+        .PARAMETER MailboxesToSearch
+        The MailboxesToSearch parameter specifies the mailboxes to include. Valid values are:
+
+        A regular user mailbox. Including other types of mailboxes (for example, inactive mailboxes or Microsoft 365 guest users) is controlled by the AllowNotFoundExchangeLocationsEnabled parameter.
+
+        A distribution group or mail-enabled security group (all mailboxes that are currently members of the group).
+
+        To specify a mailbox or distribution group, use the email address. You can specify multiple values separated by commas.
+
+        The default value is All, for all mailboxes.
+
+        .PARAMETER ExceptionList
+        A list of exceptions to ALL,. the default value of MailboxesToSearch (when MailboxesToSearch is left blank, ALL is used)
+
+        This parameter specifies the mailboxes to exclude when you use the value All for the MailboxesToSearch parameter.
+
+        Valid values are:
+
+        A mailbox(es)
+
+        A distribution group(s) or mail-enabled security group (all mailboxes that are currently members of the group).
+
+        You can specify multiple values separated by commas.
+
+        .PARAMETER ExceptionFilePath
+
+        Specify a file path to a text file.
+
+        1. The file should be a text file
+        2. The file should contain a list of emailaddresses separated by commas
+
+        .EXAMPLE
+        An example
+
+        .NOTES
+        General notes
+        #>
 
     [CmdletBinding()]
     param (
         [Parameter()]
+        [string]
         $_ExchangeServer,
+
+        [Parameter()]
+        [switch]
+        $_ExchangeServerBasicAuth,
 
         [Parameter()]
         [switch]
         $_ExchangeOnline,
 
         [Parameter(Mandatory)]
+        [string]
         $RequiredSearchName,
 
         [Parameter()]
@@ -79,17 +166,24 @@ function MessageSearch {
         $__HardDelete,
 
         [Parameter()]
+        [mailaddress]
         $_From,
 
         [Parameter()]
+        [mailaddress[]]
         $_To,
 
         [Parameter()]
-        $_Subject,
+        [switch]
+        $_SubjectContainsIsCommaSeparated,
 
         [Parameter()]
-        [switch]
-        $_SubjectAllowWildcards,
+        [string]
+        $_SubjectContains,
+
+        [Parameter()]
+        [string]
+        $_SubjectDoesNotContain,
 
         [Parameter()]
         [datetime]
@@ -100,64 +194,69 @@ function MessageSearch {
         $_DateEnd = ([datetime]::Now),
 
         [Parameter()]
+        [string]
         $AttachmentName,
 
         [Parameter()]
+        [string]
         $MailboxesToSearch = 'ALL',
 
         [Parameter()]
+        [mailaddress[]]
         $ExceptionList,
 
         [Parameter()]
+        [string]
         [ValidateScript( { Test-Path $_ })]
-        $ExceptionFile
+        $ExceptionFilePath
     )
-
-    $Script:DeleteSplat = @{ }
+    $Script:HardOrSoft = $null
     if ($__HardDelete -and $_ExchangeOnline) { $Script:HardOrSoft = 'HardDelete' }
     else { $Script:HardOrSoft = 'SoftDelete' }
-
 
     $Splat = @{ }
     $Splat['Name'] = $RequiredSearchName
 
     $Query = [System.Collections.Generic.List[string]]::New()
 
-    if ($_From ) { $Query.Add('From:{0}' -f $_From) }
-    if ($_To ) { $Query.Add('To:{0}' -f $_To) }
-    if ($_Subject) {
-        if ($_SubjectAllowWildcards) { $Query.Add('Subject:{0}' -f $_Subject) }
-        else { $Query.Add('Subject:''{0}''' -f $_Subject) }
+    if ($_From ) { $Query.Add('From:"{0}"' -f $_From) }
+    if ($_To ) { (@($_To) -ne '') | foreach-object { $Query.Add('To:"{0}"' -f $_) } }
+    if ($_SubjectContains) {
+        if ($_SubjectContainsIsCommaSeparated) { (@($_SubjectContains) -ne '').split(',') | foreach-object { $Query.Add('Subject:"{0}"' -f $_) } }
+        else { $Query.Add('Subject:"{0}"' -f $_SubjectContains) }
     }
+    if ($_SubjectDoesNotContain) { (@($_SubjectDoesNotContain) -ne '').split(',') | foreach-object { $Query.Add('-Subject:"{0}"' -f $_) } }
     if ($_DateStart) { $Query.Add(('Received:{0}..{1}' -f $_DateStart.ToUniversalTime().ToString("O") , $_DateEnd.ToUniversalTime().ToString("O"))) }
-    if ($AttachmentName) { $Query.Add('Attachment={0}' -f $AttachmentName) }
+    if ($AttachmentName) { $Query.Add('Attachment:"{0}"' -f $AttachmentName) }
 
     if ($Query) {
         $KQL = '({0})' -f (@($Query) -join ') AND (')
         $Splat['ContentMatchQuery'] = $KQL
     }
-    if ($MailboxesToSearch -eq 'ALL' -and ($ExceptionList -or $ExceptionFile)) {
-        if ($ExceptionFile -or ($ExceptionList -and $ExceptionFile)) {
-            $Exceptions = (Get-Content $ExceptionFile).split(',')
+    if ($MailboxesToSearch -eq 'ALL' -and ($ExceptionList -or $ExceptionFilePath)) {
+        if ($ExceptionFilePath -or ($ExceptionList -and $ExceptionFilePath)) {
+            $Exceptions = (Get-Content $ExceptionFilePath).split(',')
         }
         else { $Exceptions = $ExceptionList }
         $Splat['ExchangeLocationExclusion'] = $Exceptions
         $Splat['ExchangeLocation'] = 'ALL'
     }
     else { $Splat['ExchangeLocation'] = $MailboxesToSearch }
-    $Sesh = Get-PSSession
-    if ($_ExchangeServer -and ($Sesh.State -match 'Broken|Disconnected|Closed' -or (-not (Get-Command Get-ComplianceSearch)) -or
-            $Sesh.Count -gt 1 -or $Sesh.ComputerName -match 'ps.compliance.protection.outlook.com' -and
+
+    $Session = Get-PSSession
+    if ($_ExchangeServer -and ($Session.State -match 'Broken|Disconnected|Closed' -or (-not (Get-Command Get-ComplianceSearch)) -or
+            $Session.Count -gt 1 -or $Session.ComputerName -match 'ps.compliance.protection.outlook.com' -and
             (Get-PSSession -Name $_ExchangeServer).State -ne 'Opened')) {
         Get-PSSession | Remove-PSSession
-        Connect-OnPremExchange -Server $_ExchangeServer
+        Connect-OnPremExchange -Server $_ExchangeServer -Basic:$_ExchangeServerBasicAuth
     }
-    elseif ($_ExchangeOnline -and ($Sesh.State -match 'Broken|Disconnected|Closed' -or (-not (Get-Command 'Get-ComplianceSearch' -ErrorAction SilentlyContinue) -or
-                $Sesh.Count -gt 1 -or $Sesh.ComputerName -notmatch 'ps.compliance.protection.outlook.com'))) {
+    elseif ($_ExchangeOnline -and ($Session.State -match 'Broken|Disconnected|Closed' -or (-not (Get-Command 'Get-ComplianceSearch' -ErrorAction SilentlyContinue) -or
+                $Session.Count -gt 1 -or $Session.ComputerName -notmatch 'ps.compliance.protection.outlook.com'))) {
         Get-PSSession | Remove-PSSession
         Connect-ExchangeOnline -ConnectionUri 'https://ps.compliance.protection.outlook.com/powershell-liveid' -ShowBanner:$false
         Write-Host "You have successfully connected to Security & Compliance Center" -foregroundcolor "magenta" -backgroundcolor "white"
     }
     if (-not $_ExchangeServer -and -not $_ExchangeOnline) { return }
+
     $Splat
 }

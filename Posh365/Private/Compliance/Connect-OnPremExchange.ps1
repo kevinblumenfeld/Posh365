@@ -1,15 +1,33 @@
 function Connect-OnPremExchange {
     [CmdletBinding()]
     param (
+        [Parameter(Mandatory)]
+        [string]
+        $Server,
+
         [Parameter()]
-        $Server
+        [switch]
+        $Basic
     )
-    $SessionSplat = @{
-        Name              = $Server
-        ConfigurationName = 'Microsoft.Exchange'
-        ConnectionUri     = 'http://{0}/PowerShell/' -f $Server
-        Authentication    = 'Kerberos'
-        Credential        = $Credential
+    [System.Management.Automation.PSCredential]$Credential = Get-Credential -Message 'Enter on-premises Exchange username and password'
+    if (-not $Basic) {
+        $SessionSplat = @{
+            Name              = "OnPremExchange"
+            ConfigurationName = 'Microsoft.Exchange'
+            ConnectionUri     = 'http://{0}/PowerShell/' -f $Server
+            Authentication    = 'Kerberos'
+            Credential        = $Credential
+        }
+    }
+    else {
+        $SessionSplat = @{
+            Name              = "OnPremExchange"
+            ConfigurationName = 'Microsoft.Exchange'
+            ConnectionUri     = 'http://{0}/PowerShell/' -f $Server
+            Authentication    = 'Basic'
+            Credential        = $Credential
+            AllowRedirection  = $true
+        }
     }
     write-host "Server: $Server" -ForegroundColor Yellow
     $Session = New-PSSession @SessionSplat
