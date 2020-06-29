@@ -20,7 +20,9 @@ function MessageSearch {
         .PARAMETER RequiredSearchName
         A unique name for your organization.
 
-        Feel free to use spaces, and dates for uniqueness
+        Feel free to use spaces, and dates for uniqueness.
+
+        Commas cannot be used in the name
 
         .PARAMETER __HardDelete
         Parameter description
@@ -46,6 +48,25 @@ function MessageSearch {
         - The search will find email with Jane and Joe
         - The search will find email with Jane, Joe, and Pat
 
+        .PARAMETER _SubjectContains
+        The search will only find email with this subject
+
+        Use the checkbox "SubjectContainsIsCommaSeparated" to specify a
+            list of words (comma separated), all of which must be found in the emails subject
+
+        Always use quotes around your search with commas
+
+        Example:
+
+        1. Apple
+        2. "Apple, Pear, Kiwi"
+
+        If not using SubjectContainsIsCommaSeparated checkbox, the search
+            will look for the entire string
+
+        If using SubjectContainsIsCommaSeparated checkgbox, the search
+            will look for each word in the comma separated list of words. Not necessarily together as a phrase.
+
         .PARAMETER _SubjectContainsIsCommaSeparated
         Check this checkbox to look for more than one word in the subject
 
@@ -64,11 +85,8 @@ function MessageSearch {
 
             The Apple, Pear and Banana
 
-        .PARAMETER _SubjectContains
-        Parameter description
-
         .PARAMETER _SubjectDoesNotContain
-        Parameter description
+        This removes from search any emails with
 
         .PARAMETER _DateStart
 
@@ -137,7 +155,10 @@ function MessageSearch {
         2. The file should contain a list of emailaddresses separated by commas
 
         .EXAMPLE
-        An example
+
+        Simply type the command
+
+        New-MessageSearch
 
         .NOTES
         General notes
@@ -182,7 +203,7 @@ function MessageSearch {
         $_SubjectContains,
 
         [Parameter()]
-        [string]
+        [string[]]
         $_SubjectDoesNotContain,
 
         [Parameter()]
@@ -220,12 +241,12 @@ function MessageSearch {
     $Query = [System.Collections.Generic.List[string]]::New()
 
     if ($_From ) { $Query.Add('From:"{0}"' -f $_From) }
-    if ($_To ) { (@($_To) -ne '') | foreach-object { $Query.Add('To:"{0}"' -f $_) } }
+    if ($_To ) { (@($_To) -ne '') | ForEach-Object { $Query.Add('To:"{0}"' -f $_) } }
     if ($_SubjectContains) {
         if ($_SubjectContainsIsCommaSeparated) { (@($_SubjectContains) -ne '').split(',') | foreach-object { $Query.Add('Subject:"{0}"' -f $_) } }
         else { $Query.Add('Subject:"{0}"' -f $_SubjectContains) }
     }
-    if ($_SubjectDoesNotContain) { (@($_SubjectDoesNotContain) -ne '').split(',') | foreach-object { $Query.Add('-Subject:"{0}"' -f $_) } }
+    if ($_SubjectDoesNotContain) { (@($_SubjectDoesNotContain) -ne '') | ForEach-Object { $Query.Add('-Subject:"{0}"' -f $_) } }
     if ($_DateStart) { $Query.Add(('Received:{0}..{1}' -f $_DateStart.ToUniversalTime().ToString("O") , $_DateEnd.ToUniversalTime().ToString("O"))) }
     if ($AttachmentName) { $Query.Add('Attachment:"{0}"' -f $AttachmentName) }
 
