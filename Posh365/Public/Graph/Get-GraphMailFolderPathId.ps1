@@ -36,14 +36,14 @@ function Get-GraphMailFolderPathId {
 
     )
     begin {
-
+        Connect-PoshGraph -Tenant $Tenant
     }
     process {
         foreach ($CurUser in $User) {
-            $Token = Connect-PoshGraph -Tenant $Tenant
-            $DisplayName = $CurUser.DisplayName
-            $UPN = $CurUser.UserPrincipalName
-            $Mail = $CurUser.Mail
+            # $Token = Connect-PoshGraph -Tenant $Tenant
+            # $DisplayName = $CurUser.DisplayName
+            # $UPN = $CurUser.UserPrincipalName
+            # $Mail = $CurUser.Mail
             $Id = $CurUser.Id
 
             $FolderArray = $FolderPath.Split("\")
@@ -57,18 +57,14 @@ function Get-GraphMailFolderPathId {
                 Method  = 'Get'
             }
             for ($i = 1; $i -lt $FolderArray.Length; $i++) {
-                $Token = Connect-PoshGraph -Tenant $Tenant
                 $FolderName = $FolderArray[$i]
-                $Headers = @{
-                    "Authorization" = "Bearer $Token"
-                }
                 $Response = Invoke-RestMethod @RestSplat -Verbose:$false -ErrorAction Stop
                 $Folder = $Response.value
                 $SubFolder = $Folder.where{$_.displayname -eq $FolderName}
                 $FolderId = $SubFolder.Id.ToString()
                 $RestSplat = @{
                     Uri     = "https://graph.microsoft.com/beta/users/{0}/mailFolders('{1}')/childFolders" -f $Id, $FolderId
-                    Headers = $Headers
+                    Headers =  @{ "Authorization" = "Bearer $Token" }
                     Method  = 'Get'
                 }
             }

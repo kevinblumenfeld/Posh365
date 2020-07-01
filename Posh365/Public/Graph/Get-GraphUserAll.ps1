@@ -8,11 +8,11 @@ function Get-GraphUserAll {
 
     Connect-PoshGraph -Tenant $Tenant
 
-    Write-host "$Token" -ForegroundColor Green
     $Headers = @{ "Authorization" = "Bearer $Token" }
     $RestSplat = @{
-        Uri     = 'https://graph.microsoft.com/beta/users?$filter=userType eq ''Member'''
-        #Uri     = 'https://graph.microsoft.com/beta/users?$filter=endswith(mail,''kevdev.onmicrosoft.com'')'
+        # Uri     = 'https://graph.microsoft.com/beta/users?$filter=userType eq ''Member'''
+        # Uri     = 'https://graph.microsoft.com/beta/users?$filter=endswith(mail,''kevdev.onmicrosoft.com'')'
+        Uri     = 'https://graph.microsoft.com/beta/users'
         Headers = $Headers
         Method  = 'Get'
     }
@@ -27,18 +27,8 @@ function Get-GraphUserAll {
                 Headers = @{ "Authorization" = "Bearer $Token" }
                 Method  = 'Get'
             }
-            foreach ($User in $Response.value) {
-                $User | Select *
-                # [PSCustomObject]@{
-                #     DisplayName       = $User.DisplayName
-                #     UserPrincipalName = $User.UserPrincipalName
-                #     Mail              = $User.Mail
-                #     Id                = $User.Id
-                # }
-            }
+            foreach ($User in $Response.value) { $User }
         }
-        catch {
-            Write-Host "$User - $($_.Exception.Message)" -ForegroundColor Red
-        }
+        catch { Write-Host "$User - $($_.Exception.Message)" -ForegroundColor Red }
     } until (-not $next)
 }

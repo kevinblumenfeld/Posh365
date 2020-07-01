@@ -10,26 +10,26 @@ function Remove-GraphMailMessage {
 
     )
     begin {
-
+        Connect-PoshGraph -Tenant $Tenant
     }
     process {
         foreach ($ID in $IDList) {
-            $Token = Connect-PoshGraph -Tenant $Tenant
-
-            $Headers = @{
-                "Authorization" = "Bearer $Token"
-            }
             write-host "ID: $($id.id)"
+            # $RestSplat = @{
+            #     Uri     = "https://graph.microsoft.com/beta/users/{0}/mailFolders/{1}/messages/{2}" -f 'Test100@kevdev.onmicrosoft.com', 'AAMkADRiN2I3NzQ5LTkzY2MtNDZjYS1iOGFkLTM4ZDQ0OGRmMDEyNgAuAAAAAADEIUNUZOaBRJPcTFR7_2l1AQAMb3L1MNkzQpQjdg15ILh9AAAAAAEKAAA=', $id.id
+            #     Headers = @{ "Authorization" = "Bearer $Token" }
+            #     Method  = 'DELETE'
+            # }
             $RestSplat = @{
-                Uri     = "https://graph.microsoft.com/beta/users/{0}/mailFolders/{1}/messages/{2}" -f 'Test100@kevdev.onmicrosoft.com', 'AAMkADRiN2I3NzQ5LTkzY2MtNDZjYS1iOGFkLTM4ZDQ0OGRmMDEyNgAuAAAAAADEIUNUZOaBRJPcTFR7_2l1AQAMb3L1MNkzQpQjdg15ILh9AAAAAAEKAAA=', $id.id
-                Headers = $Headers
-                Method  = 'DELETE'
+                Uri     = "https://graph.microsoft.com/beta/users/{0}/mailFolders/{1}/messages/{2}" -f $Id.UserPrincipalName, $Id.ParentFolderId, $Id.Id
+                Headers = @{ "Authorization" = "Bearer $Token" }
+                Method  = 'Delete'
             }
-            $Response = Invoke-RestMethod @RestSplat -Verbose:$false
-            $Mail = $Response.value
-            foreach ($CurMail in $Mail) {
+            Invoke-RestMethod @RestSplat -Verbose:$false
+            # $Mail = $Response.value
+            # foreach ($CurMail in $Mail) {
 
-                $CurMail| Select-Object *
+            #     $CurMail | Select-Object *
                 # [PSCustomObject]@{
                 #     'Mailbox'                 = $UPN
                 #     'FolderName'              = $FolderName
@@ -53,11 +53,7 @@ function Remove-GraphMailMessage {
                 #     'webLink'                 = $CurMail.webLink
 
                 # }
-            }
+            # }
         }
     }
-    end {
-
-    }
-
 }

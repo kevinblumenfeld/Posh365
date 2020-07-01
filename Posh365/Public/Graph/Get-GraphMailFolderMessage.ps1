@@ -7,54 +7,45 @@ function Get-GraphMailFolderMessage {
         $Tenant,
 
         [Parameter(Mandatory)]
-        [ValidateSet('archive', 'clutter', 'conflicts', 'conversationhistory', 'deleteditems', 'drafts', 'inbox', 'junkemail', 'localfailures', 'msgfolderroot', 'outbox', 'recoverableitemsdeletions', 'scheduled', 'searchfolders', 'sentitems', 'serverfailures', 'syncissues')]
+        [ValidateSet('archive', 'clutter', 'conflicts', 'conversationhistory', 'DeletedItems', 'drafts', 'Inbox', 'junkemail', 'localfailures', 'msgfolderroot', 'outbox', 'recoverableitemsdeletions', 'scheduled', 'searchfolders', 'sentitems', 'serverfailures', 'syncissues')]
         $WellKnownFolder,
 
         [Parameter(ValueFromPipeline)]
-        $UserList
+        $MailboxList
 
     )
     process {
-        foreach ($User in $UserList) {
-            ($Token = Connect-PoshGraph -Tenant $Tenant).access_token
-            $Headers = @{ "Authorization" = "Bearer $Token" }
+        foreach ($Mailbox in $MailboxList) {
+            Connect-PoshGraph -Tenant $Tenant
             $RestSplat = @{
-                Uri     = "https://graph.microsoft.com/beta/users/{0}/mailFolders('{1}')/messages" -f $User.UserPrincipalName, $WellKnownFolder
-                Headers = $Headers
+                Uri     = "https://graph.microsoft.com/beta/users/{0}/mailFolders('{1}')/messages" -f $Mailbox.UserPrincipalName, $WellKnownFolder
+                Headers = @{ "Authorization" = "Bearer $Token" }
                 Method  = 'Get'
             }
-            Invoke-RestMethod @RestSplat -Verbose:$false
-
             do {
-                ($Token = Connect-PoshGraph -Tenant $Tenant).access_token
                 try {
-                    $Response = Invoke-RestMethod @RestSplat -Verbose:$false -ErrorAction Stop
-                    if ($Response.'@odata.nextLink' -match 'skip') { $Next = $Response.'@odata.nextLink' }
+                    $MessageList = Invoke-RestMethod @RestSplat -Verbose:$false
+                    if ($MessageList.'@odata.nextLink' -match 'skip') { $Next = $MessageList.'@odata.nextLink' }
                     else { $Next = $null }
-                    $Headers = @{ "Authorization" = "Bearer $Token" }
 
                     $RestSplat = @{
                         Uri     = $Next
-                        Headers = $Headers
+                        Headers = @{ "Authorization" = "Bearer $Token" }
                         Method  = 'Get'
                     }
-                    foreach ($Response in $Response.Value) {
+                    foreach ($Message in $MessageList.Value) {
                         [PSCustomObject]@{
-                            DisplayName       = $User.DisplayName
-                            UserPrincipalName = $User.UserPrincipalName
-                            Mail              = $User.
-                            Id                = $Id
-                            FolderName        = $Response.DisplayName
-                            wellKnownName     = $Response.wellKnownName
-                            FolderId          = $Response.Id
-                            ParentFolderId    = $Response.parentFolderId
-                            nextLink          = $Response.'@odata.nextLink'
+                            DisplayName       = $Mailbox.DisplayName
+                            UserPrincipalName = $Mailbox.UserPrincipalName
+                            Mail              = $Mailbox.Mail
+                            Subject           = $Message.Subject
+                            BodyPreview       = $Message.BodyPreview
+                            Id                = $Message.Id
+                            ParentFolderId    = $Message.parentFolderId
                         }
                     }
                 }
-                catch {
-                    Write-Host "$User - $($_.Exception.Message)" -ForegroundColor Red
-                }
+                catch { Write-Host "$Mailbox - $($_.Exception.Message)" -ForegroundColor Red }
             } until (-not $next)
         }
     }

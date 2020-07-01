@@ -10,42 +10,18 @@ function Get-GraphUser {
         $UserPrincipalName
     )
     begin {
-        if (-not $UserPrincipalName) {
-            $UserPrincipalName = (Get-GraphUserAll -Tenant $Tenant).Id
-        }
+        Connect-PoshGraph -Tenant $Tenant
+        if (-not $UserPrincipalName) { $UserPrincipalName = (Get-GraphUserAll -Tenant $Tenant).Id }
     }
     process {
-        foreach ($CurUserPrincipalName in $UserPrincipalName) {
-            ($Token = Connect-PoshGraph -Tenant $Tenant).access_token
-            $Headers = @{
-                "Authorization" = "Bearer $Token"
-            }
+        foreach ($UPN in $UserPrincipalName) {
             $RestSplat = @{
-                Uri     = 'https://graph.microsoft.com/beta/users/{0}' -f $CurUserPrincipalName
-                Headers = $Headers
+                Uri     = 'https://graph.microsoft.com/beta/users/{0}' -f $UPN
+                Headers = @{ "Authorization" = "Bearer $Token" }
                 Method  = 'Get'
             }
-            try {
-                $User = Invoke-RestMethod @RestSplat -Verbose:$false -ErrorAction Stop
-                foreach ($CurUser in $User) {
-                    $CurUser | Select *
-                    # [PSCustomObject]@{
-                    #     DisplayName       = $CurUser.DisplayName
-                    #     UserPrincipalName = $CurUser.UserPrincipalName
-                    #     Mail              = $CurUser.Mail
-                    #     Id                = $CurUser.Id
-                    #     OU                = $CurUser.onPremisesDistinguishedName -replace '^.+?,(?=(OU|CN)=)'
-                    #     proxyAddresses    = ($CurUser.proxyAddresses | Where-Object {$_ -ne $null}) -join ";"
-                    # }
-                }
-            }
-            catch {
-                Write-Host "$User - $($_.Exception.Message)" -ForegroundColor Red
-            }
+            try { Invoke-RestMethod @RestSplat -Verbose:$false -ErrorAction Stop }
+            catch { Write-Host "$User - $($_.Exception.Message)" -ForegroundColor Red }
         }
     }
-    end {
-
-    }
-
 }

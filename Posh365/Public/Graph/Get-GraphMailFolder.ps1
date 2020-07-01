@@ -10,24 +10,22 @@ function Get-GraphMailFolder {
         $WellKnownFolder,
 
         [Parameter(ValueFromPipeline)]
-        $User
+        $MailboxList
 
     )
     begin {
-
+        Connect-PoshGraph -Tenant $Tenant
     }
     process {
-        foreach ($CurUser in $User) {
-            $Token = Connect-PoshGraph -Tenant $Tenant
-            $UPN = $CurUser.UserPrincipalName
-            $Headers = @{ "Authorization" = "Bearer $Token" }
-            $RestSplat = @{
-                Uri     = "https://graph.microsoft.com/beta/users/{0}/mailFolders('{1}')/messages" -f $UPN, 'deleteditems'
-                # Uri     = "https://graph.microsoft.com/beta/users/{0}/mailFolders" -f $UPN
-                Headers = $Headers
-                Method  = 'Get'
-            }
-            Invoke-RestMethod @RestSplat -Verbose:$false
+        foreach ($Mailbox in $MailboxList) {
+            Write-Host "Mailbox: $($Mailbox.UserPrincipalName)" -ForegroundColor Green
+            # $RestSplat = @{
+            #     # Uri     = "https://graph.microsoft.com/beta/users/{0}/mailFolders('{1}')/messages" -f $UPN, 'deleteditems'
+            #     Uri     = 'https://graph.microsoft.com/beta/users/{0}/mailFolders' -f $Mailbox.UserPrincipalName
+            #     Headers = @{ "Authorization" = "Bearer $Token" }
+            #     Method  = 'Get'
+            # }
+
             # $RestSplat = @{
             #     Uri     = 'https://graph.microsoft.com/beta/users/{0}/mailFolders' -f $Id
             #     Headers = $Headers
@@ -43,6 +41,14 @@ function Get-GraphMailFolder {
             #     Headers = $Headers
             #     Method  = 'Get'
             # }
+
+            $RestSplat = @{
+                Uri     = 'https://graph.microsoft.com/beta/users/{0}/mailFolders/msgfolderroot/childFolders' -f $Mailbox.UserPrincipalName
+                Headers = @{ "Authorization" = "Bearer $Token" }
+                Method  = 'Get'
+            }
+            $Response = Invoke-RestMethod @RestSplat -Verbose:$true
+            $Response.value
 
             # do {
             #     $Token = Connect-PoshGraph -Tenant $Tenant
@@ -92,8 +98,4 @@ function Get-GraphMailFolder {
             # } until (-not $next)
         }
     }
-    end {
-
-    }
-
 }
