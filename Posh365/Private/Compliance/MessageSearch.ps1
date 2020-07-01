@@ -1,5 +1,5 @@
 function MessageSearch {
-        <#
+    <#
         .SYNOPSIS
         Search for content with Micrsoft's compliance search and optionally delete said content
 
@@ -195,6 +195,10 @@ function MessageSearch {
         $_To,
 
         [Parameter()]
+        [mailaddress[]]
+        $_CC,
+
+        [Parameter()]
         [switch]
         $_SubjectContainsIsCommaSeparated,
 
@@ -219,8 +223,8 @@ function MessageSearch {
         $AttachmentName,
 
         [Parameter()]
-        [string]
-        $MailboxesToSearch = 'ALL',
+        [mailaddress[]]
+        $MailboxesToSearch,
 
         [Parameter()]
         [mailaddress[]]
@@ -241,6 +245,7 @@ function MessageSearch {
     $Query = [System.Collections.Generic.List[string]]::New()
 
     if ($_From ) { $Query.Add('From:"{0}"' -f $_From) }
+    if ($_CC ) { (@($_CC) -ne '') | ForEach-Object { $Query.Add('CC:"{0}"' -f $_) } }
     if ($_To ) { (@($_To) -ne '') | ForEach-Object { $Query.Add('To:"{0}"' -f $_) } }
     if ($_SubjectContains) {
         if ($_SubjectContainsIsCommaSeparated) { (@($_SubjectContains) -ne '').split(',') | foreach-object { $Query.Add('Subject:"{0}"' -f $_) } }
@@ -254,15 +259,15 @@ function MessageSearch {
         $KQL = '({0})' -f (@($Query) -join ') AND (')
         $Splat['ContentMatchQuery'] = $KQL
     }
-    if ($MailboxesToSearch -eq 'ALL' -and ($ExceptionList -or $ExceptionFilePath)) {
+    if (-not $MailboxesToSearch) { $Splat['ExchangeLocation'] = 'ALL' }
+    if (-not $MailboxesToSearch -and ($ExceptionList -or $ExceptionFilePath)) {
         if ($ExceptionFilePath -or ($ExceptionList -and $ExceptionFilePath)) {
             $Exceptions = (Get-Content $ExceptionFilePath).split(',')
         }
         else { $Exceptions = $ExceptionList }
         $Splat['ExchangeLocationExclusion'] = $Exceptions
-        $Splat['ExchangeLocation'] = 'ALL'
     }
-    else { $Splat['ExchangeLocation'] = $MailboxesToSearch }
+    elseif ($MailboxesToSearch) { $Splat['ExchangeLocation'] = $MailboxesToSearch }
 
     $Session = Get-PSSession
     if ($_ExchangeServer -and ($Session.State -match 'Broken|Disconnected|Closed' -or (-not (Get-Command Get-ComplianceSearch)) -or

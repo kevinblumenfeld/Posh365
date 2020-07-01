@@ -2,60 +2,43 @@ function Get-GraphUserAll {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
-        [string] $Tenant
+        [string]
+        $Tenant
     )
-    begin {
-        $Token = Connect-PoshGraph -Tenant $Tenant
 
-        $Headers = @{
-            "Authorization" = "Bearer $Token"
-        }
-        $RestSplat = @{
-            Uri     = 'https://graph.microsoft.com/beta/users'
-            Headers = $Headers
-            Method  = 'Get'
-        }
-        do {
-            $Token = Connect-PoshGraph -Tenant $Tenant
-            try {
-                $Response = Invoke-RestMethod @RestSplat -Verbose:$false -ErrorAction Stop
-                $User = $Response.value
-                if ($Response.'@odata.nextLink' -match 'skip') {
-                    $Next = $Response.'@odata.nextLink'
-                }
-                else {
-                    $Next = $null
-                }
-                $Headers = @{
-                    "Authorization" = "Bearer $Token"
-                }
+    Connect-PoshGraph -Tenant $Tenant
 
-                $RestSplat = @{
-                    Uri     = $Next
-                    Headers = $Headers
-                    Method  = 'Get'
-                }
-                foreach ($CurUser in $User) {
-                    [PSCustomObject]@{
-                        DisplayName       = $CurUser.DisplayName
-                        UserPrincipalName = $CurUser.UserPrincipalName
-                        Mail              = $CurUser.Mail
-                        Id                = $CurUser.Id
-                    }
-                }
+    Write-host "$Token" -ForegroundColor Green
+    $Headers = @{ "Authorization" = "Bearer $Token" }
+    $RestSplat = @{
+        Uri     = 'https://graph.microsoft.com/beta/users?$filter=userType eq ''Member'''
+        #Uri     = 'https://graph.microsoft.com/beta/users?$filter=endswith(mail,''kevdev.onmicrosoft.com'')'
+        Headers = $Headers
+        Method  = 'Get'
+    }
+    do {
+        try {
+            $Response = Invoke-RestMethod @RestSplat -Verbose:$false -ErrorAction Stop
+            if ($Response.'@odata.nextLink' -match 'skip') { $Next = $Response.'@odata.nextLink' }
+            else { $Next = $null }
+
+            $RestSplat = @{
+                Uri     = $Next
+                Headers = @{ "Authorization" = "Bearer $Token" }
+                Method  = 'Get'
             }
-            catch {
-                $ErrorMessage = $_.Exception.Message
-                Write-Host $CurUser
-                Write-Host $ErrorMessage
+            foreach ($User in $Response.value) {
+                $User | Select *
+                # [PSCustomObject]@{
+                #     DisplayName       = $User.DisplayName
+                #     UserPrincipalName = $User.UserPrincipalName
+                #     Mail              = $User.Mail
+                #     Id                = $User.Id
+                # }
             }
-        } until (-not $next)
-    }
-    process {
-
-    }
-    end {
-
-    }
-
+        }
+        catch {
+            Write-Host "$User - $($_.Exception.Message)" -ForegroundColor Red
+        }
+    } until (-not $next)
 }

@@ -1,77 +1,42 @@
 function Connect-PoshGraph {
     [CmdletBinding()]
-    param(
-
-        [Parameter(Mandatory, HelpMessage = "Use either format, tenant or tenant.onmicrosoft.com")]
+    param (
+        [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [string] $Tenant,
+        [string]
+        $Tenant,
 
         [Parameter()]
-        [string] $Identifier,
-
-        [Parameter()]
-        [switch] $DeleteCreds
-
+        [switch]
+        $DeleteCreds
     )
-    if ($Tenant -notmatch ".onmicrosoft.com") {
-        $Tenant = $Tenant + ".onmicrosoft.com"
-    }
-    $host.ui.RawUI.WindowTitle = "Azure Tenant: $($Tenant.ToUpper())"
-    $RootPath = $env:USERPROFILE + "\ps\"
-    $KeyPath = $Rootpath + "creds\"
+    $TenantPath = Join-Path -Path $Env:USERPROFILE -ChildPath ('.Posh365/Credentials/Graph/{0}' -f $Tenant)
+    $TenantCred = Join-Path -Path $TenantPath -ChildPath ('{0}Cred.xml' -f $Tenant)
+    $TenantConfig = Join-Path -Path $TenantPath -ChildPath ('{0}Config.xml' -f $Tenant)
+    $TImport = Import-Clixml $TenantConfig
 
-    if ($Identifier) {
-        $TenantAndID = $Tenant + $Identifier
-    }
-    else {
-        $TenantAndID = $Tenant
-    }
+    [System.Management.Automation.PSCredential]$TConfig = $TImport.Cred
+    $TS = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($TConfig.Password)
+    $TenantSecret = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($TS)
 
+    [System.Management.Automation.PSCredential]$TCred = Import-Clixml -Path $TenantCred
+    $TP = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($TCred.Password)
+    $TPass = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($TP)
 
-    if ($DeleteCreds) {
-        Remove-Item ($KeyPath + "$($TenantAndID).AzureXml")
-        break
-    }
-    # Create KeyPath Directory
-    if (-not (Test-Path $KeyPath)) {
-        Try {
-            $null = New-Item -ItemType Directory -Path $KeyPath -ErrorAction STOP
-        }
-        Catch {
-            throw $_.Exception.Message
-        }
-    }
-    if (Test-Path ($KeyPath + "$($TenantAndID).AzureXml")) {
-        [System.Management.Automation.PSCredential]$Script:AzureCredential = Import-Clixml ($KeyPath + "$($TenantAndID).AzureXml")
-        $ClientID = $AzureCredential.GetNetworkCredential().username
-        $Secret = $AzureCredential.GetNetworkCredential().Password
-    }
-    else {
-        [System.Management.Automation.PSCredential]$Script:AzureCredential = Get-Credential -Message "Enter Application ID (client id) as Username and API Secret as Password"
-        $AzureCredential | Export-Clixml ($KeyPath + "$($TenantAndID).AzureXml")
-        $ClientID = $AzureCredential.GetNetworkCredential().username
-        $Secret = $AzureCredential.GetNetworkCredential().Password
-    }
-
-    $loginRequest = @{
-        Method = "Post"
+    $Request = @{
+        Method = 'POST'
         Body   = @{
-            'client_id'     = $ClientID
-            'client_secret' = $Secret
-            'grant_type'    = 'client_credentials'
-            'scope'         = 'https://graph.microsoft.com/.default'
-            'resource'      = 'https://graph.microsoft.com/'
+            Grant_Type    = 'PASSWORD'
+            Client_Id     = $TImport.ClientId
+            Client_Secret = $TenantSecret
+            Username      = $TCred.UserName
+            Password      = $TPass
+            Scope         = "offline_access https://graph.microsoft.com/.default"
         }
-        Uri    = "https://login.microsoftonline.com/$Tenant/oauth2/token"
+        Uri    = 'https://login.microsoftonline.com/{0}/oauth2/v2.0/token' -f $TConfig.Username
     }
-
-    try {
-        $Session = Invoke-RestMethod @loginRequest
-    }
-    catch {
-        Write-Error 'Could not get the session. incorrect app or account?'
-        throw $_
-    }
-    #$Session
-    $Session.access_token
+    $TenantResponse = Invoke-RestMethod @Request
+    $Script:TimeToRefresh = ([datetime]::UtcNow).AddSeconds($TenantResponse.expires_in - 10)
+    $Script:Token = $TenantResponse.access_token
+    $Script:RefreshToken = $TenantResponse.refresh_token
 }

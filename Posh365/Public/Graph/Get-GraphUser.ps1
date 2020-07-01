@@ -3,7 +3,8 @@ function Get-GraphUser {
     param (
 
         [Parameter(Mandatory)]
-        [string] $Tenant,
+        [string]
+        $Tenant,
 
         [Parameter(ValueFromPipeline)]
         $UserPrincipalName
@@ -15,7 +16,7 @@ function Get-GraphUser {
     }
     process {
         foreach ($CurUserPrincipalName in $UserPrincipalName) {
-            $Token = Connect-PoshGraph -Tenant $Tenant
+            ($Token = Connect-PoshGraph -Tenant $Tenant).access_token
             $Headers = @{
                 "Authorization" = "Bearer $Token"
             }
@@ -27,20 +28,19 @@ function Get-GraphUser {
             try {
                 $User = Invoke-RestMethod @RestSplat -Verbose:$false -ErrorAction Stop
                 foreach ($CurUser in $User) {
-                    [PSCustomObject]@{
-                        DisplayName       = $CurUser.DisplayName
-                        UserPrincipalName = $CurUser.UserPrincipalName
-                        Mail              = $CurUser.Mail
-                        Id                = $CurUser.Id
-                        OU                = $CurUser.onPremisesDistinguishedName -replace '^.+?,(?=(OU|CN)=)'
-                        proxyAddresses    = ($CurUser.proxyAddresses | Where-Object {$_ -ne $null}) -join ";"
-                    }
+                    $CurUser | Select *
+                    # [PSCustomObject]@{
+                    #     DisplayName       = $CurUser.DisplayName
+                    #     UserPrincipalName = $CurUser.UserPrincipalName
+                    #     Mail              = $CurUser.Mail
+                    #     Id                = $CurUser.Id
+                    #     OU                = $CurUser.onPremisesDistinguishedName -replace '^.+?,(?=(OU|CN)=)'
+                    #     proxyAddresses    = ($CurUser.proxyAddresses | Where-Object {$_ -ne $null}) -join ";"
+                    # }
                 }
             }
             catch {
-                $ErrorMessage = $_.Exception.Message
-                Write-Host $CurUserPrincipalName
-                Write-Host $ErrorMessage
+                Write-Host "$User - $($_.Exception.Message)" -ForegroundColor Red
             }
         }
     }
