@@ -1,15 +1,7 @@
-function Connect-PoshGraph {
+function Connect-PoshGraphRefresh {
     [CmdletBinding()]
-    param (
-        [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $Tenant,
+    param (    )
 
-        [Parameter()]
-        [switch]
-        $DeleteCreds
-    )
     $TenantPath = Join-Path -Path $Env:USERPROFILE -ChildPath ('.Posh365/Credentials/Graph/{0}' -f $Tenant)
     $TenantCred = Join-Path -Path $TenantPath -ChildPath ('{0}Cred.xml' -f $Tenant)
     $TenantConfig = Join-Path -Path $TenantPath -ChildPath ('{0}Config.xml' -f $Tenant)
@@ -26,18 +18,18 @@ function Connect-PoshGraph {
     $Request = @{
         Method = 'POST'
         Body   = @{
-            Grant_Type    = 'PASSWORD'
+            Grant_Type    = 'refresh_token'
             Client_Id     = $TImport.ClientId
             Client_Secret = $TenantSecret
             Username      = $TCred.UserName
             Password      = $TPass
+            refresh_token = $RefreshToken
             Scope         = "offline_access https://graph.microsoft.com/.default"
         }
         Uri    = 'https://login.microsoftonline.com/{0}/oauth2/v2.0/token' -f $TConfig.Username
     }
     $TenantResponse = Invoke-RestMethod @Request
     $Script:TimeToRefresh = ([datetime]::UtcNow).AddSeconds($TenantResponse.expires_in - 10)
-    Write-Host "Seconds: $TimeToRefresh" -ForegroundColor Yellow
+    Write-Host "Refresh: $TimeToRefresh" -ForegroundColor Green
     $Script:Token = $TenantResponse.access_token
-    $Script:RefreshToken = $TenantResponse.refresh_token
 }

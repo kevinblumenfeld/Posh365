@@ -10,11 +10,11 @@ function Get-GraphUser {
         $UserPrincipalName
     )
     begin {
-        Connect-PoshGraph -Tenant $Tenant
         if (-not $UserPrincipalName) { $UserPrincipalName = (Get-GraphUserAll -Tenant $Tenant).Id }
     }
     process {
         foreach ($UPN in $UserPrincipalName) {
+            if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
             $RestSplat = @{
                 Uri     = 'https://graph.microsoft.com/beta/users/{0}' -f $UPN
                 Headers = @{ "Authorization" = "Bearer $Token" }
