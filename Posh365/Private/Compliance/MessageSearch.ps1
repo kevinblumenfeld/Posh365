@@ -270,7 +270,7 @@ function MessageSearch {
     elseif ($MailboxesToSearch) { $Splat['ExchangeLocation'] = $MailboxesToSearch }
 
     $Session = Get-PSSession
-    if ($_ExchangeServer -and ($Session.State -match 'Broken|Disconnected|Closed' -or (-not (Get-Command Get-ComplianceSearch -SilentlyContinue)) -or
+    if ($_ExchangeServer -and ($Session.State -match 'Broken|Disconnected|Closed' -or (-not (Get-Command Get-ComplianceSearch -ErrorAction SilentlyContinue)) -or
             $Session.Count -gt 1 -or $Session.ComputerName -match 'ps.compliance.protection.outlook.com' -and
             (Get-PSSession -Name $_ExchangeServer).State -ne 'Opened')) {
         Get-PSSession | Remove-PSSession
