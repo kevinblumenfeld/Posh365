@@ -10,7 +10,6 @@ function Remove-GraphMailMessage {
 
     )
     begin {
-        Connect-PoshGraph -Tenant $Tenant
     }
     process {
         foreach ($ID in $IDList) {
