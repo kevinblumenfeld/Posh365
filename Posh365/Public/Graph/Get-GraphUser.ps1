@@ -1,16 +1,11 @@
 function Get-GraphUser {
     [CmdletBinding()]
     param (
-
-        [Parameter(Mandatory)]
-        [string]
-        $Tenant,
-
         [Parameter(ValueFromPipeline)]
         $UserPrincipalName
     )
     begin {
-        if (-not $UserPrincipalName) { $UserPrincipalName = (Get-GraphUserAll -Tenant $Tenant).Id }
+        if (-not $UserPrincipalName) { $UserPrincipalName = (Get-GraphUserAll).Id }
     }
     process {
         foreach ($UPN in $UserPrincipalName) {

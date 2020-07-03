@@ -54,6 +54,7 @@ function Get-GraphMailFolderMessage {
                 Method      = 'Get'
                 ErrorAction = 'Stop'
             }
+            $i = if ($Top) { $Top } else { 10000000 }
             do {
                 if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
                 try {
@@ -68,6 +69,7 @@ function Get-GraphMailFolderMessage {
                         ErrorAction = 'Stop'
                     }
                     foreach ($Message in $MessageList.Value) {
+                        $i -= 1
                         [PSCustomObject]@{
                             DisplayName          = $Mailbox.DisplayName
                             UserPrincipalName    = $Mailbox.UserPrincipalName
@@ -89,7 +91,8 @@ function Get-GraphMailFolderMessage {
                     }
                 }
                 catch { Write-Host "$($Mailbox.UserPrincipalName) ERROR: $($_.Exception.Message)" -ForegroundColor Red }
-            } until (-not $next)
+                # Write-Host "$i" -ForegroundColor Green
+            } until (-not $next -or $i -lt 1)
         }
     }
 }

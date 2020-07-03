@@ -1,12 +1,7 @@
 function Get-GraphUserAll {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory)]
-        [string]
-        $Tenant
     )
-    # Uri     = 'https://graph.microsoft.com/beta/users?$filter=userType eq ''Member'''
-    # Uri     = 'https://graph.microsoft.com/beta/users?$filter=endswith(mail,''kevdev.onmicrosoft.com'')'
     $RestSplat = @{
         Uri     = 'https://graph.microsoft.com/v1.0/users'
         Headers = @{ "Authorization" = "Bearer $Token" }
