@@ -42,10 +42,7 @@ function Get-GraphMailFolderMessage {
             $filterstring.Add($filter)
         }
         if ($Top) { $filterstring.Add(('`$top={0}' -f $Top)) }
-        if ($filterstring) {
-            $joined = (@($filterstring) -ne '' -join '&')
-            $Uri = '/messages?{0}' -f $joined
-        }
+        if ($filterstring) { $Uri = '/messages?{0}' -f (@($filterstring) -ne '' -join '&') }
         else { $Uri = '/messages' }
         write-Host "$URI" -ForegroundColor Cyan
     }

@@ -244,19 +244,19 @@ function MessageSearch {
 
     $Query = [System.Collections.Generic.List[string]]::New()
 
-    if ($_From ) { $Query.Add('From:''{0}''' -f $_From) }
-    if ($_CC ) { (@($_CC) -ne '') | ForEach-Object { $Query.Add('CC:''{0}''' -f $_) } }
-    if ($_To ) { (@($_To) -ne '') | ForEach-Object { $Query.Add('To:''{0}''' -f $_) } }
-    if ($_SubjectContains) {
-        if ($_SubjectContainsIsCommaSeparated) { (@($_SubjectContains) -ne '').split(',') | foreach-object { $Query.Add('Subject:''{0}''' -f $_) } }
-        else { $Query.Add('Subject:''{0}''' -f $_SubjectContains) }
+    if ( $_From ) { $Query.Add('From:''{0}''' -f $_From) }
+    if ( $_CC ) { (@($_CC) -ne '') | ForEach-Object { $Query.Add('CC:''{0}''' -f $_) } }
+    if ( $_To ) { (@($_To) -ne '') | ForEach-Object { $Query.Add('To:''{0}''' -f $_) } }
+    if ( $_SubjectContains ) {
+        if ( $_SubjectContainsIsCommaSeparated ) { (@($_SubjectContains) -ne '').split(',') | foreach-object { $Query.Add('Subject:''{0}''' -f $_) } }
+        else { $Query.Add(('Subject:''{0}''' -f $_SubjectContains)) }
     }
-    if ($_SubjectDoesNotContain) { (@($_SubjectDoesNotContain) -ne '') | ForEach-Object { $Query.Add('-Subject:''{0}''' -f $_) } }
-    if ($_DateStart) { $Query.Add(('Received:{0}..{1}' -f $_DateStart.ToUniversalTime().ToString("O") , $_DateEnd.ToUniversalTime().ToString("O"))) }
-    if ($AttachmentName) { $Query.Add('Attachment:''{0}''' -f $AttachmentName) }
+    if ( $_SubjectDoesNotContain ) { (@($_SubjectDoesNotContain) -ne '') | ForEach-Object { $Query.Add('-Subject:''{0}''' -f $_) } }
+    if ( $_DateStart ) { $Query.Add(('Received:{0}..{1}' -f $_DateStart.ToUniversalTime().ToString("O") , $_DateEnd.ToUniversalTime().ToString("O"))) }
+    if ( $AttachmentName ) { $Query.Add('Attachment:''{0}''' -f $AttachmentName) }
 
-    if ($Query) {
-        $KQL = '''({0})''' -f (@($Query) -join ') AND (')
+    if ( $Query ) {
+        $KQL = '({0})' -f (@($Query) -join ') AND (')
         $Splat['ContentMatchQuery'] = $KQL
     }
     if (-not $MailboxesToSearch) { $Splat['ExchangeLocation'] = 'ALL' }
