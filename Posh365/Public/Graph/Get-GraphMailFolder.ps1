@@ -1,6 +1,9 @@
 function Get-GraphMailFolder {
     [CmdletBinding()]
     param (
+        [Parameter()]
+        [switch]
+        $Recurse,
 
         [Parameter()]
         [ValidateSet('archive', 'clutter', 'conflicts', 'conversationhistory', 'deleteditems', 'drafts', 'inbox', 'junkemail', 'localfailures', 'msgfolderroot', 'outbox', 'recoverableitemsdeletions', 'scheduled', 'searchfolders', 'sentitems', 'serverfailures', 'syncissues')]
@@ -8,15 +11,24 @@ function Get-GraphMailFolder {
 
         [Parameter(ValueFromPipeline)]
         $MailboxList
-
     )
+    begin {
+        # $filterstring = [System.Collections.Generic.List[string]]::new()
+        if ($WellKnownFolder) {
+            $Uri = "('{0}')" -f $WellKnownFolder
+        }
+        if ($recurse) {
+            $Uri = "/msgfolderroot/childFolders"
+        }
 
+    }
     process {
         foreach ($Mailbox in $MailboxList) {
             Write-Host "Mailbox: $($Mailbox.UserPrincipalName)" -ForegroundColor Green
+
             if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
             $RestSplat = @{
-                Uri     = 'https://graph.microsoft.com/beta/users/{0}/mailFolders/msgfolderroot/childFolders' -f $Mailbox.UserPrincipalName
+                Uri     = "https://graph.microsoft.com/beta/users/{0}/mailfolder{1}" -f $Mailbox.UserPrincipalName, $Uri
                 Headers = @{ "Authorization" = "Bearer $Token" }
                 Method  = 'Get'
             }
@@ -32,7 +44,7 @@ function Get-GraphMailFolder {
                         totalItemCount    = $Folder.unreaditemCount
                         wellKnownName     = $Folder.wellKnownName
                     }
-                    if ($Folder.ChildFolderCount -ge 1) {
+                    if ($Folder.ChildFolderCount -ge 1 -and $Recurse) {
                         $Folder | Get-GraphMailFolderChild -UserPrincipalName $Mailbox.UserPrincipalName
                     }
                 }
