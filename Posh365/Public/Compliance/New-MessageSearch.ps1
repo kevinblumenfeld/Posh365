@@ -10,10 +10,11 @@ function New-MessageSearch {
             return
         }
     } until ($NewCSearchSplat.count -gt 2)
-
+    $EA = $ErrorActionPreference
+    $ErrorActionPreference = 'Stop'
     try {
         $NewCS = $null
-        $NewCS = New-ComplianceSearch @NewCSearchSplat -ErrorAction Stop
+        $NewCS = New-ComplianceSearch @NewCSearchSplat
     }
     catch {
         Write-Host "New-ComplianceSearch Error: $($_.Exception.Message)" -ForegroundColor Cyan
@@ -21,7 +22,7 @@ function New-MessageSearch {
     }
     $null = Start-ComplianceSearch -Identity $NewCS.Name
 
-    $Prop = @('Name', 'Status', 'Contentmatchquery','NumBindings', 'SearchType', 'Items', 'Size')
+    $Prop = @('Name', 'Status', 'Contentmatchquery', 'NumBindings', 'SearchType', 'Items', 'Size')
     do {
         $Pass = Get-ComplianceSearch $NewCS.Name | Select-Object $Prop |
         Out-Gridview -Title "Status of Compliance Search: $($NewCS.Name) - Query: $($NewCS.ContentMatchQuery)" -PassThru
@@ -32,4 +33,5 @@ function New-MessageSearch {
         $ActionResult = Get-ComplianceSearchAction -Identity $PurgeStatus.Name | Select-Object $PropAction |
         Out-GridView -Title "Status of Action: $($PurgeStatus.Name)" -PassThru
     } until (-not $ActionResult)
+    $ErrorActionPreference = $EA
 }

@@ -30,6 +30,6 @@ function Connect-PoshGraphRefresh {
     }
     $TenantResponse = Invoke-RestMethod @Request
     $Script:TimeToRefresh = ([datetime]::UtcNow).AddSeconds($TenantResponse.expires_in - 10)
-    Write-Host "Refresh: $TimeToRefresh" -ForegroundColor Green
+    Write-Host "refresh_token_Issued: $TimeToRefresh" -ForegroundColor Green
     $Script:Token = $TenantResponse.access_token
 }

@@ -18,6 +18,10 @@ function Get-GraphMailFolderMessage {
         [datetime]
         $MessagesNewerThan,
 
+        [Parameter()]
+        [int]
+        $Top,
+
         [Parameter(ValueFromPipeline)]
         $MailboxList
 
@@ -27,36 +31,44 @@ function Get-GraphMailFolderMessage {
             Write-Host 'Choose only one date, MessagesOlderThan OR MessagesNewerThan' -ForegroundColor Red
             return
         }
+        $filterstring = [System.Collections.Generic.List[string]]::new()
+
         if ($MessagesOlderThan) {
-            $filter = "/?`$filter=ReceivedDateTime le {0}" -f $MessagesOlderThan.ToUniversalTime().ToString('O')
-            $Uri = "/messages{0}" -f $filter
+            $filter = "`$filter=ReceivedDateTime le {0}" -f $MessagesOlderThan.ToUniversalTime().ToString('O')
+            $filterstring.Add($filter)
         }
-        if ($MessagesNewerThan) {
-            $filter = "/?`$filter=ReceivedDateTime ge {0}" -f $MessagesNewerThan.ToUniversalTime().ToString('O')
-            $Uri = "/messages{0}" -f $filter
+        elseif ($MessagesNewerThan) {
+            $filter = "`$filter=ReceivedDateTime ge {0}" -f $MessagesNewerThan.ToUniversalTime().ToString('O')
+            $filterstring.Add($filter)
         }
-        else {
-            $Uri = "/messages"
+        if ($Top) { $filterstring.Add(('`$top={0}' -f $Top)) }
+        if ($filterstring) {
+            $joined = (@($filterstring) -ne '' -join '&')
+            $Uri = '/messages?{0}' -f $joined
         }
+        else { $Uri = '/messages' }
+        write-Host "$URI" -ForegroundColor Cyan
     }
     process {
         foreach ($Mailbox in $MailboxList) {
             $RestSplat = @{
-                Uri     = "https://graph.microsoft.com/beta/users/{0}/mailFolders('{1}'){2}" -f $Mailbox.UserPrincipalName, $WellKnownFolder, $Uri
-                Headers = @{ "Authorization" = "Bearer $Token" }
-                Method  = 'Get'
+                Uri         = "https://graph.microsoft.com/v1.0/users/{0}/mailFolders('{1}'){2}" -f $Mailbox.UserPrincipalName, $WellKnownFolder, $Uri
+                Headers     = @{ "Authorization" = "Bearer $Token" }
+                Method      = 'Get'
+                ErrorAction = 'Stop'
             }
             do {
-                if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh}
+                if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
                 try {
                     $MessageList = Invoke-RestMethod @RestSplat -Verbose:$false
                     if ($MessageList.'@odata.nextLink' -match 'skip') { $Next = $MessageList.'@odata.nextLink' }
                     else { $Next = $null }
 
                     $RestSplat = @{
-                        Uri     = $Next
-                        Headers = @{ "Authorization" = "Bearer $Token" }
-                        Method  = 'Get'
+                        Uri         = $Next
+                        Headers     = @{ "Authorization" = "Bearer $Token" }
+                        Method      = 'Get'
+                        ErrorAction = 'Stop'
                     }
                     foreach ($Message in $MessageList.Value) {
                         [PSCustomObject]@{
