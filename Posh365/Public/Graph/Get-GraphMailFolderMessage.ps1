@@ -1,11 +1,6 @@
 function Get-GraphMailFolderMessage {
     [CmdletBinding()]
     param (
-
-        [Parameter(Mandatory)]
-        [string]
-        $Tenant,
-
         [Parameter(Mandatory)]
         [ValidateSet('archive', 'clutter', 'conflicts', 'conversationhistory', 'DeletedItems', 'drafts', 'Inbox', 'junkemail', 'localfailures', 'msgfolderroot', 'outbox', 'recoverableitemsdeletions', 'scheduled', 'searchfolders', 'sentitems', 'serverfailures', 'syncissues')]
         $WellKnownFolder,
@@ -17,6 +12,22 @@ function Get-GraphMailFolderMessage {
         [Parameter()]
         [datetime]
         $MessagesNewerThan,
+
+        [Parameter()]
+        [string]
+        $Body,
+
+        [Parameter()]
+        [string]
+        $Subject,
+
+        [Parameter()]
+        [string]
+        $From,
+
+        [Parameter()]
+        [string]
+        $CC,
 
         [Parameter()]
         [int]
@@ -39,6 +50,18 @@ function Get-GraphMailFolderMessage {
         }
         elseif ($MessagesNewerThan) {
             $filter = "`$filter=ReceivedDateTime ge {0}" -f $MessagesNewerThan.ToUniversalTime().ToString('O')
+            $filterstring.Add($filter)
+        }
+        if ($Subject) {
+            $filter = "`$search=""Subject:{0}""" -f $Subject
+            $filterstring.Add($filter)
+        }
+        if ($From) {
+            $filter = "`$search=""From:{0}""" -f $From
+            $filterstring.Add($filter)
+        }
+        if ($CC) {
+            $filter = "`$search=""CC:{0}""" -f $CC
             $filterstring.Add($filter)
         }
         if ($Top) { $filterstring.Add(('`$top={0}' -f $Top)) }
@@ -74,24 +97,30 @@ function Get-GraphMailFolderMessage {
                             DisplayName          = $Mailbox.DisplayName
                             UserPrincipalName    = $Mailbox.UserPrincipalName
                             Mail                 = $Mailbox.Mail
-                            Sender               = $Message.Sender
-                            from                 = $Message.from
+                            SenderName           = $Message.Sender.emailaddress.name
+                            SenderAddress        = $Message.Sender.emailaddress.address
+                            FromName             = $Message.from.emailaddress.name
+                            FromAddress          = $Message.from.emailaddress.address
                             replyTo              = $Message.replyTo
-                            toRecipients         = $Message.toRecipients
+                            toRecipientsName     = $Message.toRecipients.emailaddress.name
+                            toRecipientsAddress  = $Message.toRecipients.emailaddress.name
                             Subject              = $Message.Subject
-                            Body                 = $Message.Body
                             BodyPreview          = $Message.BodyPreview
-                            Id                   = $Message.Id
-                            ParentFolderId       = $Message.parentFolderId
+                            ccRecipientsName     = $Message.ccRecipients.emailaddress.name
+                            ccRecipientsAddress  = $Message.ccRecipients.emailaddress.name
+                            bccRecipientsName    = $Message.bccRecipients.emailaddress.name
+                            bccRecipientsAddress = $Message.bccRecipients.emailaddress.name
+                            Body                 = $Message.Body.content
                             ReceivedDateTime     = $Message.ReceivedDateTime
                             sentDateTime         = $Message.sentDateTime
                             createdDateTime      = $Message.createdDateTime
                             lastModifiedDateTime = $Message.lastModifiedDateTime
+                            Id                   = $Message.Id
+                            ParentFolderId       = $Message.parentFolderId
                         }
                     }
                 }
                 catch { Write-Host "$($Mailbox.UserPrincipalName) ERROR: $($_.Exception.Message)" -ForegroundColor Red }
-                # Write-Host "$i" -ForegroundColor Green
             } until (-not $next -or $i -lt 1)
         }
     }

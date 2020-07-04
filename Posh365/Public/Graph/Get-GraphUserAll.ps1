@@ -1,9 +1,8 @@
 function Get-GraphUserAll {
     [CmdletBinding()]
-    param (
-    )
+    param ()
     $RestSplat = @{
-        Uri     = 'https://graph.microsoft.com/v1.0/users'
+        Uri     = 'https://graph.microsoft.com/beta/users'
         Headers = @{ "Authorization" = "Bearer $Token" }
         Method  = 'Get'
     }

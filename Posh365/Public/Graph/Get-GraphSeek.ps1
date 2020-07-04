@@ -1,4 +1,4 @@
-function Get-GraphUser {
+function Get-GraphSeek {
     [CmdletBinding()]
     param (
         [Parameter(ValueFromPipeline)]

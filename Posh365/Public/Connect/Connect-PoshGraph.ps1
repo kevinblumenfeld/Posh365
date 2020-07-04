@@ -13,6 +13,7 @@ function Connect-PoshGraph {
     $TenantPath = Join-Path -Path $Env:USERPROFILE -ChildPath ('.Posh365/Credentials/Graph/{0}' -f $Tenant)
     $TenantCred = Join-Path -Path $TenantPath -ChildPath ('{0}Cred.xml' -f $Tenant)
     $TenantConfig = Join-Path -Path $TenantPath -ChildPath ('{0}Config.xml' -f $Tenant)
+    if (-not (Test-Path $TenantConfig)) { Export-GraphConfig -Tenant $Tenant }
     $TImport = Import-Clixml $TenantConfig
 
     [System.Management.Automation.PSCredential]$TConfig = $TImport.Cred

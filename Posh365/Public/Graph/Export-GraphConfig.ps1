@@ -1,45 +1,13 @@
 ﻿function Export-GraphConfig {
     [CmdletBinding()]
-    <#
-    .SYNOPSIS
-    Export the source and destination ClientID, TenantID, Client Secret and Office 365 Global Admin credentials
-
-    .DESCRIPTION
-    Export the source and destination ClientID, TenantID, Client Secret and Office 365 Global Admin credentials
-
-    .PARAMETER Source
-    Friendly Name of the Source Tenant
-
-    .PARAMETER Destination
-    Friendly Name of the Destination Tenant
-
-    .EXAMPLE
-    Export-TeamsMigrationConfig -Source Contoso -Destination Fabrikam
-
-    .EXAMPLE
-    Export-TeamsMigrationConfig -Source Contoso
-
-    .EXAMPLE
-    Export-TeamsMigrationConfig -Destination Fabrikam
-
-    #>
-
     param (
-        [Parameter()]
+        [Parameter(Mandatory)]
         [string]
-        $Source,
-
-        [Parameter()]
-        [string]
-        $Destination
+        $Tenant
     )
-    if (-not $Source -and -not $Destination) {
-        Write-Host "Please choose -Source and/or -Destination parameter" -ForegroundColor Red
-        return
-    }
     Get-RSJob -State Completed | Remove-RSJob -force
-    $null = Start-RSJob -ArgumentList $Source, $Destination -ScriptBlock {
-        param($Source, $Destination)
+    $null = Start-RSJob -ArgumentList $Tenant -ScriptBlock {
+        param($Tenant)
         $PoshPath = Join-Path -Path $Env:USERPROFILE -ChildPath '.Posh365/Credentials/Graph'
         $ItemSplat = @{
             Type        = 'Directory'
@@ -47,108 +15,56 @@
             ErrorAction = 'SilentlyContinue'
         }
         if (-not (Test-Path $PoshPath)) { New-Item $PoshPath @ItemSplat }
-
-        if ($Source) {
-            $SourcePath = Join-Path -Path $PoshPath -ChildPath $Source
-            if (-not (Test-Path $SourcePath)) { $null = New-Item $SourcePath @ItemSplat }
-        }
-        if ($Destination) {
-            $DestinationPath = Join-Path -Path $PoshPath -ChildPath $Destination
-            if (-not (Test-Path $DestinationPath)) { $null = New-Item $DestinationPath @ItemSplat }
-        }
+        $TenantPath = Join-Path -Path $PoshPath -ChildPath $Tenant
+        if (-not (Test-Path $TenantPath)) { $null = New-Item $TenantPath @ItemSplat }
 
         Add-Type -AssemblyName System.Windows.Forms
         [System.Windows.Forms.Application]::EnableVisualStyles()
 
         $Form = New-Object system.Windows.Forms.Form
-        $Form.ClientSize = '800,450'
+        $Form.ClientSize = '400,450'
         $Form.text = "Microsoft Graph Credential Export Tool"
-        $Form.BackColor = "#262626"
+        $Form.BackColor = "#354CA1"
         $Form.TopMost = $true
         $Form.FormBorderStyle = "FixedDialog"
         $Form.ShowInTaskbar = $true
         $Form.StartPosition = "centerscreen"
 
-        $SourcePanel = New-Object system.Windows.Forms.Panel
-        $SourcePanel.height = 290
-        $SourcePanel.width = 388
-        $SourcePanel.location = New-Object System.Drawing.Point(5, 4)
+        $TenantPanel = New-Object system.Windows.Forms.Panel
+        $TenantPanel.height = 290
+        $TenantPanel.width = 388
+        $TenantPanel.location = New-Object System.Drawing.Point(5, 4)
 
-        $DestPanel = New-Object system.Windows.Forms.Panel
-        $DestPanel.height = 290
-        $DestPanel.width = 388
-        $DestPanel.Anchor = 'top,right'
-        $DestPanel.location = New-Object System.Drawing.Point(397, 4)
+        $TenantConfigExportBT = New-Object system.Windows.Forms.Button
+        $TenantConfigExportBT.text = "Export Tenant Config"
+        $TenantConfigExportBT.width = 375
+        $TenantConfigExportBT.height = 30
+        $TenantConfigExportBT.Anchor = 'top,right,left'
+        $TenantConfigExportBT.location = New-Object System.Drawing.Point(13, 136)
+        $TenantConfigExportBT.Font = 'Microsoft Sans Serif,10,style=Bold'
+        $TenantConfigExportBT.ForeColor = "#cecece"
+        $TenantConfigExportBT.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+        $TenantConfigExportBT.FlatAppearance.BorderColor = [System.Drawing.Color]::black
+        $TenantConfigExportBT.FlatAppearance.BorderSize = 0
+        $TenantConfigExportBT.BackColor = "#171717"
 
-        $SourceConfigExportBT = New-Object system.Windows.Forms.Button
-        $SourceConfigExportBT.text = "Export Source Config"
-        $SourceConfigExportBT.width = 375
-        $SourceConfigExportBT.height = 30
-        $SourceConfigExportBT.Anchor = 'top,right,left'
-        $SourceConfigExportBT.location = New-Object System.Drawing.Point(13, 136)
-        $SourceConfigExportBT.Font = 'Microsoft Sans Serif,10,style=Bold'
-        $SourceConfigExportBT.ForeColor = "#cecece"
-        $SourceConfigExportBT.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-        $SourceConfigExportBT.FlatAppearance.BorderColor = [System.Drawing.Color]::black
-        $SourceConfigExportBT.FlatAppearance.BorderSize = 0
-        $SourceConfigExportBT.BackColor = "#171717"
-
-        $DestConfigExportBT = New-Object system.Windows.Forms.Button
-        $DestConfigExportBT.text = "Export Destination Config"
-        $DestConfigExportBT.width = 375
-        $DestConfigExportBT.height = 30
-        $DestConfigExportBT.Anchor = 'top,right,left'
-        $DestConfigExportBT.location = New-Object System.Drawing.Point(13, 136)
-        $DestConfigExportBT.Font = 'Microsoft Sans Serif,10,style=Bold'
-        $DestConfigExportBT.ForeColor = "#cecece"
-        $DestConfigExportBT.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-        $DestConfigExportBT.FlatAppearance.BorderColor = [System.Drawing.Color]::black
-        $DestConfigExportBT.FlatAppearance.BorderSize = 0
-        $DestConfigExportBT.BackColor = "#171717"
-
-        $SourceCredsExportBT = New-Object system.Windows.Forms.Button
-        $SourceCredsExportBT.text = "Export Source Credentials"
-        $SourceCredsExportBT.width = 375
-        $SourceCredsExportBT.height = 30
-        $SourceCredsExportBT.Anchor = 'top,right,left'
-        $SourceCredsExportBT.location = New-Object System.Drawing.Point(13, 240)
-        $SourceCredsExportBT.Font = 'Microsoft Sans Serif,10,style=Bold'
-        $SourceCredsExportBT.ForeColor = "#cecece"
-        $SourceCredsExportBT.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-        $SourceCredsExportBT.FlatAppearance.BorderColor = [System.Drawing.Color]::black
-        $SourceCredsExportBT.FlatAppearance.BorderSize = 0
-        $SourceCredsExportBT.BackColor = "#171717"
-
-        $DestCredsExportBT = New-Object system.Windows.Forms.Button
-        $DestCredsExportBT.text = "Export Destination Credentials"
-        $DestCredsExportBT.width = 375
-        $DestCredsExportBT.height = 30
-        $DestCredsExportBT.Anchor = 'top,right,left'
-        $DestCredsExportBT.location = New-Object System.Drawing.Point(13, 240)
-        $DestCredsExportBT.Font = 'Microsoft Sans Serif,10,style=Bold'
-        $DestCredsExportBT.ForeColor = "#cecece"
-        $DestCredsExportBT.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-        $DestCredsExportBT.FlatAppearance.BorderColor = [System.Drawing.Color]::black
-        $DestCredsExportBT.FlatAppearance.BorderSize = 0
-        $DestCredsExportBT.BackColor = "#171717"
-
-        $FinishBT = New-Object system.Windows.Forms.Button
-        $FinishBT.text = "Finish"
-        $FinishBT.width = 360
-        $FinishBT.height = 30
-        $FinishBT.Anchor = 'top,right,left'
-        $FinishBT.location = New-Object System.Drawing.Point(220, 410)
-        $FinishBT.Font = 'Microsoft Sans Serif,10,style=Bold'
-        $FinishBT.ForeColor = "#cecece"
-        $FinishBT.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-        $FinishBT.FlatAppearance.BorderColor = [System.Drawing.Color]::black
-        $FinishBT.FlatAppearance.BorderSize = 0
-        $FinishBT.BackColor = "#171717"
+        $TenantCredsExportBT = New-Object system.Windows.Forms.Button
+        $TenantCredsExportBT.text = "Export Tenant Credentials"
+        $TenantCredsExportBT.width = 375
+        $TenantCredsExportBT.height = 30
+        $TenantCredsExportBT.Anchor = 'top,right,left'
+        $TenantCredsExportBT.location = New-Object System.Drawing.Point(13, 240)
+        $TenantCredsExportBT.Font = 'Microsoft Sans Serif,10,style=Bold'
+        $TenantCredsExportBT.ForeColor = "#cecece"
+        $TenantCredsExportBT.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+        $TenantCredsExportBT.FlatAppearance.BorderColor = [System.Drawing.Color]::black
+        $TenantCredsExportBT.FlatAppearance.BorderSize = 0
+        $TenantCredsExportBT.BackColor = "#171717"
 
         $ClientInfoTB = New-Object system.Windows.Forms.TextBox
         $ClientInfoTB.multiline = $true
-        $ClientInfoTB.width = 790
-        $ClientInfoTB.height = 100
+        $ClientInfoTB.width = 390
+        $ClientInfoTB.height = 120
         $ClientInfoTB.Anchor = 'top,right,left'
         $ClientInfoTB.location = New-Object System.Drawing.Point(5, 300)
         $ClientInfoTB.Font = 'Microsoft Sans Serif,10'
@@ -156,112 +72,61 @@
         $ClientInfoTB.ForeColor = "#5bde09"
         $ClientInfoTB.BorderStyle = "none"
 
-        $SourceLB = New-Object system.Windows.Forms.Label
-        $SourceLB.text = "Source"
-        $SourceLB.AutoSize = $true
-        $SourceLB.width = 25
-        $SourceLB.height = 10
-        $SourceLB.location = New-Object System.Drawing.Point(173, 9)
-        $SourceLB.Font = 'Microsoft Sans Serif,10,style=Bold,Underline'
-        $SourceLB.ForeColor = "#cecece"
+        $TenantLB = New-Object system.Windows.Forms.Label
+        $TenantLB.text = $Tenant
+        $TenantLB.AutoSize = $true
+        $TenantLB.width = 25
+        $TenantLB.height = 10
+        $TenantLB.location = New-Object System.Drawing.Point(173, 9)
+        $TenantLB.Font = 'Microsoft Sans Serif,14,style=Bold'
+        $TenantLB.ForeColor = "#cecece"
 
-        $DestinationLB = New-Object system.Windows.Forms.Label
-        $DestinationLB.text = "Destination"
-        $DestinationLB.AutoSize = $true
-        $DestinationLB.width = 25
-        $DestinationLB.height = 10
-        $DestinationLB.Anchor = 'top'
-        $DestinationLB.location = New-Object System.Drawing.Point(162, 7)
-        $DestinationLB.Font = 'Microsoft Sans Serif,10,style=Bold,Underline'
-        $DestinationLB.ForeColor = "#cecece"
+        $ClientIDLBTenant = New-Object system.Windows.Forms.Label
+        $ClientIDLBTenant.text = "Client ID:"
+        $ClientIDLBTenant.AutoSize = $true
+        $ClientIDLBTenant.width = 25
+        $ClientIDLBTenant.height = 10
+        $ClientIDLBTenant.location = New-Object System.Drawing.Point(13, 36)
+        $ClientIDLBTenant.Font = 'Microsoft Sans Serif,10'
+        $ClientIDLBTenant.ForeColor = "#cecece"
 
-        $ClientIDLBsource = New-Object system.Windows.Forms.Label
-        $ClientIDLBsource.text = "Client ID:"
-        $ClientIDLBsource.AutoSize = $true
-        $ClientIDLBsource.width = 25
-        $ClientIDLBsource.height = 10
-        $ClientIDLBsource.location = New-Object System.Drawing.Point(13, 36)
-        $ClientIDLBsource.Font = 'Microsoft Sans Serif,10'
-        $ClientIDLBsource.ForeColor = "#cecece"
+        $ClientIDTBTenant = New-Object system.Windows.Forms.TextBox
+        $ClientIDTBTenant.multiline = $false
+        $ClientIDTBTenant.BackColor = "#171717"
+        $ClientIDTBTenant.width = 300
+        $ClientIDTBTenant.height = 30
+        $ClientIDTBTenant.location = New-Object System.Drawing.Point(93, 36)
+        $ClientIDTBTenant.Font = 'Microsoft Sans Serif,10'
+        $ClientIDTBTenant.ForeColor = "#ffffff"
+        $ClientIDTBTenant.BorderStyle = "None"
 
-        $ClientIDLBdest = New-Object system.Windows.Forms.Label
-        $ClientIDLBdest.text = "Client ID:"
-        $ClientIDLBdest.AutoSize = $true
-        $ClientIDLBdest.width = 25
-        $ClientIDLBdest.height = 10
-        $ClientIDLBdest.location = New-Object System.Drawing.Point(13, 36)
-        $ClientIDLBdest.Font = 'Microsoft Sans Serif,10'
-        $ClientIDLBdest.ForeColor = "#cecece"
+        $TenantIDLBTenant = New-Object system.Windows.Forms.Label
+        $TenantIDLBTenant.text = "Tenant ID:"
+        $TenantIDLBTenant.AutoSize = $true
+        $TenantIDLBTenant.width = 25
+        $TenantIDLBTenant.height = 10
+        $TenantIDLBTenant.location = New-Object System.Drawing.Point(13, 72)
+        $TenantIDLBTenant.Font = 'Microsoft Sans Serif,10'
+        $TenantIDLBTenant.ForeColor = "#cecece"
 
-        $ClientIDTBsource = New-Object system.Windows.Forms.TextBox
-        $ClientIDTBsource.multiline = $false
-        $ClientIDTBsource.BackColor = "#171717"
-        $ClientIDTBsource.width = 300
-        $ClientIDTBsource.height = 30
-        $ClientIDTBsource.location = New-Object System.Drawing.Point(88, 36)
-        $ClientIDTBsource.Font = 'Microsoft Sans Serif,10'
-        $ClientIDTBsource.ForeColor = "#ffffff"
-        $ClientIDTBsource.BorderStyle = "None"
+        $TenantIDTBTenant = New-Object system.Windows.Forms.TextBox
+        $TenantIDTBTenant.multiline = $false
+        $TenantIDTBTenant.width = 294
+        $TenantIDTBTenant.height = 30
+        $TenantIDTBTenant.location = New-Object System.Drawing.Point(93, 73)
+        $TenantIDTBTenant.Font = 'Microsoft Sans Serif,10'
+        $TenantIDTBTenant.BackColor = "#171717"
+        $TenantIDTBTenant.ForeColor = "#ffffff"
+        $TenantIDTBTenant.BorderStyle = "None"
 
-        $ClientIDTBdest = New-Object system.Windows.Forms.TextBox
-        $ClientIDTBdest.multiline = $false
-        $ClientIDTBdest.width = 300
-        $ClientIDTBdest.height = 30
-        $ClientIDTBdest.Anchor = 'top'
-        $ClientIDTBdest.location = New-Object System.Drawing.Point(88, 36)
-        $ClientIDTBdest.Font = 'Microsoft Sans Serif,10'
-        $ClientIDTBdest.BackColor = "#171717"
-        $ClientIDTBdest.ForeColor = "#ffffff"
-        $ClientIDTBdest.BorderStyle = "None"
-
-        $TenantIDLBsource = New-Object system.Windows.Forms.Label
-        $TenantIDLBsource.text = "Tenant ID:"
-        $TenantIDLBsource.AutoSize = $true
-        $TenantIDLBsource.width = 25
-        $TenantIDLBsource.height = 10
-        $TenantIDLBsource.location = New-Object System.Drawing.Point(13, 72)
-        $TenantIDLBsource.Font = 'Microsoft Sans Serif,10'
-        $TenantIDLBsource.ForeColor = "#cecece"
-
-        $TenantIDLBdest = New-Object system.Windows.Forms.Label
-        $TenantIDLBdest.text = "Tenant ID:"
-        $TenantIDLBdest.AutoSize = $true
-        $TenantIDLBdest.width = 25
-        $TenantIDLBdest.height = 10
-        $TenantIDLBdest.Anchor = 'top,right'
-        $TenantIDLBdest.location = New-Object System.Drawing.Point(13, 72)
-        $TenantIDLBdest.Font = 'Microsoft Sans Serif,10'
-        $TenantIDLBdest.ForeColor = "#cecece"
-
-        $TenantIDTBsource = New-Object system.Windows.Forms.TextBox
-        $TenantIDTBsource.multiline = $false
-        $TenantIDTBsource.width = 294
-        $TenantIDTBsource.height = 30
-        $TenantIDTBsource.location = New-Object System.Drawing.Point(93, 73)
-        $TenantIDTBsource.Font = 'Microsoft Sans Serif,10'
-        $TenantIDTBsource.BackColor = "#171717"
-        $TenantIDTBsource.ForeColor = "#ffffff"
-        $TenantIDTBsource.BorderStyle = "None"
-
-        $TenantIDTBdest = New-Object system.Windows.Forms.TextBox
-        $TenantIDTBdest.multiline = $false
-        $TenantIDTBdest.width = 294
-        $TenantIDTBdest.height = 30
-        $TenantIDTBdest.Anchor = 'top'
-        $TenantIDTBdest.location = New-Object System.Drawing.Point(93, 73)
-        $TenantIDTBdest.Font = 'Microsoft Sans Serif,10'
-        $TenantIDTBdest.BackColor = "#171717"
-        $TenantIDTBdest.ForeColor = "#ffffff"
-        $TenantIDTBdest.BorderStyle = "None"
-
-        $ClientSecLBsource = New-Object system.Windows.Forms.Label
-        $ClientSecLBsource.text = "Client Secret:"
-        $ClientSecLBsource.AutoSize = $true
-        $ClientSecLBsource.width = 25
-        $ClientSecLBsource.height = 10
-        $ClientSecLBsource.location = New-Object System.Drawing.Point(13, 105)
-        $ClientSecLBsource.Font = 'Microsoft Sans Serif,10'
-        $ClientSecLBsource.ForeColor = "#cecece"
+        $ClientSecLBTenant = New-Object system.Windows.Forms.Label
+        $ClientSecLBTenant.text = "Secret:"
+        $ClientSecLBTenant.AutoSize = $true
+        $ClientSecLBTenant.width = 25
+        $ClientSecLBTenant.height = 10
+        $ClientSecLBTenant.location = New-Object System.Drawing.Point(13, 105)
+        $ClientSecLBTenant.Font = 'Microsoft Sans Serif,10'
+        $ClientSecLBTenant.ForeColor = "#cecece"
 
         $ClientSecLBdest = New-Object system.Windows.Forms.Label
         $ClientSecLBdest.text = "Client Secret:"
@@ -273,16 +138,16 @@
         $ClientSecLBdest.Font = 'Microsoft Sans Serif,10'
         $ClientSecLBdest.ForeColor = "#cecece"
 
-        $ClientSecTBsource = New-Object system.Windows.Forms.MaskedTextBox
-        $ClientsecTBsource.PasswordChar = '*'
-        $ClientSecTBsource.multiline = $false
-        $ClientSecTBsource.width = 276
-        $ClientSecTBsource.height = 30
-        $ClientSecTBsource.location = New-Object System.Drawing.Point(110, 107)
-        $ClientSecTBsource.Font = 'Microsoft Sans Serif,10'
-        $ClientSecTBsource.BackColor = "#171717"
-        $ClientSecTBsource.ForeColor = "#ffffff"
-        $ClientSecTBsource.BorderStyle = "None"
+        $ClientSecTBTenant = New-Object system.Windows.Forms.MaskedTextBox
+        $ClientsecTBTenant.PasswordChar = '*'
+        $ClientSecTBTenant.multiline = $false
+        $ClientSecTBTenant.width = 276
+        $ClientSecTBTenant.height = 30
+        $ClientSecTBTenant.location = New-Object System.Drawing.Point(93, 107)
+        $ClientSecTBTenant.Font = 'Microsoft Sans Serif,10'
+        $ClientSecTBTenant.BackColor = "#171717"
+        $ClientSecTBTenant.ForeColor = "#ffffff"
+        $ClientSecTBTenant.BorderStyle = "None"
 
         $ClientSecTBdest = New-Object system.Windows.Forms.MaskedTextBox
         $ClientsecTBdest.PasswordChar = '*'
@@ -290,40 +155,30 @@
         $ClientSecTBdest.width = 276
         $ClientSecTBdest.height = 30
         $ClientSecTBdest.Anchor = 'top'
-        $ClientSecTBdest.location = New-Object System.Drawing.Point(110, 107)
+        $ClientSecTBdest.location = New-Object System.Drawing.Point(93, 107)
         $ClientSecTBdest.Font = 'Microsoft Sans Serif,10'
         $ClientSecTBdest.BackColor = "#171717"
         $ClientSecTBdest.ForeColor = "#ffffff"
         $ClientSecTBdest.BorderStyle = "None"
 
-        $UsernameLBsource = New-Object system.Windows.Forms.Label
-        $UsernameLBsource.text = "Username:"
-        $UsernameLBsource.AutoSize = $true
-        $UsernameLBsource.width = 25
-        $UsernameLBsource.height = 10
-        $UsernameLBsource.location = New-Object System.Drawing.Point(13, 180)
-        $UsernameLBsource.Font = 'Microsoft Sans Serif,10'
-        $UsernameLBsource.ForeColor = "#cecece"
+        $UsernameLBTenant = New-Object system.Windows.Forms.Label
+        $UsernameLBTenant.text = "Username:"
+        $UsernameLBTenant.AutoSize = $true
+        $UsernameLBTenant.width = 25
+        $UsernameLBTenant.height = 10
+        $UsernameLBTenant.location = New-Object System.Drawing.Point(13, 180)
+        $UsernameLBTenant.Font = 'Microsoft Sans Serif,10'
+        $UsernameLBTenant.ForeColor = "#cecece"
 
-        $UsernameLBdest = New-Object system.Windows.Forms.Label
-        $UsernameLBdest.text = "Username:"
-        $UsernameLBdest.AutoSize = $true
-        $UsernameLBdest.width = 25
-        $UsernameLBdest.height = 10
-        $UsernameLBdest.Anchor = 'top,right'
-        $UsernameLBdest.location = New-Object System.Drawing.Point(13, 180)
-        $UsernameLBdest.Font = 'Microsoft Sans Serif,10'
-        $UsernameLBdest.ForeColor = "#cecece"
-
-        $UsernameTBsource = New-Object system.Windows.Forms.TextBox
-        $UsernameTBsource.multiline = $false
-        $UsernameTBsource.width = 290
-        $UsernameTBsource.height = 30
-        $UsernameTBsource.location = New-Object System.Drawing.Point(96, 180)
-        $UsernameTBsource.Font = 'Microsoft Sans Serif,10'
-        $UsernameTBsource.BackColor = "#171717"
-        $UsernameTBsource.ForeColor = "#ffffff"
-        $UsernameTBsource.BorderStyle = "None"
+        $UsernameTBTenant = New-Object system.Windows.Forms.TextBox
+        $UsernameTBTenant.multiline = $false
+        $UsernameTBTenant.width = 290
+        $UsernameTBTenant.height = 30
+        $UsernameTBTenant.location = New-Object System.Drawing.Point(96, 180)
+        $UsernameTBTenant.Font = 'Microsoft Sans Serif,10'
+        $UsernameTBTenant.BackColor = "#171717"
+        $UsernameTBTenant.ForeColor = "#ffffff"
+        $UsernameTBTenant.BorderStyle = "None"
 
         $UsernameTBdest = New-Object system.Windows.Forms.TextBox
         $UsernameTBdest.multiline = $false
@@ -336,79 +191,169 @@
         $UsernameTBdest.ForeColor = "#ffffff"
         $UsernameTBdest.BorderStyle = "None"
 
-        $PasswordLBsource = New-Object system.Windows.Forms.Label
-        $PasswordLBsource.text = "Password:"
-        $PasswordLBsource.AutoSize = $true
-        $PasswordLBsource.width = 25
-        $PasswordLBsource.height = 10
-        $PasswordLBsource.location = New-Object System.Drawing.Point(13, 210)
-        $PasswordLBsource.Font = 'Microsoft Sans Serif,10'
-        $PasswordLBsource.ForeColor = "#cecece"
+        $PasswordLBTenant = New-Object system.Windows.Forms.Label
+        $PasswordLBTenant.text = "Password:"
+        $PasswordLBTenant.AutoSize = $true
+        $PasswordLBTenant.width = 25
+        $PasswordLBTenant.height = 10
+        $PasswordLBTenant.location = New-Object System.Drawing.Point(13, 210)
+        $PasswordLBTenant.Font = 'Microsoft Sans Serif,10'
+        $PasswordLBTenant.ForeColor = "#cecece"
 
-        $PasswordLBdest = New-Object system.Windows.Forms.Label
-        $PasswordLBdest.text = "Password:"
-        $PasswordLBdest.AutoSize = $true
-        $PasswordLBdest.width = 25
-        $PasswordLBdest.height = 10
-        $PasswordLBdest.Anchor = 'top,right'
-        $PasswordLBdest.location = New-Object System.Drawing.Point(13, 210)
-        $PasswordLBdest.Font = 'Microsoft Sans Serif,10'
-        $PasswordLBdest.ForeColor = "#cecece"
+        $PasswordMTBTenant = New-Object system.Windows.Forms.MaskedTextBox
+        $PasswordMTBTenant.multiline = $false
+        $PasswordMTBTenant.width = 291
+        $PasswordMTBTenant.height = 30
+        $PasswordMTBTenant.location = New-Object System.Drawing.Point(95, 210)
+        $PasswordMTBTenant.Font = 'Microsoft Sans Serif,10'
+        $PasswordMTBTenant.PasswordChar = '*'
+        $PasswordMTBTenant.BackColor = "#171717"
+        $PasswordMTBTenant.ForeColor = "#ffffff"
+        $PasswordMTBTenant.BorderStyle = "None"
 
-        $PasswordMTBsource = New-Object system.Windows.Forms.MaskedTextBox
-        $PasswordMTBsource.multiline = $false
-        $PasswordMTBsource.width = 291
-        $PasswordMTBsource.height = 30
-        $PasswordMTBsource.location = New-Object System.Drawing.Point(95, 210)
-        $PasswordMTBsource.Font = 'Microsoft Sans Serif,10'
-        $PasswordMTBsource.PasswordChar = '*'
-        $PasswordMTBsource.BackColor = "#171717"
-        $PasswordMTBsource.ForeColor = "#ffffff"
-        $PasswordMTBsource.BorderStyle = "None"
+        # $PasswordMTBdest = New-Object system.Windows.Forms.MaskedTextBox
+        # $PasswordMTBdest.multiline = $false
+        # $PasswordMTBdest.width = 291
+        # $PasswordMTBdest.height = 30
+        # $PasswordMTBdest.location = New-Object System.Drawing.Point(95, 210)
+        # $PasswordMTBdest.Font = 'Microsoft Sans Serif,10'
+        # $PasswordMTBdest.PasswordChar = '*'
+        # $PasswordMTBdest.BackColor = "#171717"
+        # $PasswordMTBdest.ForeColor = "#ffffff"
+        # $PasswordMTBdest.BorderStyle = "None"
 
-        $PasswordMTBdest = New-Object system.Windows.Forms.MaskedTextBox
-        $PasswordMTBdest.multiline = $false
-        $PasswordMTBdest.width = 291
-        $PasswordMTBdest.height = 30
-        $PasswordMTBdest.location = New-Object System.Drawing.Point(95, 210)
-        $PasswordMTBdest.Font = 'Microsoft Sans Serif,10'
-        $PasswordMTBdest.PasswordChar = '*'
-        $PasswordMTBdest.BackColor = "#171717"
-        $PasswordMTBdest.ForeColor = "#ffffff"
-        $PasswordMTBdest.BorderStyle = "None"
+        # $DestPanel = New-Object system.Windows.Forms.Panel
+        # $DestPanel.height = 290
+        # $DestPanel.width = 388
+        # $DestPanel.Anchor = 'top,right'
+        # $DestPanel.location = New-Object System.Drawing.Point(397, 4)
 
-        $Form.controls.AddRange(@($ConnectionPanel, $SourcePanel, $DestPanel, $ClientInfoTB, $FinishBT))
+        # $DestConfigExportBT = New-Object system.Windows.Forms.Button
+        # $DestConfigExportBT.text = "Export Destination Config"
+        # $DestConfigExportBT.width = 375
+        # $DestConfigExportBT.height = 30
+        # $DestConfigExportBT.Anchor = 'top,right,left'
+        # $DestConfigExportBT.location = New-Object System.Drawing.Point(13, 136)
+        # $DestConfigExportBT.Font = 'Microsoft Sans Serif,10,style=Bold'
+        # $DestConfigExportBT.ForeColor = "#cecece"
+        # $DestConfigExportBT.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+        # $DestConfigExportBT.FlatAppearance.BorderColor = [System.Drawing.Color]::black
+        # $DestConfigExportBT.FlatAppearance.BorderSize = 0
+        # $DestConfigExportBT.BackColor = "#171717"
 
-        # Doesn't work bc RSjob
-        #$Form.Add_FormClosed( { Start-MigrationGUI })
+        # $DestCredsExportBT = New-Object system.Windows.Forms.Button
+        # $DestCredsExportBT.text = "Export Destination Credentials"
+        # $DestCredsExportBT.width = 375
+        # $DestCredsExportBT.height = 30
+        # $DestCredsExportBT.Anchor = 'top,right,left'
+        # $DestCredsExportBT.location = New-Object System.Drawing.Point(13, 240)
+        # $DestCredsExportBT.Font = 'Microsoft Sans Serif,10,style=Bold'
+        # $DestCredsExportBT.ForeColor = "#cecece"
+        # $DestCredsExportBT.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+        # $DestCredsExportBT.FlatAppearance.BorderColor = [System.Drawing.Color]::black
+        # $DestCredsExportBT.FlatAppearance.BorderSize = 0
+        # $DestCredsExportBT.BackColor = "#171717"
 
-        $SourcePanel.controls.AddRange(@(
-                $SourceLB, $ClientIDLBsource, $ClientIDTBsource, $TenantIDLBsource, $TenantIDTBsource
-                $ClientSecLBsource, $ClientSecTBsource, $UsernameLBsource, $UsernameTBsource, $PasswordLBsource
-                $PasswordMTBsource, $SourceConfigExportBT, $SourceCredsExportBT
+        # $DestinationLB = New-Object system.Windows.Forms.Label
+        # $DestinationLB.text = "Destination"
+        # $DestinationLB.AutoSize = $true
+        # $DestinationLB.width = 25
+        # $DestinationLB.height = 10
+        # $DestinationLB.Anchor = 'top'
+        # $DestinationLB.location = New-Object System.Drawing.Point(162, 7)
+        # $DestinationLB.Font = 'Microsoft Sans Serif,10,style=Bold,Underline'
+        # $DestinationLB.ForeColor = "#cecece"
+
+        # $ClientIDLBdest = New-Object system.Windows.Forms.Label
+        # $ClientIDLBdest.text = "Client ID:"
+        # $ClientIDLBdest.AutoSize = $true
+        # $ClientIDLBdest.width = 25
+        # $ClientIDLBdest.height = 10
+        # $ClientIDLBdest.location = New-Object System.Drawing.Point(13, 36)
+        # $ClientIDLBdest.Font = 'Microsoft Sans Serif,10'
+        # $ClientIDLBdest.ForeColor = "#cecece"
+
+        # $ClientIDTBdest = New-Object system.Windows.Forms.TextBox
+        # $ClientIDTBdest.multiline = $false
+        # $ClientIDTBdest.width = 300
+        # $ClientIDTBdest.height = 30
+        # $ClientIDTBdest.Anchor = 'top'
+        # $ClientIDTBdest.location = New-Object System.Drawing.Point(88, 36)
+        # $ClientIDTBdest.Font = 'Microsoft Sans Serif,10'
+        # $ClientIDTBdest.BackColor = "#171717"
+        # $ClientIDTBdest.ForeColor = "#ffffff"
+        # $ClientIDTBdest.BorderStyle = "None"
+
+        # $TenantIDLBdest = New-Object system.Windows.Forms.Label
+        # $TenantIDLBdest.text = "Tenant ID:"
+        # $TenantIDLBdest.AutoSize = $true
+        # $TenantIDLBdest.width = 25
+        # $TenantIDLBdest.height = 10
+        # $TenantIDLBdest.Anchor = 'top,right'
+        # $TenantIDLBdest.location = New-Object System.Drawing.Point(13, 72)
+        # $TenantIDLBdest.Font = 'Microsoft Sans Serif,10'
+        # $TenantIDLBdest.ForeColor = "#cecece"
+
+        # $TenantIDTBdest = New-Object system.Windows.Forms.TextBox
+        # $TenantIDTBdest.multiline = $false
+        # $TenantIDTBdest.width = 294
+        # $TenantIDTBdest.height = 30
+        # $TenantIDTBdest.Anchor = 'top'
+        # $TenantIDTBdest.location = New-Object System.Drawing.Point(93, 73)
+        # $TenantIDTBdest.Font = 'Microsoft Sans Serif,10'
+        # $TenantIDTBdest.BackColor = "#171717"
+        # $TenantIDTBdest.ForeColor = "#ffffff"
+        # $TenantIDTBdest.BorderStyle = "None"
+
+        # $UsernameLBdest = New-Object system.Windows.Forms.Label
+        # $UsernameLBdest.text = "Username:"
+        # $UsernameLBdest.AutoSize = $true
+        # $UsernameLBdest.width = 25
+        # $UsernameLBdest.height = 10
+        # $UsernameLBdest.Anchor = 'top,right'
+        # $UsernameLBdest.location = New-Object System.Drawing.Point(13, 180)
+        # $UsernameLBdest.Font = 'Microsoft Sans Serif,10'
+        # $UsernameLBdest.ForeColor = "#cecece"
+
+        # $PasswordLBdest = New-Object system.Windows.Forms.Label
+        # $PasswordLBdest.text = "Password:"
+        # $PasswordLBdest.AutoSize = $true
+        # $PasswordLBdest.width = 25
+        # $PasswordLBdest.height = 10
+        # $PasswordLBdest.Anchor = 'top,right'
+        # $PasswordLBdest.location = New-Object System.Drawing.Point(13, 210)
+        # $PasswordLBdest.Font = 'Microsoft Sans Serif,10'
+        # $PasswordLBdest.ForeColor = "#cecece"
+
+        $Form.controls.AddRange(@($ConnectionPanel, $TenantPanel, $ClientInfoTB))
+
+        $TenantPanel.controls.AddRange(@(
+                $TenantLB, $ClientIDLBTenant, $ClientIDTBTenant, $TenantIDLBTenant, $TenantIDTBTenant
+                $ClientSecLBTenant, $ClientSecTBTenant, $UsernameLBTenant, $UsernameTBTenant, $PasswordLBTenant
+                $PasswordMTBTenant, $TenantConfigExportBT, $TenantCredsExportBT
             ))
-        $DestPanel.controls.AddRange(@(
-                $DestinationLB, $ClientIDLBdest, $ClientIDTBdest, $TenantIDLBdest, $TenantIDTBdest, $ClientSecLBdest
-                $ClientSecTBdest, $UsernameLBdest, $UsernameTBdest, $PasswordLBdest, $PasswordMTBdest, $DestConfigExportBT, $DestCredsExportBT
-            ))
+        # $DestPanel.controls.AddRange(@(
+        #         $DestinationLB, $ClientIDLBdest, $ClientIDTBdest, $TenantIDLBdest, $TenantIDTBdest, $ClientSecLBdest
+        #         $ClientSecTBdest, $UsernameLBdest, $UsernameTBdest, $PasswordLBdest, $PasswordMTBdest, $DestConfigExportBT, $DestCredsExportBT
+        #     ))
         #################
-        # SOURCE CONFIG #
+        # Tenant CONFIG #
         #################
-        $SourceConfigExportBT.Add_Click(
+        $TenantConfigExportBT.Add_Click(
             {
                 try {
                     # Remove SCRIPT Scope
-                    $Script:SourceObject = [PSCustomObject]@{
-                        SourceClientID = $ClientIDTBsource.text
-                        SourceTenantID = $TenantIDTBsource.text
-                        SourceSecret   = $ClientSecTBsource.text | ConvertTo-SecureString -AsPlainText -Force
+                    $Script:TenantObject = [PSCustomObject]@{
+                        TenantClientID = $ClientIDTBTenant.text
+                        TenantTenantID = $TenantIDTBTenant.text
+                        TenantSecret   = $ClientSecTBTenant.text | ConvertTo-SecureString -AsPlainText -Force
                     }
-                    $SourceConfig = Join-Path -Path $SourcePath -ChildPath ('{0}Config.xml' -f $Source)
+                    $TenantConfig = Join-Path -Path $TenantPath -ChildPath ('{0}Config.xml' -f $Tenant)
                     [PSCustomObject]@{
-                        Cred     = [PSCredential]::new($SourceObject.SourceTenantID, $SourceObject.SourceSecret)
-                        ClientId = $SourceObject.SourceClientID
-                    } | Export-Clixml -Path $SourceConfig
-                    $ClientInfoTB.AppendText(('Source configuration encrypted to: {0}{1}' -f $SourceConfig, [Environment]::NewLine))
+                        Cred     = [PSCredential]::new($TenantObject.TenantTenantID, $TenantObject.TenantSecret)
+                        ClientId = $TenantObject.TenantClientID
+                    } | Export-Clixml -Path $TenantConfig
+                    $ClientInfoTB.AppendText(('Tenant configuration encrypted to: {0}{1}' -f $TenantConfig, [Environment]::NewLine))
                 }
                 catch {
                     $ClientInfoTB.AppendText(($_.Exception.Message, [Environment]::NewLine))
@@ -418,40 +363,40 @@
         #################
         # DEST   CONFIG #
         #################
-        $DestConfigExportBT.Add_Click(
+        # $DestConfigExportBT.Add_Click(
+        #     {
+        #         try {
+        #             $Script:DestObject = [PSCustomObject]@{
+        #                 DestClientID = $ClientIDTBdest.text
+        #                 DestTenantID = $TenantIDTBdest.text
+        #                 DestSecret   = $ClientSecTBdest.text | ConvertTo-SecureString -AsPlainText -Force
+        #             }
+        #             $DestConfig = Join-Path -Path $DestinationPath -ChildPath ('{0}Config.xml' -f $Destination)
+        #             [PSCustomObject]@{
+        #                 Cred     = [PSCredential]::new($DestObject.DestTenantID, $DestObject.DestSecret)
+        #                 ClientId = $DestObject.DestClientID
+        #             } | Export-Clixml -Path $DestConfig
+        #             $ClientInfoTB.AppendText(('Destination configuration encrypted to: {0}{1}' -f $DestConfig, [Environment]::NewLine))
+        #         }
+        #         catch {
+        #             $ClientInfoTB.AppendText(($_.Exception.Message, [Environment]::NewLine))
+        #         }
+        #     }
+        # )
+        #################
+        # Tenant  CREDS #
+        #################
+        $TenantCredsExportBT.Add_Click(
             {
                 try {
-                    $Script:DestObject = [PSCustomObject]@{
-                        DestClientID = $ClientIDTBdest.text
-                        DestTenantID = $TenantIDTBdest.text
-                        DestSecret   = $ClientSecTBdest.text | ConvertTo-SecureString -AsPlainText -Force
+                    $Script:TenantCredObj = [PSCustomObject]@{
+                        TenantUsername = $UsernameTBTenant.text
+                        TenantPassword = $PasswordMTBTenant.text | ConvertTo-SecureString -AsPlainText -Force
                     }
-                    $DestConfig = Join-Path -Path $DestinationPath -ChildPath ('{0}Config.xml' -f $Destination)
-                    [PSCustomObject]@{
-                        Cred     = [PSCredential]::new($DestObject.DestTenantID, $DestObject.DestSecret)
-                        ClientId = $DestObject.DestClientID
-                    } | Export-Clixml -Path $DestConfig
-                    $ClientInfoTB.AppendText(('Destination configuration encrypted to: {0}{1}' -f $DestConfig, [Environment]::NewLine))
-                }
-                catch {
-                    $ClientInfoTB.AppendText(($_.Exception.Message, [Environment]::NewLine))
-                }
-            }
-        )
-        #################
-        # SOURCE  CREDS #
-        #################
-        $SourceCredsExportBT.Add_Click(
-            {
-                try {
-                    $Script:SourceCredObj = [PSCustomObject]@{
-                        SourceUsername = $UsernameTBSource.text
-                        SourcePassword = $PasswordMTBSource.text | ConvertTo-SecureString -AsPlainText -Force
-                    }
-                    $SourceCred = Join-Path -Path $SourcePath -ChildPath ('{0}Cred.xml' -f $Source)
-                    [PSCredential]::new($SourceCredObj.SourceUsername, $SourceCredObj.SourcePassword) | Export-Clixml -Path $SourceCred
+                    $TenantCred = Join-Path -Path $TenantPath -ChildPath ('{0}Cred.xml' -f $Tenant)
+                    [PSCredential]::new($TenantCredObj.TenantUsername, $TenantCredObj.TenantPassword) | Export-Clixml -Path $TenantCred
 
-                    $ClientInfoTB.AppendText(('Source credential encrypted to: {0}{1}' -f $SourceCred, [Environment]::NewLine))
+                    $ClientInfoTB.AppendText(('Tenant credential encrypted to: {0}{1}' -f $TenantCred, [Environment]::NewLine))
                 }
                 catch {
                     $ClientInfoTB.AppendText(($_.Exception.Message, [Environment]::NewLine))
@@ -461,22 +406,22 @@
         #################
         # DEST    CREDS #
         #################
-        $DestCredsExportBT.Add_Click(
-            {
-                try {
-                    $Script:DestCredObj = [PSCustomObject]@{
-                        DestUsername = $UsernameTBdest.text
-                        DestPassword = $PasswordMTBdest.text | ConvertTo-SecureString -AsPlainText -Force
-                    }
-                    $DestCred = Join-Path -Path $DestinationPath -ChildPath ('{0}Cred.xml' -f $Destination)
-                    [PSCredential]::new($DestCredObj.DestUsername, $DestCredObj.DestPassword) | Export-Clixml -Path $DestCred
-                    $ClientInfoTB.AppendText(('Destination credential encrypted to: {0}{1}' -f $DestCred, [Environment]::NewLine))
-                }
-                catch {
-                    $ClientInfoTB.AppendText(($_.Exception.Message, [Environment]::NewLine))
-                }
-            }
-        )
+        # $DestCredsExportBT.Add_Click(
+        #     {
+        #         try {
+        #             $Script:DestCredObj = [PSCustomObject]@{
+        #                 DestUsername = $UsernameTBdest.text
+        #                 DestPassword = $PasswordMTBdest.text | ConvertTo-SecureString -AsPlainText -Force
+        #             }
+        #             $DestCred = Join-Path -Path $DestinationPath -ChildPath ('{0}Cred.xml' -f $Destination)
+        #             [PSCredential]::new($DestCredObj.DestUsername, $DestCredObj.DestPassword) | Export-Clixml -Path $DestCred
+        #             $ClientInfoTB.AppendText(('Destination credential encrypted to: {0}{1}' -f $DestCred, [Environment]::NewLine))
+        #         }
+        #         catch {
+        #             $ClientInfoTB.AppendText(($_.Exception.Message, [Environment]::NewLine))
+        #         }
+        #     }
+        # )
         [void]$Form.ShowDialog()
     }
 }
