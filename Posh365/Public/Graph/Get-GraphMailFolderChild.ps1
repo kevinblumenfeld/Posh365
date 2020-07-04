@@ -15,7 +15,7 @@ function Get-GraphMailFolderChild {
                 Headers = @{ "Authorization" = "Bearer $Token" }
                 Method  = 'Get'
             }
-            $Children = (Invoke-RestMethod @RestSplat -Verbose:$true).value
+            $Children = (Invoke-RestMethod @RestSplat -Verbose:$false).value
             foreach ($Child in $Children) {
                 [PSCustomObject]@{
                     UserPrincipalName = $UserPrincipalName

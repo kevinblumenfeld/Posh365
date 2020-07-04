@@ -6,7 +6,7 @@ function Get-GraphMailFolder {
         $Recurse,
 
         [Parameter()]
-        [ValidateSet('archive', 'clutter', 'conflicts', 'conversationhistory', 'deleteditems', 'drafts', 'inbox', 'junkemail', 'localfailures', 'msgfolderroot', 'outbox', 'recoverableitemsdeletions', 'scheduled', 'searchfolders', 'sentitems', 'serverfailures', 'syncissues')]
+        [ValidateSet('archive', 'clutter', 'conflicts', 'conversationhistory', 'Deleted Items', 'drafts', 'inbox', 'junkemail', 'localfailures', 'msgfolderroot', 'outbox', 'recoverableitemsdeletions', 'scheduled', 'searchfolders', 'sentitems', 'serverfailures', 'syncissues')]
         $WellKnownFolder,
 
         [Parameter(ValueFromPipeline)]
@@ -15,24 +15,22 @@ function Get-GraphMailFolder {
     begin {
         # $filterstring = [System.Collections.Generic.List[string]]::new()
         if ($WellKnownFolder) {
-            $Uri = "('{0}')" -f $WellKnownFolder
+            $Uri = "/msgfolderroot/childfolders?`$filter=DisplayName eq '{0}'" -f $WellKnownFolder
         }
-        if ($recurse) {
+        if ($recurse -and -not $WellKnownFolder) {
             $Uri = "/msgfolderroot/childFolders"
         }
-
     }
     process {
         foreach ($Mailbox in $MailboxList) {
             Write-Host "Mailbox: $($Mailbox.UserPrincipalName)" -ForegroundColor Green
-
             if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
             $RestSplat = @{
-                Uri     = "https://graph.microsoft.com/beta/users/{0}/mailfolder{1}" -f $Mailbox.UserPrincipalName, $Uri
+                Uri     = "https://graph.microsoft.com/beta/users/{0}/mailfolders{1}" -f $Mailbox.UserPrincipalName, $Uri
                 Headers = @{ "Authorization" = "Bearer $Token" }
                 Method  = 'Get'
             }
-            $FolderList = (Invoke-RestMethod @RestSplat -Verbose:$true).value
+            $FolderList = (Invoke-RestMethod @RestSplat -Verbose:$false).value
             foreach ($Folder in $FolderList) {
                 if ($Folder.wellKnownName) {
                     [PSCustomObject]@{

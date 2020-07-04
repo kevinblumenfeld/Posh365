@@ -1,23 +1,20 @@
 function New-GraphUser {
     [CmdletBinding()]
     param (
-
         [Parameter(Mandatory)]
-        [string] $Tenant,
+        [string]
+        $Tenant,
 
         [Parameter(ValueFromPipeline)]
         $UserList
     )
-    begin {
-    }
     process {
         foreach ($User in $UserList) {
-            $Token = Connect-PoshGraph -Tenant $Tenant
+            if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
             $Headers = @{
                 'Authorization' = "Bearer $Token"
                 'Content-Type'  = 'application/json'
             }
-
             $test = @{
                 'accountEnabled'    = $true
                 'mailnickname'      = ''
@@ -28,24 +25,14 @@ function New-GraphUser {
                     'forceChangePasswordNextSignIn' = $true
                 }
             }
-
-
             $RestSplat = @{
                 Uri     = 'https://graph.microsoft.com/v1.0/users'
                 Headers = $Headers
                 Method  = 'POST'
                 Body    = ($test | ConvertTo-Json)
             }
-            try {
-                Invoke-RestMethod @RestSplat -Verbose:$true -ErrorAction Stop
-            }
-            catch {
-                $_.Exception.Message
-            }
+            try { Invoke-RestMethod @RestSplat -Verbose:$false -ErrorAction Stop }
+            catch { write-host "Error: $($_.Exception.Message)" -ForegroundColor Red }
         }
     }
-    end {
-
-    }
-
 }
