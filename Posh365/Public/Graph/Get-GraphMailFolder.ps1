@@ -6,7 +6,7 @@ function Get-GraphMailFolder {
         $Recurse,
 
         [Parameter()]
-        [ValidateSet('archive', 'clutter', 'conflicts', 'conversationhistory', 'Deleted Items', 'drafts', 'inbox', 'junkemail', 'localfailures', 'msgfolderroot', 'outbox', 'recoverableitemsdeletions', 'scheduled', 'searchfolders', 'sentitems', 'serverfailures', 'syncissues')]
+        [ValidateSet('archive', 'clutter', 'conflicts', 'conversationhistory', 'Deleted Items', 'drafts', 'inbox', 'junkemail', 'localfailures', 'outbox', 'recoverableitemsdeletions', 'scheduled', 'searchfolders', 'sentitems', 'serverfailures', 'syncissues')]
         $WellKnownFolder,
 
         [Parameter(ValueFromPipeline)]

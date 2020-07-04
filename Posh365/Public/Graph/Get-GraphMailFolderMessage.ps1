@@ -2,7 +2,7 @@ function Get-GraphMailFolderMessage {
     [CmdletBinding()]
     param (
         [Parameter()]
-        [ValidateSet('archive', 'clutter', 'conflicts', 'conversationhistory', 'DeletedItems', 'drafts', 'Inbox', 'junkemail', 'localfailures', 'msgfolderroot', 'outbox', 'recoverableitemsdeletions', 'scheduled', 'searchfolders', 'sentitems', 'serverfailures', 'syncissues')]
+        [ValidateSet('archive', 'clutter', 'conflicts', 'conversationhistory', 'DeletedItems', 'drafts', 'Inbox', 'junkemail', 'localfailures', 'outbox', 'recoverableitemsdeletions', 'scheduled', 'searchfolders', 'sentitems', 'serverfailures', 'syncissues')]
         $WellKnownFolder,
 
         [Parameter()]
@@ -30,8 +30,7 @@ function Get-GraphMailFolderMessage {
         $CC,
 
         [Parameter()]
-        [int]
-        $Top,
+        $Count,
 
         [Parameter(ValueFromPipeline)]
         $MailboxList
