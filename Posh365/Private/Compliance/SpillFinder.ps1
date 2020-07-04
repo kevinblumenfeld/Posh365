@@ -169,7 +169,7 @@ function SpillFinder {
         [Parameter(Mandatory)]
         $Tenant,
 
-        [Parameter(Mandatory)]
+        [Parameter()]
         [ValidateSet('archive', 'clutter', 'conflicts', 'conversationhistory', 'DeletedItems', 'drafts', 'Inbox', 'junkemail', 'localfailures', 'msgfolderroot', 'outbox', 'recoverableitemsdeletions', 'scheduled', 'searchfolders', 'sentitems', 'serverfailures', 'syncissues')]
         $WellKnownFolder,
 
@@ -205,8 +205,9 @@ function SpillFinder {
         [int]
         $Top,
 
-        [Parameter(ValueFromPipeline)]
-        $MailboxList
+        [Parameter()]
+        [mailaddress[]]
+        $UserPrincipalName
     )
 
     if ($DeleteCreds) {
@@ -214,5 +215,6 @@ function SpillFinder {
         $null = $PSBoundParameters.Remove('DeleteCreds')
         SpillFinder $PSBoundParameters
     }
+    $PSBoundParameters
 
 }

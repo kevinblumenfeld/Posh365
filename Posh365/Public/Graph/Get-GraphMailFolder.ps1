@@ -36,11 +36,12 @@ function Get-GraphMailFolder {
                     [PSCustomObject]@{
                         UserPrincipalName = $Mailbox.UserPrincipalName
                         DisplayName       = $Folder.DisplayName
-                        ParentFolderId    = $Folder.ParentFolderId
                         ChildFolderCount  = $Folder.ChildFolderCount
                         unreadItemCount   = $Folder.unreaditemCount
                         totalItemCount    = $Folder.unreaditemCount
                         wellKnownName     = $Folder.wellKnownName
+                        ParentFolderId    = $Folder.ParentFolderId
+                        Id                = $Folder.Id
                     }
                     if ($Folder.ChildFolderCount -ge 1 -and $Recurse) {
                         $Folder | Get-GraphMailFolderChild -UserPrincipalName $Mailbox.UserPrincipalName
