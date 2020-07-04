@@ -42,11 +42,11 @@ function SpillFinder {
 
         [Parameter()]
         [switch]
-        $DeleteCreds,
+        $_Recurse,
 
         [Parameter()]
         [switch]
-        $_Recurse,
+        $DeleteCreds,
 
         [Parameter()]
         [datetime]

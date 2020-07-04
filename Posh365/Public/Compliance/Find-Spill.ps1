@@ -14,6 +14,12 @@ function Find-Spill {
     $ErrorActionPreference = 'Stop'
     try {
         Connect-PoshGraph -Tenant $Splat.Tenant
+        $NewSplat = @{ }
+        foreach ($Item in $Splat) {
+            if ($Splat[$Item.Key].ContainsValue) {
+                $NewSplat[$Item.Key] = $Item.Value
+            }
+        }
         $NewCS = $null
         $NewCS = $Splat['UserPrincipalName'] | Get-GraphUser | Get-GraphMailFolderMessage $Splat['Top']
     }
