@@ -100,18 +100,17 @@ function Invoke-FindSpill {
         }
         foreach ($Key in $Splat.keys) {
             if ($Splat.keys -contains '_Folder_Root') { continue }
-            if ($Splat[$Key] -and $Key -like '_Folder_*') {
-                if ($Key -eq '_Folder_RecoverableItems') { $FolderList.Add('recoverableitemsdeletions') }
-                else { $FolderList.Add($Key.replace('_Folder_', '')) }
-            }
+            if ($Splat[$Key] -and $Key -like '_Folder_*') { $FolderList.Add($Key.replace('_Folder_', '')) }
         }
-        if ($Splat.ContainsKey('__Folder_Other')) { $FolderList.Add($Splat['__FolderOther']) }
+        if ($Splat.ContainsKey('__Folder_Other')) { $FolderList.Add($Splat['__Folder_Other']) }
         if (-not $FolderList) {
             if (-not $Splat['UserPrincipalName']) {
                 Get-GraphUserAll | Get-GraphMailFolderAll | Get-GraphMailFolderMessageByID @Params
             }
             else {
                 $Splat['UserPrincipalName'] | Get-GraphUser | Get-GraphMailFolderAll -ErrorAction SilentlyContinue |
+                Get-GraphMailFolderMessageByID @Params
+                $Splat['UserPrincipalName'] | Get-GraphUser | Get-GraphMailFolderRecoverableItems -ErrorAction SilentlyContinue |
                 Get-GraphMailFolderMessageByID @Params
             }
             continue

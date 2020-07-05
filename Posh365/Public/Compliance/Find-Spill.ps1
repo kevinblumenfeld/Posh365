@@ -13,11 +13,11 @@ function Find-Spill {
         $TenantCred = Join-Path -Path $TenantPath -ChildPath ('{0}Cred.xml' -f $Splat.Tenant)
         $TenantConfig = Join-Path -Path $TenantPath -ChildPath ('{0}Config.xml' -f $Splat.Tenant)
         if (-not (Test-Path $TenantConfig) -or -not (Test-Path $TenantCred) ) { Export-GraphConfig -Tenant $Splat.Tenant }
-    } until ($Splat.count -gt 2)
+    } until ($Splat.count -ge 1)
     if ($Splat.ContainsKey('OptionToDeleteMessages')) {
         Invoke-FindSpill @Splat | Out-GridView -PassThru -Title 'Choose Messages to Delete and Click OK' | Remove-GraphMailMessage
     }
     else {
-        Invoke-FindSpill @Splat | Out-GridView -PassThru -Title 'Choose Messages to Delete and Click OK'
+        Invoke-FindSpill @Splat | Out-GridView -Title 'Messages found'
     }
 }
