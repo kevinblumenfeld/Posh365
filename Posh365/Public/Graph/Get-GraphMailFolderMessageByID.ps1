@@ -71,7 +71,6 @@ function Get-GraphMailFolderMessageByID {
         if ($Top) { $filterstring.Add(('`$top={0}' -f $Top)) }
         if ($filterstring) { $Uri = '/messages?{0}' -f (@($filterstring) -ne '' -join '&') }
         else { $Uri = '/messages' }
-        write-Host "$URI" -ForegroundColor Cyan
     }
     process {
         foreach ($Mailbox in $MailboxList) {
@@ -108,13 +107,13 @@ function Get-GraphMailFolderMessageByID {
                             FromAddress          = $Message.from.emailaddress.address
                             replyTo              = $Message.replyTo
                             toRecipientsName     = $Message.toRecipients.emailaddress.name
-                            toRecipientsAddress  = $Message.toRecipients.emailaddress.name
+                            toRecipientsAddress  = $Message.toRecipients.emailaddress.address
                             Subject              = $Message.Subject
                             BodyPreview          = $Message.BodyPreview
                             ccRecipientsName     = $Message.ccRecipients.emailaddress.name
-                            ccRecipientsAddress  = $Message.ccRecipients.emailaddress.name
+                            ccRecipientsAddress  = $Message.ccRecipients.emailaddress.address
                             bccRecipientsName    = $Message.bccRecipients.emailaddress.name
-                            bccRecipientsAddress = $Message.bccRecipients.emailaddress.name
+                            bccRecipientsAddress = $Message.bccRecipients.emailaddress.address
                             Body                 = $Message.Body.content
                             ReceivedDateTime     = $Message.ReceivedDateTime
                             sentDateTime         = $Message.sentDateTime

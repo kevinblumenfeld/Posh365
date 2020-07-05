@@ -17,7 +17,7 @@ function Get-GraphUser {
                 Method  = 'Get'
             }
             try { Invoke-RestMethod @RestSplat -Verbose:$false -ErrorAction Stop }
-            catch { Write-Host "$User - $($_.Exception.Message)" -ForegroundColor Red }
+            catch { Write-Host "Error: $UPN - $($_.Exception.Message)" -ForegroundColor Red }
         }
     }
 }

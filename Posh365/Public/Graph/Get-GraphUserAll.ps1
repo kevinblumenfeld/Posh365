@@ -9,7 +9,6 @@ function Get-GraphUserAll {
         $uri = "https://graph.microsoft.com/beta/users/?`$filter=userType eq 'Member'"
     }
     else { $Uri = 'https://graph.microsoft.com/beta/users' }
-    Write-Host "$URI" -ForegroundColor Cyan
 
     $RestSplat = @{
         Uri     = $Uri
@@ -28,6 +27,6 @@ function Get-GraphUserAll {
                 Method  = 'Get'
             }
         }
-        catch { Write-Host "$User - $($_.Exception.Message)" -ForegroundColor Red }
+        catch { Write-Host "Error: $UPN - $($_.Exception.Message)" -ForegroundColor Red }
     } until (-not $next)
 }
