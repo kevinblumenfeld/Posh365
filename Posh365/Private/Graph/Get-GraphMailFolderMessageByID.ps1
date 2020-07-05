@@ -56,6 +56,10 @@ function Get-GraphMailFolderMessageByID {
             $filter = "`$search=""Subject:{0}""" -f $Subject
             $filterstring.Add($filter)
         }
+        if ($Body) {
+            $filter = "`$search=""Body:{0}""" -f $Body
+            $filterstring.Add($filter)
+        }
         if ($From) {
             $filter = "`$search=""From:{0}""" -f $From
             $filterstring.Add($filter)
@@ -121,7 +125,7 @@ function Get-GraphMailFolderMessageByID {
                         }
                     }
                 }
-                catch { Write-Host "$($Mailbox.UserPrincipalName) ERROR: $($_.Exception.Message)" -ForegroundColor Red }
+                catch { }
             } until (-not $next -or $i -lt 1)
         }
     }

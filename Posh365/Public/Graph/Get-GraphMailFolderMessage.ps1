@@ -63,6 +63,10 @@ function Get-GraphMailFolderMessage {
             $filter = "`$search=""Subject:{0}""" -f $Subject
             $filterstring.Add($filter)
         }
+        if ($Body) {
+            $filter = "`$search=""Body:{0}""" -f $Body
+            $filterstring.Add($filter)
+        }
         if ($From) {
             $filter = "`$search=""From:{0}""" -f $From
             $filterstring.Add($filter)
@@ -78,6 +82,7 @@ function Get-GraphMailFolderMessage {
     }
     process {
         foreach ($Mailbox in $MailboxList) {
+            Write-Host "`r`nMailbox: $($Mailbox.UserPrincipalName) " -ForegroundColor Green -NoNewline
             foreach ($WellKnownFolder in $FolderList) {
                 $RestSplat = @{
                     Uri         = "https://graph.microsoft.com/v1.0/users/{0}/mailFolders('{1}'){2}" -f $Mailbox.UserPrincipalName, $WellKnownFolder, $Uri
@@ -129,7 +134,7 @@ function Get-GraphMailFolderMessage {
                             }
                         }
                     }
-                    catch { Write-Host "$($Mailbox.UserPrincipalName) ERROR: $($_.Exception.Message)" -ForegroundColor Red }
+                    catch { Write-Host "Not Found" -ForegroundColor Red -NoNewline }
                 } until (-not $next -or $i -lt 1)
             }
         }

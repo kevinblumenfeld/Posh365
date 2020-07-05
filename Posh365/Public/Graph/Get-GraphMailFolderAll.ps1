@@ -13,8 +13,8 @@ function Get-GraphMailFolderAll {
                 Method  = 'Get'
             }
             try {
+                Write-Host "`r`nMailbox: $($UPN.UserPrincipalName) " -ForegroundColor Green -NoNewline
                 $FolderList = (Invoke-RestMethod @RestSplat -Verbose:$false).value
-                Write-Host "Mailbox: $($UPN.UserPrincipalName)" -ForegroundColor Green
                 foreach ($Folder in $FolderList) {
                     [PSCustomObject]@{
                         DisplayName       = $UPN.DisplayName
@@ -38,10 +38,7 @@ function Get-GraphMailFolderAll {
                     }
                 }
             }
-            catch {
-                Write-Host "Not Found: $($UPN.UserPrincipalName)" -ForegroundColor Red
-            }
-
+            catch { Write-Host "Not Found" -ForegroundColor Red -NoNewline }
         }
     }
 }

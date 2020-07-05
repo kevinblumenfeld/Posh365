@@ -15,7 +15,7 @@ function Get-GraphMailFolder {
     )
     process {
         foreach ($UPN in $UserPrincipalName) {
-            Write-Host "Mailbox: $($UPN.UserPrincipalName)" -ForegroundColor Green
+            Write-Host "`r`nMailbox: $($UPN.UserPrincipalName) " -ForegroundColor Green -NoNewline
             foreach ($Known in $WellKnownFolder) {
                 if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
                 $Uri = "/msgfolderroot/childfolders?`$filter=DisplayName eq '{0}'" -f $Known
@@ -40,13 +40,16 @@ function Get-GraphMailFolder {
                             Id                = $Folder.Id
                         }
                         if ($Folder.ChildFolderCount -ge 1 -and $Recurse) {
-                            $Folder | Get-GraphMailFolderChild -UserPrincipalName $UPN
+                            $ChildSplat = @{
+                                DisplayName       = $UPN.DisplayName
+                                Mail              = $UPN.Mail
+                                UserPrincipalName = $UPN.UserPrincipalName
+                            }
+                            $Folder | Get-GraphMailFolderChild @ChildSplat
                         }
                     }
                 }
-                catch {
-                    Write-Host "Not Found: $($UPN.UserPrincipalName)" -ForegroundColor Red
-                }
+                catch { Write-Host "Not Found" -ForegroundColor Red -NoNewline }
             }
         }
     }
