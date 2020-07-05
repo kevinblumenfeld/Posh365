@@ -1,8 +1,18 @@
 function Get-GraphUserAll {
     [CmdletBinding()]
-    param ()
+    param (
+        [Parameter()]
+        [switch]
+        $IncludeGuests
+    )
+    if (-not $IncludeGuests) {
+        $uri = "https://graph.microsoft.com/beta/users/?`$filter=userType eq 'Member'"
+    }
+    else { $Uri = 'https://graph.microsoft.com/beta/users' }
+    Write-Host "$URI" -ForegroundColor Cyan
+
     $RestSplat = @{
-        Uri     = 'https://graph.microsoft.com/beta/users'
+        Uri     = $Uri
         Headers = @{ "Authorization" = "Bearer $Token" }
         Method  = 'Get'
     }

@@ -10,14 +10,16 @@ function Find-Spill {
             return
         }
     } until ($Splat.count -gt 2)
-    $EA = $ErrorActionPreference
-    $ErrorActionPreference = 'Stop'
+    # Needed for On-Premises
+    # $EA = $ErrorActionPreference
+    # $ErrorActionPreference = 'Stop'
     try {
         Connect-PoshGraph -Tenant $Splat.Tenant
         $FolderList = [System.Collections.Generic.List[string]]::New()
         $Params = @{ }
+        if ($Count) { $Params['Top'] = $Count } else { $Params['Top'] = 10 }
         foreach ($key in $Splat.keys) {
-            if ($Splat[$key] -and $key -like '_Message_*' -or $key -eq 'Count') {
+            if ($Splat[$key] -and $key -like '_Message_*') {
                 $Params[$Key] = $Splat[$key]
             }
         }
@@ -34,7 +36,8 @@ function Find-Spill {
                 Get-GraphUserAll | Get-GraphMailFolderAll | Get-GraphMailFolderMessageByID @Params
             }
             else {
-                $Splat['UserPrincipalName'] | Get-GraphUser | Get-GraphMailFolderAll | Get-GraphMailFolderMessageByID @Params
+                $Splat['UserPrincipalName'] | Get-GraphUser | Get-GraphMailFolderAll -ErrorAction SilentlyContinue |
+                Get-GraphMailFolderMessageByID @Params
             }
             continue
         }
@@ -55,5 +58,6 @@ function Find-Spill {
         Write-Host "Graph Error: $($_.Exception.Message)" -ForegroundColor Cyan
         return
     }
-    $ErrorActionPreference = $EA
+    # Needed for On-Premises
+    # $ErrorActionPreference = $EA
 }

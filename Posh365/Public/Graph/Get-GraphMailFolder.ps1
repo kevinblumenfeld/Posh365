@@ -10,36 +10,42 @@ function Get-GraphMailFolder {
         [string[]]
         $WellKnownFolder,
 
-        [Parameter(ValueFromPipeline, ValueFromPipelineByPropertyName)]
-        [string[]]
+        [Parameter(ValueFromPipeline)]
         $UserPrincipalName
     )
     process {
         foreach ($UPN in $UserPrincipalName) {
-            Write-Host "Mailbox: $UPN" -ForegroundColor Green
+            Write-Host "Mailbox: $($UPN.UserPrincipalName)" -ForegroundColor Green
             foreach ($Known in $WellKnownFolder) {
                 if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
                 $Uri = "/msgfolderroot/childfolders?`$filter=DisplayName eq '{0}'" -f $Known
                 $RestSplat = @{
-                    Uri     = "https://graph.microsoft.com/beta/users/{0}/mailfolders{1}" -f $UPN, $Uri
+                    Uri     = "https://graph.microsoft.com/beta/users/{0}/mailfolders{1}" -f $UPN.UserPrincipalName, $Uri
                     Headers = @{ "Authorization" = "Bearer $Token" }
                     Method  = 'Get'
                 }
-                $FolderList = (Invoke-RestMethod @RestSplat -Verbose:$false).value
-                foreach ($Folder in $FolderList) {
-                    [PSCustomObject]@{
-                        UserPrincipalName = $UPN
-                        DisplayName       = $Folder.DisplayName
-                        ChildFolderCount  = $Folder.ChildFolderCount
-                        unreadItemCount   = $Folder.unreaditemCount
-                        totalItemCount    = $Folder.unreaditemCount
-                        wellKnownName     = $Folder.wellKnownName
-                        ParentFolderId    = $Folder.ParentFolderId
-                        Id                = $Folder.Id
+                try {
+                    $FolderList = (Invoke-RestMethod @RestSplat -Verbose:$false).value
+                    foreach ($Folder in $FolderList) {
+                        [PSCustomObject]@{
+                            DisplayName       = $UPN.DisplayName
+                            Mail              = $UPN.Mail
+                            UserPrincipalName = $UPN.UserPrincipalName
+                            Folder            = $Folder.DisplayName
+                            ChildFolderCount  = $Folder.ChildFolderCount
+                            unreadItemCount   = $Folder.unreaditemCount
+                            totalItemCount    = $Folder.unreaditemCount
+                            wellKnownName     = $Folder.wellKnownName
+                            ParentFolderId    = $Folder.ParentFolderId
+                            Id                = $Folder.Id
+                        }
+                        if ($Folder.ChildFolderCount -ge 1 -and $Recurse) {
+                            $Folder | Get-GraphMailFolderChild -UserPrincipalName $UPN
+                        }
                     }
-                    if ($Folder.ChildFolderCount -ge 1 -and $Recurse) {
-                        $Folder | Get-GraphMailFolderChild -UserPrincipalName $UPN
-                    }
+                }
+                catch {
+                    Write-Host "Not Found: $($UPN.UserPrincipalName)" -ForegroundColor Red
                 }
             }
         }
