@@ -6,35 +6,29 @@ function Get-GraphMailFolder {
         $Recurse,
 
         [Parameter()]
-        [ValidateSet('archive', 'clutter', 'conflicts', 'conversationhistory', 'Deleted Items', 'drafts', 'inbox', 'junkemail', 'localfailures', 'outbox', 'recoverableitemsdeletions', 'scheduled', 'searchfolders', 'sentitems', 'serverfailures', 'syncissues')]
+        [ValidateSet('archive', 'clutter', 'conflicts', 'conversationhistory', 'DeletedItems', 'drafts', 'inbox', 'junkemail', 'localfailures', 'outbox', 'recoverableitemsdeletions', 'scheduled', 'searchfolders', 'sentitems', 'serverfailures', 'syncissues')]
+        [string[]]
         $WellKnownFolder,
 
-        [Parameter(ValueFromPipeline)]
-        $MailboxList
+        [Parameter(ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [string[]]
+        $UserPrincipalName
     )
-    begin {
-        # $filterstring = [System.Collections.Generic.List[string]]::new()
-        if ($WellKnownFolder) {
-            $Uri = "/msgfolderroot/childfolders?`$filter=DisplayName eq '{0}'" -f $WellKnownFolder
-        }
-        if ($recurse -and -not $WellKnownFolder) {
-            $Uri = "/msgfolderroot/childFolders"
-        }
-    }
     process {
-        foreach ($Mailbox in $MailboxList) {
-            Write-Host "Mailbox: $($Mailbox.UserPrincipalName)" -ForegroundColor Green
-            if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
-            $RestSplat = @{
-                Uri     = "https://graph.microsoft.com/beta/users/{0}/mailfolders{1}" -f $Mailbox.UserPrincipalName, $Uri
-                Headers = @{ "Authorization" = "Bearer $Token" }
-                Method  = 'Get'
-            }
-            $FolderList = (Invoke-RestMethod @RestSplat -Verbose:$false).value
-            foreach ($Folder in $FolderList) {
-                if ($Folder.wellKnownName) {
+        foreach ($UPN in $UserPrincipalName) {
+            Write-Host "Mailbox: $UPN" -ForegroundColor Green
+            foreach ($Known in $WellKnownFolder) {
+                if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
+                $Uri = "/msgfolderroot/childfolders?`$filter=DisplayName eq '{0}'" -f $Known
+                $RestSplat = @{
+                    Uri     = "https://graph.microsoft.com/beta/users/{0}/mailfolders{1}" -f $UPN, $Uri
+                    Headers = @{ "Authorization" = "Bearer $Token" }
+                    Method  = 'Get'
+                }
+                $FolderList = (Invoke-RestMethod @RestSplat -Verbose:$false).value
+                foreach ($Folder in $FolderList) {
                     [PSCustomObject]@{
-                        UserPrincipalName = $Mailbox.UserPrincipalName
+                        UserPrincipalName = $UPN
                         DisplayName       = $Folder.DisplayName
                         ChildFolderCount  = $Folder.ChildFolderCount
                         unreadItemCount   = $Folder.unreaditemCount
@@ -44,7 +38,7 @@ function Get-GraphMailFolder {
                         Id                = $Folder.Id
                     }
                     if ($Folder.ChildFolderCount -ge 1 -and $Recurse) {
-                        $Folder | Get-GraphMailFolderChild -UserPrincipalName $Mailbox.UserPrincipalName
+                        $Folder | Get-GraphMailFolderChild -UserPrincipalName $UPN
                     }
                 }
             }
