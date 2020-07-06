@@ -6,7 +6,7 @@ function Get-GraphMailFolder {
         $Recurse,
 
         [Parameter()]
-        #[ValidateSet('archive', 'clutter', 'conflicts', 'conversationhistory', 'DeletedItems', 'drafts', 'inbox', 'junkemail', 'localfailures', 'outbox', 'recoverableitemsdeletions', 'scheduled', 'searchfolders', 'sentitems', 'serverfailures', 'syncissues')]
+        [ValidateSet('archive', 'clutter', 'conflicts', 'conversationhistory', 'DeletedItems', 'drafts', 'inbox', 'junkemail', 'localfailures', 'outbox', 'recoverableitemsdeletions', 'scheduled', 'searchfolders', 'sentitems', 'serverfailures', 'syncissues')]
         [string[]]
         $WellKnownFolder,
 
@@ -18,9 +18,9 @@ function Get-GraphMailFolder {
             Write-Host "`r`nMailbox: $($UPN.UserPrincipalName) " -ForegroundColor Green -NoNewline
             foreach ($Known in $WellKnownFolder) {
                 if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
-
+                $Uri = "/msgfolderroot/childfolders?`$filter=DisplayName eq '{0}'" -f $Known
                 $RestSplat = @{
-                    Uri     = "https://graph.microsoft.com/beta/users/{0}/mailfolders/{1}" -f $UPN.UserPrincipalName, $Known
+                    Uri     = "https://graph.microsoft.com/beta/users/{0}/mailfolders{1}" -f $UPN.UserPrincipalName, $Uri
                     Headers = @{ "Authorization" = "Bearer $Token" }
                     Method  = 'Get'
                 }

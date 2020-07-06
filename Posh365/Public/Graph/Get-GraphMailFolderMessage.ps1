@@ -45,6 +45,7 @@ function Get-GraphMailFolderMessage {
         $MailboxList
     )
     begin {
+        write-host "BEGIN OF GMFM"
         if ($MessagesOlderThan -and $MessagesNewerThan) {
             Write-Host 'Choose only one date, MessagesOlderThan OR MessagesNewerThan' -ForegroundColor Red
             return

@@ -26,7 +26,7 @@ function Get-GraphMailFolderChild {
                     DisplayName       = $DisplayName
                     Mail              = $Mail
                     UserPrincipalName = $UserPrincipalName
-                    Folder            = $Folder.DisplayName
+                    Folder            = $Child.DisplayName
                     ChildFolderCount  = $Child.ChildFolderCount
                     unreadItemCount   = $Child.unreaditemCount
                     totalItemCount    = $Child.unreaditemCount
