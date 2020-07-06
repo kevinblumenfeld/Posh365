@@ -6,17 +6,33 @@ function Get-GraphMailFolder {
         $Recurse,
 
         [Parameter()]
-        [ValidateSet('archive', 'clutter', 'conflicts', 'conversationhistory', 'DeletedItems', 'drafts', 'inbox', 'junkemail', 'localfailures', 'outbox', 'recoverableitemsdeletions', 'scheduled', 'searchfolders', 'sentitems', 'serverfailures', 'syncissues')]
+        [ValidateSet('archive', 'clutter', 'conflicts', 'Conversation History', 'ConversationHistory', 'Deleted Items', 'deletedItems', 'drafts', 'inbox', 'junk email', 'junkemail', 'localfailures', 'outbox', 'recoverableitemsdeletions', 'scheduled', 'searchfolders', 'sentitems', 'serverfailures', 'syncissues')]
         [string[]]
         $WellKnownFolder,
 
         [Parameter(ValueFromPipeline)]
         $UserPrincipalName
     )
+    begin {
+        $WellKnown = [System.Collections.Generic.List[string]]::New()
+        $WellKnownFolder | ForEach-Object { $WellKnown.Add($_) }
+        if ($WellKnown -contains 'deleteditems') {
+            $WellKnown.Remove('deletedItems')
+            $WellKnown.Add('Deleted Items')
+        }
+        if ($WellKnown -contains 'junkemail') {
+            $WellKnown.Remove('junkemail')
+            $WellKnown.Add('junk email')
+        }
+        if ($WellKnown -contains 'conversationhistory') {
+            $WellKnown.Remove('conversationhistory')
+            $WellKnown.Add('Conversation History')
+        }
+    }
     process {
         foreach ($UPN in $UserPrincipalName) {
             Write-Host "`r`nMailbox: $($UPN.UserPrincipalName) " -ForegroundColor Green -NoNewline
-            foreach ($Known in $WellKnownFolder) {
+            :what foreach ($Known in $WellKnown) {
                 if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
                 $Uri = "/msgfolderroot/childfolders?`$filter=DisplayName eq '{0}'" -f $Known
                 $RestSplat = @{
@@ -49,7 +65,10 @@ function Get-GraphMailFolder {
                         }
                     }
                 }
-                catch { Write-Host "Not Found" -ForegroundColor Red -NoNewline }
+                catch {
+                    Write-Host "Not Found" -ForegroundColor Red -NoNewline
+                    break what
+                }
             }
         }
     }

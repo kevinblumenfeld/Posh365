@@ -45,7 +45,6 @@ function Get-GraphMailFolderMessage {
         $MailboxList
     )
     begin {
-        write-host "BEGIN OF GMFM"
         if ($MessagesOlderThan -and $MessagesNewerThan) {
             Write-Host 'Choose only one date, MessagesOlderThan OR MessagesNewerThan' -ForegroundColor Red
             return
@@ -83,7 +82,7 @@ function Get-GraphMailFolderMessage {
     process {
         foreach ($Mailbox in $MailboxList) {
             Write-Host "`r`nMailbox: $($Mailbox.UserPrincipalName) " -ForegroundColor Green -NoNewline
-            foreach ($WellKnownFolder in $FolderList) {
+            :what foreach ($WellKnownFolder in $FolderList) {
                 $RestSplat = @{
                     Uri         = "https://graph.microsoft.com/v1.0/users/{0}/mailFolders('{1}'){2}" -f $Mailbox.UserPrincipalName, $WellKnownFolder, $Uri
                     Headers     = @{ "Authorization" = "Bearer $Token" }
@@ -134,7 +133,10 @@ function Get-GraphMailFolderMessage {
                             }
                         }
                     }
-                    catch { Write-Host "Not Found" -ForegroundColor Red -NoNewline }
+                    catch {
+                        Write-Host "Not Found" -ForegroundColor Red -NoNewline
+                        break what
+                    }
                 } until (-not $next -or $i -lt 1)
             }
         }
