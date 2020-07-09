@@ -14,6 +14,13 @@ function Get-GraphMailFolder {
         $UserPrincipalName
     )
     begin {
+        if (-not $WellKnownFolder) {
+            $WellKnownFolder = @('archive', 'clutter', 'conflicts', 'Conversation History', 'ConversationHistory'
+                'Deleted Items', 'deletedItems', 'drafts', 'inbox', 'junk email', 'junkemail', 'localfailures'
+                'outbox', 'recoverableitemsdeletions', 'scheduled', 'searchfolders', 'sentitems'
+                'serverfailures', 'syncissues'
+            )
+        }
         $WellKnown = [System.Collections.Generic.List[string]]::New()
         $WellKnownFolder | ForEach-Object { $WellKnown.Add($_) }
         if ($WellKnown -contains 'deletedItems') {
@@ -35,7 +42,7 @@ function Get-GraphMailFolder {
     }
     process {
 
-        $Global:tree = @{ 'root' = [System.Collections.Generic.List[PSObject]]::new() }
+        $Script:tree = @{ 'root' = [System.Collections.Generic.List[PSObject]]::new() }
 
         foreach ($UPN in $UserPrincipalName) {
             Write-Host "`r`nMailbox: $($UPN.UserPrincipalName) " -ForegroundColor Green
@@ -50,36 +57,19 @@ function Get-GraphMailFolder {
                 try {
                     $FolderList = (Invoke-RestMethod @RestSplat -Verbose:$false).value
                     foreach ($Folder in $FolderList) {
-                        [PSCustomObject]@{
-                            DisplayName       = $UPN.DisplayName
-                            Mail              = $UPN.Mail
-                            UserPrincipalName = $UPN.UserPrincipalName
-                            Folder            = $Folder.DisplayName
-                            Path              = $Script:Branch
-                            ChildFolderCount  = $Folder.ChildFolderCount
-                            unreadItemCount   = $Folder.unreaditemCount
-                            totalItemCount    = $Folder.unreaditemCount
-                            wellKnownName     = $Folder.wellKnownName
-                            ParentFolderId    = $Folder.ParentFolderId
-                            Id                = $Folder.Id
-                        }
-
-
-                        # $R = $Folder.ID.Substring($Folder.ID.Length - 10)
-                        # $P = $Folder.ParentFolderId.Substring($Folder.ParentFolderId.Length - 10)
-                        # Write-Host "ROOT: $($Folder.DisplayName) - (ID: $R) Parent: $P  " -ForegroundColor cyan -NoNewline
-
                         $tree['root'].Add(@{
-                                Folder           = $Folder.DisplayName
-                                Path             = $Script:Branch
-                                ChildFolderCount = $Folder.ChildFolderCount
-                                unreadItemCount  = $Folder.unreaditemCount
-                                totalItemCount   = $Folder.unreaditemCount
-                                wellKnownName    = $Folder.wellKnownName
-                                ParentFolderId   = 'root'
-                                Id               = $Folder.Id
+                                DisplayName       = $UPN.DisplayName
+                                Mail              = $UPN.Mail
+                                UserPrincipalName = $UPN.UserPrincipalName
+                                Folder            = $Folder.DisplayName
+                                ChildFolderCount  = $Folder.ChildFolderCount
+                                unreadItemCount   = $Folder.unreaditemCount
+                                totalItemCount    = $Folder.totalItemCount
+                                wellKnownName     = $Folder.wellKnownName
+                                ParentFolderId    = 'root'
+                                Id                = $Folder.Id
                             })
-                        # Write-Host "Added to tree" -ForegroundColor Green
+
                         if ($Folder.ChildFolderCount -ge 1 -and $Recurse) {
                             $ChildSplat = @{
                                 DisplayName       = $UPN.DisplayName

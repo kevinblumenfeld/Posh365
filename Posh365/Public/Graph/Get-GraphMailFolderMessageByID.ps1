@@ -101,6 +101,7 @@ function Get-GraphMailFolderMessageByID {
                             UserPrincipalName    = $Mailbox.UserPrincipalName
                             Mail                 = $Mailbox.Mail
                             Folder               = $Mailbox.Folder
+                            Path                 = $Mailbox.Path
                             SenderName           = $Message.Sender.emailaddress.name
                             SenderAddress        = $Message.Sender.emailaddress.address
                             FromName             = $Message.from.emailaddress.name
