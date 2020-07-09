@@ -12,7 +12,7 @@ function Remove-GraphMailMessage {
                 Method      = 'Delete'
                 ErrorAction = 'Stop'
             }
-            try { Invoke-RestMethod @RestSplat }
+            try { $null = Invoke-RestMethod @RestSplat }
             catch { Write-Host "Error Deleting Message $($Message.UserPrincipalName): - $($_.Exception.Message)" -ForegroundColor Red }
         }
     }

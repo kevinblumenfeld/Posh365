@@ -5,6 +5,8 @@ function Get-GraphMailFolderRecoverableItems {
         $UserPrincipalName
     )
     process {
+        $Script:tree = @{ 'root' = [System.Collections.Generic.List[PSObject]]::new() }
+
         foreach ($UPN in $UserPrincipalName) {
             if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
             $RestSplat = @{
@@ -15,31 +17,32 @@ function Get-GraphMailFolderRecoverableItems {
             try {
                 Write-Host "`r`nMailbox (RecoverableItems): $($UPN.UserPrincipalName) " -ForegroundColor Green -NoNewline
                 $FolderList = ((Invoke-RestMethod @RestSplat -Verbose:$false).value).where{ $_.wellKnownName -like 'RecoverableItems*' }
-                # $FolderList = (Invoke-RestMethod @RestSplat -Verbose:$false).value
                 foreach ($Folder in $FolderList) {
-                    [PSCustomObject]@{
-                        DisplayName       = $UPN.DisplayName
-                        Mail              = $UPN.Mail
-                        UserPrincipalName = $UPN.UserPrincipalName
-                        Folder            = $Folder.DisplayName
-                        ChildFolderCount  = $Folder.ChildFolderCount
-                        unreadItemCount   = $Folder.unreaditemCount
-                        totalItemCount    = $Folder.unreaditemCount
-                        wellKnownName     = $Folder.wellKnownName
-                        ParentFolderId    = $Folder.ParentFolderId
-                        Id                = $Folder.Id
-                    }
+                    $tree['root'].Add(@{
+                            DisplayName       = $UPN.DisplayName
+                            Mail              = $UPN.Mail
+                            UserPrincipalName = $UPN.UserPrincipalName
+                            Folder            = $Folder.DisplayName
+                            ChildFolderCount  = $Folder.ChildFolderCount
+                            unreadItemCount   = $Folder.unreaditemCount
+                            totalItemCount    = $Folder.totalItemCount
+                            wellKnownName     = $Folder.wellKnownName
+                            ParentFolderId    = 'root'
+                            Id                = $Folder.Id
+                        })
                     if ($Folder.ChildFolderCount -ge 1) {
                         $ChildSplat = @{
                             DisplayName       = $UPN.DisplayName
                             Mail              = $UPN.Mail
                             UserPrincipalName = $UPN.UserPrincipalName
+                            Tree              = $tree
                         }
                         $Folder | Get-GraphMailFolderChild @ChildSplat
                     }
                 }
             }
-            catch { Write-Host "Not Found $($_.Exception)" -ForegroundColor Red -NoNewline }
+            catch { Write-Host "$($_.Exception)" -ForegroundColor Red -NoNewline }
         }
+        Get-TreePrintout -Tree $tree -id 'root'
     }
 }

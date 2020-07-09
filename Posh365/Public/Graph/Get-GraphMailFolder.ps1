@@ -45,7 +45,7 @@ function Get-GraphMailFolder {
         $Script:tree = @{ 'root' = [System.Collections.Generic.List[PSObject]]::new() }
 
         foreach ($UPN in $UserPrincipalName) {
-            Write-Host "`r`nMailbox: $($UPN.UserPrincipalName) " -ForegroundColor Green
+            Write-Host "`r`nMailbox: $($UPN.UserPrincipalName) " -ForegroundColor Green -NoNewline
             :what foreach ($Known in $WellKnown) {
                 if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
                 $Uri = "/msgfolderroot/childfolders?`$filter=DisplayName eq '{0}'" -f $Known
@@ -82,14 +82,11 @@ function Get-GraphMailFolder {
                     }
                 }
                 catch {
-                    Write-Host "$($_.Exception)" -ForegroundColor Red -NoNewline
+                    Write-Host "Not Found" -ForegroundColor Red -NoNewline
                     break what
                 }
             }
         }
         Get-TreePrintout -Tree $tree -id 'root'
-    }
-    end {
-
     }
 }
