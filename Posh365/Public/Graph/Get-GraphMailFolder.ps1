@@ -16,22 +16,29 @@ function Get-GraphMailFolder {
     begin {
         $WellKnown = [System.Collections.Generic.List[string]]::New()
         $WellKnownFolder | ForEach-Object { $WellKnown.Add($_) }
-        if ($WellKnown -contains 'deleteditems') {
-            $WellKnown.Remove('deletedItems')
-            $WellKnown.Add('Deleted Items')
+        if ($WellKnown -contains 'deletedItems') {
+            $null = $WellKnown.Remove('deletedItems')
+            $null = $WellKnown.Add('Deleted Items')
+        }
+        if ($WellKnown -contains 'sentItems') {
+            $null = $WellKnown.Remove('sentitems')
+            $null = $WellKnown.Add('Sent Items')
         }
         if ($WellKnown -contains 'junkemail') {
-            $WellKnown.Remove('junkemail')
-            $WellKnown.Add('junk email')
+            $null = $WellKnown.Remove('junkemail')
+            $null = $WellKnown.Add('junk email')
         }
-        if ($WellKnown -contains 'conversationhistory') {
-            $WellKnown.Remove('conversationhistory')
-            $WellKnown.Add('Conversation History')
+        if ($WellKnown -contains 'ConversationHistory') {
+            $null = $WellKnown.Remove('ConversationHistory')
+            $null = $WellKnown.Add('Conversation History')
         }
     }
     process {
+
+        $Global:tree = @{ 'root' = [System.Collections.Generic.List[PSObject]]::new() }
+
         foreach ($UPN in $UserPrincipalName) {
-            Write-Host "`r`nMailbox: $($UPN.UserPrincipalName) " -ForegroundColor Green -NoNewline
+            Write-Host "`r`nMailbox: $($UPN.UserPrincipalName) " -ForegroundColor Green
             :what foreach ($Known in $WellKnown) {
                 if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
                 $Uri = "/msgfolderroot/childfolders?`$filter=DisplayName eq '{0}'" -f $Known
@@ -48,6 +55,7 @@ function Get-GraphMailFolder {
                             Mail              = $UPN.Mail
                             UserPrincipalName = $UPN.UserPrincipalName
                             Folder            = $Folder.DisplayName
+                            Path              = $Script:Branch
                             ChildFolderCount  = $Folder.ChildFolderCount
                             unreadItemCount   = $Folder.unreaditemCount
                             totalItemCount    = $Folder.unreaditemCount
@@ -55,21 +63,42 @@ function Get-GraphMailFolder {
                             ParentFolderId    = $Folder.ParentFolderId
                             Id                = $Folder.Id
                         }
+
+
+                        # $R = $Folder.ID.Substring($Folder.ID.Length - 10)
+                        # $P = $Folder.ParentFolderId.Substring($Folder.ParentFolderId.Length - 10)
+                        # Write-Host "ROOT: $($Folder.DisplayName) - (ID: $R) Parent: $P  " -ForegroundColor cyan -NoNewline
+
+                        $tree['root'].Add(@{
+                                Folder           = $Folder.DisplayName
+                                Path             = $Script:Branch
+                                ChildFolderCount = $Folder.ChildFolderCount
+                                unreadItemCount  = $Folder.unreaditemCount
+                                totalItemCount   = $Folder.unreaditemCount
+                                wellKnownName    = $Folder.wellKnownName
+                                ParentFolderId   = 'root'
+                                Id               = $Folder.Id
+                            })
+                        # Write-Host "Added to tree" -ForegroundColor Green
                         if ($Folder.ChildFolderCount -ge 1 -and $Recurse) {
                             $ChildSplat = @{
                                 DisplayName       = $UPN.DisplayName
                                 Mail              = $UPN.Mail
                                 UserPrincipalName = $UPN.UserPrincipalName
+                                Tree              = $tree
                             }
                             $Folder | Get-GraphMailFolderChild @ChildSplat
                         }
                     }
                 }
                 catch {
-                    Write-Host "Not Found" -ForegroundColor Red -NoNewline
+                    Write-Host "$($_.Exception)" -ForegroundColor Red -NoNewline
                     break what
                 }
             }
         }
+    }
+    end {
+        Get-TreePrintout -Tree $tree -id 'root'
     }
 }
