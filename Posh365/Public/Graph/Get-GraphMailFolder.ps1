@@ -6,7 +6,7 @@ function Get-GraphMailFolder {
         $Recurse,
 
         [Parameter()]
-        [ValidateSet('archive', 'clutter', 'conflicts', 'Conversation History', 'ConversationHistory', 'Deleted Items', 'deletedItems', 'drafts', 'inbox', 'junk email', 'junkemail', 'localfailures', 'outbox', 'recoverableitemsdeletions', 'scheduled', 'searchfolders', 'sentitems', 'serverfailures', 'syncissues')]
+        [ValidateSet('archive', 'clutter', 'conflicts', 'Conversation History', 'ConversationHistory', 'Deleted Items', 'deletedItems', 'drafts', 'inbox', 'junk email', 'junkemail', 'localfailures', 'outbox', 'recoverableitemsdeletions', 'scheduled', 'searchfolders', 'sent items', 'sentitems', 'serverfailures', 'syncissues')]
         [string[]]
         $WellKnownFolder,
 
@@ -15,9 +15,9 @@ function Get-GraphMailFolder {
     )
     begin {
         if (-not $WellKnownFolder) {
-            $WellKnownFolder = @('archive', 'clutter', 'conflicts', 'Conversation History', 'ConversationHistory'
-                'Deleted Items', 'deletedItems', 'drafts', 'inbox', 'junk email', 'junkemail', 'localfailures'
-                'outbox', 'recoverableitemsdeletions', 'scheduled', 'searchfolders', 'sentitems'
+            $WellKnownFolder = @('archive', 'clutter', 'conflicts', 'ConversationHistory'
+                'deletedItems', 'drafts', 'inbox', 'junkemail', 'localfailures', 'outbox'
+                'recoverableitemsdeletions', 'scheduled', 'searchfolders', 'sentitems'
                 'serverfailures', 'syncissues'
             )
         }
@@ -87,8 +87,9 @@ function Get-GraphMailFolder {
                 }
             }
         }
+        Get-TreePrintout -Tree $tree -id 'root'
     }
     end {
-        Get-TreePrintout -Tree $tree -id 'root'
+
     }
 }

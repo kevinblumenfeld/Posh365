@@ -11,8 +11,6 @@ function Get-TreePrintout {
         $prefix
     )
     foreach ($item in $tree.$Id) {
-
-        # $Path = ('{0} > {1}' -f $Prefix, $item.Folder)
         [PSCustomObject]@{
             DisplayName       = $Item.DisplayName
             Mail              = $Item.Mail
