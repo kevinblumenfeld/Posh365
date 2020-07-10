@@ -41,7 +41,7 @@ function Get-GraphMailFolderRecoverableItems {
                     }
                 }
             }
-            catch { Write-Host "$($_.Exception)" -ForegroundColor Red -NoNewline }
+            catch { Write-Host "Not Found" -ForegroundColor Red -NoNewline }
         }
         Get-TreePrintout -Tree $tree -id 'root'
     }

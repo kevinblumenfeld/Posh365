@@ -97,15 +97,15 @@ function Invoke-FindSpill {
         }
         $Script:IncludeRecoverableItems = $false
         $Recurse = $false
-        foreach ($Key in $Splat.keys) {
-            if ($Splat[$Key] -and $Key -eq '_Folder_RecoverableItems') { $Script:IncludeRecoverableItems = $true }
-            if ($Splat.keys -contains '_Folder_Root') {
-                @('Archive', 'Clutter', 'DeletedItems', 'Inbox', 'Outbox', 'SentItems', 'ConversationHistory'
-                    'Conflicts', 'Drafts', 'localfailures', 'scheduled', 'searchfolders'
-                    'serverfailures', 'syncissues').ForEach{ $FolderList.Add($_) }
-            }
-            else {
-                if ($Splat[$Key] -and $Key -like '_Folder_*') { $FolderList.Add($Key.replace('_Folder_', '')) }
+        if ($Splat.keys -contains '_Folder_Root') {
+            @('Archive', 'Clutter', 'DeletedItems', 'Inbox', 'Outbox', 'SentItems', 'ConversationHistory'
+                'Conflicts', 'Drafts', 'localfailures', 'scheduled', 'searchfolders'
+                'serverfailures', 'syncissues').ForEach{ $FolderList.Add($_) }
+        }
+        else {
+            if ($Splat.keys -contains '_Folder_RecoverableItems') { $Script:IncludeRecoverableItems = $true }
+            foreach ($Key in $Splat.keys) {
+                if ($Splat[$Key] -and $Key -like '_Folder_*' -and $key -ne '_Folder_RecoverableItems' ) { $FolderList.Add($Key.replace('_Folder_', '')) }
                 if ($Splat.ContainsKey('__Folder_Other')) { $FolderList.Add($Splat['__Folder_Other']) }
             }
         }
