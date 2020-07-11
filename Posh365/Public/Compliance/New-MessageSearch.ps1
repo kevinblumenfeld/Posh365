@@ -14,13 +14,17 @@ function New-MessageSearch {
     $ErrorActionPreference = 'Stop'
     try {
         $NewCS = $null
-        $NewCS = New-ComplianceSearch @NewCSearchSplat
+        $NewCS = New-ComplianceSearch @NewCSearchSplat -ErrorAction Stop
     }
     catch {
-        Write-Host "New-ComplianceSearch Error: $($_.Exception.Message)" -ForegroundColor Cyan
+        Write-Host "New-ComplianceSearch Error: $($_.Exception.Message)" -ForegroundColor Red
         return
     }
-    $null = Start-ComplianceSearch -Identity $NewCS.Name
+    try { $null = Start-ComplianceSearch -Identity $NewCS.Name -ErrorAction Stop }
+    catch {
+        Write-Host "Start Compliance Search Error: $($_.Exception.Message)" -ForegroundColor Red
+        continue
+    }
 
     $Prop = @('Name', 'Status', 'Contentmatchquery', 'NumBindings', 'SearchType', 'Items', 'Size')
     do {

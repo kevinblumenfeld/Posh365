@@ -168,6 +168,14 @@ function MessageSearch {
         HardDelete (cloud only): Purged items are marked for permanent removal from the mailbox and will be permanently removed the next time the mailbox is processed by the Managed Folder Assistant
         If single item recovery is enabled on the mailbox, purged items will be permanently removed after the deleted item retention period expires.
 
+        Special characters
+
+        Some special characters are not included in the search index and therefore are not searchable
+        This also includes the special characters that represent search operators in the search query.
+        Here's a list of special characters that are either replaced by a blank space in the actual search query or cause a search error.
+
+        + - = : ! @ # % ^ & ; _ / ? ( ) [ ] { }
+
         .LINK
         Compliance searches can be found here:
         https://protection.office.com/contentsearch
@@ -210,6 +218,10 @@ function MessageSearch {
         $_From,
 
         [Parameter()]
+        [string[]]
+        $_Content,
+
+        [Parameter()]
         [mailaddress[]]
         $_To,
 
@@ -242,6 +254,10 @@ function MessageSearch {
         $AttachmentName,
 
         [Parameter()]
+        [string]
+        $CaseName,
+
+        [Parameter()]
         [mailaddress[]]
         $MailboxesToSearch,
 
@@ -262,22 +278,27 @@ function MessageSearch {
     $Splat['Name'] = $RequiredSearchName
 
     $Query = [System.Collections.Generic.List[string]]::New()
+    $ORQuery = [System.Collections.Generic.List[string]]::New()
+
 
     if ( $_From ) { $Query.Add('From:{0}' -f $_From) }
+    if ( $_Content ) { (@($_Content) -ne '').split(',').trim() | ForEach-Object { $ORQuery.Add('"{0}"' -f $_) } }
     if ( $_CC ) { (@($_CC) -ne '') | ForEach-Object { $Query.Add('CC:{0}' -f $_) } }
     if ( $_To ) { (@($_To) -ne '') | ForEach-Object { $Query.Add('To:{0}' -f $_) } }
     if ( $_SubjectContains ) {
-        if ( $_SubjectContainsIsCommaSeparated ) { (@($_SubjectContains) -ne '').split(',').trim() | foreach-object { $Query.Add('Subject:{0}' -f $_) } }
+        if ( $_SubjectContainsIsCommaSeparated ) { (@($_SubjectContains) -ne '').split(',').trim() | foreach-object { $Query.Add('Subject:"{0}"' -f $_) } }
         else { $Query.Add(('Subject:"{0}"' -f $_SubjectContains)) }
     }
     if ( $_SubjectDoesNotContain ) { (@($_SubjectDoesNotContain) -ne '') | ForEach-Object { $Query.Add('-Subject:"{0}"' -f $_) } }
     if ( $_DateStart ) { $Query.Add(('Received:{0}..{1}' -f $_DateStart.ToUniversalTime().ToString("O") , $_DateEnd.ToUniversalTime().ToString("O"))) }
-    if ( $AttachmentName ) { $Query.Add('Attachment:{0}' -f $AttachmentName) }
-
+    if ( $AttachmentName ) { $Query.Add('Attachment:"{0}"' -f $AttachmentName) }
     if ( $Query ) {
         $KQL = '({0})' -f (@($Query) -join ') AND (')
-        $Splat['ContentMatchQuery'] = $KQL
     }
+    if ($ORQuery) {
+        $KQL = '{0} AND ({1})' -f $KQL, ('({0})' -f (@($ORQuery) -join ') OR ('))
+    }
+    $Splat['ContentMatchQuery'] = $KQL
     if (-not $MailboxesToSearch) { $Splat['ExchangeLocation'] = 'ALL' }
     if (-not $MailboxesToSearch -and ($ExceptionList -or $ExceptionFilePath)) {
         if ($ExceptionFilePath -or ($ExceptionList -and $ExceptionFilePath)) {
@@ -302,6 +323,14 @@ function MessageSearch {
         Write-Host "You have successfully connected to Security & Compliance Center" -foregroundcolor "magenta" -backgroundcolor "white"
     }
     if (-not $_ExchangeServer -and -not $_ExchangeOnline) { return }
+
+    if ($CaseName) {
+        if (-not ($null = Get-ComplianceCase -Identity $CaseName -ErrorAction SilentlyContinue )) {
+            $NewCase = New-ComplianceCase -Name $CaseName
+            Write-Host "New e-discovery case created: $($NewCase.Name)" -ForegroundColor Cyan
+        }
+        $Splat['Case'] = $CaseName
+    }
 
     $Splat
 }
