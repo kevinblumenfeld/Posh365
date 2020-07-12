@@ -8,36 +8,55 @@ function Connect-PoshGraph {
 
         [Parameter()]
         [switch]
+        $ApplicationOnly,
+
+        [Parameter()]
+        [switch]
         $DeleteCreds
     )
+
     $TenantPath = Join-Path -Path $Env:USERPROFILE -ChildPath ('.Posh365/Credentials/Graph/{0}' -f $Tenant)
     $TenantCred = Join-Path -Path $TenantPath -ChildPath ('{0}Cred.xml' -f $Tenant)
     $TenantConfig = Join-Path -Path $TenantPath -ChildPath ('{0}Config.xml' -f $Tenant)
     if ($DeleteCreds) {
-        Remove-Item -Path $TenantConfig, $TenantCred -Force
+        Remove-Item -Path $TenantConfig, $TenantCred -Force -ErrorAction SilentlyContinue
         continue
     }
-    $TImport = Import-Clixml $TenantConfig
+    $XML = Import-Clixml $TenantConfig
 
-    [System.Management.Automation.PSCredential]$TConfig = $TImport.Cred
-    $TS = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($TConfig.Password)
-    $TenantSecret = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($TS)
+    [System.Management.Automation.PSCredential]$Configuration = $XML.Cred
+    $MarshalSecret = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Configuration.Password)
+    $Secret = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($MarshalSecret)
 
-    [System.Management.Automation.PSCredential]$TCred = Import-Clixml -Path $TenantCred
-    $TP = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($TCred.Password)
-    $TPass = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($TP)
-
-    $Request = @{
-        Method = 'POST'
-        Body   = @{
-            Grant_Type    = 'PASSWORD'
-            Client_Id     = $TImport.ClientId
-            Client_Secret = $TenantSecret
-            Username      = $TCred.UserName
-            Password      = $TPass
-            Scope         = "offline_access https://graph.microsoft.com/.default"
+    $Request = if ($ApplicationOnly) {
+        @{
+            Method = "Post"
+            Body   = @{
+                Grant_Type    = 'client_credentials'
+                Client_Id     = $XML.ClientId
+                Client_Secret = $Secret
+                scope         = 'https://graph.microsoft.com/.default'
+                resource      = 'https://graph.microsoft.com/'
+            }
+            Uri    = "https://login.microsoftonline.com/$Tenant/oauth2/token"
         }
-        Uri    = 'https://login.microsoftonline.com/{0}/oauth2/v2.0/token' -f $TConfig.Username
+    }
+    else {
+        [System.Management.Automation.PSCredential]$Credential = Import-Clixml -Path $TenantCred
+        $MarshalPassword = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Credential.Password)
+        $Password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($MarshalPassword)
+        @{
+            Method = 'POST'
+            Body   = @{
+                Grant_Type    = 'PASSWORD'
+                Client_Id     = $XML.ClientId
+                Client_Secret = $Secret
+                Scope         = "offline_access https://graph.microsoft.com/.default"
+                Username      = $Credential.UserName
+                Password      = $Password
+            }
+            Uri    = 'https://login.microsoftonline.com/{0}/oauth2/v2.0/token' -f $Configuration.Username
+        }
     }
     $TenantResponse = Invoke-RestMethod @Request
     $Script:TimeToRefresh = ([datetime]::UtcNow).AddSeconds($TenantResponse.expires_in - 10)
