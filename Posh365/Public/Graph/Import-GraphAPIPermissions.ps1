@@ -61,14 +61,14 @@ function Import-GraphAPIPermissions {
         $Params = @{
             ObjectId            = $TargetApp.ObjectId
             EndDate             = $Date.AddYears($SecretDuration)
-            CustomKeyIdentifier = "{0}-{1}" -f $TargetApp.name, $Date.ToString("yyyyMMddTHHmm")
+            CustomKeyIdentifier = "{0}-{1}" -f $TargetApp.Displayname, $Date.ToString("yyyyMMddTHHmm")
         }
         New-AzureADApplicationPasswordCredential @Params
     }
     $Tenant = Get-AzureADTenantDetail
     Write-Host "Grant Admin Consent by logging in as $Owner here:" -ForegroundColor Cyan
     $ConsentURL = 'https://login.microsoftonline.com/{0}/v2.0/adminconsent?client_id={1}&state=12345&redirect_uri={2}&scope={3}&prompt=admin_consent' -f @(
-        $Tenant.ObjectID, $Target.AppId, 'https://portal.azure.com/', 'https://graph.microsoft.com/.default')
+        $Tenant.ObjectID, $TargetApp.AppId, 'https://portal.azure.com/', 'https://graph.microsoft.com/.default')
     Write-Host $ConsentURL -ForegroundColor White
     if ($OpenConsentInBrowser) { Start $ConsentURL }
 }
