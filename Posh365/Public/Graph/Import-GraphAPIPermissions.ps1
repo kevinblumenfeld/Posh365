@@ -1,23 +1,37 @@
 function Import-GraphAPIPermissions {
+    [cmdletbinding(DefaultParameterSetName = 'PlaceHolder')]
     param (
-        [Parameter()]
+
+        [Parameter(Mandatory, ParameterSetName = 'FileSystem')]
+        [Parameter(Mandatory, ParameterSetName = 'GIST')]
         [mailaddress]
         $Owner,
 
-        [Parameter()]
+        [Parameter(Mandatory, ParameterSetName = 'FileSystem')]
         [string]
         [ValidateScript( { Test-Path $_ })]
         $XMLPath,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName = 'GIST')]
+        [string]
+        $GithubUsername,
+
+        [Parameter(Mandatory, ParameterSetName = 'GIST')]
+        [string]
+        $GistFilename,
+
+        [Parameter(ParameterSetName = 'FileSystem')]
+        [Parameter(ParameterSetName = 'GIST')]
         [ValidateSet('None', 1, 2)]
         $SecretDuration,
 
-        [Parameter()]
+        [Parameter(Mandatory, ParameterSetName = 'FileSystem')]
+        [Parameter(Mandatory, ParameterSetName = 'GIST')]
         [string]
         $Name,
 
-        [Parameter()]
+        [Parameter(Mandatory, ParameterSetName = 'FileSystem')]
+        [Parameter(Mandatory, ParameterSetName = 'GIST')]
         [switch]
         $OpenConsentInBrowser
     )
@@ -33,11 +47,28 @@ function Import-GraphAPIPermissions {
         Write-Host "Choose a name with the -Name parameter" -ForegroundColor Cyan
         continue
     }
-    $Leaf = Get-Item -path $XMLPath
-    if (-not $Name) { $Name = $Leaf.BaseName }
 
+    if ($PSCmdlet.ParameterSetName -eq 'FileSystem') {
+        $Leaf = Get-Item -path $XMLPath -ErrorAction SilentlyContinue
+        if (-not $Name) { $Name = $Leaf.BaseName }
+        $Hash = Import-Clixml $XMLPath
+    }
+    else {
+        try {
+            $Tempfilepath = Join-Path -Path $Env:TEMP -ChildPath ('{0}.xml' -f [guid]::newguid().guid)
+            (Get-GitHubGist -Username $GithubUserName -Filename $GistFilename).content | Set-Content -Path $Tempfilepath -ErrorAction Stop
+            $Hash = Import-Clixml $Tempfilepath
+        }
+        catch {
+            Write-Host "Error importing GIST $($_.Exception.Message)" -ForegroundColor Red
+            continue
+        }
+        finally {
+            Remove-Item -Path $Tempfilepath -Force -Confirm:$false -ErrorAction SilentlyContinue
+        }
+
+    }
     $TargetApp = New-AzureADApplication -DisplayName $Name -ReplyUrls 'https://portal.azure.com/'
-    $Hash = Import-Clixml $XMLPath
 
     $RequiredObject = [Microsoft.Open.AzureAD.Model.RequiredResourceAccess]::new()
     $AccessObject = [System.Collections.Generic.List[Microsoft.Open.AzureAD.Model.ResourceAccess]]::new()
