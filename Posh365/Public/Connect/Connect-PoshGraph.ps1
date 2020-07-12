@@ -14,7 +14,6 @@ function Connect-PoshGraph {
         [switch]
         $DeleteCreds
     )
-
     $TenantPath = Join-Path -Path $Env:USERPROFILE -ChildPath ('.Posh365/Credentials/Graph/{0}' -f $Tenant)
     $TenantCred = Join-Path -Path $TenantPath -ChildPath ('{0}Cred.xml' -f $Tenant)
     $TenantConfig = Join-Path -Path $TenantPath -ChildPath ('{0}Config.xml' -f $Tenant)
@@ -38,7 +37,7 @@ function Connect-PoshGraph {
                 scope         = 'https://graph.microsoft.com/.default'
                 resource      = 'https://graph.microsoft.com/'
             }
-            Uri    = "https://login.microsoftonline.com/$Tenant/oauth2/token"
+            Uri    = 'https://login.microsoftonline.com/{0}/oauth2/token' -f $Configuration.Username
         }
     }
     else {
