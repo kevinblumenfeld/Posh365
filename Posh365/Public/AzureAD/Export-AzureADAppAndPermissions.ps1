@@ -17,8 +17,10 @@ function Export-AzureADAppAndPermissions {
 
     .NOTES
     Output from this function will look like this:
+
     AzureAD App and API Permissions for TestApp, exported to:
     C:\Users\kevin.blumenfeld\Desktop\Posh365\GraphApps\kevdev\TestApp-20200712-0757.xml
+
     #>
 
     [cmdletbinding()]

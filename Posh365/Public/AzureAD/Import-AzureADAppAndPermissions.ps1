@@ -43,8 +43,16 @@ function Import-AzureADAppAndPermissions {
                                     -Name NewApp01 -SecretDuration 1 -OpenConsentInBrowser
 
     .NOTES
-    If SecretDuration is choosen the Secret will be output as an object
-    Future plans to use Export-AzureADAppConfig and MS DPAPI to save and encrypt
+    If SecretDuration is choosen the Secret will be include with the one object this function produces
+
+    Example:
+
+    ApplicationId : adecd1ee-abcd-4c66-bcf1-4bfb0b610818
+    TenantId      : f8f6d77c-abcd-4a11-ae04-39bfaff70e00
+    ObjectId      : c57f335d-abcd-492e-bc90-6cd1a85eecd6
+    Secret        : pA00W2xLLabcdZLL5g8dS85HiXAjuI1UFKnwdsAlpAk=
+
+
     #>
 
     [cmdletbinding(DefaultParameterSetName = 'PlaceHolder')]
@@ -78,6 +86,18 @@ function Import-AzureADAppAndPermissions {
         [string]
         $Name,
 
+        [Parameter(ParameterSetName = 'FileSystem')]
+        [Parameter(ParameterSetName = 'GIST')]
+        [Parameter(ParameterSetName = 'ConnectPoshGraph')]
+        [switch]
+        $ExportToConnectPoshGraphDelegated,
+
+        [Parameter(ParameterSetName = 'FileSystem')]
+        [Parameter(ParameterSetName = 'GIST')]
+        [Parameter(ParameterSetName = 'ConnectPoshGraph')]
+        [switch]
+        $ExportToConnectPoshGraphApplication,
+
         [Parameter(Mandatory, ParameterSetName = 'FileSystem')]
         [Parameter(Mandatory, ParameterSetName = 'GIST')]
         [switch]
@@ -92,15 +112,11 @@ function Import-AzureADAppAndPermissions {
     $ExistingApp = Get-AzureADApplication -filter "DisplayName eq '$Name'"
     if ($ExistingApp) {
         Write-Host "Azure AD Application Name: $Name already exists" -ForegroundColor Red
-        Write-Host "Choose a name with the -Name parameter" -ForegroundColor Cyan
+        Write-Host "Choose a new name with the -Name parameter" -ForegroundColor Cyan
         continue
     }
 
-    if ($PSCmdlet.ParameterSetName -eq 'FileSystem') {
-        $Leaf = Get-Item -path $XMLPath -ErrorAction SilentlyContinue
-        if (-not $Name) { $Name = $Leaf.BaseName }
-        $Hash = Import-Clixml $XMLPath
-    }
+    if ($PSCmdlet.ParameterSetName -eq 'FileSystem') { $Hash = Import-Clixml $XMLPath }
     else {
         try {
             $Tempfilepath = Join-Path -Path $Env:TEMP -ChildPath ('{0}.xml' -f [guid]::newguid().guid)
@@ -116,7 +132,14 @@ function Import-AzureADAppAndPermissions {
         }
 
     }
+    $Tenant = Get-AzureADTenantDetail
     $TargetApp = New-AzureADApplication -DisplayName $Name -ReplyUrls 'https://portal.azure.com/'
+    $Result = [ordered]@{ }
+    $Result['DisplayName'] = $Name
+    $Result['ApplicationId'] = $TargetApp.AppId
+    $Result['TenantId'] = $Tenant.ObjectID
+    $Result['ObjectId'] = $TargetApp.ObjectId
+    $Result['Owner'] = $Owner
 
     $RequiredObject = [Microsoft.Open.AzureAD.Model.RequiredResourceAccess]::new()
     $AccessObject = [System.Collections.Generic.List[Microsoft.Open.AzureAD.Model.ResourceAccess]]::new()
@@ -142,12 +165,25 @@ function Import-AzureADAppAndPermissions {
             EndDate             = $Date.AddYears($SecretDuration)
             CustomKeyIdentifier = "{0}-{1}" -f $TargetApp.Displayname, $Date.ToString("yyyyMMddTHHmm")
         }
-        New-AzureADApplicationPasswordCredential @Params
+        $SecretResult = New-AzureADApplicationPasswordCredential @Params
+        $Result['Secret'] = $SecretResult.value
     }
-    $Tenant = Get-AzureADTenantDetail
     Write-Host "Grant Admin Consent by logging in as $Owner here:" -ForegroundColor Cyan
     $ConsentURL = 'https://login.microsoftonline.com/{0}/v2.0/adminconsent?client_id={1}&state=12345&redirect_uri={2}&scope={3}&prompt=admin_consent' -f @(
         $Tenant.ObjectID, $TargetApp.AppId, 'https://portal.azure.com/', 'https://graph.microsoft.com/.default')
     Write-Host $ConsentURL -ForegroundColor White
+    [PSCustomObject]$Result
+    if ($ExportToConnectPoshGraphDelegated) {
+        $SaveSplat = @{
+            Tenant        = $Name
+            Secret        = $Result['Secret']
+            ApplicationId = $Result['ApplicationId']
+            TenantId      = $Result['TenantId']
+        }
+        if ($ExportToConnectPoshGraphDelegated) { $SaveSplat['PromptForDelegatedCredentials'] = $true }
+        Save-GraphConfig @SaveSplat
+        Write-Host "To connect with Graph use: " -ForegroundColor Cyan
+        Write-Host "                    Connect-PoshGraph -Tenant $Name" -ForegroundColor Green
+    }
     if ($OpenConsentInBrowser) { Start $ConsentURL }
 }
