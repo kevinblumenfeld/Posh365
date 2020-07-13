@@ -1,4 +1,27 @@
-function Export-GraphAPIPermissions {
+function Export-AzureADAppAndPermissions {
+    <#
+    .SYNOPSIS
+    Export Azure AD App name & API permissions to an xml
+
+    .DESCRIPTION
+    Export Azure AD App name & API permissions to an xml
+
+    .PARAMETER Name
+    Azure AD Application you wish to export
+
+    .PARAMETER ServicePrincipalName
+    Microsoft Service Principals. Tested with the Service Principal 'Microsoft Graph'
+
+    .EXAMPLE
+    Export-GraphAPIPermissions -Name 'TestApp' -ServicePrincipalName 'Microsoft Graph'
+
+    .NOTES
+    Output from this function will look like this:
+    AzureAD App and API Permissions for TestApp, exported to:
+    C:\Users\kevin.blumenfeld\Desktop\Posh365\GraphApps\kevdev\TestApp-20200712-0757.xml
+    #>
+
+    [cmdletbinding()]
     param (
         [Parameter(Mandatory)]
         $Name,
@@ -90,8 +113,8 @@ function Export-GraphAPIPermissions {
     $RequiredObject.ResourceAppId = $ServicePrincipal.AppId
     $RequiredObject.ResourceAccess = $AccessObject
 
-    $XMLPath = (Join-Path -Path $TenantPath -ChildPath ('{0}-{1}.xml' -f $Name, $SourceApp.objectid.split('-')[4]) )
+    $XMLPath = (Join-Path -Path $TenantPath -ChildPath ('{0}-{1}.xml' -f $Name, [DateTime]::Now.ToString('yyyyMMdd-hhmm')) )
     $Hash | Export-Clixml $XMLPath -Force
-    Write-Host "Graph app, $Name, API permissions exported to:" -ForegroundColor Cyan
+    Write-Host "AzureAD App and API Permissions for TestApp $Name, exported to:" -ForegroundColor Cyan
     $XMLPath
 }

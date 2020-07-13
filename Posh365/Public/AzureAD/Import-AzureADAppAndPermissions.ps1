@@ -1,4 +1,52 @@
-function Import-GraphAPIPermissions {
+function Import-AzureADAppAndPermissions {
+    <#
+    .SYNOPSIS
+    Import Azure AD App name & API permissions from filesystem or GIST-based xml
+
+    .DESCRIPTION
+    Import Azure AD App name & API permissions from filesystem or GIST-based xml
+
+    .PARAMETER Owner
+    The owner of the application. For convenience, should be the owner
+    that can grant admin consent of the requested API permissions
+
+    .PARAMETER XMLPath
+    Filesystem path to the XML created by Export-AzureADAppAndPermissions
+    Choose this or the Github paramters to grab the xml from a GIST
+
+    .PARAMETER GithubUsername
+    Github username where the GIST you wish to import lives
+
+    .PARAMETER GistFilename
+    filename of GIST, example: Test.xml
+
+    .PARAMETER SecretDuration
+    How many years the secret should live.
+    Current Options are 1, 2, and None
+    1 year, 2 years or None (no secret created)
+
+    .PARAMETER Name
+    Name of the App to create in the target AzureAD tenant.
+    If left blank, will use source tenant app name (plus timestamp of export)
+
+    .PARAMETER OpenConsentInBrowser
+    Will open the admin consent page where the admin can login to the
+    target Azure AD tenant and "grant admin consent" for those APIs that require it
+
+    .EXAMPLE
+    Import-AzureADAppAndPermissions -Owner admin@thesourceonline.onmicrosoft.com -GithubUsername kevinblumenfeld `
+                                    -GistFilename test.xml -Name NewApp09 -SecretDuration 1 -OpenConsentInBrowser
+
+    .EXAMPLE
+    Import-AzureADAppAndPermissions -Owner admin@thesourceonline.onmicrosoft.com `
+                                    -XMLPath C:\Users\kevin\Desktop\Posh365\GraphApps\kevdev\TestApp-20200712-0757.xml`
+                                    -Name NewApp01 -SecretDuration 1 -OpenConsentInBrowser
+
+    .NOTES
+    If SecretDuration is choosen the Secret will be output as an object
+    Future plans to use Export-AzureADAppConfig and MS DPAPI to save and encrypt
+    #>
+
     [cmdletbinding(DefaultParameterSetName = 'PlaceHolder')]
     param (
 
