@@ -98,30 +98,33 @@ function Import-AzureADAppAndPermissions {
         [switch]
         $ExportToConnectPoshGraphApplication,
 
-        [Parameter(Mandatory, ParameterSetName = 'FileSystem')]
-        [Parameter(Mandatory, ParameterSetName = 'GIST')]
+        [Parameter(ParameterSetName = 'FileSystem')]
+        [Parameter(ParameterSetName = 'GIST')]
         [switch]
         $OpenConsentInBrowser
     )
 
-    $AppOwner = Get-AzureADUser -ObjectId $Owner -ErrorAction SilentlyContinue
-    if (-not ($AppOwner)) {
-        Write-Host "Owner $Owner, not found. Halting script" -ForegroundColor Red
-        continue
+    try {
+        $AppOwner = Get-AzureADUser -ObjectId $Owner -ErrorAction Stop
+        Write-Host "Owner $Owner, found" -ForegroundColor Green
     }
-    $ExistingApp = Get-AzureADApplication -filter "DisplayName eq '$Name'"
-    if ($ExistingApp) {
+    catch {
+        Write-Host "Owner $Owner, not found. Halting script" -ForegroundColor Red
+    }
+    try {
+        $null = Get-AzureADApplication -filter "DisplayName eq '$Name'" -ErrorAction Stop
+    }
+    catch {
         Write-Host "Azure AD Application Name: $Name already exists" -ForegroundColor Red
         Write-Host "Choose a new name with the -Name parameter" -ForegroundColor Cyan
-        continue
     }
 
-    if ($PSCmdlet.ParameterSetName -eq 'FileSystem') { $Hash = Import-Clixml $XMLPath }
+    if ($PSCmdlet.ParameterSetName -eq 'FileSystem') { $SourceApp = Import-Clixml $XMLPath }
     else {
         try {
             $Tempfilepath = Join-Path -Path $Env:TEMP -ChildPath ('{0}.xml' -f [guid]::newguid().guid)
             (Get-GitHubGist -Username $GithubUserName -Filename $GistFilename).content | Set-Content -Path $Tempfilepath -ErrorAction Stop
-            $Hash = Import-Clixml $Tempfilepath
+            $SourceApp = Import-Clixml $Tempfilepath
         }
         catch {
             Write-Host "Error importing GIST $($_.Exception.Message)" -ForegroundColor Red
@@ -133,31 +136,33 @@ function Import-AzureADAppAndPermissions {
 
     }
     $Tenant = Get-AzureADTenantDetail
-    $TargetApp = New-AzureADApplication -DisplayName $Name -ReplyUrls 'https://portal.azure.com/'
-    $Result = [ordered]@{ }
-    $Result['DisplayName'] = $Name
-    $Result['ApplicationId'] = $TargetApp.AppId
-    $Result['TenantId'] = $Tenant.ObjectID
-    $Result['ObjectId'] = $TargetApp.ObjectId
-    $Result['Owner'] = $Owner
 
-    $RequiredObject = [Microsoft.Open.AzureAD.Model.RequiredResourceAccess]::new()
-    $AccessObject = [System.Collections.Generic.List[Microsoft.Open.AzureAD.Model.ResourceAccess]]::new()
+    $TargetApp = New-AzureADApplication -DisplayName $Name -ReplyUrls 'https://portal.azure.com'
+    $Output = [ordered]@{ }
+    $Output['DisplayName'] = $Name
+    $Output['ApplicationId'] = $TargetApp.AppId
+    $Output['TenantId'] = $Tenant.ObjectID
+    $Output['ObjectId'] = $TargetApp.ObjectId
+    $Output['Owner'] = $Owner
 
-    $ResourceList = $Hash['ResourceList']
-    foreach ($Resource in $ResourceList) {
-        $AccessObject.Add([Microsoft.Open.AzureAD.Model.ResourceAccess]@{
-                Id   = $Resource.Id
-                Type = $Resource.Type
-            })
+    $RequiredList = [System.Collections.Generic.List[Microsoft.Open.AzureAD.Model.RequiredResourceAccess]]::new()
+    foreach ($ResourceAppId in $SourceApp.keys) {
+        $RequiredObject = [Microsoft.Open.AzureAD.Model.RequiredResourceAccess]::new()
+        $AccessObject = [System.Collections.Generic.List[Microsoft.Open.AzureAD.Model.ResourceAccess]]::new()
+        foreach ($ResourceAccess in $SourceApp[$ResourceAppId]['ResourceList']) {
+            $AccessObject.Add([Microsoft.Open.AzureAD.Model.ResourceAccess]@{
+                    Id   = $ResourceAccess.Id
+                    Type = $ResourceAccess.Type
+                })
+        }
+        $RequiredObject.ResourceAppId = $ResourceAppId
+        $RequiredObject.ResourceAccess = $AccessObject
+        $RequiredList.Add($RequiredObject)
     }
+    Set-AzureADApplication -ObjectId $TargetApp.ObjectId -RequiredResourceAccess $RequiredList
 
-    $ServicePrincipal = Get-AzureADServicePrincipal -filter ("DisplayName eq '{0}'" -f $Hash['ServicePrincipalName'])
-    $RequiredObject.ResourceAppId = $ServicePrincipal.AppId
-    $RequiredObject.ResourceAccess = $AccessObject
-
-    Set-AzureADApplication -ObjectId $TargetApp.ObjectId -RequiredResourceAccess $RequiredObject
     Add-AzureADApplicationOwner -ObjectId $TargetApp.ObjectId -RefObjectId $AppOwner.ObjectId
+
     if ($SecretDuration -ne 'None') {
         $Date = Get-Date
         $Params = @{
@@ -166,19 +171,21 @@ function Import-AzureADAppAndPermissions {
             CustomKeyIdentifier = "{0}-{1}" -f $TargetApp.Displayname, $Date.ToString("yyyyMMddTHHmm")
         }
         $SecretResult = New-AzureADApplicationPasswordCredential @Params
-        $Result['Secret'] = $SecretResult.value
+        $Output['Secret'] = $SecretResult.value
     }
-    Write-Host "Grant Admin Consent by logging in as $Owner here:" -ForegroundColor Cyan
+
+    Write-Host "Grant Admin Consent by logging in as $Owner here:`r`n" -ForegroundColor Cyan
     $ConsentURL = 'https://login.microsoftonline.com/{0}/v2.0/adminconsent?client_id={1}&state=12345&redirect_uri={2}&scope={3}&prompt=admin_consent' -f @(
         $Tenant.ObjectID, $TargetApp.AppId, 'https://portal.azure.com/', 'https://graph.microsoft.com/.default')
-    Write-Host $ConsentURL -ForegroundColor White
-    [PSCustomObject]$Result
+
+    Write-Host "$ConsentURL" -ForegroundColor White
+    [PSCustomObject]$Output
     if ($ExportToConnectPoshGraphDelegated) {
         $SaveSplat = @{
             Tenant        = $Name
-            Secret        = $Result['Secret']
-            ApplicationId = $Result['ApplicationId']
-            TenantId      = $Result['TenantId']
+            Secret        = $Output['Secret']
+            ApplicationId = $Output['ApplicationId']
+            TenantId      = $Output['TenantId']
         }
         if ($ExportToConnectPoshGraphDelegated) { $SaveSplat['PromptForDelegatedCredentials'] = $true }
         Save-GraphConfig @SaveSplat
