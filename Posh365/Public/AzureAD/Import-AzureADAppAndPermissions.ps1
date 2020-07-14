@@ -119,12 +119,12 @@ function Import-AzureADAppAndPermissions {
         Write-Host "Choose a new name with the -Name parameter" -ForegroundColor Cyan
     }
 
-    if ($PSCmdlet.ParameterSetName -eq 'FileSystem') { $SourceApp = Import-Clixml $XMLPath }
+    if ($PSCmdlet.ParameterSetName -eq 'FileSystem') { $App = Import-Clixml $XMLPath }
     else {
         try {
             $Tempfilepath = Join-Path -Path $Env:TEMP -ChildPath ('{0}.xml' -f [guid]::newguid().guid)
             (Get-GitHubGist -Username $GithubUserName -Filename $GistFilename).content | Set-Content -Path $Tempfilepath -ErrorAction Stop
-            $SourceApp = Import-Clixml $Tempfilepath
+            $App = Import-Clixml $Tempfilepath
         }
         catch {
             Write-Host "Error importing GIST $($_.Exception.Message)" -ForegroundColor Red
@@ -136,8 +136,18 @@ function Import-AzureADAppAndPermissions {
 
     }
     $Tenant = Get-AzureADTenantDetail
+    try {
+        $NewAppSplat = @{
+            DisplayName = $Name
+            ReplyUrls   = $App['SourceApp'].ReplyUrls
+            ErrorAction = 'Stop'
+        }
+        $TargetApp = New-AzureADApplication @NewAppSplat
+    }
+    catch {
+        Write-Host "Unable to create new application:  $($_.Exception.Message)" -ForegroundColor Red
+    }
 
-    $TargetApp = New-AzureADApplication -DisplayName $Name -ReplyUrls 'https://portal.azure.com'
     $Output = [ordered]@{ }
     $Output['DisplayName'] = $Name
     $Output['ApplicationId'] = $TargetApp.AppId
@@ -146,10 +156,10 @@ function Import-AzureADAppAndPermissions {
     $Output['Owner'] = $Owner
 
     $RequiredList = [System.Collections.Generic.List[Microsoft.Open.AzureAD.Model.RequiredResourceAccess]]::new()
-    foreach ($ResourceAppId in $SourceApp.keys) {
+    foreach ($ResourceAppId in $App['API'].keys) {
         $RequiredObject = [Microsoft.Open.AzureAD.Model.RequiredResourceAccess]::new()
         $AccessObject = [System.Collections.Generic.List[Microsoft.Open.AzureAD.Model.ResourceAccess]]::new()
-        foreach ($ResourceAccess in $SourceApp[$ResourceAppId]['ResourceList']) {
+        foreach ($ResourceAccess in $App['API'][$ResourceAppId]['ResourceList']) {
             $AccessObject.Add([Microsoft.Open.AzureAD.Model.ResourceAccess]@{
                     Id   = $ResourceAccess.Id
                     Type = $ResourceAccess.Type

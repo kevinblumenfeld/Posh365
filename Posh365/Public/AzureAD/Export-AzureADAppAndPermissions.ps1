@@ -64,14 +64,16 @@ function Export-AzureADAppAndPermissions {
     }
     if ($AppChoice) { $SourceApp = Get-AzureADApplication -filter "DisplayName eq '$AppChoice.Name'" }
 
-    $Hash = @{ }
+    $App = @{
+        DisplayName = $SourceApp.DisplayName
+        SourceApp   = $SourceApp
+        API         = @{ }
+    }
     $AccessList = $SourceApp.RequiredResourceAccess
     foreach ($Access in $AccessList) {
         $ResourceList = $Access.ResourceAccess
-        $Hash[$Access.ResourceAppId] = @{
+        $App['API'][$Access.ResourceAppId] = @{
             ResourceList = [System.Collections.Generic.List[psobject]]
-            SourceApp    = $SourceApp
-            DisplayName  = $Sourceapp.Displayname
         }
         $RLObj = foreach ($Resource in $ResourceList) {
             [PSCustomObject]@{
@@ -79,11 +81,11 @@ function Export-AzureADAppAndPermissions {
                 Type = $Resource.Type
             }
         }
-        $Hash[$Access.ResourceAppId]['ResourceList'] = $RLObj
+        $App['API'][$Access.ResourceAppId]['ResourceList'] = $RLObj
     }
 
     $XMLPath = (Join-Path -Path $TenantPath -ChildPath ('{0}-{1}.xml' -f $Name, [DateTime]::Now.ToString('yyyyMMdd-hhmm')) )
-    $Hash | Export-Clixml $XMLPath -Force
+    $App | Export-Clixml $XMLPath -Force
     Write-Host "AzureAD App and API Permissions for TestApp $Name, exported to:" -ForegroundColor Cyan
     $XMLPath
 }
