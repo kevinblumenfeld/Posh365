@@ -19,6 +19,8 @@ function Import-AzureADAppAndPermissions {
 
     .PARAMETER GistFilename
     filename of GIST, example: Test.xml
+    This is the most recently created file named, Test.xml, for example.
+    If there is more than one filename bypassed
 
     .PARAMETER SecretDuration
     How many years the secret should live.
@@ -123,7 +125,7 @@ function Import-AzureADAppAndPermissions {
     else {
         try {
             $Tempfilepath = Join-Path -Path $Env:TEMP -ChildPath ('{0}.xml' -f [guid]::newguid().guid)
-            (Get-GitHubGist -Username $GithubUserName -Filename $GistFilename).content | Set-Content -Path $Tempfilepath -ErrorAction Stop
+            (Get-GitHubGist -Username $GithubUserName -Filename $GistFilename)[0].content | Set-Content -Path $Tempfilepath -ErrorAction Stop
             $App = Import-Clixml $Tempfilepath
         }
         catch {
@@ -170,6 +172,12 @@ function Import-AzureADAppAndPermissions {
         $RequiredList.Add($RequiredObject)
     }
     Set-AzureADApplication -ObjectId $TargetApp.ObjectId -RequiredResourceAccess $RequiredList
+    $SetSplat = @{ }
+    Foreach ($AppOptions in $App['SourceApp'].psobject.properties.name) {
+        if ($App['SourceApp'].$AppOptions) {
+            $SetSplat[$AppOptions] = $App['SourceApp'].$AppOptions
+        }
+    }
 
     Add-AzureADApplicationOwner -ObjectId $TargetApp.ObjectId -RefObjectId $AppOwner.ObjectId
 
