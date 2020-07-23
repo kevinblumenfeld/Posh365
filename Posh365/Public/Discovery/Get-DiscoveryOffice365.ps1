@@ -660,7 +660,7 @@ function Get-DiscoveryOffice365 {
             { $menu.DiscoveryItems -contains 'FolderPermissionReport' -or $FolderPermissionReport } {
                 Write-Verbose "Gathering Folder Permissions"
                 $MailboxDetails = Import-Csv $EXO_Mailboxes_Detailed | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' }
-                Write-Host "`nTotal Mailboxes Found: $($MailboxDetails.count)" -ForegroundColor Green
+                Write-Host "`nTotal Mailboxes Found: $(@($MailboxDetails).count)" -ForegroundColor Green
 
                 $ConfirmCount = Read-Host "Do you want to split the count?:(y/n)"
 

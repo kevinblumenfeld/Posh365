@@ -28,7 +28,7 @@ function Get-OutlookVersions {
         $Days
     )
     end {
-        $ServerList = @(Get-ExchangeServer | Where-Object {
+        $RPCList = @(Get-ExchangeServer | Where-Object {
                 (($_.IsClientAccessServer -eq '$true') -and (($_.AdminDisplayVersion).split(' ')[1] -ge '14')) -or
                 (($_.IsMailboxServer -eq '$true') -and (($_.AdminDisplayVersion).split(' ')[1] -ge '15'))
             } | Select-Object @(
@@ -39,7 +39,34 @@ function Get-OutlookVersions {
                 }
             )
         )
-        $FileList = foreach ($Server in $ServerList) {
+
+        $FileList = foreach ($Server in $RPCList) {
+            Write-Verbose "Discovering Logs on`t$($Server.Name)"
+            Get-ChildItem -Path $Server.Path -Filter *.log |
+            Where-Object { $_.LastWriteTime -gt (Get-Date).AddDays(-$Days) } |
+            Select-Object @(
+                @{
+                    Name       = 'File'
+                    Expression = { ("$($Server.Path)" + "\$($_.Name)") }
+                }
+            )
+        }
+        foreach ($File in $FileList) {
+            Write-Verbose "Inspecting CAS Logs: $($File.File)"
+            Invoke-GetOutlookData -LogPath $File.File
+        }
+        $MAPIList = @(Get-ExchangeServer | Where-Object {
+                (($_.IsClientAccessServer -eq '$true') -and (($_.AdminDisplayVersion).split(' ')[1] -ge '14')) -or
+                (($_.IsMailboxServer -eq '$true') -and (($_.AdminDisplayVersion).split(' ')[1] -ge '15'))
+            } | Select-Object @(
+                'Name'
+                @{
+                    Name       = 'Path'
+                    Expression = { ("\\$($_.fqdn)\" + "$($_.Datapath)").Replace(':', '$').Replace('Mailbox', 'Logging\MAPI Client Access') }
+                }
+            )
+        )
+        $FileList = foreach ($Server in $MapiList) {
             Write-Verbose "Discovering Logs on`t$($Server.Name)"
             Get-ChildItem -Path $Server.Path -Filter *.log |
             Where-Object { $_.LastWriteTime -gt (Get-Date).AddDays(-$Days) } |

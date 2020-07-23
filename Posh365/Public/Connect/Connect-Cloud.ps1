@@ -227,7 +227,7 @@ function Connect-Cloud {
     #     }
     # }
     if (($ExchangeOnline -or $MSOnline -or $All365 -or $Skype -or
-            $SharePoint -or $Compliance -or $AzureADver2 -or $AzureAD -or $EXO2 -or $Teams) -and (-not $MFA)) {
+            $SharePoint -or $Compliance -or $AzureADver2 -or $AzureAD -or $EXO2 -or $Teams -or $Azure) -and (-not $MFA)) {
         if (Test-Path ($KeyPath + "$($Tenant).cred")) {
             $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).cred") | ConvertTo-SecureString
             $UsernameString = Get-Content ($KeyPath + "$($Tenant).ucred")
@@ -514,69 +514,12 @@ function Connect-Cloud {
     }
 }
 function Get-LAAzureConnected {
-    if (-not ($null = Get-Module -Name AzureRM -ListAvailable)) {
-        Install-Module -Name AzureRM -Scope CurrentUser -force -AllowClobber
+    if (-not ($null = Get-Module -Name Az.Accounts -ListAvailable)) {
+        Install-Module -Name Az.Accounts -Scope CurrentUser -force -AllowClobber
     }
-    try {
-        $null = Get-AzureRmTenant -ErrorAction Stop
+    Connect-AzAccount -Credential $Credential
+    while (-not $Sub) {
+        $Sub = Get-AzSubscription | Out-GridView -PassThru -Title "Choose subscription and click OK"
     }
-    catch {
-        if (-not $MFA) {
-            $json = Get-ChildItem -Recurse -Include '*@*.json' -Path $KeyPath
-            if ($json) {
-                Write-Host "   Select the Azure username and Click `"OK`" in lower right-hand corner" -foregroundcolor "magenta" -backgroundcolor "white"
-                Write-Host "   Otherwise, if this is the first time using this Azure username click `"Cancel`"" -foregroundcolor "magenta" -backgroundcolor "white"
-                $json = $json | Select-Object name | Out-GridView -PassThru -Title "Select Azure username or click Cancel to use another"
-            }
-            if (-not ($json)) {
-                try {
-                    $azLogin = Login-AzureRmAccount -ErrorAction Stop
-                }
-                catch [System.Management.Automation.CommandNotFoundException] {
-                    Write-Warning "Download and install PowerShell 5.1 or PowerShellGet so the AzureRM module can be automatically installed"
-                    Write-Warning "https://docs.microsoft.com/en-us/powershell/azure/install-azurerm-ps?view=azurermps-4.2.0#how-to-get-powershellget"
-                    Write-Warning "or download the MSI installer and install from here: https://github.com/Azure/azure-powershell/releases"
-                    Break
-                }
-                Save-AzureRmContext -Path ($KeyPath + ($azLogin.Context.Account.Id) + ".json")
-                Import-AzureRmContext -Path ($KeyPath + ($azLogin.Context.Account.Id) + ".json")
-            }
-            else {
-                Import-AzureRmContext -Path ($KeyPath + $json.name)
-            }
-            Write-Host "Select Subscription and Click `"OK`" in lower right-hand corner" -foregroundcolor "magenta" -backgroundcolor "white"
-            $subscription = Get-AzureRmSubscription | Out-GridView -PassThru -Title "Choose Azure Subscription" | Select-Object id
-            try {
-                Select-AzureRmSubscription -SubscriptionId $subscription.id -ErrorAction Stop
-                Write-Host "You have successfully connected to Azure" -foregroundcolor "magenta" -backgroundcolor "white"
-            }
-            catch {
-                Write-Warning "Azure credentials are invalid or expired. Authenticate again please."
-                if ($json.name) {
-                    Remove-Item ($KeyPath + $json.name)
-                }
-                Get-LAAzureConnected
-            }
-        }
-        else {
-            try {
-                Login-AzureRmAccount -ErrorAction Stop
-            }
-            catch [System.Management.Automation.CommandNotFoundException] {
-                Write-Warning "Download and install PowerShell 5.1 or PowerShellGet so the AzureRM module can be automatically installed"
-                Write-Warning "https://docs.microsoft.com/en-us/powershell/azure/install-azurerm-ps?view=azurermps-4.2.0#how-to-get-powershellget"
-                Write-Warning "or download the MSI installer and install from here: https://github.com/Azure/azure-powershell/releases"
-                Break
-            }
-            Write-Host "   Select Subscription and Click `"OK`" in lower right-hand corner" -foregroundcolor "magenta" -backgroundcolor "white"
-            $subscription = Get-AzureRmSubscription | Out-GridView -PassThru -Title "Choose Azure Subscription" | Select-Object id
-            try {
-                Select-AzureRmSubscription -SubscriptionId $subscription.id -ErrorAction Stop
-                Write-Host "You have successfully connected to Azure" -foregroundcolor "magenta" -backgroundcolor "white"
-            }
-            catch {
-                Write-Warning "There was an error selecting your subscription ID"
-            }
-        }
-    }
+    Select-AzSubscription -Subscription $Sub.Id
 }

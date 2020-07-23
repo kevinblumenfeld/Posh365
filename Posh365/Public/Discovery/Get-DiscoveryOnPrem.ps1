@@ -420,11 +420,11 @@
         'Count'
         @{
             Name       = 'OrganizationalUnit'
-            Expression = { $_.Name.split(',')[0] }
+            Expression = { [regex]::Matches($_.Name, ".*(?=,)").value[0] }
         }
         @{
             Name       = 'RecipientType'
-            Expression = { $_.Name.split(',')[1] }
+            Expression = { [regex]::Matches($_.Name, "[^\,]*$").value[0] }
         }
     ) | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_RecipientOUs.csv')
 
