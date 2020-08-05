@@ -286,7 +286,7 @@ function MessageSearch {
     if ( $_CC ) { (@($_CC) -ne '') | ForEach-Object { $Query.Add('CC:{0}' -f $_) } }
     if ( $_To ) { (@($_To) -ne '') | ForEach-Object { $Query.Add('To:{0}' -f $_) } }
     if ( $_SubjectContains ) {
-        if ( $_SubjectContainsIsCommaSeparated ) { (@($_SubjectContains) -ne '').split(',').trim() | foreach-object { $Query.Add('Subject:"{0}"' -f $_) } }
+        if ( $_SubjectContainsIsCommaSeparated ) { (@($_SubjectContains) -ne '').split(',').trim() | ForEach-Object { $Query.Add('Subject:"{0}"' -f $_) } }
         else { $Query.Add(('Subject:"{0}"' -f $_SubjectContains)) }
     }
     if ( $_SubjectDoesNotContain ) { (@($_SubjectDoesNotContain) -ne '') | ForEach-Object { $Query.Add('-Subject:"{0}"' -f $_) } }
@@ -296,7 +296,13 @@ function MessageSearch {
         $KQL = '({0})' -f (@($Query) -join ') AND (')
     }
     if ($ORQuery) {
-        $KQL = '{0} AND ({1})' -f $KQL, ('({0})' -f (@($ORQuery) -join ') OR ('))
+        if ($KQL) {
+            $KQL = '{0} AND ({1})' -f $KQL, ('({0})' -f (@($ORQuery) -join ') OR ('))
+        }
+        else {
+            $KQL = '({0})' -f (@($ORQuery) -join ') OR (')
+        }
+
     }
     $Splat['ContentMatchQuery'] = $KQL
     if (-not $MailboxesToSearch) { $Splat['ExchangeLocation'] = 'ALL' }
