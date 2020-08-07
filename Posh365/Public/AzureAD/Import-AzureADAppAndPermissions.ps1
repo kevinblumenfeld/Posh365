@@ -105,13 +105,13 @@ function Import-AzureADAppAndPermissions {
         [switch]
         $OpenConsentInBrowser
     )
-
+    Write-Host "Owner $Owner" -ForegroundColor Yellow -NoNewline
     try {
         $AppOwner = Get-AzureADUser -ObjectId $Owner -ErrorAction Stop
-        Write-Host "Owner $Owner, found" -ForegroundColor Green
+        Write-Host " found" -ForegroundColor Green
     }
     catch {
-        Write-Host "Owner $Owner, not found. Halting script" -ForegroundColor Red
+        Write-Host " not found. Halting script" -ForegroundColor Red
     }
     try {
         $null = Get-AzureADApplication -filter "DisplayName eq '$Name'" -ErrorAction Stop
@@ -139,9 +139,10 @@ function Import-AzureADAppAndPermissions {
     }
     $Tenant = Get-AzureADTenantDetail
     try {
+        if ($ReplyURLs = $App['SourceApp'].ReplyUrls) { } else { $ReplyUrls = 'https://portal.azure.com' }
         $NewAppSplat = @{
             DisplayName = $Name
-            ReplyUrls   = $App['SourceApp'].ReplyUrls
+            ReplyUrls   = $ReplyURLs
             ErrorAction = 'Stop'
         }
         $TargetApp = New-AzureADApplication @NewAppSplat
@@ -210,5 +211,5 @@ function Import-AzureADAppAndPermissions {
         Write-Host "To connect with Graph use: " -ForegroundColor Cyan
         Write-Host "                    Connect-PoshGraph -Tenant $Name" -ForegroundColor Green
     }
-    if ($OpenConsentInBrowser) { Start $ConsentURL }
+    if ($OpenConsentInBrowser) { Start-Process $ConsentURL }
 }
