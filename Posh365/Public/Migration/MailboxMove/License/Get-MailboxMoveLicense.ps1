@@ -16,10 +16,12 @@ function Get-MailboxMoveLicense {
         [switch]
         $ExportToExcel,
 
+        [Parameter(ParameterSetName = 'SharePoint')]
         [Parameter(ParameterSetName = 'All')]
         [switch]
         $IncludeRecipientType,
 
+        [Parameter(ParameterSetName = 'SharePoint')]
         [Parameter(ParameterSetName = 'All')]
         [switch]
         $OneSkuPerLine
@@ -52,7 +54,7 @@ function Get-MailboxMoveLicense {
         }
         $UserChoice = Import-SharePointExcelDecision @SharePointSplat
         $Splat = @{
-            OnePerLine           = $false
+            OnePerLine           = $OneSkuPerLine
             IncludeRecipientType = $IncludeRecipientType
             SharePoint           = $true
             UserChoice           = $UserChoice
