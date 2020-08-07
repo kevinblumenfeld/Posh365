@@ -22,11 +22,10 @@ Install-Module Posh365 -Force -Scope CurrentUser
 ```
 
 ## Create supporting files
-| Document to add to SharePoint | Paste code on-premises (not EMS) |      Notes      |
-|:-----------------------------:|:--------------------------------:|:---------------:|
-|                  Batches.xlsx | https://bit.ly/corebatches       |                 |
-|              Permissions.xlsx | http://bit.ly/corepermissions    |                 |
-|              Permissions.xlsx | http://bit.ly/PermissionsScaled  | >6000 Mailboxes |
+| Document to add to SharePoint | Paste code on-premises (not EMS) |
+| :---------------------------: | :------------------------------: |
+|         Batches.xlsx          |    https://bit.ly/corebatches    |
+|       Permissions.xlsx        | http://bit.ly/PermissionsScaled  |
 
 
 ### Connect
