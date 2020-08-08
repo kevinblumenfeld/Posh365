@@ -1,10 +1,10 @@
 function Import-AzureADAppAndPermissions {
     <#
     .SYNOPSIS
-    Import Azure AD App name & API permissions from filesystem or GIST-based xml
+    Import Azure AD App name & API permissions from filesystem-based or GIST-based xml
 
     .DESCRIPTION
-    Import Azure AD App name & API permissions from filesystem or GIST-based xml
+    Import Azure AD App name & API permissions from filesystem-based or GIST-based xml
 
     .PARAMETER Owner
     The owner of the application. For convenience, should be the owner
@@ -22,30 +22,37 @@ function Import-AzureADAppAndPermissions {
     This is the most recently created file named, Test.xml, for example.
     If there is more than one filename bypassed
 
-    .PARAMETER SecretDuration
-    How many years the secret should live.
-    Current Options are 1, 2, and None
-    1 year, 2 years or None (no secret created)
+    .PARAMETER SecretDurationYears
+    Specify how many years the secret should live.
+    If you dont use this parameter, no secret will be created
 
     .PARAMETER Name
     Name of the App to create in the target AzureAD tenant.
     If left blank, will use source tenant app name (plus timestamp of export)
 
-    .PARAMETER OpenConsentInBrowser
-    Will open the admin consent page where the admin can login to the
-    target Azure AD tenant and "grant admin consent" for those APIs that require it
+    .PARAMETER ConsentAction
+    Valid choices are OpenBrowser, OutputUrl, or Both
+
+    Used to "grant admin consent" for the APIs via URL.
+    1. Either the URL is provided via PowerShell console (can be copy/pasted into a browser)
+    2. The URL is opened in the default browser
+    3. or both
+
+    Alternatively, and admin can simply login to the Azure portal then select the following:
+
+    Azure AD > App Registrations > find/click the App > API permissions > Grant Admin Consent for Tenant
 
     .EXAMPLE
-    Import-AzureADAppAndPermissions -Owner admin@thesourceonline.onmicrosoft.com -GithubUsername kevinblumenfeld `
-                                    -GistFilename test.xml -Name NewApp09 -SecretDuration 1 -OpenConsentInBrowser
+    Import-AzureADAppAndPermissions -Owner admin@contoso.onmicrosoft.com -GithubUsername kevinblumenfeld `
+                                    -GistFilename test.xml -Name NewApp09 -SecretDurationYears 1 -ConsentAction Both
 
     .EXAMPLE
-    Import-AzureADAppAndPermissions -Owner admin@thesourceonline.onmicrosoft.com `
+    Import-AzureADAppAndPermissions -Owner admin@contoso.onmicrosoft.com `
                                     -XMLPath C:\Users\kevin\Desktop\Posh365\GraphApps\kevdev\TestApp-20200712-0757.xml`
-                                    -Name NewApp01 -SecretDuration 1 -OpenConsentInBrowser
+                                    -Name NewApp01 -SecretDurationYears 1 -ConsentAction OutputUrl
 
     .NOTES
-    If SecretDuration is choosen the Secret will be include with the one object this function produces
+    If SecretDurationYears is choosen the Secret will be included with the object this function produces
 
     Example:
 
@@ -80,8 +87,7 @@ function Import-AzureADAppAndPermissions {
 
         [Parameter(ParameterSetName = 'FileSystem')]
         [Parameter(ParameterSetName = 'GIST')]
-        [ValidateSet('None', 1, 2)]
-        $SecretDuration,
+        $SecretDurationYears,
 
         [Parameter(Mandatory, ParameterSetName = 'FileSystem')]
         [Parameter(Mandatory, ParameterSetName = 'GIST')]
@@ -90,28 +96,27 @@ function Import-AzureADAppAndPermissions {
 
         [Parameter(ParameterSetName = 'FileSystem')]
         [Parameter(ParameterSetName = 'GIST')]
-        [Parameter(ParameterSetName = 'ConnectPoshGraph')]
-        [switch]
-        $ExportToConnectPoshGraphDelegated,
-
-        [Parameter(ParameterSetName = 'FileSystem')]
-        [Parameter(ParameterSetName = 'GIST')]
-        [Parameter(ParameterSetName = 'ConnectPoshGraph')]
-        [switch]
-        $ExportToConnectPoshGraphApplication,
-
-        [Parameter(ParameterSetName = 'FileSystem')]
-        [Parameter(ParameterSetName = 'GIST')]
-        [switch]
-        $OpenConsentInBrowser
+        [ValidateSet('OpenBrowser', 'OutputUrl', 'Both')]
+        [string]
+        $ConsentAction
     )
-    Write-Host "Owner $Owner" -ForegroundColor Yellow -NoNewline
+    $NewAppSplat = @{ }
+    if ($ConsentAction) {
+        Write-Host 'Consent via Browser/URL requires adding the ReplyUrl, https://portal.azure.com to the new app' -ForegroundColor Cyan
+        do {
+            $Agree = Read-Host 'Okay to add https://portal.azure.com as a ReplyUrl (Y/N)'
+        } until ($Agree -match 'Y|N')
+        if ($Agree -eq 'N') { continue }
+        $NewAppSplat['ReplyUrls'] = 'https://portal.azure.com'
+    }
+    Write-Host "Owner: $Owner" -ForegroundColor Cyan -NoNewline
     try {
         $AppOwner = Get-AzureADUser -ObjectId $Owner -ErrorAction Stop
-        Write-Host " found" -ForegroundColor Green
+        Write-Host " Found" -ForegroundColor Green
     }
     catch {
-        Write-Host " not found. Halting script" -ForegroundColor Red
+        Write-Host " Not Found. Halting script" -ForegroundColor Red
+        continue
     }
     try {
         $null = Get-AzureADApplication -filter "DisplayName eq '$Name'" -ErrorAction Stop
@@ -119,6 +124,7 @@ function Import-AzureADAppAndPermissions {
     catch {
         Write-Host "Azure AD Application Name: $Name already exists" -ForegroundColor Red
         Write-Host "Choose a new name with the -Name parameter" -ForegroundColor Cyan
+        continue
     }
 
     if ($PSCmdlet.ParameterSetName -eq 'FileSystem') { $App = Import-Clixml $XMLPath }
@@ -135,20 +141,16 @@ function Import-AzureADAppAndPermissions {
         finally {
             Remove-Item -Path $Tempfilepath -Force -Confirm:$false -ErrorAction SilentlyContinue
         }
-
     }
     $Tenant = Get-AzureADTenantDetail
     try {
-        if ($ReplyURLs = $App['SourceApp'].ReplyUrls) { } else { $ReplyUrls = 'https://portal.azure.com' }
-        $NewAppSplat = @{
-            DisplayName = $Name
-            ReplyUrls   = $ReplyURLs
-            ErrorAction = 'Stop'
-        }
+        $NewAppSplat['DisplayName'] = $Name
+        $NewAppSplat['ErrorAction'] = 'Stop'
         $TargetApp = New-AzureADApplication @NewAppSplat
     }
     catch {
         Write-Host "Unable to create new application:  $($_.Exception.Message)" -ForegroundColor Red
+        continue
     }
 
     $Output = [ordered]@{ }
@@ -173,43 +175,27 @@ function Import-AzureADAppAndPermissions {
         $RequiredList.Add($RequiredObject)
     }
     Set-AzureADApplication -ObjectId $TargetApp.ObjectId -RequiredResourceAccess $RequiredList
-    $SetSplat = @{ }
-    Foreach ($AppOptions in $App['SourceApp'].psobject.properties.name) {
-        if ($App['SourceApp'].$AppOptions) {
-            $SetSplat[$AppOptions] = $App['SourceApp'].$AppOptions
-        }
-    }
-
     Add-AzureADApplicationOwner -ObjectId $TargetApp.ObjectId -RefObjectId $AppOwner.ObjectId
 
-    if ($SecretDuration -ne 'None') {
+    if ($SecretDurationYears) {
         $Date = Get-Date
         $Params = @{
             ObjectId            = $TargetApp.ObjectId
-            EndDate             = $Date.AddYears($SecretDuration)
+            EndDate             = $Date.AddYears($SecretDurationYears)
             CustomKeyIdentifier = "{0}-{1}" -f $TargetApp.Displayname, $Date.ToString("yyyyMMddTHHmm")
         }
         $SecretResult = New-AzureADApplicationPasswordCredential @Params
         $Output['Secret'] = $SecretResult.value
     }
 
-    Write-Host "Grant Admin Consent by logging in as $Owner here:`r`n" -ForegroundColor Cyan
-    $ConsentURL = 'https://login.microsoftonline.com/{0}/v2.0/adminconsent?client_id={1}&state=12345&redirect_uri={2}&scope={3}&prompt=admin_consent' -f @(
-        $Tenant.ObjectID, $TargetApp.AppId, 'https://portal.azure.com/', 'https://graph.microsoft.com/.default')
+    if ($ConsentAction -match 'OutputUrl|Both') {
+        Write-Host "Grant Admin Consent by logging in as $Owner here:`r`n" -ForegroundColor Cyan
+        $ConsentURL = 'https://login.microsoftonline.com/{0}/v2.0/adminconsent?client_id={1}&state=12345&redirect_uri={2}&scope={3}&prompt=admin_consent' -f @(
+            $Tenant.ObjectID, $TargetApp.AppId, 'https://portal.azure.com/', 'https://graph.microsoft.com/.default')
 
-    Write-Host "$ConsentURL" -ForegroundColor White
-    [PSCustomObject]$Output
-    if ($ExportToConnectPoshGraphDelegated) {
-        $SaveSplat = @{
-            Tenant        = $Name
-            Secret        = $Output['Secret']
-            ApplicationId = $Output['ApplicationId']
-            TenantId      = $Output['TenantId']
-        }
-        if ($ExportToConnectPoshGraphDelegated) { $SaveSplat['PromptForDelegatedCredentials'] = $true }
-        Save-GraphConfig @SaveSplat
-        Write-Host "To connect with Graph use: " -ForegroundColor Cyan
-        Write-Host "                    Connect-PoshGraph -Tenant $Name" -ForegroundColor Green
+        Write-Host "$ConsentURL" -ForegroundColor Green
     }
-    if ($OpenConsentInBrowser) { Start-Process $ConsentURL }
+    [PSCustomObject]$Output
+
+    if ($ConsentAction -match 'OpenBrower|Both') { Start-Process $ConsentURL }
 }
