@@ -40,22 +40,27 @@
     )
 
     try {
-        $currentServer = (Get-PSSession | Where-Object { $_.State -eq "Opened" }).ComputerName
-        $currentServerVersion = Get-ExchangeServer $currentServer | Select-Object AdminDisplayVersion
+        $CurrentServer = (Get-PSSession | Where-Object { $_.State -eq "Opened" }).ComputerName
+        $CurrentServerVersion = (Get-ExchangeServer $currentServer).AdminDisplayVersion.toString()
+        $Major = [regex]::matches($CurrentServerVersion, '(?<=Version )[^.< ]*').value
+        $Minor = [regex]::matches($CurrentServerVersion, '(?<=Version \d{2}.)[^< ]*').value
+        $AdminBuild = [regex]::matches($CurrentServerVersion, 'Build\s*([\d.]+)').value
 
-        if (($currentServerVersion.AdminDisplayVersion.Major -eq 15) -and ($currentServerVersion.AdmindisplayVersion.Minor -eq 1) -and ($currentServerVersion.AdmindisplayVersion.Build -ge 466) -and ($currentServerVersion.AdmindisplayVersion.Build -ge "34")) {
-            $servers = @(Get-ExchangeServer | Where-Object { ($_.isClientAccessServer -eq $true) -and (($_.AdminDisplayVersion -like "*15*") -or ($_.AdminDisplayVersion -like "*14*")) -and ($_.Name -like $Filter) } | Select-Object Name, AdminDisplayVersion, ServerRole, Edition)
+        if (($Major -eq 15) -and ($Minor -eq 1) -and ($AdminBuild -ge 466) -and ($AdminBuild -ge 34)) {
+            $servers = @(Get-ExchangeServer | Where-Object {
+                    ($_.isClientAccessServer -eq $true) -and
+                    ((($_.AdminDisplayVersion).ToString() -like "*15*") -or (($_.AdminDisplayVersion).ToString() -like "*14*")) -and
+                    ($_.Name -like $Filter)
+                } | Select-Object Name, AdminDisplayVersion, ServerRole, Edition)
             $runVersion = "2016CU2+"
         }
-        elseif (($currentServerVersion.AdminDisplayVersion.Major -eq 14) -or ($currentServerVersion.AdminDisplayVersion.Major -eq 15)) {
-            $servers = @(Get-ExchangeServer | Where-Object { $_.ServerRole -like "*ClientAccess*" -and (($_.AdminDisplayVersion -like "*15*") -or ($_.AdminDisplayVersion -like "*14*") -and ($_.Name -like $Filter)) } | Select-Object Name, AdminDisplayVersion, ServerRole, Edition)
+        elseif (($Major -eq 14) -or ($Major -eq 15)) {
+            $servers = @(Get-ExchangeServer | Where-Object {
+                    $_.ServerRole -like "*ClientAccess*" -and
+                    ((($_.AdminDisplayVersion).ToString() -like "*15*") -or (($_.AdminDisplayVersion).ToString() -like "*14*") -and
+                        ($_.Name -like $Filter)) } | Select-Object Name, AdminDisplayVersion, ServerRole, Edition)
             $runVersion = "2016CU2-"
         }
-        else {
-            $servers = @(Get-ExchangeServer | Where-Object { $_.ServerRole -like "*ClientAccess*" -and ($_.Name -like $Filter) } | Select-Object Name, AdminDisplayVersion, ServerRole, Edition)
-            $runVersion = "2016CU2-"
-        }
-
     }
     catch {
         Write-Warning "An error occured: could not connect to one or more Exchange servers".
@@ -63,60 +68,61 @@
     }
     #Define Version Array
 
-    $versionArray = @("Microsoft Exchange Server 2010 RTM", "14.0.639.21"),
-    ("Update Rollup 1 for Exchange Server 2010", "14.0.682.1"),
-    ("Update Rollup 2 for Exchange Server 2010", "14.0.689.0"),
-    ("Update Rollup 3 for Exchange Server 2010", "14.0.694.0"),
-    ("Update Rollup 4 for Exchange Server 2010", "14.0.702.1"),
-    ("Microsoft Exchange Server 2010 SP1", "14.1.218.15"),
-    ("Update Rollup 1 for Exchange Server 2010 SP1", "14.1.255.2"),
-    ("Update Rollup 2 for Exchange Server 2010 SP1", "14.1.270.1"),
-    ("Update Rollup 3 for Exchange Server 2010 SP1", "14.1.289.3"),
-    ("Update Rollup 3-v3 for Exchange Server 2010 SP1", "14.1.289.7"),
-    ("Update Rollup 4 for Exchange Server 2010 SP1", "14.1.323.1"),
-    ("Update Rollup 4-v2 for  Exchange Server 2010 SP1", "14.1.323.6"),
-    ("Update Rollup 5 for  Exchange Server 2010 SP1", "14.1.339.1"),
-    ("Update Rollup 6 for  Exchange Server 2010 SP1", "14.1.355.2"),
-    ("Update Rollup 7 for  Exchange Server 2010 SP1", "14.1.421.0"),
-    ("Update Rollup 7-v2 for  Exchange Server 2010 SP1", "14.1.421.2"),
-    ("Update Rollup 7-v3 for Exchange Server 2010 SP1", "14.1.421.3"),
-    ("Update Rollup 8 for Exchange Server 2010 SP1", "14.1.438.0"),
-    ("Microsoft Exchange Server 2010 SP2", "14.2.247.5"),
-    ("Update Rollup 1 for Exchange Server 2010 SP2", "14.2.283.3"),
-    ("Update Rollup 2 for Exchange Server 2010 SP2", "14.2.298.4"),
-    ("Update Rollup 3 for Exchange Server 2010 SP2", "14.2.309.2"),
-    ("Update Rollup 4 for Exchange Server 2010 SP2", "14.2.318.2"),
-    ("Update Rollup 4-v2 for Exchange Server 2010 SP2", "14.2.318.4"),
-    ("Update Rollup 5 for Exchange Server 2010 SP2", "14.2.328.5"),
-    ("Update Rollup 5-v2 for Exchange Server 2010 SP2", "14.2.328.10"),
-    ("Update Rollup 6 for Exchange Server 2010 SP2", "14.2.342.3"),
-    ("Update Rollup 7 for Exchange Server 2010 SP2", "14.2.375.0"),
-    ("Update Rollup 8 for Exchange Server 2010 SP2", "14.2.390.3"),
-    ("Microsoft Exchange Server 2010 SP3", "14.3.123.4"),
-    ("Update Rollup 1 for Exchange Server 2010 SP3", "14.3.146.0"),
-    ("Update Rollup 2 for Exchange Server 2010 SP3", "14.3.158.1"),
-    ("Update Rollup 3 for Exchange Server 2010 SP3", "14.3.169.1"),
-    ("Update Rollup 4 for Exchange Server 2010 SP3", "14.3.174.1"),
-    ("Update Rollup 5 for Exchange Server 2010 SP3", "14.3.181.6"),
-    ("Update Rollup 6 for Exchange Server 2010 SP3", "14.3.195.1"),
-    ("Exchange Server 2013 Cumulative Update 1 (CU1)", "15.0.620.29"),
-    ("Exchange Server 2013 Cumulative Update 2 (CU2)", "15.0.712.22"),
-    ("Exchange Server 2013 Cumulative Update 2 (CU2-v2)", "15.0.712.24"),
-    ("Exchange Server 2013 Cumulative Update 3 (CU3)", "15.0.775.38"),
-    ("Exchange Server 2013 Cumulative Update 4 (SP1 - CU4)", "15.0.847.32"),
-    ("Exchange Server 2013 Cumulative Update 5 (CU5)", "15.0.913.22"),
-    ("Exchange Server 2013 Cumulative Update 6 (CU6)", "15.0.995.29"),
-    ("Exchange Server 2013 Cumulative Update 7 (CU7)", "15.0.1044.25"),
-    ("Exchange Server 2013 Cumulative Update 8 (CU8)", "15.0.1076.9"),
-    ("Exchange Server 2013 Cumulative Update 9 (CU9)", "15.0.1104.5"),
-    ("Exchange Server 2013 Cumulative Update 10 (CU10)", "15.0.1130.7"),
-    ("Exchange Server 2013 Cumulative Update 11 (CU11)", "15.0.1156.6"),
-    ("Exchange Server 2013 Cumulative Update 12 (CU12)", "15.0.1178.4"),
-    ("Exchange Server 2013 Cumulative Update 13 (CU13)", "15.0.1210.3"),
-    ("Exchange Server 2016 RTM", "15.1.225.42"),
-    ("Exchange Server 2016 Cumulative Update 1", "15.1.396.30"),
-    ("Exchange Server 2016 Cumulative Update 2", "15.1.466.34")
-
+    $Hash = @{
+        "14.0.639.21"  = "Microsoft Exchange Server 2010 RTM"
+        "14.0.682.1"   = "Update Rollup 1 for Exchange Server 2010"
+        "14.0.689.0"   = "Update Rollup 2 for Exchange Server 2010"
+        "14.0.694.0"   = "Update Rollup 3 for Exchange Server 2010"
+        "14.0.702.1"   = "Update Rollup 4 for Exchange Server 2010"
+        "14.1.218.15"  = "Microsoft Exchange Server 2010 SP1"
+        "14.1.255.2"   = "Update Rollup 1 for Exchange Server 2010 SP1"
+        "14.1.270.1"   = "Update Rollup 2 for Exchange Server 2010 SP1"
+        "14.1.289.3"   = "Update Rollup 3 for Exchange Server 2010 SP1"
+        "14.1.289.7"   = "Update Rollup 3-v3 for Exchange Server 2010 SP1"
+        "14.1.323.1"   = "Update Rollup 4 for Exchange Server 2010 SP1"
+        "14.1.323.6"   = "Update Rollup 4-v2 for  Exchange Server 2010 SP1"
+        "14.1.339.1"   = "Update Rollup 5 for  Exchange Server 2010 SP1"
+        "14.1.355.2"   = "Update Rollup 6 for  Exchange Server 2010 SP1"
+        "14.1.421.0"   = "Update Rollup 7 for  Exchange Server 2010 SP1"
+        "14.1.421.2"   = "Update Rollup 7-v2 for  Exchange Server 2010 SP1"
+        "14.1.421.3"   = "Update Rollup 7-v3 for Exchange Server 2010 SP1"
+        "14.1.438.0"   = "Update Rollup 8 for Exchange Server 2010 SP1"
+        "14.2.247.5"   = "Microsoft Exchange Server 2010 SP2"
+        "14.2.283.3"   = "Update Rollup 1 for Exchange Server 2010 SP2"
+        "14.2.298.4"   = "Update Rollup 2 for Exchange Server 2010 SP2"
+        "14.2.309.2"   = "Update Rollup 3 for Exchange Server 2010 SP2"
+        "14.2.318.2"   = "Update Rollup 4 for Exchange Server 2010 SP2"
+        "14.2.318.4"   = "Update Rollup 4-v2 for Exchange Server 2010 SP2"
+        "14.2.328.5"   = "Update Rollup 5 for Exchange Server 2010 SP2"
+        "14.2.328.10"  = "Update Rollup 5-v2 for Exchange Server 2010 SP2"
+        "14.2.342.3"   = "Update Rollup 6 for Exchange Server 2010 SP2"
+        "14.2.375.0"   = "Update Rollup 7 for Exchange Server 2010 SP2"
+        "14.2.390.3"   = "Update Rollup 8 for Exchange Server 2010 SP2"
+        "14.3.123.4"   = "Microsoft Exchange Server 2010 SP3"
+        "14.3.146.0"   = "Update Rollup 1 for Exchange Server 2010 SP3"
+        "14.3.158.1"   = "Update Rollup 2 for Exchange Server 2010 SP3"
+        "14.3.169.1"   = "Update Rollup 3 for Exchange Server 2010 SP3"
+        "14.3.174.1"   = "Update Rollup 4 for Exchange Server 2010 SP3"
+        "14.3.181.6"   = "Update Rollup 5 for Exchange Server 2010 SP3"
+        "14.3.195.1"   = "Update Rollup 6 for Exchange Server 2010 SP3"
+        "15.0.620.29"  = "Exchange Server 2013 Cumulative Update 1 (CU1)"
+        "15.0.712.22"  = "Exchange Server 2013 Cumulative Update 2 (CU2)"
+        "15.0.712.24"  = "Exchange Server 2013 Cumulative Update 2 (CU2-v2)"
+        "15.0.775.38"  = "Exchange Server 2013 Cumulative Update 3 (CU3)"
+        "15.0.847.32"  = "Exchange Server 2013 Cumulative Update 4 (SP1 - CU4)"
+        "15.0.913.22"  = "Exchange Server 2013 Cumulative Update 5 (CU5)"
+        "15.0.995.29"  = "Exchange Server 2013 Cumulative Update 6 (CU6)"
+        "15.0.1044.25" = "Exchange Server 2013 Cumulative Update 7 (CU7)"
+        "15.0.1076.9"  = "Exchange Server 2013 Cumulative Update 8 (CU8)"
+        "15.0.1104.5"  = "Exchange Server 2013 Cumulative Update 9 (CU9)"
+        "15.0.1130.7"  = "Exchange Server 2013 Cumulative Update 10 (CU10)"
+        "15.0.1156.6"  = "Exchange Server 2013 Cumulative Update 11 (CU11)"
+        "15.0.1178.4"  = "Exchange Server 2013 Cumulative Update 12 (CU12)"
+        "15.0.1210.3"  = "Exchange Server 2013 Cumulative Update 13 (CU13)"
+        "15.1.225.42"  = "Exchange Server 2016 RTM"
+        "15.1.396.30"  = "Exchange Server 2016 Cumulative Update 1"
+        "15.1.466.34"  = "Exchange Server 2016 Cumulative Update 2"
+    }
 
     #HTML headers
     $html += "<html>"
@@ -150,11 +156,14 @@
 
     $i = 0
     foreach ($server in $servers) {
-        $build = [string]$server.AdminDisplayVersion.Major + "." + $server.AdminDisplayVersion.Minor + "." + $server.AdminDisplayVersion.Build + "." + $server.AdminDisplayVersion.Revision
-        for ($n = 0; $n -lt $versionArray.count; $n++) {
-            if ($build -eq $versionArray[$n][1]) {
-                $version = $versionArray[$n][0]
+        if ($server.AdminDisplayVersion.Major) {
+            $build = [string]$server.AdminDisplayVersion.Major + "." + $server.AdminDisplayVersion.Minor + "." + $server.AdminDisplayVersion.Build + "." + $server.AdminDisplayVersion.Revision
+            if ($hash[$build]) {
+                $Version = $hash[$build]
             }
+        }
+        else {
+            $version = ($Server).AdminDisplayVersion.toString()
         }
 
         $html += "<tr>"
@@ -428,7 +437,7 @@
         $eashtml += "<td>" + $easresult.WhenChanged + "</td>"
         $eashtml += "</tr>"
 
-        Clear-Variable easresult
+        $easresult = $null
     }
     $html += $eashtml
     $html += "</table>"
