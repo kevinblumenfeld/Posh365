@@ -11,7 +11,7 @@
     param (
         [Parameter()]
         [int]
-        $NumberofDaysCasReport = 7,
+        $NumberofDaysCasReport = 2,
 
         [Parameter()]
         [switch]
@@ -127,6 +127,10 @@
     ##################
     #### EXCHANGE ####
     ##################
+
+    # Exchange Mailboxes
+    Write-Verbose "Retrieve Exchange Virtual Directory Information"
+    Get-VirtualDirectoryInfo -ReportPath $CSV
 
     # Exchange Mailboxes
     Write-Verbose "Retrieving Exchange Mailboxes"
@@ -416,8 +420,7 @@
 
     $RecOU = $Recipients | Group-Object -Property OrganizationalUnit, RecipientTypeDetails -NoElement | Select-Object count, name
 
-    $RecOU | Sort-Object count -Descending | Select-Object @(
-        'Count'
+    $RecOU | Sort-Object count -Descending | Select-Object @(s
         @{
             Name       = 'OrganizationalUnit'
             Expression = { [regex]::Matches($_.Name, ".*(?=,)").value[0] }
@@ -539,7 +542,7 @@
 
     # AD User
     Write-Verbose "Retrieving Active Directory Users"
-    Get-ADUser -Filter * -Properties * | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ActiveDirectoryUsers.xml')
+    # Get-ADUser -Filter * -Properties * | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ActiveDirectoryUsers.xml')
     $ADUsers = Get-ActiveDirectoryUser -DetailedReport
     $LegacyDNHash = Get-LegacyDNHash -ADUserList $ADUsers
     $ADUsers | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ActiveDirectoryUsers.csv')

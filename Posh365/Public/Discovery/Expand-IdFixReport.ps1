@@ -1,4 +1,20 @@
 function Expand-IdFixReport {
+    <#
+    .SYNOPSIS
+    Adds OU column to idFIX report
+
+    .DESCRIPTION
+    Long description
+
+    .PARAMETER ReportFile
+    Parameter description
+
+    .EXAMPLE
+    Expand-IdFixReport -ReportFile .\idFix.csv |Export-PoshExcel .\IDFixWithOU.xlsx
+
+    .NOTES
+    General notes
+    #>
     param (
         [Parameter(Mandatory)]
         [string] $ReportFile

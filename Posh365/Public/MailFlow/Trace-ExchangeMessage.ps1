@@ -106,7 +106,7 @@ function Trace-ExchangeMessage {
     $cmdletParams = (Get-Command $PSCmdlet.MyInvocation.InvocationName).Parameters.Keys
 
     $params = @{ }
-    $NotArray = 'SkipHealthMessages','ExportToExcel', 'ExportToCSV', 'StartSearchHoursAgo', 'EndSearchHoursAgo', 'Subject', 'ResultSize', 'Debug', 'Verbose', 'ErrorAction', 'WarningAction', 'InformationAction', 'ErrorVariable', 'WarningVariable', 'InformationVariable', 'OutVariable', 'OutBuffer', 'PipelineVariable'
+    $NotArray = 'SkipHealthMessages', 'ExportToExcel', 'ExportToCSV', 'StartSearchHoursAgo', 'EndSearchHoursAgo', 'Subject', 'ResultSize', 'Debug', 'Verbose', 'ErrorAction', 'WarningAction', 'InformationAction', 'ErrorVariable', 'WarningVariable', 'InformationVariable', 'OutVariable', 'OutBuffer', 'PipelineVariable'
     foreach ($cmdletParam in $cmdletParams) {
         if ($cmdletParam -notin $NotArray) {
             if ([string]::IsNullOrWhiteSpace((Get-Variable -Name $cmdletParam).Value) -ne $true) {
@@ -121,7 +121,7 @@ function Trace-ExchangeMessage {
     $allMessageTrackResults = New-Object "System.Collections.Generic.List[PSObject]"
 
     try {
-        $messageTrack = $Servers | Get-MessageTrackingLog @params -ResultSize $ResultSize
+        $messageTrack = $Servers.name | Get-MessageTrackingLog @params -ResultSize $ResultSize
         if ($messageTrack) {
             $messageTrack | ForEach-Object {
                 $messageTrackResults = [PSCustomObject]@{
@@ -208,7 +208,7 @@ function Trace-ExchangeMessage {
             Foreach ($Wants in $WantsToTrackMoreSpecifically) {
                 $allMessageTrackResults = New-Object "System.Collections.Generic.List[PSObject]"
                 try {
-                    $messageTrack = $Servers | Get-MessageTrackingLog -MessageID $wants.MessageId -ResultSize $ResultSize
+                    $messageTrack = $Servers.name | Get-MessageTrackingLog -MessageID $wants.MessageId -ResultSize $ResultSize
                     if ($messageTrack) {
                         $messageTrack | ForEach-Object {
                             $messageTrackResults = [PSCustomObject]@{
