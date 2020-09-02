@@ -7,14 +7,12 @@ function Get-ModifiedMailboxItem {
         [string]
         $UserPrincipalName
     )
-    Begin {}
-    Process {
-        Get-MailboxFolderStatistics -Identity $_ -IncludeOldestAndNewestItems | 
-            Sort-Object -Property OldestItemLastModifiedDate -Descending |
-            Select-Object -Property @{
+    process {
+        Get-MailboxFolderStatistics -Identity $_ -IncludeOldestAndNewestItems |
+        Sort-Object -Property OldestItemLastModifiedDate -Descending |
+        Select-Object -Property @{
             Name       = 'UPN'
-            Expression = {$UserPrincipalName}
+            Expression = { $UserPrincipalName }
         }, FolderPath, ItemsInFolder, OldestItemLastModifiedDate
     }
-    End {}
 }

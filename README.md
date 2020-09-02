@@ -30,6 +30,7 @@ Install-Module Posh365 -Force -Scope CurrentUser
 
 ### Connect
 * **Connect-CloudMFA** Connect to EXOv2, MSOnline, AzureAD, SharePoint, Compliance.
+* **Connect-Exchange** Connect to Exchange on-premises
 
 ### Migrate
 * **New-MailboxMove** Creates new move requests
@@ -49,6 +50,10 @@ Install-Module Posh365 -Force -Scope CurrentUser
 * **Get-MailboxMoveLicense** Reports on user licenses.
 * **Get-MailboxMoveLicenseCount** Reports on a tenant's skus and options.
 * **Get-MailboxMoveLicenseReport** Reports on each user's assigned skus and options.
+
+### Message Trace
+* **Trace-Message** GUI to trace Exchange Online messages. Click messages for trace details.
+* **Trace-ExchangeMessage** GUI to trace Exchange on-premises messages. Click messages to trace by message id.
 
 ### Sample Syntax
 _https://github.com/kevinblumenfeld/Posh365Demo_

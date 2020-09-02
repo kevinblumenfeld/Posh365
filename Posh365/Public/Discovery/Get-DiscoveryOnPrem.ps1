@@ -362,7 +362,7 @@
 
     # Exchange Distribution Groups
     Write-Verbose "Retrieving Exchange Distribution Groups"
-    Get-DistributionGroup | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeDistributionGroups.xml')
+    # Get-DistributionGroup | Select-Object * | Export-Clixml -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeDistributionGroups.xml')
     $DistributionGroups = Get-ExchangeDistributionGroup -DetailedReport
     $DistributionGroups | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeDistributionGroups.csv')
     $DistributionGroups | Select-Object $GroupProp | Sort-Object DisplayName | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_DistributionGroup.csv')
@@ -503,7 +503,7 @@
     # Exchange Journal Rule
     Write-Verbose "Retrieving Exchange Journal Rule"
     @(
-        (Get-JournalRule).PSObject.Properties
+        (Get-JournalRule -erroraction SilentlyContinue).PSObject.Properties
         (Get-TransportConfig).PSObject.Properties.where( { $_.Name -eq 'JournalingReportNdrTo' })
     ) | Select-Object -Property @(
         @{
