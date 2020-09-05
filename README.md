@@ -71,6 +71,6 @@ _https://github.com/kevinblumenfeld/Posh365Demo_
 
 
 ### Office365 Endpoints
-* **Get-OfficeEndpoints** URLs and IPs, initial and "changes since"
+* **Get-OfficeEndpoints** URLs and IPs, initial and "changes since" (click to enlarge)
 
 ![ME3V6nNhwV](https://user-images.githubusercontent.com/28877715/71635906-fcb6a980-2bf6-11ea-927e-03c9bda8f2a4.gif)
