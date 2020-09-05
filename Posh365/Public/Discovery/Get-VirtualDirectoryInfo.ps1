@@ -64,7 +64,7 @@
     }
     catch {
         Write-Warning "An error occured: could not connect to one or more Exchange servers".
-        Break
+        break
     }
     #Define Version Array
 
@@ -154,7 +154,6 @@
     $html += "<td>Server</td><td>Exchange Version</td><td>Roles</td><td>Edition</td>"
     $html += "</tr>"
 
-    $i = 0
     foreach ($server in $servers) {
         if ($server.AdminDisplayVersion.Major) {
             $build = [string]$server.AdminDisplayVersion.Major + "." + $server.AdminDisplayVersion.Minor + "." + $server.AdminDisplayVersion.Build + "." + $server.AdminDisplayVersion.Revision
@@ -174,7 +173,6 @@
         $html += "</tr>"
     }
 
-
     $html += "</table>"
 
     #Autodiscover
@@ -184,11 +182,10 @@
     $html += "<tr class='color'>"
     $html += "<td>Server</td><td>Internal Uri</td><td>InternalURL</td><td>ExternalUrl</td><td>Auth. (Int.)</td><td>Auth. (Ext.)</td><td>Site Scope</td><td>Last modified on:</td>"
     $html += "</tr>"
-    $i = 0
 
     foreach ($server in $servers) {
-        $i++
-        Write-Progress -Activity "Getting Autodiscover URL information" -Status "Progress:" -PercentComplete (($i / $servers.count) * 100)
+        Write-Host "Getting Autodiscover URL information for server: " -NoNewLine
+        Write-Host "$($server.name)" -ForegroundColor Cyan
         if ($runVersion -eq "2016CU2+") {
             $autodresult = Get-ClientAccessService -Identity $server.name | Select-Object Name, AutodiscoverServiceInternalUri, AutoDiscoverSiteScope
         }
@@ -214,7 +211,7 @@
         $autodhtml += "<td>" + $autodvirdirresult.WhenChanged + "</td>"
         $autodhtml += "</tr>"
 
-        Clear-Variable -Name autodresult, autodvirdirresult
+        $autodresult, $autodvirdirresult = $null
 
     }
     $html += $autodhtml
@@ -227,10 +224,10 @@
     $html += "<tr class='color'>"
     $html += "<td>Server</td><td>Name</td><td>InternalURL</td><td>ExternalUrl</td><td>Int. Auth.</td><td>Last modified on:</td>"
     $html += "</tr>"
-    $i = 0
+
     foreach ($server in $servers) {
-        $i++
-        Write-Progress -Activity "Getting OWA virtual directory information" -Status "Progress:" -PercentComplete (($i / $servers.count) * 100)
+        Write-Host "Getting OWA virtual directory information for server: " -NoNewLine
+        Write-Host "$($server.name)" -ForegroundColor Cyan
         if ($ADProperties) {
             $owaresult = Get-OWAVirtualDirectory -server $server.name -AdPropertiesOnly | Select-Object Name, Server, InternalUrl, ExternalUrl, WhenChanged, InternalAuthenticationMethods
         }
@@ -247,7 +244,7 @@
         $owahtml += "<td>" + $owaresult.WhenChanged + "</td>"
         $owahtml += "</tr>"
 
-        Clear-Variable -Name owaresult
+        $owaresult = $null
 
     }
     $html += $owahtml
@@ -260,10 +257,10 @@
     $html += "<tr class='color'>"
     $html += "<td>Server</td><td>Name</td><td>InternalURL</td><td>ExternalUrl</td><td>Int. Auth.</td><td>Last modified on:</td>"
     $html += "</tr>"
-    $i = 0
+
     foreach ($server in $servers) {
-        $i++
-        Write-Progress -Activity "Getting ECP virtual directory information" -Status "Progress:" -PercentComplete (($i / $servers.count) * 100)
+        Write-Host "Getting ECP virtual directory information for server: " -NoNewline
+        Write-Host "$($server.name)" -ForegroundColor Cyan
         if ($ADProperties) {
             $ecpresult = Get-ECPVirtualDirectory -server $server.name -ADPropertiesOnly | Select-Object Name, Server, InternalUrl, ExternalUrl, WhenChanged, InternalAuthenticationMethods
         }
@@ -292,10 +289,10 @@
     $html += "<tr class='color'>"
     $html += "<td>Server</td><td>Internal Hostname</td><td>External Hostname</td><td>Auth.(Int.)</td><td>Auth. (Ext.)</td><td>Auth. IIS</td><td>Last modified on:</td>"
     $html += "</tr>"
-    $i = 0
+
     foreach ($server in $servers) {
-        $i++
-        Write-Progress -Activity "Getting Outlook Anywhere Information" -Status "Progress:" -PercentComplete (($i / $servers.count) * 100)
+        Write-Host "Getting Outlook Anywhere information for server: " -NoNewLine
+        Write-Host "$($server.name)" -ForegroundColor Cyan
         if ($ADProperties) {
             $oaresult = Get-OutlookAnywhere -server $server.name -ADPropertiesOnly | Select-Object Name, Server, InternalHostname, ExternalHostname, ExternalClientAuthenticationMethod, InternalClientAuthenticationMethod, IISAuthenticationMethods, WhenChanged
         }
@@ -303,7 +300,7 @@
             $oaresult = Get-OutlookAnywhere -server $server.name | Select-Object Name, Server, InternalHostname, ExternalHostname, ExternalClientAuthenticationMethod, InternalClientAuthenticationMethod, IISAuthenticationMethods, WhenChanged
         }
 
-        if ($oaresult -eq $null) {
+        if ($null -eq $oaresult) {
 
             $oahtml += "<tr.color>"
             $oahtml += "<td>" + $server.name + "</td>"
@@ -325,8 +322,7 @@
             $oahtml += "</tr>"
         }
 
-
-        Clear-Variable oaresult
+        $oaresult = $null
     }
     $html += $oahtml
     $html += "</table>"
@@ -338,11 +334,15 @@
     $html += "<tr class='color'>"
     $html += "<td>Server</td><td>Internal URL</td><td>External URL</td><td>Auth.(Int.)</td><td>Auth. (Ext.)</td><td>Auth. IIS</td><td>Last modified on:</td>"
     $html += "</tr>"
-    $i = 0
+
     foreach ($server in $servers) {
-        $i++
-        if (($server.AdminDisplayVersion.Major -eq "15" -and $server.AdminDisplayVersion.Build -ge "847") -or ($server.AdminDisplayVersion.Major -eq "15" -and $server.AdminDisplayVersion.Minor -eq "1")) {
-            Write-Progress -Activity "Getting MAPI/HTTP Information" -Status "Progress:" -PercentComplete (($i / $servers.count) * 100)
+        $MapiServer = (Get-ExchangeServer $Server.name).AdminDisplayVersion.toString()
+        $MapiMajor = [regex]::matches($MapiServer, '(?<=Version )[^.< ]*').value
+        $MapiMinor = [regex]::matches($MapiServer, '(?<=Version \d{2}.)[^< ]*').value
+        $MapiAdminBuild = [regex]::matches($MapiServer, 'Build\s*([\d.]+)').value
+        if (($MapiMajor -eq "15" -and $MapiAdminBuild -ge "847") -or ($MapiMajor -eq "15" -and $MapiMinor -eq "1")) {
+            Write-Host "Getting MAPI/HTTP Information for server: " -NoNewLine
+            Write-Host "$($server.name)" -ForegroundColor Cyan
             if ($ADProperties) {
                 $mapiresult = Get-MapiVirtualDirectory -server $server.name -ADPropertiesOnly | Select-Object Name, Server, InternalUrl, ExternalUrl, ExternalAuthenticationMethods, InternalAuthenticationMethods, IISAuthenticationMethods, WhenChanged
             }
@@ -370,11 +370,10 @@
             $mapihtml += "</tr>"
         }
 
-        Clear-Variable oaresult
+        $oaresult = $null
     }
     $html += $mapihtml
     $html += "</table>"
-
 
     #Offline Address Book (OAB)
     $html += "<br/><br/>"
@@ -383,17 +382,16 @@
     $html += "<tr class='color'>"
     $html += "<td>Server</td><td>OABs</td><td>Internal URL</td><td>External Url</td><td>Auth.(Int.)</td><td>Auth. (Ext.)</td><td>Last modified on:</td>"
     $html += "</tr>"
-    $i = 0
+
     foreach ($server in $servers) {
-        $i++
-        Write-Progress -Activity "Getting OAB Information" -Status "Progress:" -PercentComplete (($i / $servers.count) * 100)
+        Write-Host "Getting Offline Address Book information for server: " -NoNewLine
+        Write-Host "$($server.name)" -ForegroundColor Cyan
         if ($ADProperties) {
             $oabresult = Get-OABVirtualDirectory -server $server.name -ADPropertiesOnly | Select-Object Server, InternalUrl, ExternalUrl, ExternalAuthenticationMethods, InternalAuthenticationMethods, OfflineAddressBooks, WhenChanged
         }
         else {
             $oabresult = Get-OABVirtualDirectory -server $server.name | Select-Object Server, InternalUrl, ExternalUrl, ExternalAuthenticationMethods, InternalAuthenticationMethods, OfflineAddressBooks, WhenChanged
         }
-
 
         $oabhtml += "<tr.color>"
         $oabhtml += "<td>" + $oabresult.Server + "</td>"
@@ -405,7 +403,7 @@
         $oabhtml += "<td>" + $oabresult.WhenChanged + "</td>"
         $oabhtml += "</tr>"
 
-        Clear-Variable oabresult
+        $oabresult = $null
     }
     $html += $oabhtml
     $html += "</table>"
@@ -417,10 +415,10 @@
     $html += "<tr class='color'>"
     $html += "<td>Server</td><td>Internal URL</td><td>External Url</td><td>Auth. (Ext.)</td><td>Last modified on:</td>"
     $html += "</tr>"
-    $i = 0
+
     foreach ($server in $servers) {
-        $i++
-        Write-Progress -Activity "Getting ActiveSync Information" -Status "Progress:" -PercentComplete (($i / $servers.count) * 100)
+        Write-Host "Getting ActiveSync information for server: " -NoNewLine
+        Write-Host "$($server.name)" -ForegroundColor Cyan
         if ($ADProperties) {
             $easresult = Get-ActiveSyncVirtualDirectory -server $server.name -ADPropertiesOnly | Select-Object Server, InternalUrl, ExternalUrl, ExternalAuthenticationMethods, InternalAuthenticationMethods, WhenChanged
         }
@@ -449,17 +447,16 @@
     $html += "<tr class='color'>"
     $html += "<td>Server</td><td>Internal URL</td><td>External Url</td><td>Auth. (Int.)</td><td>Auth. (Ext.)</td><td>MRS Proxy Enabled</td><td>Last modified on:</td>"
     $html += "</tr>"
-    $i = 0
+
     foreach ($server in $servers) {
-        $i++
-        Write-Progress -Activity "Getting Web Services Information" -Status "Progress:" -PercentComplete (($i / $servers.count) * 100)
+        Write-Host "Getting Web Services information for server: " -NoNewLine
+        Write-Host "$($server.name)" -ForegroundColor Cyan
         if ($ADProperties) {
             $ewsresult = Get-WebServicesVirtualDirectory -server $server.name -ADPropertiesOnly | Select-Object Server, InternalUrl, ExternalUrl, ExternalAuthenticationMethods, InternalAuthenticationMethods, MRSProxyEnabled, WhenChanged
         }
         else {
             $ewsresult = Get-WebServicesVirtualDirectory -server $server.name | Select-Object Server, InternalUrl, ExternalUrl, ExternalAuthenticationMethods, InternalAuthenticationMethods, MRSProxyEnabled, WhenChanged
         }
-
 
         $ewshtml += "<tr.color>"
         $ewshtml += "<td>" + $ewsresult.Server + "</td>"
@@ -471,11 +468,10 @@
         $ewshtml += "<td>" + $ewsresult.WhenChanged + "</td>"
         $ewshtml += "</tr>"
 
-        Clear-Variable easresult
+        $easresult = $null
     }
     $html += $ewshtml
     $html += "</table>"
-
 
     try {
         $html | Out-File $filepath"\virdirinfo_"$(Get-Date -Format d-MM-yyyy_HH\hmm\mss\s)".html"
