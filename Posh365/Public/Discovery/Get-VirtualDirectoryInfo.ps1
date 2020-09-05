@@ -242,7 +242,7 @@
 
         if ($hash[$build]) { $Version = $hash[$build] }
 
-        else { $version = ($Server).AdminDisplayVersion.toString() }
+        else { $version = $bui }
 
         $html += "<tr>"
         $html += "<td>" + $Server.name + "</td>"
