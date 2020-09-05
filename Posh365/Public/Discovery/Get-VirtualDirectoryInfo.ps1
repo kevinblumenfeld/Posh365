@@ -40,88 +40,114 @@
     )
 
     try {
-        $CurrentServer = (Get-PSSession | Where-Object { $_.State -eq "Opened" }).ComputerName
+        $CurrentServer = (Get-PSSession | Where-Object { $_.State -eq 'Opened' }).ComputerName
         $CurrentServerVersion = (Get-ExchangeServer $currentServer).AdminDisplayVersion.toString()
-        $Major = [regex]::matches($CurrentServerVersion, '(?<=Version )[^.< ]*').value
-        $Minor = [regex]::matches($CurrentServerVersion, '(?<=Version \d{2}.)[^< ]*').value
-        $AdminBuild = [regex]::matches($CurrentServerVersion, 'Build\s*([\d.]+)').value
+        [decimal]$Major = [regex]::matches($CurrentServerVersion, '(?<=Version )[^.< ]*').value
+        [decimal]$Minor = [regex]::matches($CurrentServerVersion, '(?<=Version \d{2}.)[^< ]*').value
+        [decimal]$AdminBuild = $CurrentServerVersion -replace '.+Build\s*|\)'
 
-        if (($Major -eq 15) -and ($Minor -eq 1) -and ($AdminBuild -ge 466) -and ($AdminBuild -ge 34)) {
-            $servers = @(Get-ExchangeServer | Where-Object {
-                    ($_.isClientAccessServer -eq $true) -and
-                    ((($_.AdminDisplayVersion).ToString() -like "*15*") -or (($_.AdminDisplayVersion).ToString() -like "*14*")) -and
-                    ($_.Name -like $Filter)
-                } | Select-Object Name, AdminDisplayVersion, ServerRole, Edition)
-            $runVersion = "2016CU2+"
+        if (($Major -eq 15) -and ($Minor -eq 1) -and ($AdminBuild -ge 466.34)) {
+            $ExServerList = (Get-ExchangeServer).AdminDisplayVersion.toString()
+            $ServerList = foreach ($ExServer in $ExServerList) {
+                [decimal]$Major = [regex]::matches($ExServer, '(?<=Version )[^.< ]*').value
+                [decimal]$Minor = [regex]::matches($ExServer, '(?<=Version \d{2}.)[^< ]*').value
+                [decimal]$AdminBuild = $ExServer -replace '.+Build\s*|\)'
+                if ($ExServer.isClientAccessServer -and $Major -match '14|15' -and $ExServer.Name -like $Filter) {
+                    $ExServer | Select-Object Name, AdminDisplayVersion, ServerRole, Edition
+                }
+            }
+            $runVersion = '2016CU2+'
         }
         elseif (($Major -eq 14) -or ($Major -eq 15)) {
-            $servers = @(Get-ExchangeServer | Where-Object {
-                    $_.ServerRole -like "*ClientAccess*" -and
-                    ((($_.AdminDisplayVersion).ToString() -like "*15*") -or (($_.AdminDisplayVersion).ToString() -like "*14*") -and
-                        ($_.Name -like $Filter)) } | Select-Object Name, AdminDisplayVersion, ServerRole, Edition)
-            $runVersion = "2016CU2-"
+            $ExServerList = Get-ExchangeServer
+            $ServerList = foreach ($ExServer in $ExServerList) {
+                $AdminDisplay = $ExServer.AdminDisplayVersion.ToString()
+                [decimal]$Major = [regex]::matches($AdminDisplay, '(?<=Version )[^.< ]*').value
+                [decimal]$Minor = [regex]::matches($AdminDisplay, '(?<=Version \d{2}.)[^< ]*').value
+                [decimal]$AdminBuild = $AdminDisplay -replace '.+Build\s*|\)'
+                if ($ExServer.isClientAccessServer -and $Major -match '14|15' -and $ExServer.Name -like $Filter) {
+                    $ExServer | Select-Object @(
+                        'Name'
+                        'AdminDisplayVersion'
+                        'ServerRole'
+                        'Edition'
+                        @{
+                            Name       = 'Major'
+                            Expression = { [decimal][regex]::matches($_.AdminDisplayVersion.toString(), '(?<=Version )[^.< ]*').value }
+                        }
+                        @{
+                            Name       = 'Minor'
+                            Expression = { [decimal][regex]::matches($_.AdminDisplayVersion.toString(), '(?<=Version \d{2}.)[^< ]*').value }
+                        }
+                        @{
+                            Name       = 'AdminBuild'
+                            Expression = { [decimal]($_.AdminDisplayVersion.toString() -replace '.+Build\s*|\)') }
+                        }
+                    )
+                }
+            }
+            $runVersion = $null
         }
     }
     catch {
-        Write-Warning "An error occured: could not connect to one or more Exchange servers".
+        Write-Warning "An error occured: could not connect to one or more Exchange servers $($_.Exception.Message)".
         break
     }
-    #Define Version Array
 
     $Hash = @{
-        "14.0.639.21"  = "Microsoft Exchange Server 2010 RTM"
-        "14.0.682.1"   = "Update Rollup 1 for Exchange Server 2010"
-        "14.0.689.0"   = "Update Rollup 2 for Exchange Server 2010"
-        "14.0.694.0"   = "Update Rollup 3 for Exchange Server 2010"
-        "14.0.702.1"   = "Update Rollup 4 for Exchange Server 2010"
-        "14.1.218.15"  = "Microsoft Exchange Server 2010 SP1"
-        "14.1.255.2"   = "Update Rollup 1 for Exchange Server 2010 SP1"
-        "14.1.270.1"   = "Update Rollup 2 for Exchange Server 2010 SP1"
-        "14.1.289.3"   = "Update Rollup 3 for Exchange Server 2010 SP1"
-        "14.1.289.7"   = "Update Rollup 3-v3 for Exchange Server 2010 SP1"
-        "14.1.323.1"   = "Update Rollup 4 for Exchange Server 2010 SP1"
-        "14.1.323.6"   = "Update Rollup 4-v2 for  Exchange Server 2010 SP1"
-        "14.1.339.1"   = "Update Rollup 5 for  Exchange Server 2010 SP1"
-        "14.1.355.2"   = "Update Rollup 6 for  Exchange Server 2010 SP1"
-        "14.1.421.0"   = "Update Rollup 7 for  Exchange Server 2010 SP1"
-        "14.1.421.2"   = "Update Rollup 7-v2 for  Exchange Server 2010 SP1"
-        "14.1.421.3"   = "Update Rollup 7-v3 for Exchange Server 2010 SP1"
-        "14.1.438.0"   = "Update Rollup 8 for Exchange Server 2010 SP1"
-        "14.2.247.5"   = "Microsoft Exchange Server 2010 SP2"
-        "14.2.283.3"   = "Update Rollup 1 for Exchange Server 2010 SP2"
-        "14.2.298.4"   = "Update Rollup 2 for Exchange Server 2010 SP2"
-        "14.2.309.2"   = "Update Rollup 3 for Exchange Server 2010 SP2"
-        "14.2.318.2"   = "Update Rollup 4 for Exchange Server 2010 SP2"
-        "14.2.318.4"   = "Update Rollup 4-v2 for Exchange Server 2010 SP2"
-        "14.2.328.5"   = "Update Rollup 5 for Exchange Server 2010 SP2"
-        "14.2.328.10"  = "Update Rollup 5-v2 for Exchange Server 2010 SP2"
-        "14.2.342.3"   = "Update Rollup 6 for Exchange Server 2010 SP2"
-        "14.2.375.0"   = "Update Rollup 7 for Exchange Server 2010 SP2"
-        "14.2.390.3"   = "Update Rollup 8 for Exchange Server 2010 SP2"
-        "14.3.123.4"   = "Microsoft Exchange Server 2010 SP3"
-        "14.3.146.0"   = "Update Rollup 1 for Exchange Server 2010 SP3"
-        "14.3.158.1"   = "Update Rollup 2 for Exchange Server 2010 SP3"
-        "14.3.169.1"   = "Update Rollup 3 for Exchange Server 2010 SP3"
-        "14.3.174.1"   = "Update Rollup 4 for Exchange Server 2010 SP3"
-        "14.3.181.6"   = "Update Rollup 5 for Exchange Server 2010 SP3"
-        "14.3.195.1"   = "Update Rollup 6 for Exchange Server 2010 SP3"
-        "15.0.620.29"  = "Exchange Server 2013 Cumulative Update 1 (CU1)"
-        "15.0.712.22"  = "Exchange Server 2013 Cumulative Update 2 (CU2)"
-        "15.0.712.24"  = "Exchange Server 2013 Cumulative Update 2 (CU2-v2)"
-        "15.0.775.38"  = "Exchange Server 2013 Cumulative Update 3 (CU3)"
-        "15.0.847.32"  = "Exchange Server 2013 Cumulative Update 4 (SP1 - CU4)"
-        "15.0.913.22"  = "Exchange Server 2013 Cumulative Update 5 (CU5)"
-        "15.0.995.29"  = "Exchange Server 2013 Cumulative Update 6 (CU6)"
-        "15.0.1044.25" = "Exchange Server 2013 Cumulative Update 7 (CU7)"
-        "15.0.1076.9"  = "Exchange Server 2013 Cumulative Update 8 (CU8)"
-        "15.0.1104.5"  = "Exchange Server 2013 Cumulative Update 9 (CU9)"
-        "15.0.1130.7"  = "Exchange Server 2013 Cumulative Update 10 (CU10)"
-        "15.0.1156.6"  = "Exchange Server 2013 Cumulative Update 11 (CU11)"
-        "15.0.1178.4"  = "Exchange Server 2013 Cumulative Update 12 (CU12)"
-        "15.0.1210.3"  = "Exchange Server 2013 Cumulative Update 13 (CU13)"
-        "15.1.225.42"  = "Exchange Server 2016 RTM"
-        "15.1.396.30"  = "Exchange Server 2016 Cumulative Update 1"
-        "15.1.466.34"  = "Exchange Server 2016 Cumulative Update 2"
+        '14.0.639.21'  = 'Microsoft Exchange Server 2010 RTM'
+        '14.0.682.1'   = 'Update Rollup 1 for Exchange Server 2010'
+        '14.0.689.0'   = 'Update Rollup 2 for Exchange Server 2010'
+        '14.0.694.0'   = 'Update Rollup 3 for Exchange Server 2010'
+        '14.0.702.1'   = 'Update Rollup 4 for Exchange Server 2010'
+        '14.1.218.15'  = 'Microsoft Exchange Server 2010 SP1'
+        '14.1.255.2'   = 'Update Rollup 1 for Exchange Server 2010 SP1'
+        '14.1.270.1'   = 'Update Rollup 2 for Exchange Server 2010 SP1'
+        '14.1.289.3'   = 'Update Rollup 3 for Exchange Server 2010 SP1'
+        '14.1.289.7'   = 'Update Rollup 3-v3 for Exchange Server 2010 SP1'
+        '14.1.323.1'   = 'Update Rollup 4 for Exchange Server 2010 SP1'
+        '14.1.323.6'   = 'Update Rollup 4-v2 for  Exchange Server 2010 SP1'
+        '14.1.339.1'   = 'Update Rollup 5 for  Exchange Server 2010 SP1'
+        '14.1.355.2'   = 'Update Rollup 6 for  Exchange Server 2010 SP1'
+        '14.1.421.0'   = 'Update Rollup 7 for  Exchange Server 2010 SP1'
+        '14.1.421.2'   = 'Update Rollup 7-v2 for  Exchange Server 2010 SP1'
+        '14.1.421.3'   = 'Update Rollup 7-v3 for Exchange Server 2010 SP1'
+        '14.1.438.0'   = 'Update Rollup 8 for Exchange Server 2010 SP1'
+        '14.2.247.5'   = 'Microsoft Exchange Server 2010 SP2'
+        '14.2.283.3'   = 'Update Rollup 1 for Exchange Server 2010 SP2'
+        '14.2.298.4'   = 'Update Rollup 2 for Exchange Server 2010 SP2'
+        '14.2.309.2'   = 'Update Rollup 3 for Exchange Server 2010 SP2'
+        '14.2.318.2'   = 'Update Rollup 4 for Exchange Server 2010 SP2'
+        '14.2.318.4'   = 'Update Rollup 4-v2 for Exchange Server 2010 SP2'
+        '14.2.328.5'   = 'Update Rollup 5 for Exchange Server 2010 SP2'
+        '14.2.328.10'  = 'Update Rollup 5-v2 for Exchange Server 2010 SP2'
+        '14.2.342.3'   = 'Update Rollup 6 for Exchange Server 2010 SP2'
+        '14.2.375.0'   = 'Update Rollup 7 for Exchange Server 2010 SP2'
+        '14.2.390.3'   = 'Update Rollup 8 for Exchange Server 2010 SP2'
+        '14.3.123.4'   = 'Microsoft Exchange Server 2010 SP3'
+        '14.3.146.0'   = 'Update Rollup 1 for Exchange Server 2010 SP3'
+        '14.3.158.1'   = 'Update Rollup 2 for Exchange Server 2010 SP3'
+        '14.3.169.1'   = 'Update Rollup 3 for Exchange Server 2010 SP3'
+        '14.3.174.1'   = 'Update Rollup 4 for Exchange Server 2010 SP3'
+        '14.3.181.6'   = 'Update Rollup 5 for Exchange Server 2010 SP3'
+        '14.3.195.1'   = 'Update Rollup 6 for Exchange Server 2010 SP3'
+        '15.0.620.29'  = 'Exchange Server 2013 Cumulative Update 1 (CU1)'
+        '15.0.712.22'  = 'Exchange Server 2013 Cumulative Update 2 (CU2)'
+        '15.0.712.24'  = 'Exchange Server 2013 Cumulative Update 2 (CU2-v2)'
+        '15.0.775.38'  = 'Exchange Server 2013 Cumulative Update 3 (CU3)'
+        '15.0.847.32'  = 'Exchange Server 2013 Cumulative Update 4 (SP1 - CU4)'
+        '15.0.913.22'  = 'Exchange Server 2013 Cumulative Update 5 (CU5)'
+        '15.0.995.29'  = 'Exchange Server 2013 Cumulative Update 6 (CU6)'
+        '15.0.1044.25' = 'Exchange Server 2013 Cumulative Update 7 (CU7)'
+        '15.0.1076.9'  = 'Exchange Server 2013 Cumulative Update 8 (CU8)'
+        '15.0.1104.5'  = 'Exchange Server 2013 Cumulative Update 9 (CU9)'
+        '15.0.1130.7'  = 'Exchange Server 2013 Cumulative Update 10 (CU10)'
+        '15.0.1156.6'  = 'Exchange Server 2013 Cumulative Update 11 (CU11)'
+        '15.0.1178.4'  = 'Exchange Server 2013 Cumulative Update 12 (CU12)'
+        '15.0.1210.3'  = 'Exchange Server 2013 Cumulative Update 13 (CU13)'
+        '15.1.225.42'  = 'Exchange Server 2016 RTM'
+        '15.1.396.30'  = 'Exchange Server 2016 Cumulative Update 1'
+        '15.1.466.34'  = 'Exchange Server 2016 Cumulative Update 2'
     }
 
     #HTML headers
@@ -154,22 +180,17 @@
     $html += "<td>Server</td><td>Exchange Version</td><td>Roles</td><td>Edition</td>"
     $html += "</tr>"
 
-    foreach ($server in $servers) {
-        if ($server.AdminDisplayVersion.Major) {
-            $build = [string]$server.AdminDisplayVersion.Major + "." + $server.AdminDisplayVersion.Minor + "." + $server.AdminDisplayVersion.Build + "." + $server.AdminDisplayVersion.Revision
-            if ($hash[$build]) {
-                $Version = $hash[$build]
-            }
-        }
-        else {
-            $version = ($Server).AdminDisplayVersion.toString()
-        }
+    foreach ($Server in $ServerList) {
+        $build = '{0}.{1}.{2}' -f $Server.Major, $Server.Minor, $Server.AdminBuild
+        if ($hash[$build]) { $Version = $hash[$build] }
+
+        else { $version = ($Server).AdminDisplayVersion.toString() }
 
         $html += "<tr>"
-        $html += "<td>" + $server.name + "</td>"
+        $html += "<td>" + $Server.name + "</td>"
         $html += "<td>" + $version + "</td>"
-        $html += "<td>" + $server.ServerRole + "</td>"
-        $html += "<td>" + $server.Edition + "</td>"
+        $html += "<td>" + $Server.ServerRole + "</td>"
+        $html += "<td>" + $Server.Edition + "</td>"
         $html += "</tr>"
     }
 
@@ -183,21 +204,21 @@
     $html += "<td>Server</td><td>Internal Uri</td><td>InternalURL</td><td>ExternalUrl</td><td>Auth. (Int.)</td><td>Auth. (Ext.)</td><td>Site Scope</td><td>Last modified on:</td>"
     $html += "</tr>"
 
-    foreach ($server in $servers) {
+    foreach ($Server in $ServerList) {
         Write-Host "Getting Autodiscover URL information for server: " -NoNewLine
-        Write-Host "$($server.name)" -ForegroundColor Cyan
+        Write-Host "$($Server.name)" -ForegroundColor Cyan
         if ($runVersion -eq "2016CU2+") {
-            $autodresult = Get-ClientAccessService -Identity $server.name | Select-Object Name, AutodiscoverServiceInternalUri, AutoDiscoverSiteScope
+            $autodresult = Get-ClientAccessService -Identity $Server.name | Select-Object Name, AutodiscoverServiceInternalUri, AutoDiscoverSiteScope
         }
         else {
-            $autodresult = Get-ClientAccessServer -Identity $server.name | Select-Object Name, AutodiscoverServiceInternalUri, AutoDiscoverSiteScope
+            $autodresult = Get-ClientAccessServer -Identity $Server.name | Select-Object Name, AutodiscoverServiceInternalUri, AutoDiscoverSiteScope
         }
 
         if ($ADProperties) {
-            $autodvirdirresult = Get-AutodiscoverVirtualDirectory -Server $server.name -ADPropertiesOnly | Select-Object InternalUrl, ExternalUrl, InternalAuthenticationMethods, ExternalAuthenticationMethods, WhenChanged
+            $autodvirdirresult = Get-AutodiscoverVirtualDirectory -Server $Server.name -ADPropertiesOnly | Select-Object InternalUrl, ExternalUrl, InternalAuthenticationMethods, ExternalAuthenticationMethods, WhenChanged
         }
         else {
-            $autodvirdirresult = Get-AutodiscoverVirtualDirectory -Server $server.name | Select-Object InternalUrl, ExternalUrl, InternalAuthenticationMethods, ExternalAuthenticationMethods, WhenChanged
+            $autodvirdirresult = Get-AutodiscoverVirtualDirectory -Server $Server.name | Select-Object InternalUrl, ExternalUrl, InternalAuthenticationMethods, ExternalAuthenticationMethods, WhenChanged
         }
 
         $autodhtml += "<tr>"
@@ -225,14 +246,14 @@
     $html += "<td>Server</td><td>Name</td><td>InternalURL</td><td>ExternalUrl</td><td>Int. Auth.</td><td>Last modified on:</td>"
     $html += "</tr>"
 
-    foreach ($server in $servers) {
+    foreach ($Server in $ServerList) {
         Write-Host "Getting OWA virtual directory information for server: " -NoNewLine
-        Write-Host "$($server.name)" -ForegroundColor Cyan
+        Write-Host "$($Server.name)" -ForegroundColor Cyan
         if ($ADProperties) {
-            $owaresult = Get-OWAVirtualDirectory -server $server.name -AdPropertiesOnly | Select-Object Name, Server, InternalUrl, ExternalUrl, WhenChanged, InternalAuthenticationMethods
+            $owaresult = Get-OWAVirtualDirectory -server $Server.name -AdPropertiesOnly | Select-Object Name, Server, InternalUrl, ExternalUrl, WhenChanged, InternalAuthenticationMethods
         }
         else {
-            $owaresult = Get-OWAVirtualDirectory -server $server.name | Select-Object Name, Server, InternalUrl, ExternalUrl, WhenChanged, InternalAuthenticationMethods
+            $owaresult = Get-OWAVirtualDirectory -server $Server.name | Select-Object Name, Server, InternalUrl, ExternalUrl, WhenChanged, InternalAuthenticationMethods
         }
 
         $owahtml += "<tr>"
@@ -258,14 +279,14 @@
     $html += "<td>Server</td><td>Name</td><td>InternalURL</td><td>ExternalUrl</td><td>Int. Auth.</td><td>Last modified on:</td>"
     $html += "</tr>"
 
-    foreach ($server in $servers) {
+    foreach ($Server in $ServerList) {
         Write-Host "Getting ECP virtual directory information for server: " -NoNewline
-        Write-Host "$($server.name)" -ForegroundColor Cyan
+        Write-Host "$($Server.name)" -ForegroundColor Cyan
         if ($ADProperties) {
-            $ecpresult = Get-ECPVirtualDirectory -server $server.name -ADPropertiesOnly | Select-Object Name, Server, InternalUrl, ExternalUrl, WhenChanged, InternalAuthenticationMethods
+            $ecpresult = Get-ECPVirtualDirectory -server $Server.name -ADPropertiesOnly | Select-Object Name, Server, InternalUrl, ExternalUrl, WhenChanged, InternalAuthenticationMethods
         }
         else {
-            $ecpresult = Get-ECPVirtualDirectory -server $server.name | Select-Object Name, Server, InternalUrl, ExternalUrl, WhenChanged, InternalAuthenticationMethods
+            $ecpresult = Get-ECPVirtualDirectory -server $Server.name | Select-Object Name, Server, InternalUrl, ExternalUrl, WhenChanged, InternalAuthenticationMethods
         }
 
         $ecphtml += "<tr.color>"
@@ -277,7 +298,7 @@
         $ecphtml += "<td>" + $ecpresult.WhenChanged + "</td>"
         $ecphtml += "</tr>"
 
-        Clear-Variable -Name ecpresult
+        $ecpresult = $null
     }
     $html += $ecphtml
     $html += "</table>"
@@ -290,20 +311,19 @@
     $html += "<td>Server</td><td>Internal Hostname</td><td>External Hostname</td><td>Auth.(Int.)</td><td>Auth. (Ext.)</td><td>Auth. IIS</td><td>Last modified on:</td>"
     $html += "</tr>"
 
-    foreach ($server in $servers) {
+    foreach ($Server in $ServerList) {
         Write-Host "Getting Outlook Anywhere information for server: " -NoNewLine
-        Write-Host "$($server.name)" -ForegroundColor Cyan
+        Write-Host "$($Server.name)" -ForegroundColor Cyan
         if ($ADProperties) {
-            $oaresult = Get-OutlookAnywhere -server $server.name -ADPropertiesOnly | Select-Object Name, Server, InternalHostname, ExternalHostname, ExternalClientAuthenticationMethod, InternalClientAuthenticationMethod, IISAuthenticationMethods, WhenChanged
+            $oaresult = Get-OutlookAnywhere -server $Server.name -ADPropertiesOnly | Select-Object Name, Server, InternalHostname, ExternalHostname, ExternalClientAuthenticationMethod, InternalClientAuthenticationMethod, IISAuthenticationMethods, WhenChanged
         }
         else {
-            $oaresult = Get-OutlookAnywhere -server $server.name | Select-Object Name, Server, InternalHostname, ExternalHostname, ExternalClientAuthenticationMethod, InternalClientAuthenticationMethod, IISAuthenticationMethods, WhenChanged
+            $oaresult = Get-OutlookAnywhere -server $Server.name | Select-Object Name, Server, InternalHostname, ExternalHostname, ExternalClientAuthenticationMethod, InternalClientAuthenticationMethod, IISAuthenticationMethods, WhenChanged
         }
 
         if ($null -eq $oaresult) {
-
             $oahtml += "<tr.color>"
-            $oahtml += "<td>" + $server.name + "</td>"
+            $oahtml += "<td>" + $Server.name + "</td>"
             $oahtml += "<td colspan='6'>"
             $oahtml += "Outlook Anywhere isn't enabled."
             $oahtml += "</td>"
@@ -335,19 +355,15 @@
     $html += "<td>Server</td><td>Internal URL</td><td>External URL</td><td>Auth.(Int.)</td><td>Auth. (Ext.)</td><td>Auth. IIS</td><td>Last modified on:</td>"
     $html += "</tr>"
 
-    foreach ($server in $servers) {
-        $MapiServer = (Get-ExchangeServer $Server.name).AdminDisplayVersion.toString()
-        $MapiMajor = [regex]::matches($MapiServer, '(?<=Version )[^.< ]*').value
-        $MapiMinor = [regex]::matches($MapiServer, '(?<=Version \d{2}.)[^< ]*').value
-        $MapiAdminBuild = [regex]::matches($MapiServer, 'Build\s*([\d.]+)').value
-        if (($MapiMajor -eq "15" -and $MapiAdminBuild -ge "847") -or ($MapiMajor -eq "15" -and $MapiMinor -eq "1")) {
+    foreach ($Server in $ServerList) {
+        if (($Server.Major -eq 15 -and $Server.AdminBuild -ge 847) -or ($Server.Major -eq 15 -and $Server.Minor -eq 1)) {
             Write-Host "Getting MAPI/HTTP Information for server: " -NoNewLine
-            Write-Host "$($server.name)" -ForegroundColor Cyan
+            Write-Host "$($Server.name)" -ForegroundColor Cyan
             if ($ADProperties) {
-                $mapiresult = Get-MapiVirtualDirectory -server $server.name -ADPropertiesOnly | Select-Object Name, Server, InternalUrl, ExternalUrl, ExternalAuthenticationMethods, InternalAuthenticationMethods, IISAuthenticationMethods, WhenChanged
+                $mapiresult = Get-MapiVirtualDirectory -server $Server.name -ADPropertiesOnly | Select-Object Name, Server, InternalUrl, ExternalUrl, ExternalAuthenticationMethods, InternalAuthenticationMethods, IISAuthenticationMethods, WhenChanged
             }
             else {
-                $mapiresult = Get-MapiVirtualDirectory -server $server.name | Select-Object Name, Server, InternalUrl, ExternalUrl, ExternalAuthenticationMethods, InternalAuthenticationMethods, IISAuthenticationMethods, WhenChanged
+                $mapiresult = Get-MapiVirtualDirectory -server $Server.name | Select-Object Name, Server, InternalUrl, ExternalUrl, ExternalAuthenticationMethods, InternalAuthenticationMethods, IISAuthenticationMethods, WhenChanged
             }
 
             $mapihtml += "<tr.color>"
@@ -363,7 +379,7 @@
         else {
 
             $mapihtml += "<tr.color>"
-            $mapihtml += "<td>" + $server.name + "</td>"
+            $mapihtml += "<td>" + $Server.name + "</td>"
             $mapihtml += "<td colspan='6'>"
             $mapihtml += "Server isn't running Exchange 2013 SP1 or later."
             $mapihtml += "</td>"
@@ -383,14 +399,14 @@
     $html += "<td>Server</td><td>OABs</td><td>Internal URL</td><td>External Url</td><td>Auth.(Int.)</td><td>Auth. (Ext.)</td><td>Last modified on:</td>"
     $html += "</tr>"
 
-    foreach ($server in $servers) {
+    foreach ($Server in $ServerList) {
         Write-Host "Getting Offline Address Book information for server: " -NoNewLine
-        Write-Host "$($server.name)" -ForegroundColor Cyan
+        Write-Host "$($Server.name)" -ForegroundColor Cyan
         if ($ADProperties) {
-            $oabresult = Get-OABVirtualDirectory -server $server.name -ADPropertiesOnly | Select-Object Server, InternalUrl, ExternalUrl, ExternalAuthenticationMethods, InternalAuthenticationMethods, OfflineAddressBooks, WhenChanged
+            $oabresult = Get-OABVirtualDirectory -server $Server.name -ADPropertiesOnly | Select-Object Server, InternalUrl, ExternalUrl, ExternalAuthenticationMethods, InternalAuthenticationMethods, OfflineAddressBooks, WhenChanged
         }
         else {
-            $oabresult = Get-OABVirtualDirectory -server $server.name | Select-Object Server, InternalUrl, ExternalUrl, ExternalAuthenticationMethods, InternalAuthenticationMethods, OfflineAddressBooks, WhenChanged
+            $oabresult = Get-OABVirtualDirectory -server $Server.name | Select-Object Server, InternalUrl, ExternalUrl, ExternalAuthenticationMethods, InternalAuthenticationMethods, OfflineAddressBooks, WhenChanged
         }
 
         $oabhtml += "<tr.color>"
@@ -416,14 +432,14 @@
     $html += "<td>Server</td><td>Internal URL</td><td>External Url</td><td>Auth. (Ext.)</td><td>Last modified on:</td>"
     $html += "</tr>"
 
-    foreach ($server in $servers) {
+    foreach ($Server in $ServerList) {
         Write-Host "Getting ActiveSync information for server: " -NoNewLine
-        Write-Host "$($server.name)" -ForegroundColor Cyan
+        Write-Host "$($Server.name)" -ForegroundColor Cyan
         if ($ADProperties) {
-            $easresult = Get-ActiveSyncVirtualDirectory -server $server.name -ADPropertiesOnly | Select-Object Server, InternalUrl, ExternalUrl, ExternalAuthenticationMethods, InternalAuthenticationMethods, WhenChanged
+            $easresult = Get-ActiveSyncVirtualDirectory -server $Server.name -ADPropertiesOnly | Select-Object Server, InternalUrl, ExternalUrl, ExternalAuthenticationMethods, InternalAuthenticationMethods, WhenChanged
         }
         else {
-            $easresult = Get-ActiveSyncVirtualDirectory -server $server.name | Select-Object Server, InternalUrl, ExternalUrl, ExternalAuthenticationMethods, InternalAuthenticationMethods, WhenChanged
+            $easresult = Get-ActiveSyncVirtualDirectory -server $Server.name | Select-Object Server, InternalUrl, ExternalUrl, ExternalAuthenticationMethods, InternalAuthenticationMethods, WhenChanged
         }
 
 
@@ -448,14 +464,14 @@
     $html += "<td>Server</td><td>Internal URL</td><td>External Url</td><td>Auth. (Int.)</td><td>Auth. (Ext.)</td><td>MRS Proxy Enabled</td><td>Last modified on:</td>"
     $html += "</tr>"
 
-    foreach ($server in $servers) {
+    foreach ($Server in $ServerList) {
         Write-Host "Getting Web Services information for server: " -NoNewLine
-        Write-Host "$($server.name)" -ForegroundColor Cyan
+        Write-Host "$($Server.name)" -ForegroundColor Cyan
         if ($ADProperties) {
-            $ewsresult = Get-WebServicesVirtualDirectory -server $server.name -ADPropertiesOnly | Select-Object Server, InternalUrl, ExternalUrl, ExternalAuthenticationMethods, InternalAuthenticationMethods, MRSProxyEnabled, WhenChanged
+            $ewsresult = Get-WebServicesVirtualDirectory -server $Server.name -ADPropertiesOnly | Select-Object Server, InternalUrl, ExternalUrl, ExternalAuthenticationMethods, InternalAuthenticationMethods, MRSProxyEnabled, WhenChanged
         }
         else {
-            $ewsresult = Get-WebServicesVirtualDirectory -server $server.name | Select-Object Server, InternalUrl, ExternalUrl, ExternalAuthenticationMethods, InternalAuthenticationMethods, MRSProxyEnabled, WhenChanged
+            $ewsresult = Get-WebServicesVirtualDirectory -server $Server.name | Select-Object Server, InternalUrl, ExternalUrl, ExternalAuthenticationMethods, InternalAuthenticationMethods, MRSProxyEnabled, WhenChanged
         }
 
         $ewshtml += "<tr.color>"
@@ -481,6 +497,6 @@
         Write-Warning "Couldn't save "$filepath"\virdirinfo_"$(Get-Date -Format d-MM-yyyy_HH\hmm\mss\s)".html"
     }
 
-    $Owahtml, $Owaresult, $html, $servers = $null
+    $Owahtml, $Owaresult, $html, $ServerList = $null
 
 }
