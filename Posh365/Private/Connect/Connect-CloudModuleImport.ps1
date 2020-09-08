@@ -20,6 +20,10 @@ function Connect-CloudModuleImport {
 
         [Parameter()]
         [switch]
+        $Az,
+
+        [Parameter()]
+        [switch]
         $AzureAD,
 
         [Parameter()]
@@ -55,6 +59,16 @@ function Connect-CloudModuleImport {
             #         }
             #     }
             # }
+            { $Az } {
+                if (-not ($null = Get-Module Az.Resources -ListAvailable)) {
+                    try {
+                        Install-Module -Name Az.Resources -Scope CurrentUser -Force -ErrorAction Stop
+                    }
+                    catch {
+                        Write-Warning "Unable to install the latest version of Az.Resources. Error: $($Exception.Message)"
+                    }
+                }
+            }
             { $EXO2 -or $ExchangeOnline } {
                 if (((Get-Module PowerShellGet -ListAvailable).Version.Major | Sort-Object -Descending | Select-Object -First 1) -lt 2) {
                     try {

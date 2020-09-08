@@ -145,6 +145,10 @@ function Connect-Cloud {
         $Compliance,
 
         [Parameter()]
+        [switch]
+        $Az,
+
+        [Parameter()]
         [Alias('AzureADver2')]
         [switch]
         $AzureAD,
@@ -506,6 +510,15 @@ function Connect-Cloud {
     if ($Exo2 -or $ExchangeOnline) {
         Connect-ExchangeOnline @Splat -ShowBanner:$false
         Write-Host "You have successfully connected to Exchange Online" -foregroundcolor "magenta" -backgroundcolor "white"
+    }
+    if ($Az) {
+        $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).cred") | ConvertTo-SecureString
+        $UsernameString = Get-Content ($KeyPath + "$($Tenant).ucred")
+        $Credential = [System.Management.Automation.PSCredential]::new($UsernameString, $PwdSecureString)
+
+        Connect-CloudModuleImport -Az
+        Connect-AzAccount -Credential $Credential
+        Write-Host "You have successfully connected to Az Cmdlets" -foregroundcolor "magenta" -backgroundcolor "white"
     }
     if ($Compliance) {
         Get-PSSession | Remove-PSSession
