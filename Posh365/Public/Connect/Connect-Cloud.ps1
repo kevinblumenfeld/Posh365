@@ -512,11 +512,10 @@ function Connect-Cloud {
         Write-Host "You have successfully connected to Exchange Online" -foregroundcolor "magenta" -backgroundcolor "white"
     }
     if ($Az) {
+        Connect-CloudModuleImport -Az
         $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).cred") | ConvertTo-SecureString
         $UsernameString = Get-Content ($KeyPath + "$($Tenant).ucred")
         $Credential = [System.Management.Automation.PSCredential]::new($UsernameString, $PwdSecureString)
-
-        Connect-CloudModuleImport -Az
         Connect-AzAccount -Credential $Credential
         Write-Host "You have successfully connected to Az Cmdlets" -foregroundcolor "magenta" -backgroundcolor "white"
     }

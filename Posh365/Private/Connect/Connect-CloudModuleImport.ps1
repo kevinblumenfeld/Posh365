@@ -60,7 +60,7 @@ function Connect-CloudModuleImport {
             #     }
             # }
             { $Az } {
-                if (-not ($null = Get-Module Az.Resources -ListAvailable)) {
+                if (-not ($null = Get-Module Az.Accounts -ListAvailable)) {
                     try {
                         Install-Module -Name Az.Resources -Scope CurrentUser -Force -ErrorAction Stop
                     }
