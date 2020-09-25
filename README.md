@@ -39,6 +39,7 @@ Get-DiscoveryOffice365 -Tenant Contoso -Verose
 **Choose** Connection type & click OK
 
 `First time running Get-DiscoveryOffice365?`
+
 `1. Run:`
 ```
 Connect-Cloud -Tenant Contoso -EXO2
