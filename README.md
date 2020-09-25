@@ -16,7 +16,7 @@ Install-Module Posh365 -Force -Scope CurrentUser
 ```
 ### `Connect`
 
-**Connect-Cloud** Connect to one or more services EXO2, MSOnline, AzureAD, SharePoint, Compliance. Examples:
+**Connect-Cloud** Connect to one or more services: EXO2, MSOnline, AzureAD, SharePoint, Compliance. Examples:
 
 ```powershell
 Connect-Cloud -Tenant Contoso -EXO2 -MSonline -AzureAD
@@ -61,7 +61,7 @@ Last, click each link, copy/paste code on-premise & add to documents to SharePoi
 
 
 ### `Migrate from Hybrid to Office 365`
-> note: each command GUI is presented for user select  
+> *Note*: each command presents a GUI for selection and confirmation
 
 **New-MailboxMove** Creates new move requests
 ```powershell
