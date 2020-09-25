@@ -173,7 +173,7 @@ Trace-Message -StartSearchHoursAgo 10 -Sender jane@contoso.com
 Trace-Message -Sender jane@contoso.com -Recipient emily@contoso.com
 ```
 
-**Trace-ExchangeMessage** GUI to trace Exchange on-premises messages. Select messages & click OK for messageID details
+**Trace-ExchangeMessage** GUI to trace on-premises messages. Select messages & click OK for messageID details
 ```powershell
 Trace-ExchangeMessage # all messages from past 15 minutes
 Trace-ExchangeMessage -StartSearchHoursAgo 10 -ExportToCsv
