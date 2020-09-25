@@ -40,13 +40,9 @@ Get-DiscoveryOffice365 -Tenant Contoso -Verose
 
 `First time running Get-DiscoveryOffice365?`  
 
-`1. Run:`
-```
-Connect-Cloud -Tenant Contoso -EXO2
-```
-
-`2. Sign in as Global Admin & restart powershell when prompted`
-`3. Installs modules PowerShellGet2 & ExchangeOnlineManagement`
+`1. Run: Connect-Cloud -Tenant Contoso -EXO2`
+`2. Sign in as Global Admin & restart powershell when prompted`  
+`3. Installs modules PowerShellGet2 & ExchangeOnlineManagement`  
 
 
 ### `Discover On-Premises`
