@@ -66,7 +66,8 @@ Get-DiscoveryOnPrem -Verbose
 <sub>2. Enter name of Exchange Server when prompted</sub>  
 <sub>3. Click link for Batches, copy/paste code on-premises</sub>  
 <sub>4. Click link for Permissions, copy/paste code on-premises</sub>  
-<sub>5. Add both documents to the root of SharePoint > Documents</sub>  
+<sub>5. Add both documents to the root of SharePoint > Documents</sub>
+<sub>6. Add BATCH01 to BatchName column in Batches.xlsx for pilot</sub>  
 
 
 | Document to add to SharePoint | Paste code on-premises (not EMS) |
@@ -78,6 +79,15 @@ Get-DiscoveryOnPrem -Verbose
 ### `Migrate from Hybrid to Office 365`
 > <sub>**Note**: Each command presents a GUI for selection and confirmation</sub>
 
+#### `Analyze Permissions`
+**Update-MailboxMovePermissionBatch** Gui to analyze permissions of mailboxes from Batches.xlsx. Will output new Batches.xlsx to desktop. Can add to SharePoint as new Batches file. 
+```powershell
+$params = @{
+    SharePointURL = 'https://contoso.sharepoint.com/sites/migrate'
+    ExcelFile     = 'Batches.xlsx'
+}
+Update-MailboxMovePermissionBatch @params
+```
 #### `Migrate`
 **New-MailboxMove** Creates new move requests. Example uses batches file in SP site named "migrate". Use links in Discovery On-Premises to create Batches and Permissions files [[ Link ]](https://github.com/kevinblumenfeld/Posh365#discover-on-premises)
 ```powershell
@@ -129,7 +139,7 @@ Get-MailboxMoveReport
 
 #### `License`
 
-**Set-MailboxMoveLicense** Licenses users via AzureAD
+**Set-MailboxMoveLicense** Gui to licenses users via AzureAD
 ```powershell
 Set-MailboxMoveLicense
 Set-MailboxMoveLicense -MailboxCSV .\UserPrincipalName.csv
