@@ -41,8 +41,7 @@ Connect-Exchange -Server EXHybrid -DeleteExchangeCreds #Deletes locally encrypte
 **Connect-PoshGraph** Use saved encrypted credentials to connnect to Graph and Azure APIs
 ```powershell
 Export-GraphConfig -Tenant contoso 
-Connect-Exchange -Server EXHybrid -DontViewEntireForest
-Connect-Exchange -Server EXHybrid -DeleteExchangeCreds #Deletes locally encrypted creds only
+Connect-PoshGraph -Tenant contoso
 ```
 
 ### `Discover Office 365`
