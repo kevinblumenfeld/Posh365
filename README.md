@@ -2,7 +2,6 @@
 # Posh365
 
 ###### Install Posh365
-
 ```
 Set-ExecutionPolicy RemoteSigned
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
@@ -11,7 +10,6 @@ Install-Module Posh365 -Force
 
 
 ###### Install Posh365 without Admin Access
-
 ```
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
