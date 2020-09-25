@@ -180,7 +180,7 @@ Trace-ExchangeMessage -StartSearchHoursAgo 10 -ExportToCsv
 Trace-ExchangeMessage -StartSearchHoursAgo 10 -ExportToExcel -SkipHealthMessages
 ```
 #### `Managed Folder Assistant`
-* **Get-MfaStats** Return Managed Folder Assistant statistics as an object. Switch to start the MFA too
+**Get-MfaStats** Return Managed Folder Assistant statistics as an object. Switch to start the MFA too
 ```powershell
 (Get-EXOMailbox -Properties Office -Filter "Office -eq 'Redmond'").UserPrincipalName | Get-MfaStats
 (Get-EXOMailbox -Properties Office -Filter "Office -eq 'Redmond'").UserPrincipalName | Get-MfaStats -StartMFA
