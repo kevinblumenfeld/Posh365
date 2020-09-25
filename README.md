@@ -31,7 +31,7 @@ Connect-Exchange -Server EXHybrid #Encrypts and reuses creds locally
 Connect-Exchange -Server EXHybrid -DontViewEntireForest
 Connect-Exchange -Server EXHybrid -DeleteExchangeCreds #Deletes locally encrypted creds only
 ```
-**Export-GraphConfig** Use a Gui to save/encrypt ClientID, TenantID, Secret, UserName & Password
+**Export-GraphConfig** Use a Gui to save/encrypt ClientID, TenantID, Secret, UserName & Password  
 **Connect-PoshGraph** Use saved encrypted credentials to connnect to Graph and Azure APIs
 ```powershell
 Export-GraphConfig -Tenant contoso 
