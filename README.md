@@ -127,6 +127,7 @@ Get-MailboxMoveStatistics -IncludeCompleted
 ```powershell
 Get-MailboxMoveReport
 ```
+### `Administration`
 
 #### `License`
 
@@ -163,8 +164,6 @@ Get-MailboxMoveLicenseCount
 ```powershell
 Get-MailboxMoveLicenseReport -Path C:\temp\
 ```
-
-
 #### `Message Trace`
 
 **Trace-Message** GUI to trace Exchange Online messages. Click messages for trace details
@@ -181,8 +180,6 @@ Trace-ExchangeMessage # all messages from past 15 minutes
 Trace-ExchangeMessage -StartSearchHoursAgo 10 -ExportToCsv
 Trace-ExchangeMessage -StartSearchHoursAgo 10 -ExportToExcel -SkipHealthMessages
 ```
-### `Administration`
-
 #### `Managed Folder Assistant`
 * **Get-MfaStats** Return Managed Folder Assistant statistics as an object. Switch to start the MFA too
 ```powershell
