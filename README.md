@@ -19,17 +19,17 @@ Install-Module Posh365 -Force -Scope CurrentUser
 **Connect-Cloud** Connect to one or more services: Az, AzureAD, Compliance, Exo2, MSOnline, SharePoint & Teams
 
 ```powershell
-Connect-Cloud -Tenant contoso -EXO2 -MSonline -AzureAD
+Connect-Cloud -Tenant contoso -EXO2 -MSOnline -AzureAD
 Connect-Cloud -Tenant contoso -SharePoint
 Connect-Cloud -Tenant contoso -Compliance
-Connect-Cloud -Tenant contoso -EXO2 -MSonline -AzureAD -MFA #when using MFA
+Connect-Cloud -Tenant contoso -EXO2 -MSOnline -AzureAD -MFA #when using MFA
 Connect-Cloud -Tenant contoso -DeleteCreds #Deletes locally encrypted creds only
 ```
 
 **Connect-CloudMFA** Same as Connect-Cloud but includes built-in password manager gui
 
 ```powershell
-Connect-CloudMFA -Tenant contoso -EXO2 -MSonline -AzureAD -Teams
+Connect-CloudMFA -Tenant contoso -EXO2 -MSOnline -AzureAD -Teams
 ```
 **Connect-Exchange** Connect to Exchange on-premises
 ```powershell
@@ -118,7 +118,7 @@ Complete-MailboxMove -Schedule #Gui presented to pick time, date, and users
 
 #### `Report`
 
-**Get-MailboxMoveStatistics** Gets move request statistics for one, many or all move requests. Multi select or select all, click OK 
+**Get-MailboxMoveStatistics** Gets move request statistics for any or all move requests. Multi-select or select all, click OK 
 ```powershell
 Get-MailboxMoveStatistics
 Get-MailboxMoveStatistics -IncludeCompleted
@@ -169,7 +169,7 @@ Get-MailboxMoveLicenseReport -Path C:\temp\
 
 **Trace-Message** GUI to trace Exchange Online messages. Click messages for trace details
 
-**Trace-ExchangeMessage** GUI to trace Exchange on-premises messages. Click messages to trace by message id
+**Trace-ExchangeMessage** GUI to trace Exchange on-premises messages. Click messages to trace by messageid, click OK
 ### `Administration`
 
 #### `Managed Folder Assistant`
