@@ -64,9 +64,10 @@ Get-DiscoveryOnPrem -Verbose
 ```
 <sub>1. Run: Get-Discovery -Verbose</sub>  
 <sub>2. Enter name of Exchange Server when prompted</sub>  
-<sub>3. Click link for Batches, copy/paste code on-premise</sub>
-<sub>4. Click link for Permissions, copy/paste code on-premise</sub>
+<sub>3. Click link for Batches, copy/paste code on-premise</sub>  
+<sub>4. Click link for Permissions, copy/paste code on-premise</sub>  
 <sub>5. Add both documents to the root of SharePoint > Documents</sub>  
+
 
 | Document to add to SharePoint | Paste code on-premises (not EMS) |
 | :---------------------------: | :------------------------------: |
