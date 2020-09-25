@@ -31,7 +31,7 @@ Connect-Exchange -Server EXHybrid #Encrypts and reuses creds locally
 Connect-Exchange -Server EXHybrid -DeleteExchangeCreds #Deletes locally encrypted creds only
 ```
 
-## `Discover Office 365`
+### `Discover Office 365`
 ```
 Get-DiscoveryOffice365 -Tenant Contoso -Verose
 ```
@@ -48,7 +48,7 @@ Connect-Cloud -Tenant Contoso -EXO2
 `3. Installs modules PowerShellGet2 & ExchangeOnlineManagement`
 
 
-## `Discover On-Premises`
+### `Discover On-Premises`
 > Requires RSAT
 ```
 Get-DiscoveryOnPrem -Verbose
@@ -62,54 +62,81 @@ Last, click each link, copy/paste code on-premise & add to documents to SharePoi
 | Permissions.xlsx | http://bit.ly/PermissionsScaled |
 
 
-## `Migrate from Hybrid`
+### `Migrate from Hybrid to Office 365`
+> each command GUI is presented for user select
 
-*  **New-MailboxMove** Creates new move requests
+**New-MailboxMove** Creates new move requests
+```
+$params = @{
+    SharePointURL = 'https://contoso.sharepoint.com/sites/migrate'
+    ExcelFile     = 'Batches.xlsx'
+    RemoteHost    = 'hybrid.contoso.com'
+    Tenant        = 'contoso'
+}
+New-MailboxMove @params
+```
 
-*  **Set-MailboxMove** Set move requests.
+**Set-MailboxMove** Set move requests.
 
-*  **Suspend-MailboxMove** Suspends move requests.
+```
+Set-MailboxMove -BadItemLimit 300 -LargeItemLimit 400
+```
 
-*  **Resume-MailboxMove** Resumes move requests. Includes the switch -DontAutoComplete
+**Suspend-MailboxMove** Suspends move requests.
 
-*  **Remove-MailboxMove** Removes move requests.
+```
+Suspend-MailboxMove
+```
+**Resume-MailboxMove** Resumes move requests.
+```
+Resume-MailboxMove
+Resume-MailboxMove -DontAutoComplete
+```
 
-*  **Complete-MailboxMove** Complete move requests.
+**Remove-MailboxMove** Removes move requests.
+```
+Remove-MailboxMove
+```
+**Complete-MailboxMove** Complete move requests
+```
+Complete-MailboxMove
+Complete-MailboxMove -Schedule #Gui presented to pick users and time
+```
 
 #### `Report`
-*  **Get-MailboxMove** Gets current move requests.
+**Get-MailboxMove** Gets current move requests
 
-*  **Get-MailboxMoveStatistics** Gets move request statistics.
+**Get-MailboxMoveStatistics** Gets move request statistics
 
-*  **Get-MailboxMoveReport** Gets full move request report.
+**Get-MailboxMoveReport** Gets full move request report
 
 #### `License`
 
-*  **Set-MailboxMoveLicense** Licenses users via AzureAD.
+**Set-MailboxMoveLicense** Licenses users via AzureAD
 
-*  **Get-MailboxMoveLicense** Reports on user licenses.
+**Get-MailboxMoveLicense** Reports on user licenses
 
-*  **Get-MailboxMoveLicenseCount** Reports on a tenant's skus and options.
+**Get-MailboxMoveLicenseCount** Reports on a tenant's skus and options
 
-*  **Get-MailboxMoveLicenseReport** Reports on each user's assigned skus and options.
+**Get-MailboxMoveLicenseReport** Reports on each user's assigned skus and options
 
 
 
 #### `Message Trace`
 
-*  **Trace-Message** GUI to trace Exchange Online messages. Click messages for trace details.
+**Trace-Message** GUI to trace Exchange Online messages. Click messages for trace details
 
-*  **Trace-ExchangeMessage** GUI to trace Exchange on-premises messages. Click messages to trace by message id.
+**Trace-ExchangeMessage** GUI to trace Exchange on-premises messages. Click messages to trace by message id
 ### `Administration`
 
 #### `Managed Folder Assistant`
-* **Get-MfaStats** Return Managed Folder Assistant statistics as an object. Switch to start the MFA too.
+* **Get-MfaStats** Return Managed Folder Assistant statistics as an object. Switch to start the MFA too
 ```
 (Get-EXOMailbox -Properties Office -Filter "Office -eq 'Redmond'").UserPrincipalName | Get-MfaStats
 'jane@contoso.com' | Get-MfaStats -StartMFA
 ```
 
 #### `Office365 Endpoints`
-*  **Get-OfficeEndpoints** URLs and IPs, initial and "changes since", CSV and Excel output (click to enlarge)
+**Get-OfficeEndpoints** URLs and IPs, initial and "changes since", CSV and Excel output (click to enlarge)
 
 ![ME3V6nNhwV](https://user-images.githubusercontent.com/28877715/71635906-fcb6a980-2bf6-11ea-927e-03c9bda8f2a4.gif)
