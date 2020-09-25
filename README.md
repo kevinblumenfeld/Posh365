@@ -59,7 +59,7 @@ Get-DiscoveryOffice365 -Tenant contoso -Verbose
 <sub>3. Run: Get-DiscoveryOffice365 -Tenant contoso -Verbose</sub>  
 
 ### `Discover On-Premises`
-> Requires RSAT  
+> <sub>Requires RSAT</sub>  
 ```powershell
 Get-DiscoveryOnPrem -Verbose
 ```
