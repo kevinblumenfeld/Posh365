@@ -133,7 +133,7 @@ Get-MailboxMoveReport
 **Set-MailboxMoveLicense** Licenses users via AzureAD
 ```powershell
 Set-MailboxMoveLicense
-Set-MailboxMoveLicense -MailboxCSV '.\UserPrincipalName.csv'
+Set-MailboxMoveLicense -MailboxCSV .\UserPrincipalName.csv
 
 $params = @{
     SharePointURL = 'https://contoso.sharepoint.com/sites/migrate'
@@ -168,8 +168,19 @@ Get-MailboxMoveLicenseReport -Path C:\temp\
 #### `Message Trace`
 
 **Trace-Message** GUI to trace Exchange Online messages. Click messages for trace details
+```powershell
+Trace-Message # all messages from past 15 minutes
+Trace-Message -StartSearchHoursAgo 6.3 -EndSearchHoursAgo 5 -Subject 'From the CEO'
+Trace-Message -StartSearchHoursAgo 10 -Sender jane@contoso.com
+Trace-Message -Sender jane@contoso.com -Recipient emily@contoso.com
+```
 
 **Trace-ExchangeMessage** GUI to trace Exchange on-premises messages. Click messages to trace by messageid, click OK
+```powershell
+Trace-ExchangeMessage # all messages from past 15 minutes
+Trace-ExchangeMessage -StartSearchHoursAgo 10 -ExportToCsv
+Trace-ExchangeMessage -StartSearchHoursAgo 10 -ExportToExcel -SkipHealthMessages
+```
 ### `Administration`
 
 #### `Managed Folder Assistant`
