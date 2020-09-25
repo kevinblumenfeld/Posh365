@@ -26,7 +26,7 @@ Connect-Cloud -Tenant contoso -EXO2 -MSonline -AzureAD -MFA #when using MFA
 Connect-Cloud -Tenant contoso -DeleteCreds #Deletes locally encrypted creds only
 ```
 
-**Connect-CloudMFA** Same as Connect-Cloud but includes built in copy and paste GUI password manager
+**Connect-CloudMFA** Same as Connect-Cloud but includes built-in password manager gui
 
 ```powershell
 Connect-CloudMFA -Tenant contoso -EXO2 -MSonline -AzureAD -Teams
@@ -55,9 +55,9 @@ Get-DiscoveryOffice365 -Tenant contoso -Verose
 
 `First time running Get-DiscoveryOffice365?`  
 
-`1. Run: Connect-Cloud -Tenant contoso -EXO2`  
-`2. Sign in as Global Admin & restart powershell when prompted`  
-`3. Installs modules PowerShellGet2 & ExchangeOnlineManagement`  
+<sub>1. Run: Connect-Cloud -Tenant contoso -EXO2</sub>
+<sub>2. Sign in as Global Admin & restart powershell when prompted</sub>
+<sub>3. Installs modules PowerShellGet2 & ExchangeOnlineManagement</sub>
 
 
 ### `Discover On-Premises`
