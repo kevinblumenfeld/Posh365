@@ -1,34 +1,54 @@
 
 # Posh365
 
-###### Install Posh365
+###### Install
 ```
 Set-ExecutionPolicy RemoteSigned
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 Install-Module Posh365 -Force
 ```
 
-
-###### Install Posh365 without Admin Access
+###### Install without Admin Access
 ```
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 Install-Module Posh365 -Force -Scope CurrentUser
 ```
+### `Connect`
 
-# Discovery
+*  **Connect-Cloud** Connect to EXO2, MSOnline, AzureAD, SharePoint, Compliance
 
+```
+Connect-Cloud -Tenant Contoso -EXO2 -MSonline -AzureAD
+Connect-Cloud -Tenant Contoso -SharePoint
+Connect-Cloud -Tenant Contoso -Compliance
+Connect-Cloud -Tenant Contoso -EXO2 -MSonline -AzureAD -MFA #when using MFA
+Connect-Cloud -Tenant Contoso -DeleteCreds #Deletes locally encrypted creds only
+```
+*  **Connect-Exchange** Connect to Exchange on-premises
+```
+Connect-Exchange -Server EXHybrid #Encrypts and reuses creds locally
+Connect-Exchange -Server EXHybrid -DeleteExchangeCreds #Deletes locally encrypted creds only
+```
 
-
-## `Office 365 Discovery`
-> First time? Run:  ```Connect-Cloud -Tenant Contoso -EXO2```
-> Sign in as Global Admin & restart powershell when prompted
+## `Discover Office 365`
 ```
 Get-DiscoveryOffice365 -Tenant Contoso -Verose
 ```
 **Choose** all but Compliance & click OK
 **Choose** Connection type & click OK
-## `On Premises Discovery`
+
+`First time running Get-DiscoveryOffice365?`
+`1. Run:`
+```
+Connect-Cloud -Tenant Contoso -EXO2
+```
+
+`2. Sign in as Global Admin & restart powershell when prompted`
+`3. Installs modules PowerShellGet2 & ExchangeOnlineManagement`
+
+
+## `Discover On-Premises`
 > Requires RSAT
 ```
 Get-DiscoveryOnPrem -Verbose
@@ -42,19 +62,7 @@ Last, click each link, copy/paste code on-premise & add to documents to SharePoi
 | Permissions.xlsx | http://bit.ly/PermissionsScaled |
 
 
-
-
-
-# Commands
-### `Migration`
-
-#### `Connect`
-
-*  **Connect-CloudMFA** Connect to EXOv2, MSOnline, AzureAD, SharePoint, Compliance.
-
-*  **Connect-Exchange** Connect to Exchange on-premises
-
-#### `Migrate`
+## `Migrate from Hybrid`
 
 *  **New-MailboxMove** Creates new move requests
 
