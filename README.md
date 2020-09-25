@@ -78,6 +78,7 @@ Get-DiscoveryOnPrem -Verbose
 ### `Migrate from Hybrid to Office 365`
 > <sub>**Note**: Each command presents a GUI for selection and confirmation</sub>
 
+#### `Migrate`
 **New-MailboxMove** Creates new move requests. Example uses batches file in SP site named "migrate". Use links in Discovery On-Premises to create Batches and Permissions files [[ Link ]](https://github.com/kevinblumenfeld/Posh365#discover-on-premises)
 ```powershell
 $params = @{
@@ -115,6 +116,7 @@ Remove-MailboxMove
 Complete-MailboxMove
 Complete-MailboxMove -Schedule #Gui presented to pick time, date, and users
 ```
+#### `Report on Migration`
 **Get-MailboxMoveStatistics** Gets move request statistics for any or all move requests. Multi-select or select all, click OK 
 ```powershell
 Get-MailboxMoveStatistics
@@ -124,7 +126,6 @@ Get-MailboxMoveStatistics -IncludeCompleted
 ```powershell
 Get-MailboxMoveReport
 ```
-### `Administration`
 
 #### `License`
 
@@ -161,6 +162,7 @@ Get-MailboxMoveLicenseCount
 ```powershell
 Get-MailboxMoveLicenseReport -Path C:\temp\
 ```
+### `Mail Flow`  
 #### `Message Trace`
 
 **Trace-Message** GUI to trace Exchange Online messages. Click messages for trace details
