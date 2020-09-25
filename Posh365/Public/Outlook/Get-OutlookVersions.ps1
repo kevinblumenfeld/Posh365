@@ -42,7 +42,7 @@ function Get-OutlookVersions {
 
         $FileList = foreach ($Server in $RPCList) {
             Write-Verbose "Discovering Logs on`t$($Server.Name)"
-            Get-ChildItem -Path $Server.Path -Filter *.log |
+            Get-ChildItem -Path $Server.Path -Filter *.log -ErrorAction SilentlyContinue |
             Where-Object { $_.LastWriteTime -gt (Get-Date).AddDays(-$Days) } |
             Select-Object @(
                 @{
@@ -68,7 +68,7 @@ function Get-OutlookVersions {
         )
         $FileList = foreach ($Server in $MapiList) {
             Write-Verbose "Discovering Logs on`t$($Server.Name)"
-            Get-ChildItem -Path $Server.Path -Filter *.log |
+            Get-ChildItem -Path $Server.Path -Filter *.log -ErrorAction SilentlyContinue |
             Where-Object { $_.LastWriteTime -gt (Get-Date).AddDays(-$Days) } |
             Select-Object @(
                 @{

@@ -142,12 +142,27 @@ $params = @{
 Set-MailboxMoveLicense @params
 ```
 
-**Get-MailboxMoveLicense** Reports on user licenses
+**Get-MailboxMoveLicense** Reports on user license Skus via AzureAD
+```powershell
+Get-MailboxMoveLicense
+Get-MailboxMoveLicense -OneSkuPerLine
+Get-MailboxMoveLicense -OneSkuPerLine -ExportToExcel # file saved in Posh365 folder on desktop
+Get-MailboxMoveLicense -IncludeRecipientType # Connect to EXO2
 
-**Get-MailboxMoveLicenseCount** Reports on a tenant's skus and options
-
-**Get-MailboxMoveLicenseReport** Reports on each user's assigned skus and options
-
+$params = @{
+    SharePointURL = 'https://contoso.sharepoint.com/sites/migrate'
+    ExcelFile     = 'Batches.xlsx'
+ }
+Get-MailboxMoveLicense @params
+```
+**Get-MailboxMoveLicenseCount** Reports on a tenant's consumed and total skus and options
+```powershell
+Get-MailboxMoveLicenseCount
+```
+**Get-MailboxMoveLicenseReport** Reports on each user's assigned skus and options, csv and excel output
+```powershell
+Get-MailboxMoveLicenseReport -Path C:\temp\
+```
 
 
 #### `Message Trace`
