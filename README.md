@@ -38,7 +38,7 @@ Get-DiscoveryOffice365 -Tenant Contoso -Verose
 **Choose** all but Compliance & click OK
 **Choose** Connection type & click OK
 
-`First time running Get-DiscoveryOffice365?`
+`First time running Get-DiscoveryOffice365?`  
 
 `1. Run:`
 ```
