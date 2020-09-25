@@ -2,14 +2,14 @@
 # Posh365
 
 ###### Install
-```
+```powershell
 Set-ExecutionPolicy RemoteSigned
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 Install-Module Posh365 -Force
 ```
 
 ###### Install without Admin Access
-```
+```powershell
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 Install-Module Posh365 -Force -Scope CurrentUser
@@ -18,7 +18,7 @@ Install-Module Posh365 -Force -Scope CurrentUser
 
 **Connect-Cloud** Connect to one or more server EXO2, MSOnline, AzureAD, SharePoint, Compliance. Examples:
 
-```
+```powershell
 Connect-Cloud -Tenant Contoso -EXO2 -MSonline -AzureAD
 Connect-Cloud -Tenant Contoso -SharePoint
 Connect-Cloud -Tenant Contoso -Compliance
@@ -26,13 +26,13 @@ Connect-Cloud -Tenant Contoso -EXO2 -MSonline -AzureAD -MFA #when using MFA
 Connect-Cloud -Tenant Contoso -DeleteCreds #Deletes locally encrypted creds only
 ```
 **Connect-Exchange** Connect to Exchange on-premises
-```
+```powershell
 Connect-Exchange -Server EXHybrid #Encrypts and reuses creds locally
 Connect-Exchange -Server EXHybrid -DeleteExchangeCreds #Deletes locally encrypted creds only
 ```
 
 ### `Discover Office 365`
-```
+```powershell
 Get-DiscoveryOffice365 -Tenant Contoso -Verose
 ```
 **Choose** all but Compliance & click OK
@@ -47,7 +47,7 @@ Get-DiscoveryOffice365 -Tenant Contoso -Verose
 
 ### `Discover On-Premises`
 > Requires RSAT
-```
+```powershell
 Get-DiscoveryOnPrem -Verbose
 ```
 Enter name of Exchange Server when prompted
@@ -60,10 +60,10 @@ Last, click each link, copy/paste code on-premise & add to documents to SharePoi
 
 
 ### `Migrate from Hybrid to Office 365`
-> each command GUI is presented for user select
+> note: each command GUI is presented for user select  
 
 **New-MailboxMove** Creates new move requests
-```
+```powershell
 $params = @{
     SharePointURL = 'https://contoso.sharepoint.com/sites/migrate'
     ExcelFile     = 'Batches.xlsx'
@@ -75,27 +75,27 @@ New-MailboxMove @params
 
 **Set-MailboxMove** Set move requests.
 
-```
+```powershell
 Set-MailboxMove -BadItemLimit 300 -LargeItemLimit 400
 ```
 
 **Suspend-MailboxMove** Suspends move requests.
 
-```
+```powershell
 Suspend-MailboxMove
 ```
 **Resume-MailboxMove** Resumes move requests.
-```
+```powershell
 Resume-MailboxMove
 Resume-MailboxMove -DontAutoComplete
 ```
 
 **Remove-MailboxMove** Removes move requests.
-```
+```powershell
 Remove-MailboxMove
 ```
 **Complete-MailboxMove** Complete move requests
-```
+```powershell
 Complete-MailboxMove
 Complete-MailboxMove -Schedule #Gui presented to pick users and time
 ```
@@ -128,7 +128,7 @@ Complete-MailboxMove -Schedule #Gui presented to pick users and time
 
 #### `Managed Folder Assistant`
 * **Get-MfaStats** Return Managed Folder Assistant statistics as an object. Switch to start the MFA too
-```
+```powershell
 (Get-EXOMailbox -Properties Office -Filter "Office -eq 'Redmond'").UserPrincipalName | Get-MfaStats
 'jane@contoso.com' | Get-MfaStats -StartMFA
 ```
