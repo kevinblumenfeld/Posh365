@@ -66,7 +66,7 @@ Get-DiscoveryOnPrem -Verbose
 <sub>2. Enter name of Exchange Server when prompted</sub>  
 <sub>3. Click link for Batches, copy/paste code on-premises</sub>  
 <sub>4. Click link for Permissions, copy/paste code on-premises</sub>  
-<sub>5. Add both documents to the root of SharePoint > Documents</sub>
+<sub>5. Add both documents to the root of SharePoint > Documents</sub>  
 <sub>6. Add BATCH01 to BatchName column in Batches.xlsx for pilot</sub>  
 
 
