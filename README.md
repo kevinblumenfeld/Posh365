@@ -16,7 +16,7 @@ Install-Module Posh365 -Force -Scope CurrentUser
 ```
 ### `Connect`
 
-**Connect-Cloud** Connect to one or more services: Az, AzureAD, Compliance, Exo2, MSOnline, SharePoint, Teams. Examples:
+**Connect-Cloud** Connect to one or more services: Az, AzureAD, Compliance, Exo2, MSOnline, SharePoint & Teams
 
 ```powershell
 Connect-Cloud -Tenant contoso -EXO2 -MSonline -AzureAD
@@ -24,6 +24,13 @@ Connect-Cloud -Tenant contoso -SharePoint
 Connect-Cloud -Tenant contoso -Compliance
 Connect-Cloud -Tenant contoso -EXO2 -MSonline -AzureAD -MFA #when using MFA
 Connect-Cloud -Tenant contoso -DeleteCreds #Deletes locally encrypted creds only
+```
+
+**Connect-CloudMFA** Same as Connect-Cloud but includes built in copy and paste GUI password manager
+
+```powershell
+Connect-CloudMFA -Tenant contoso -EXO2 -MSonline -AzureAD -Teams
+```
 ```
 **Connect-Exchange** Connect to Exchange on-premises
 ```powershell
