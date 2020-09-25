@@ -102,24 +102,10 @@ Last, click each link, copy/paste code on-premise & add to documents to SharePoi
 * **Get-MfaStats** Return Managed Folder Assistant statistics as an object. Switch to start the MFA too.
 ```
 (Get-EXOMailbox -Properties Office -Filter "Office -eq 'Redmond'").UserPrincipalName | Get-MfaStats
-jane@contoso.com | Get-MfaStats -StartMFA
+'jane@contoso.com' | Get-MfaStats -StartMFA
 ```
 
-
-#### `Examples`
-* Connect-CloudMFA mkevin
-* New-MailboxMove -SharePointURL 'https://CoreBTStest.sharepoint.com/sites/mkevin' -ExcelFile 'Batches.xlsx' -Tenant mkevin -RemoteHost mail.oktakevin.com
-* Get-MailboxMove
-* Get-MailboxMove -IncludeCompleted
-* Set-MailboxMove -LargeItemLimit 100 -BadItemLimit 200
-* Complete-MailboxMove
-* Complete-MailboxMove -Schedule
-* Suspend-MailboxMove
-* Resume-MailboxMove
-* Resume-MailboxMove -DontAutoComplete
-* Remove-MailboxMove
-
-### Office365 Endpoints
-*  **Get-OfficeEndpoints** URLs and IPs, initial and "changes since" (click to enlarge)
+#### `Office365 Endpoints`
+*  **Get-OfficeEndpoints** URLs and IPs, initial and "changes since", CSV and Excel output (click to enlarge)
 
 ![ME3V6nNhwV](https://user-images.githubusercontent.com/28877715/71635906-fcb6a980-2bf6-11ea-927e-03c9bda8f2a4.gif)
