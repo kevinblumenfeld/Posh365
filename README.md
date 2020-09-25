@@ -16,7 +16,7 @@ Install-Module Posh365 -Force -Scope CurrentUser
 ```
 ### `Connect`
 
-*  **Connect-Cloud** Connect to EXO2, MSOnline, AzureAD, SharePoint, Compliance
+**Connect-Cloud** Connect to one or more server EXO2, MSOnline, AzureAD, SharePoint, Compliance. Examples:
 
 ```
 Connect-Cloud -Tenant Contoso -EXO2 -MSonline -AzureAD
@@ -25,7 +25,7 @@ Connect-Cloud -Tenant Contoso -Compliance
 Connect-Cloud -Tenant Contoso -EXO2 -MSonline -AzureAD -MFA #when using MFA
 Connect-Cloud -Tenant Contoso -DeleteCreds #Deletes locally encrypted creds only
 ```
-*  **Connect-Exchange** Connect to Exchange on-premises
+**Connect-Exchange** Connect to Exchange on-premises
 ```
 Connect-Exchange -Server EXHybrid #Encrypts and reuses creds locally
 Connect-Exchange -Server EXHybrid -DeleteExchangeCreds #Deletes locally encrypted creds only
