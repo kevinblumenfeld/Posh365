@@ -31,7 +31,6 @@ Connect-Cloud -Tenant contoso -DeleteCreds #Deletes locally encrypted creds only
 ```powershell
 Connect-CloudMFA -Tenant contoso -EXO2 -MSonline -AzureAD -Teams
 ```
-```
 **Connect-Exchange** Connect to Exchange on-premises
 ```powershell
 Connect-Exchange -Server EXHybrid #Encrypts and reuses creds locally
