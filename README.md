@@ -49,21 +49,24 @@ Connect-Exchange -Server EXHybrid -DeleteExchangeCreds #Deletes locally encrypte
 ```powershell
 Get-DiscoveryOffice365 -Tenant contoso -Verbose
 ```
-**Choose** all but Compliance & click OK
-**Choose** Connection type & click OK
+**Choose** all but Compliance & click OK  
+**Choose** Connection type & click OK  
 
 ><sub>**First time running this?** Let's install PowerShellGet2:</sub>  
 
-><sub>1. Run: Connect-Cloud -Tenant contoso -EXO2</sub>  
-><sub>2. Sign in as Global Admin & restart powershell when prompted</sub>
+<sub>1. Run: Connect-Cloud -Tenant contoso -EXO2</sub>  
+<sub>2. Sign in as Global Admin & restart powershell when prompted</sub>  
 
 ### `Discover On-Premises`
-> Requires RSAT
+> Requires RSAT  
 ```powershell
 Get-DiscoveryOnPrem -Verbose
 ```
-Enter name of Exchange Server when prompted
-Last, click each link, copy/paste code on-premise & add to documents to SharePoint:
+<sub>1. Run: Get-Discovery -Verbose</sub>  
+<sub>2. Enter name of Exchange Server when prompted</sub>  
+<sub>3. Click link for Batches, copy/paste code on-premise</sub>
+<sub>4. Click link for Permissions, copy/paste code on-premise</sub>
+<sub>5. Add both documents to the root of SharePoint > Documents</sub>  
 
 | Document to add to SharePoint | Paste code on-premises (not EMS) |
 | :---------------------------: | :------------------------------: |
