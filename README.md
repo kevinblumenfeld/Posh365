@@ -16,14 +16,14 @@ Install-Module Posh365 -Force -Scope CurrentUser
 ```
 ### `Connect`
 
-**Connect-Cloud** Connect to one or more services: EXO2, MSOnline, AzureAD, SharePoint, Compliance. Examples:
+**Connect-Cloud** Connect to one or more services: Az, AzureAD, Compliance, Exo2, MSOnline, SharePoint, Teams. Examples:
 
 ```powershell
-Connect-Cloud -Tenant Contoso -EXO2 -MSonline -AzureAD
-Connect-Cloud -Tenant Contoso -SharePoint
-Connect-Cloud -Tenant Contoso -Compliance
-Connect-Cloud -Tenant Contoso -EXO2 -MSonline -AzureAD -MFA #when using MFA
-Connect-Cloud -Tenant Contoso -DeleteCreds #Deletes locally encrypted creds only
+Connect-Cloud -Tenant contoso -EXO2 -MSonline -AzureAD
+Connect-Cloud -Tenant contoso -SharePoint
+Connect-Cloud -Tenant contoso -Compliance
+Connect-Cloud -Tenant contoso -EXO2 -MSonline -AzureAD -MFA #when using MFA
+Connect-Cloud -Tenant contoso -DeleteCreds #Deletes locally encrypted creds only
 ```
 **Connect-Exchange** Connect to Exchange on-premises
 ```powershell
@@ -31,17 +31,24 @@ Connect-Exchange -Server EXHybrid #Encrypts and reuses creds locally
 Connect-Exchange -Server EXHybrid -DontViewEntireForest
 Connect-Exchange -Server EXHybrid -DeleteExchangeCreds #Deletes locally encrypted creds only
 ```
+**Export-GraphConfig** Use a Gui to save/encrypt ClientID, TenantID, Secret, UserName & Password
+**Connect-PoshGraph** Use saved encrypted credentials to connnect to Graph and Azure APIs
+```powershell
+Export-GraphConfig -Tenant contoso 
+Connect-Exchange -Server EXHybrid -DontViewEntireForest
+Connect-Exchange -Server EXHybrid -DeleteExchangeCreds #Deletes locally encrypted creds only
+```
 
 ### `Discover Office 365`
 ```powershell
-Get-DiscoveryOffice365 -Tenant Contoso -Verose
+Get-DiscoveryOffice365 -Tenant contoso -Verose
 ```
 **Choose** all but Compliance & click OK
 **Choose** Connection type & click OK
 
 `First time running Get-DiscoveryOffice365?`  
 
-`1. Run: Connect-Cloud -Tenant Contoso -EXO2`  
+`1. Run: Connect-Cloud -Tenant contoso -EXO2`  
 `2. Sign in as Global Admin & restart powershell when prompted`  
 `3. Installs modules PowerShellGet2 & ExchangeOnlineManagement`  
 
