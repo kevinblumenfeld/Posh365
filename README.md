@@ -48,17 +48,15 @@ Connect-Exchange -Server EXHybrid -DeleteExchangeCreds #Deletes locally encrypte
 
 ### `Discover Office 365`
 ```powershell
-Get-DiscoveryOffice365 -Tenant contoso -Verose
+Get-DiscoveryOffice365 -Tenant contoso -Verbose
 ```
 **Choose** all but Compliance & click OK
 **Choose** Connection type & click OK
 
-`First time running Get-DiscoveryOffice365?`  
+><sub>**First time running this?** Let's install PowerShellGet2:</sub>  
 
-<sub>1. Run: Connect-Cloud -Tenant contoso -EXO2</sub>  
-<sub>2. Sign in as Global Admin & restart powershell when prompted</sub>  
-<sub>3. Installs modules PowerShellGet2 & ExchangeOnlineManagement</sub>  
-
+><sub>1. Run: Connect-Cloud -Tenant contoso -EXO2</sub>  
+><sub>2. Sign in as Global Admin & restart powershell when prompted</sub>
 
 ### `Discover On-Premises`
 > Requires RSAT
