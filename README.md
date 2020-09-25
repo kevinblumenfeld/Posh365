@@ -74,24 +74,24 @@ $params = @{
 New-MailboxMove @params
 ```
 
-**Set-MailboxMove** Set move requests.
+**Set-MailboxMove** Set move requests
 
 ```powershell
 Set-MailboxMove -BadItemLimit 300 -LargeItemLimit 400
 ```
 
-**Suspend-MailboxMove** Suspends move requests.
+**Suspend-MailboxMove** Suspends move requests
 
 ```powershell
 Suspend-MailboxMove
 ```
-**Resume-MailboxMove** Resumes move requests.
+**Resume-MailboxMove** Resumes move requests
 ```powershell
 Resume-MailboxMove
 Resume-MailboxMove -DontAutoComplete
 ```
 
-**Remove-MailboxMove** Removes move requests.
+**Remove-MailboxMove** Removes move requests
 ```powershell
 Remove-MailboxMove
 ```
