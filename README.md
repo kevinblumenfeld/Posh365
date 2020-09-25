@@ -76,9 +76,9 @@ Get-DiscoveryOnPrem -Verbose
 
 
 ### `Migrate from Hybrid to Office 365`
-> *Note*: each command presents a GUI for selection and confirmation
+> <sub>**Note**: Each command presents a GUI for selection and confirmation</sub>
 
-**New-MailboxMove** Creates new move requests
+**New-MailboxMove** Creates new move requests. Example uses batches file in SP site named "migrate". Use links in Discovery On-Premises to create Batches and Permissions files [[ Link ]](https://github.com/kevinblumenfeld/Posh365#discover-on-premises)
 ```powershell
 $params = @{
     SharePointURL = 'https://contoso.sharepoint.com/sites/migrate'
@@ -113,19 +113,34 @@ Remove-MailboxMove
 **Complete-MailboxMove** Complete move requests
 ```powershell
 Complete-MailboxMove
-Complete-MailboxMove -Schedule #Gui presented to pick users and time
+Complete-MailboxMove -Schedule #Gui presented to pick time, date, and users
 ```
 
 #### `Report`
-**Get-MailboxMove** Gets current move requests
 
-**Get-MailboxMoveStatistics** Gets move request statistics
-
-**Get-MailboxMoveReport** Gets full move request report
+**Get-MailboxMoveStatistics** Gets move request statistics for one, many or all move requests. Multi select or select all, click OK 
+```powershell
+Get-MailboxMoveStatistics
+Get-MailboxMoveStatistics -IncludeCompleted
+```
+**Get-MailboxMoveReport** Gets full move request report - from present to past. The way it should be
+```powershell
+Get-MailboxMoveReport
+```
 
 #### `License`
 
 **Set-MailboxMoveLicense** Licenses users via AzureAD
+```powershell
+Set-MailboxMoveLicense
+Set-MailboxMoveLicense -MailboxCSV '.\UserPrincipalName.csv'
+
+$params = @{
+    SharePointURL = 'https://contoso.sharepoint.com/sites/migrate'
+    ExcelFile     = 'Batches.xlsx'
+ }
+Set-MailboxMoveLicense @params
+```
 
 **Get-MailboxMoveLicense** Reports on user licenses
 
