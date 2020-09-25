@@ -56,7 +56,7 @@ Get-DiscoveryOffice365 -Tenant contoso -Verbose
 
 <sub>1. Run: Connect-Cloud -Tenant contoso -EXO2</sub>  
 <sub>2. Sign in as Global Admin & restart powershell when prompted</sub>  
-<sub>3. Get-DiscoveryOffice365 -Tenant contoso -Verbose</sub>  
+<sub>3. Run: Get-DiscoveryOffice365 -Tenant contoso -Verbose</sub>  
 
 ### `Discover On-Premises`
 > Requires RSAT  
