@@ -185,6 +185,7 @@ Trace-ExchangeMessage -StartSearchHoursAgo 10 -ExportToExcel -SkipHealthMessages
 ```powershell
 'jane@contoso.com' | Get-MfaStats
 'jane@contoso.com' | Get-MfaStats -StartMFA
+(Get-EXOMailbox jane).UserPrincipalName | Get-MfaStats
 (Get-EXOMailbox -Properties Office -Filter "Office -eq 'Redmond'").UserPrincipalName | Get-MfaStats
 (Get-EXOMailbox -Properties Office -Filter "Office -eq 'Redmond'").UserPrincipalName | Get-MfaStats -StartMFA
 ```
