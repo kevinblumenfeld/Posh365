@@ -165,7 +165,7 @@ Get-MailboxMoveLicenseReport -Path C:\temp\
 ### `Mail Flow`  
 #### `Message Trace`
 
-**Trace-Message** GUI to trace Exchange Online messages. Click messages for trace details
+**Trace-Message** GUI to trace Exchange Online messages. Select messages & click OK for trace details
 ```powershell
 Trace-Message # all messages from past 15 minutes
 Trace-Message -StartSearchHoursAgo 6.3 -EndSearchHoursAgo 5 -Subject 'From the CEO'
@@ -173,7 +173,7 @@ Trace-Message -StartSearchHoursAgo 10 -Sender jane@contoso.com
 Trace-Message -Sender jane@contoso.com -Recipient emily@contoso.com
 ```
 
-**Trace-ExchangeMessage** GUI to trace Exchange on-premises messages. Click messages to trace by messageid, click OK
+**Trace-ExchangeMessage** GUI to trace Exchange on-premises messages. Select messages & click OK for messageID details
 ```powershell
 Trace-ExchangeMessage # all messages from past 15 minutes
 Trace-ExchangeMessage -StartSearchHoursAgo 10 -ExportToCsv
@@ -184,6 +184,7 @@ Trace-ExchangeMessage -StartSearchHoursAgo 10 -ExportToExcel -SkipHealthMessages
 ```powershell
 (Get-EXOMailbox -Properties Office -Filter "Office -eq 'Redmond'").UserPrincipalName | Get-MfaStats
 (Get-EXOMailbox -Properties Office -Filter "Office -eq 'Redmond'").UserPrincipalName | Get-MfaStats -StartMFA
+'jane@contoso.com' | Get-MfaStats -StartMFA
 ```
 
 #### `Office365 Endpoints`
