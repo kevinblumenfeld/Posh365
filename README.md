@@ -179,6 +179,7 @@ Trace-ExchangeMessage # all messages from past 15 minutes
 Trace-ExchangeMessage -StartSearchHoursAgo 10 -ExportToCsv
 Trace-ExchangeMessage -StartSearchHoursAgo 10 -ExportToExcel -SkipHealthMessages
 ```
+### `Administration`  
 #### `Managed Folder Assistant`
 **Get-MfaStats** Return Managed Folder Assistant statistics as an object. Switch to start the MFA too
 ```powershell
@@ -186,7 +187,7 @@ Trace-ExchangeMessage -StartSearchHoursAgo 10 -ExportToExcel -SkipHealthMessages
 (Get-EXOMailbox -Properties Office -Filter "Office -eq 'Redmond'").UserPrincipalName | Get-MfaStats -StartMFA
 'jane@contoso.com' | Get-MfaStats -StartMFA
 ```
-
+### `Networking`  
 #### `Office365 Endpoints`
 **Get-OfficeEndpoints** URLs and IPs, initial and "changes since", CSV and Excel output (click to enlarge)
 
