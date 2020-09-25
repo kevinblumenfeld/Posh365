@@ -135,6 +135,7 @@ function Invoke-GetOfficeEndpoints {
             $VersionArray = [System.Collections.Generic.List[string]]::new()
             $VersionArray.Add('InitialList')
             $MenuRestSplat = @{
+                #Uri           = 'https://endpoints.office.com/changes/{0}/{1}?singleVersion&ClientRequestId={2}' -f $TenantChoice, $DateChoice.Choice, [GUID]::NewGuid().Guid
                 Uri           = 'https://endpoints.office.com/version/{0}?AllVersions=true&clientRequestId={1}' -f $TenantChoice, [GUID]::NewGuid().Guid
                 Method        = 'GET'
                 ErrorAction   = 'Stop'
