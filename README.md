@@ -115,9 +115,6 @@ Remove-MailboxMove
 Complete-MailboxMove
 Complete-MailboxMove -Schedule #Gui presented to pick time, date, and users
 ```
-
-#### `Report`
-
 **Get-MailboxMoveStatistics** Gets move request statistics for any or all move requests. Multi-select or select all, click OK 
 ```powershell
 Get-MailboxMoveStatistics
