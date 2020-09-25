@@ -1,9 +1,7 @@
 
 # Posh365
 
-
-
-# `Install Posh365`
+###### Install Posh365
 
 ```
 Set-ExecutionPolicy RemoteSigned
@@ -12,7 +10,7 @@ Install-Module Posh365 -Force
 ```
 
 
-# `Install Posh365 without Admin Access`
+###### Install Posh365 without Admin Access
 
 ```
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
@@ -20,7 +18,7 @@ Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
 Install-Module Posh365 -Force -Scope CurrentUser
 ```
 
-# `Discovery`
+# Discovery
 
 
 
@@ -49,7 +47,7 @@ Last, click each link, copy/paste code on-premise & add to documents to SharePoi
 
 
 
-# `Commands`
+# Commands
 ### `Migration`
 
 #### `Connect`
