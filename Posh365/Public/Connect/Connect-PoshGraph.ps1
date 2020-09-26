@@ -42,7 +42,7 @@ function Connect-PoshGraph {
                 Client_Id     = $XML.ClientId
                 Client_Secret = $Secret
                 scope         = 'https://graph.microsoft.com/.default'
-                resource      = 'https://graph.microsoft.com/'
+                resource      = 'https://graph.microsoft.com/' #this neeeds to be removed
             }
             Uri    = 'https://login.microsoftonline.com/{0}/oauth2/token' -f $Configuration.Username
         }

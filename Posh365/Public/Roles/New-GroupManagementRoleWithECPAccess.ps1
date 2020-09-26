@@ -19,6 +19,11 @@ function New-GroupManagementRoleWithECPAccess {
 
     .EXAMPLE
     New-GroupManagementRoleWithECPAccess
+    Add-RoleGroupMember -Identity "User-ManageDG" -Member core@contoso.com
+
+    .EXAMPLE
+    New-GroupManagementRoleWithECPAccess -Name ManageDistGroups
+    Add-RoleGroupMember -Identity "User-ManageDistGroups" -Member core@contoso.com
 
     This creates a Management Role named: ManageDG with Role Entries from the Parent 'Distribution Groups'
     It removes the role entries that allow the user to do anything but manage distribution groups via the EMC
