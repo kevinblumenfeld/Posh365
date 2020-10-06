@@ -20,7 +20,6 @@ Install-Module Posh365 -Force -Scope CurrentUser
 
 ```powershell
 Connect-Cloud -Tenant contoso -EXO2 -MSOnline -AzureAD
-Connect-Cloud -Tenant contoso -EXO2 -MSOnline -AzureAD -GCCHIGH
 Connect-Cloud -Tenant contoso -SharePoint
 Connect-Cloud -Tenant contoso -Compliance
 Connect-Cloud -Tenant contoso -EXO2 -MSOnline -AzureAD -MFA #when using MFA
@@ -38,10 +37,10 @@ Connect-Exchange -Server EXHybrid #Encrypts and reuses creds locally
 Connect-Exchange -Server EXHybrid -DontViewEntireForest
 Connect-Exchange -Server EXHybrid -DeleteExchangeCreds #Deletes locally encrypted creds only
 ```
-**Export-GraphConfig** Use a Gui to save/encrypt ClientID, TenantID, Secret, UserName & Password
+**Export-GraphConfig** Use a Gui to save/encrypt ClientID, TenantID, Secret, UserName & Password  
 **Connect-PoshGraph** Use saved encrypted credentials to connnect to Graph and Azure APIs
 ```powershell
-Export-GraphConfig -Tenant contoso
+Export-GraphConfig -Tenant contoso 
 Connect-PoshGraph -Tenant contoso
 ```
 
@@ -49,26 +48,26 @@ Connect-PoshGraph -Tenant contoso
 ```powershell
 Get-DiscoveryOffice365 -Tenant contoso -Verbose
 ```
-**Choose** all but Compliance & click OK
-**Choose** Connection type & click OK
+**Choose** all but Compliance & click OK  
+**Choose** Connection type & click OK  
 
-><sub>**First time running this?** Let's install PowerShellGet2:</sub>
+><sub>**First time running this?** Let's install PowerShellGet2:</sub>  
 
-<sub>1. Run: Connect-Cloud -Tenant contoso -EXO2</sub>
-<sub>2. Sign in as Global Admin & restart powershell when prompted</sub>
-<sub>3. Run: Get-DiscoveryOffice365 -Tenant contoso -Verbose</sub>
+<sub>1. Run: Connect-Cloud -Tenant contoso -EXO2</sub>  
+<sub>2. Sign in as Global Admin & restart powershell when prompted</sub>  
+<sub>3. Run: Get-DiscoveryOffice365 -Tenant contoso -Verbose</sub>  
 
 ### `Discover On-Premises`
-> <sub>Requires RSAT</sub>
+> <sub>Requires RSAT</sub>  
 ```powershell
 Get-DiscoveryOnPrem -Verbose
 ```
-<sub>1. Run: Get-Discovery -Verbose</sub>
-<sub>2. Enter name of Exchange Server when prompted</sub>
-<sub>3. Click link for Batches, copy/paste code on-premises</sub>
-<sub>4. Click link for Permissions, copy/paste code on-premises</sub>
-<sub>5. Add both documents to the root of SharePoint > Documents</sub>
-<sub>6. Add BATCH01 to BatchName column in Batches.xlsx for pilot</sub>
+<sub>1. Run: Get-Discovery -Verbose</sub>  
+<sub>2. Enter name of Exchange Server when prompted</sub>  
+<sub>3. Click link for Batches, copy/paste code on-premises</sub>  
+<sub>4. Click link for Permissions, copy/paste code on-premises</sub>  
+<sub>5. Add both documents to the root of SharePoint > Documents</sub>  
+<sub>6. Add BATCH01 to BatchName column in Batches.xlsx for pilot</sub>  
 
 
 | Document to add to SharePoint | Paste code on-premises (not EMS) |
@@ -81,15 +80,17 @@ Get-DiscoveryOnPrem -Verbose
 > <sub>**Note**: Each command presents a GUI for selection and confirmation</sub>
 
 #### `Analyze Permissions`
-**Update-MailboxMovePermissionBatch** Gui to analyze permissions of mailboxes from Batches.xlsx. Will output new Batches.xlsx to desktop. Can add to SharePoint as new Batches file.
+**Update-MailboxMovePermissionBatch** Gui to analyze permissions of mailboxes from Batches.xlsx. Will output new Batches.xlsx to desktop. Can add to SharePoint as new Batches file. 
 ```powershell
 $params = @{
     SharePointURL = 'https://contoso.sharepoint.com/sites/migrate'
     ExcelFile     = 'Batches.xlsx'
 }
 Update-MailboxMovePermissionBatch @params
-```
-#### `Test Migration Readiness`
+```  
+
+#### `Migrate`
+
 **Test-MailboxMove** Gui to test migration readiness of the mailboxes from Batches.xlsx. Of each user to be migrated, reports PASS or FAIL overall and individual on the following tests:
 * Verifies each smtp address domain is an accepted domain
 * Verifies mail user exists in Exchange Online
@@ -106,8 +107,6 @@ $params = @{
 }
 Test-MailboxMove @params
 ```
-
-#### `Migrate`
 **New-MailboxMove** Creates new move requests. Example uses batches file in SP site named "migrate". Use links in Discovery On-Premises to create Batches and Permissions files [[ Link ]](https://github.com/kevinblumenfeld/Posh365#discover-on-premises)
 ```powershell
 $params = @{
@@ -146,7 +145,7 @@ Complete-MailboxMove
 Complete-MailboxMove -Schedule #Gui presented to pick time, date, and users
 ```
 #### `Report on Migration`
-**Get-MailboxMoveStatistics** Gets move request statistics for any or all move requests. Multi-select or select all, click OK
+**Get-MailboxMoveStatistics** Gets move request statistics for any or all move requests. Multi-select or select all, click OK 
 ```powershell
 Get-MailboxMoveStatistics
 Get-MailboxMoveStatistics -IncludeCompleted
@@ -191,7 +190,7 @@ Get-MailboxMoveLicenseCount
 ```powershell
 Get-MailboxMoveLicenseReport -Path C:\temp\
 ```
-### `Mail Flow`
+### `Mail Flow`  
 #### `Message Trace`
 
 **Trace-Message** GUI to trace Exchange Online messages. Select messages & click OK for trace details
@@ -208,7 +207,7 @@ Trace-ExchangeMessage # all messages from past 15 minutes
 Trace-ExchangeMessage -StartSearchHoursAgo 10 -ExportToCsv
 Trace-ExchangeMessage -StartSearchHoursAgo 10 -ExportToExcel -SkipHealthMessages
 ```
-### `Administration`
+### `Administration`  
 #### `Managed Folder Assistant`
 **Get-MfaStats** Return Managed Folder Assistant statistics as an object. Switch to start the MFA too
 ```powershell
@@ -219,7 +218,7 @@ Trace-ExchangeMessage -StartSearchHoursAgo 10 -ExportToExcel -SkipHealthMessages
 (Get-EXOMailbox -Properties Office -Filter "Office -eq 'Redmond'").UserPrincipalName | Get-MfaStats
 (Get-EXOMailbox -Properties Office -Filter "Office -eq 'Redmond'").UserPrincipalName | Get-MfaStats -StartMFA
 ```
-### `Networking`
+### `Networking`  
 #### `Office365 Endpoints`
 **Get-OfficeEndpoints** URLs and IPs, initial and "changes since", CSV and Excel output (click to enlarge)
 
