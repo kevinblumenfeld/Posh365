@@ -170,7 +170,7 @@ Get-MailboxMoveReport
 
 #### `License`
 
-**Set-MailboxMoveLicense** Gui to licenses users via AzureAD
+**Set-MailboxMoveLicense** Gui to license users via AzureAD
 > <sub>**Connect to AzureAD** Connect-Cloud -Tenant Contoso -AzureAD</sub>  
 ```powershell
 Set-MailboxMoveLicense
