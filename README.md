@@ -29,7 +29,7 @@ Connect-Cloud -Tenant Contoso -Compliance
 Connect-Cloud -Tenant Contoso -DeleteCreds #Deletes locally encrypted creds only
 ```
 
-**Connect-CloudMFA** Same as Connect-Cloud but includes built-in password manager gui
+**Connect-CloudMFA** Same as Connect-Cloud but includes built-in password manager GUI
 
 ```powershell
 Connect-CloudMFA -Tenant Contoso -EXO2 -MSOnline -AzureAD -Teams
@@ -40,7 +40,7 @@ Connect-Exchange -Server EXHybrid #Encrypts and reuses creds locally
 Connect-Exchange -Server EXHybrid -DontViewEntireForest
 Connect-Exchange -Server EXHybrid -DeleteExchangeCreds #Deletes locally encrypted creds only
 ```
-**Export-GraphConfig** Use a Gui to save/encrypt ClientID, TenantID, Secret, UserName & Password  
+**Export-GraphConfig** Use a GUI to save/encrypt ClientID, TenantID, Secret, UserName & Password  
 **Connect-PoshGraph** Use saved encrypted credentials to connnect to Graph and Azure APIs
 ```powershell
 Export-GraphConfig -Tenant Contoso 
@@ -83,7 +83,7 @@ Get-DiscoveryOnPrem -Verbose
 > <sub>**Note**: Each command presents a GUI for selection and confirmation</sub>  
 > <sub>**Connect to Exchange Online.** Connect-Cloud -Tenant Contoso -EXO2</sub>  
 #### `Analyze Permissions`
-**Update-MailboxMovePermissionBatch** Gui to analyze permissions of mailboxes from Batches.xlsx. Will output new Batches.xlsx to desktop. Can add to SharePoint as new Batches file. 
+**Update-MailboxMovePermissionBatch** GUI to analyze permissions of mailboxes from Batches.xlsx. Will output new Batches.xlsx to desktop. Can add to SharePoint as new Batches file. 
 ```powershell
 $params = @{
     SharePointURL = 'https://contoso.sharepoint.com/sites/migrate'
@@ -155,7 +155,7 @@ Remove-MailboxMove
 **Complete-MailboxMove** Complete move requests
 ```powershell
 Complete-MailboxMove
-Complete-MailboxMove -Schedule #Gui presented to pick time, date, and users
+Complete-MailboxMove -Schedule #GUI presented to pick time, date, and users
 ```
 #### `Report on Migration`
 **Get-MailboxMoveStatistics** Gets move request statistics for any or all move requests. Multi-select or select all, click OK 
@@ -170,7 +170,7 @@ Get-MailboxMoveReport
 
 #### `License`
 
-**Set-MailboxMoveLicense** Gui to license users via AzureAD
+**Set-MailboxMoveLicense** GUI to license users via AzureAD
 > <sub>**Connect to AzureAD** Connect-Cloud -Tenant Contoso -AzureAD</sub>  
 ```powershell
 Set-MailboxMoveLicense
