@@ -83,7 +83,7 @@ Get-DiscoveryOnPrem -Verbose
 **Update-MailboxMovePermissionBatch** Gui to analyze permissions of mailboxes from Batches.xlsx. Will output new Batches.xlsx to desktop. Can add to SharePoint as new Batches file. 
 ```powershell
 $params = @{
-    SharePointURL = 'https://Contoso.sharepoint.com/sites/migrate'
+    SharePointURL = 'https://contoso.sharepoint.com/sites/migrate'
     ExcelFile     = 'Batches.xlsx'
 }
 Update-MailboxMovePermissionBatch @params
@@ -102,7 +102,7 @@ Update-MailboxMovePermissionBatch @params
 
 ```powershell
 $params = @{
-    SharePointURL = 'https://Contoso.sharepoint.com/sites/migrate'
+    SharePointURL = 'https://contoso.sharepoint.com/sites/migrate'
     ExcelFile     = 'Batches.xlsx'
 }
 Test-MailboxMove @params
@@ -110,7 +110,7 @@ Test-MailboxMove @params
 **New-MailboxMove** Creates new move requests. Example uses batches file in SP site named "migrate". Use links in Discovery On-Premises to create Batches and Permissions files [[ Link ]](https://github.com/kevinblumenfeld/Posh365#discover-on-premises)
 ```powershell
 $params = @{
-    SharePointURL = 'https://Contoso.sharepoint.com/sites/migrate'
+    SharePointURL = 'https://contoso.sharepoint.com/sites/migrate'
     ExcelFile     = 'Batches.xlsx'
     RemoteHost    = 'hybrid.Contoso.com'
     Tenant        = 'Contoso'
@@ -163,7 +163,7 @@ Set-MailboxMoveLicense
 Set-MailboxMoveLicense -MailboxCSV .\UserPrincipalName.csv
 
 $params = @{
-    SharePointURL = 'https://Contoso.sharepoint.com/sites/migrate'
+    SharePointURL = 'https://contoso.sharepoint.com/sites/migrate'
     ExcelFile     = 'Batches.xlsx'
  }
 Set-MailboxMoveLicense @params
@@ -177,7 +177,7 @@ Get-MailboxMoveLicense -OneSkuPerLine -ExportToExcel # file saved in Posh365 fol
 Get-MailboxMoveLicense -IncludeRecipientType # Connect to EXO2
 
 $params = @{
-    SharePointURL = 'https://Contoso.sharepoint.com/sites/migrate'
+    SharePointURL = 'https://contoso.sharepoint.com/sites/migrate'
     ExcelFile     = 'Batches.xlsx'
  }
 Get-MailboxMoveLicense @params
