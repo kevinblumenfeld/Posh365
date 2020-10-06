@@ -91,7 +91,7 @@ Update-MailboxMovePermissionBatch @params
 
 #### `Migrate`
 
-**Test-MailboxMove** Gui to test migration readiness of the mailboxes from Batches.xlsx. Of each user to be migrated, reports PASS or FAIL overall and individual on the following tests:
+**Test-MailboxMove** Test migration readiness of the mailboxes from Batches.xlsx. Of each user to be migrated, reports PASS or FAIL overall and individual on the following tests:
 * Verifies each smtp address domain is an accepted domain
 * Verifies mail user exists in Exchange Online
 * Verifies mailbox does not exist in Exchange Online
