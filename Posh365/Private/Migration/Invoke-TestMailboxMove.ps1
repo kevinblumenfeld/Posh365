@@ -11,7 +11,7 @@ function Invoke-TestMailboxMove {
     end {
         $Protocol = @('smtp')
         $AcceptedDomains = (Get-AcceptedDomain).DomainName
-        $RoutingAddress = $AcceptedDomains -match '.mail.onmicrosoft.com'
+        $RoutingAddress = $AcceptedDomains -like '*.mail.onmicrosoft.*'
         foreach ($User in $UserList) {
             $TestError = [System.Collections.Generic.List[string]]::New()
             $PreFlightHash = @{

@@ -159,6 +159,10 @@ function Connect-Cloud {
 
         [Parameter()]
         [switch]
+        $GCCHIGH,
+
+        [Parameter()]
+        [switch]
         $DeleteCreds,
 
         [Parameter()]
@@ -205,31 +209,6 @@ function Connect-Cloud {
             throw $_.Exception.Message
         }
     }
-    # if ($MFA -and ($ExchangeOnline -or $Compliance)) {
-    #     $modules = @(Get-ChildItem -Path "$($env:LOCALAPPDATA)\Apps\2.0" -Filter "Microsoft.Exchange.Management.ExoPowershellModule.manifest" -Recurse )
-    #     try {
-    #         $moduleName = Join-Path $modules[0].Directory.FullName "Microsoft.Exchange.Management.ExoPowershellModule.dll"
-    #     }
-    #     catch {
-    #         Write-Host "The PowerShell module which supports MFA must be installed."  -foregroundcolor "Black" -backgroundcolor "white"
-    #         Write-Host "We can download the module and install it now."  -foregroundcolor "Black" -backgroundcolor "white"
-    #         Write-Host "Once installed, close the PowerShell window that will pop-up & rerun your command here."  -foregroundcolor "Black" -backgroundcolor "white"
-    #         Write-Host "NOTE: This should only be required once. Should there be any issue with the automatic download, go to https://outlook.office365.com/ecp/ Click Hybrid then click the second Configure button. Save or Run the file depending on your browser. If saved, double click the file to run it." -foregroundcolor "Blue" -backgroundcolor "white"
-    #         Write-Host "Simply choose `"Y`" below then click `"Install`" button when prompted."  -foregroundcolor "Black" -backgroundcolor "white"
-    #         $YesNo = Read-Host "Download Module Now (Y/N)?"
-    #         if ($YesNo -eq "Y") {
-    #             & "C:\Program Files\Internet Explorer\iexplore.exe" https://cmdletpswmodule.blob.core.windows.net/exopsmodule/Microsoft.Online.CSE.PSModule.Client.application
-    #             Return
-    #         }
-    #         else {
-    #             Write-Warning "You must install the PowerShell module to continue."
-    #             Write-Warning "Either ReRun your command and press `"Y`" or, if you would prefer to install it manually..."
-    #             Write-Warning "go to the EAC (https://outlook.office365.com/ecp/), then click Hybrid. Click the second Configure button."
-    #             Write-Warning "Save or run the download depending on your browser prompt. If you saved the file please run it."
-    #             Return
-    #         }
-    #     }
-    # }
     if (($ExchangeOnline -or $MSOnline -or $All365 -or $Skype -or
             $SharePoint -or $Compliance -or $AzureADver2 -or $AzureAD -or $EXO2 -or $Teams -or $Azure) -and (-not $MFA)) {
         if (Test-Path ($KeyPath + "$($Tenant).cred")) {
@@ -275,7 +254,15 @@ function Connect-Cloud {
         }
         catch {
             try {
-                Connect-MsolService -Credential $Credential -ErrorAction Stop -Verbose:$false
+                $MSOLSplat = @{
+                    Credential  = $Credential
+                    ErrorAction = 'Stop'
+                    Verbose     = $false
+                }
+                if ($GCCHIGH) {
+                    $MSOLSplat['AzureEnvironment'] = 'USGovernment'
+                }
+                Connect-MsolService @MSOLSplat
                 Write-Host "You have successfully connected to MSONLINE" -foregroundcolor "magenta" -backgroundcolor "white"
             }
             catch {
@@ -297,76 +284,7 @@ function Connect-Cloud {
             }
         }
     }
-    # if ($ExchangeOnline -or $All365) {
-    #     if (-not $MFA) {
-    #         if (-not $EXOPrefix) {
-    #             # Exchange Online
-    #             if (-not (Get-Command Get-AcceptedDomain -ErrorAction SilentlyContinue)) {
-    #                 try {
-    #                     $EXOSession = New-PSSession -Name "EXO" -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell -Credential $Credential -Authentication Basic -AllowRedirection -ErrorAction Stop
-    #                 }
-    #                 catch {
-    #                     Connect-Cloud $Tenant -DeleteCreds
-    #                     Write-Warning "There was an issue with your credentials"
-    #                     Write-Warning "Please run the same command you just ran and try again"
-    #                     Break
-    #                 }
-    #                 Import-Module (Import-PSSession $EXOSession -AllowClobber -WarningAction SilentlyContinue) -Global | Out-Null
-    #                 Write-Host "You have successfully connected to Exchange Online" -foregroundcolor "magenta" -backgroundcolor "white"
-    #             }
-    #         }
-    #         else {
-    #             if (-not (Get-Command Get-CloudAcceptedDomain -ErrorAction SilentlyContinue)) {
-    #                 try {
-    #                     $EXOSession = New-PSSession -Name "EXO" -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell -Credential $Credential -Authentication Basic -AllowRedirection -ErrorAction Stop
-    #                 }
-    #                 catch {
-    #                     Connect-Cloud $Tenant -DeleteCreds
-    #                     Write-Warning "There was an issue with your credentials"
-    #                     Write-Warning "Please run the same command you just ran and try again"
-    #                     Break
-    #                 }
-    #                 Import-Module (Import-PSSession $EXOSession -AllowClobber -WarningAction SilentlyContinue -Prefix "Cloud") -Global -Prefix "Cloud" | Out-Null
-    #                 Write-Host "You have successfully connected to Exchange Online With the Prefix Cloud" -foregroundcolor "magenta" -backgroundcolor "white"
-    #                 Write-Host "         For Example: Get-Mailbox is now Get-CloudMailbox               " -foregroundcolor "magenta" -backgroundcolor "white"
-    #             }
-    #         }
-    #     }
-    #     else {
-    #         Import-Module -FullyQualifiedName $moduleName -Force
-    #         try {
-    #             Import-Module (Connect-EXOPSSession) -Global
-    #             Write-Host "You have successfully connected to Exchange Online (MFA)" -foregroundcolor "magenta" -backgroundcolor "white"
-    #         }
-    #         catch [System.Management.Automation.CommandNotFoundException] {
-    #             Write-Warning "Exchange Online MFA module is required or there was an issue connecting"
-    #             Write-Warning "To download the Exchange Online Remote PowerShell Module for multi-factor authentication,"
-    #             Write-Warning "in the EAC (https://outlook.office365.com/ecp/), go to Hybrid > Setup and click the appropriate Configure button."
-    #         }
-    #     }
-    # }
-    # Security and Compliance Center
-    # if ($Compliance -or $All365) {
-    #     if (-not $MFA) {
-    #         $ccSession = New-PSSession -Name "Compliance" -ConfigurationName Microsoft.Exchange -ConnectionUri https://ps.compliance.protection.outlook.com/powershell-liveid/ -Credential $credential -Authentication Basic -AllowRedirection
-    #         Import-Module (Import-PSSession $ccSession -AllowClobber) -Global | Out-Null
-    #         Write-Host "You have successfully connected to Compliance" -foregroundcolor "magenta" -backgroundcolor "white"
-    #     }
-    #     else {
-    #         if (-not $ExchangeOnline) {
-    #             Import-Module -FullyQualifiedName $moduleName -Force
-    #         }
-    #         try {
-    #             Import-Module (Connect-IPPSSession) -Global
-    #             Write-Host "You have successfully connected to the Security & Compliance Center (MFA)" -foregroundcolor "magenta" -backgroundcolor "white"
-    #         }
-    #         catch [System.Management.Automation.CommandNotFoundException] {
-    #             Write-Warning "Exchange Online MFA module is required or there was an issue connecting"
-    #             Write-Warning "To download the Exchange Online Remote PowerShell Module for multi-factor authentication,"
-    #             Write-Warning "in the EAC (https://outlook.office365.com/ecp/), go to Hybrid > Setup and click the appropriate Configure button."
-    #         }
-    #     }
-    # }
+
     # Skype Online
     if ($Skype -or $All365) {
         if (-not $MFA) {
@@ -444,7 +362,14 @@ function Connect-Cloud {
             }
             catch {
                 try {
-                    Connect-AzureAD -Credential $Credential -ErrorAction Stop
+                    $AzureADSplat = @{
+                        Credential  = $Credential
+                        ErrorAction = 'Stop'
+                    }
+                    if ($GCCHIGH) {
+                        $AzureADSplat['AzureEnvironmentName'] = 'AzureUSGovernment'
+                    }
+                    Connect-AzureAD @AzureADSplat
                     Write-Host "You have successfully connected to AzureADver2" -foregroundcolor "magenta" -backgroundcolor "white"
                 }
                 catch {
@@ -473,7 +398,14 @@ function Connect-Cloud {
             }
             catch {
                 try {
-                    Connect-AzureAD -Credential $Credential -ErrorAction Stop
+                    $AzureADSplat = @{
+                        Credential  = $Credential
+                        ErrorAction = 'Stop'
+                    }
+                    if ($GCCHIGH) {
+                        $AzureADSplat['AzureEnvironmentName'] = 'AzureUSGovernment'
+                    }
+                    Connect-AzureAD @AzureADSplat
                     Write-Host "You have successfully connected to AzureADver2" -foregroundcolor "magenta" -backgroundcolor "white"
                 }
                 catch {
@@ -496,13 +428,20 @@ function Connect-Cloud {
     }
     if ($Teams) {
         Connect-CloudModuleImport -Teams
-        Connect-MicrosoftTeams -Credential $Credential
+        $TeamsSplat = @{
+            Credential = $Credential
+        }
+        if ($GCCHIGH) {
+            $TeamsSplat['TeamsEnvironmentName'] = 'TeamsGCCH'
+        }
+        Connect-MicrosoftTeams @TeamsSplat
     }
     if ($EXO2 -or $ExchangeOnline -or $Compliance) {
         $Script:RestartConsole = $null
         Connect-CloudModuleImport -EXO2
         if ($RestartConsole) { return }
         $Splat = @{ }
+        if ($GCCHIGH) { $Splat['ExchangeEnvironmentName'] = 'O365USGovGCCHigh' }
         if (-not $MFA) { $Splat['Credential'] = $Credential }
         else { $Splat['UserPrincipalName'] = $Credential.UserName }
         if ($EXOPrefix) { $Splat['Prefix'] = 'EXO' }
