@@ -81,7 +81,7 @@ Get-DiscoveryOnPrem -Verbose
 
 ### `Migrate from Hybrid to Office 365`
 > <sub>**Note**: Each command presents a GUI for selection and confirmation</sub>  
-> <sub>**Connect to Exchange Online**. Connect-Cloud -Tenant Contoso -EXO2</sub>  
+> <sub>**Connect to Exchange Online.** Connect-Cloud -Tenant Contoso -EXO2</sub>  
 #### `Analyze Permissions`
 **Update-MailboxMovePermissionBatch** Gui to analyze permissions of mailboxes from Batches.xlsx. Will output new Batches.xlsx to desktop. Can add to SharePoint as new Batches file. 
 ```powershell
