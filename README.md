@@ -115,8 +115,8 @@ Test-MailboxMove @params
 $params = @{
     SharePointURL = 'https://contoso.sharepoint.com/sites/migrate'
     ExcelFile     = 'Batches.xlsx'
-    RemoteHost    = 'hybrid.Contoso.com'
-    Tenant        = 'Contoso'
+    RemoteHost    = 'hybrid.contoso.com'
+    Tenant        = 'contoso'
 }
 New-MailboxMove @params
 ```
