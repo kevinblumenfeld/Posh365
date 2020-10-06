@@ -80,8 +80,8 @@ Get-DiscoveryOnPrem -Verbose
 
 
 ### `Migrate from Hybrid to Office 365`
-> <sub>**Note**: Each command presents a GUI for selection and confirmation</sub>
-> <sub>**Connect to EXO is required. Use:**: Connect-Cloud -Tenant Contoso -EXO2</sub>
+> <sub>**Note**: Each command presents a GUI for selection and confirmation</sub>  
+> <sub>**Connect to Exchange Online**. Connect-Cloud -Tenant Contoso -EXO2</sub>  
 #### `Analyze Permissions`
 **Update-MailboxMovePermissionBatch** Gui to analyze permissions of mailboxes from Batches.xlsx. Will output new Batches.xlsx to desktop. Can add to SharePoint as new Batches file. 
 ```powershell
@@ -171,7 +171,7 @@ Get-MailboxMoveReport
 #### `License`
 
 **Set-MailboxMoveLicense** Gui to licenses users via AzureAD
-> <sub>**Connect to AzureAD is required. Use:**: Connect-Cloud -Tenant Contoso -AzureAD</sub>
+> <sub>**Connect to AzureAD** Connect-Cloud -Tenant Contoso -AzureAD</sub>  
 ```powershell
 Set-MailboxMoveLicense
 Set-MailboxMoveLicense -MailboxCSV .\UserPrincipalName.csv
