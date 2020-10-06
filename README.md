@@ -20,6 +20,9 @@ Install-Module Posh365 -Force -Scope CurrentUser
 
 ```powershell
 Connect-Cloud -Tenant Contoso -EXO2 -MSOnline -AzureAD
+Connect-Cloud -Tenant Contoso -EXO2 -MSOnline -AzureAD -GCCHIGH
+Connect-Cloud -Tenant Contoso -Teams
+Connect-Cloud -Tenant Contoso -Teams -GCCHIGH
 Connect-Cloud -Tenant Contoso -SharePoint
 Connect-Cloud -Tenant Contoso -Compliance
 Connect-Cloud -Tenant Contoso -EXO2 -MSOnline -AzureAD -MFA #when using MFA
