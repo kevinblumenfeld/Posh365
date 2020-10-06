@@ -33,6 +33,26 @@ function New-MailboxMove {
     New-MailboxMove -RemoteHost mail.contoso.com -Tenant Contoso -MailboxCSV c:\scripts\batches.csv -GroupsToAddUserTo "Office 365 E3"
 
     .EXAMPLE
+    $params = @{
+    SharePointURL = 'https://contoso.sharepoint.com/sites/migrate'
+    ExcelFile     = 'Batches.xlsx'
+    RemoteHost    = 'hybrid.contoso.com'
+    Tenant        = 'contoso'
+    }
+    New-MailboxMove @params
+ 
+    .EXAMPLE
+    # For GCC use the full tenant adderess like in the example:
+    
+    $params = @{
+    SharePointURL = 'https://contoso.sharepoint.com/sites/migrate'
+    ExcelFile     = 'Batches.xlsx'
+    RemoteHost    = 'hybrid.contoso.com'
+    Tenant        = 'contoso.mail.onmicrosoft.us'
+    }
+    New-MailboxMove @params
+
+    .EXAMPLE
     New-MailboxMove -SharePointURL 'https://fabrikam.sharepoint.com/sites/Contoso' -ExcelFile 'Batches.xlsx' -RemoteHost mail.contoso.com -Tenant Contoso
 
     .NOTES
@@ -94,15 +114,15 @@ function New-MailboxMove {
         $GroupsToAddUserTo
     )
     if ($TenantToTenant) {
-        if ($Tenant -notmatch '\.onmicrosoft\.com') {
+        if ($Tenant -notmatch '\.onmicrosoft\.com|\.onmicrosoft\.us') {
             $Tenant = '{0}.onmicrosoft.com' -f $Tenant
         }
-        if ($RemoteHost -notmatch '\.onmicrosoft\.com') {
+        if ($RemoteHost -notmatch '\.onmicrosoft\.com|\.onmicrosoft\.us') {
             $RemoteHost = '{0}.onmicrosoft.com' -f $RemoteHost
         }
     }
     else {
-        if ($Tenant -notmatch '\.mail\.onmicrosoft\.com') {
+        if ($Tenant -notmatch '\.mail\.onmicrosoft\.com|\.onmicrosoft\.us') {
             $Tenant = '{0}.mail.onmicrosoft.com' -f $Tenant
         }
     }
@@ -130,7 +150,7 @@ function New-MailboxMove {
             $Sync.Add('LargeItemLimit', $LargeItemLimit)
         }
         if ($TenantToTenant) {
-            $Sync.Add('IncrementalSyncInterval',$IncrementalSyncIntervalHours)
+            $Sync.Add('IncrementalSyncInterval', $IncrementalSyncIntervalHours)
             $UserChoice | Invoke-T2TNewMailboxMove @Sync | Out-GridView -Title "Results of New Tenant to Tenant Mailbox Move"
         }
         else {

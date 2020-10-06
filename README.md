@@ -21,11 +21,11 @@ Install-Module Posh365 -Force -Scope CurrentUser
 ```powershell
 Connect-Cloud -Tenant Contoso -EXO2 -MSOnline -AzureAD
 Connect-Cloud -Tenant Contoso -EXO2 -MSOnline -AzureAD -GCCHIGH
+Connect-Cloud -Tenant Contoso -EXO2 -MFA #when using MFA
 Connect-Cloud -Tenant Contoso -Teams
 Connect-Cloud -Tenant Contoso -Teams -GCCHIGH
 Connect-Cloud -Tenant Contoso -SharePoint
 Connect-Cloud -Tenant Contoso -Compliance
-Connect-Cloud -Tenant Contoso -EXO2 -MSOnline -AzureAD -MFA #when using MFA
 Connect-Cloud -Tenant Contoso -DeleteCreds #Deletes locally encrypted creds only
 ```
 
@@ -81,7 +81,7 @@ Get-DiscoveryOnPrem -Verbose
 
 ### `Migrate from Hybrid to Office 365`
 > <sub>**Note**: Each command presents a GUI for selection and confirmation</sub>
-
+> <sub>**Connect to EXO is required. Use:**: Connect-Cloud -Tenant Contoso -EXO2</sub>
 #### `Analyze Permissions`
 **Update-MailboxMovePermissionBatch** Gui to analyze permissions of mailboxes from Batches.xlsx. Will output new Batches.xlsx to desktop. Can add to SharePoint as new Batches file. 
 ```powershell
@@ -117,6 +117,16 @@ $params = @{
     ExcelFile     = 'Batches.xlsx'
     RemoteHost    = 'hybrid.contoso.com'
     Tenant        = 'contoso'
+}
+New-MailboxMove @params
+```
+```powershell
+# For GCC/GCCHIGH tenants: use full tenant address as shown below:
+$params = @{
+    SharePointURL = 'https://contoso.sharepoint.com/sites/migrate'
+    ExcelFile     = 'Batches.xlsx'
+    RemoteHost    = 'hybrid.contoso.com'
+    Tenant        = 'contoso.mail.onmicrosoft.us'
 }
 New-MailboxMove @params
 ```
@@ -161,6 +171,7 @@ Get-MailboxMoveReport
 #### `License`
 
 **Set-MailboxMoveLicense** Gui to licenses users via AzureAD
+> <sub>**Connect to AzureAD is required. Use:**: Connect-Cloud -Tenant Contoso -AzureAD</sub>
 ```powershell
 Set-MailboxMoveLicense
 Set-MailboxMoveLicense -MailboxCSV .\UserPrincipalName.csv

@@ -26,7 +26,7 @@ function Remove-MailboxMoveCredential {
         $Tenant
     )
     end {
-        if ($Tenant -notmatch '.mail.onmicrosoft.com') {
+        if ($Tenant -notmatch '.mail.onmicrosoft.com|\.onmicrosoft\.us') {
             $Tenant = '{0}.mail.onmicrosoft.com' -f $Tenant
         }
         $CredentialPath = "${env:\userprofile}\$Tenant.Migrations.Cred"
