@@ -420,7 +420,8 @@
 
     $RecOU = $Recipients | Group-Object -Property OrganizationalUnit, RecipientTypeDetails -NoElement | Select-Object count, name
 
-    $RecOU | Sort-Object count -Descending | Select-Object @(s
+    $RecOU | Sort-Object count -Descending | Select-Object @(
+        'Count'
         @{
             Name       = 'OrganizationalUnit'
             Expression = { [regex]::Matches($_.Name, ".*(?=,)").value[0] }
@@ -444,23 +445,25 @@
 
     # Exchange DLP Policies
     Write-Verbose "Retrieving Exchange DLP Policies"
-    Get-DLPPolicy -ErrorAction SilentlyContinue | Select-Object @(
-        'Name'
-        'State'
-        'Mode'
-        'Description'
-        'PublisherName'
-        @{
-            Name       = 'Keywords'
-            Expression = { @($_.Keywords) -ne '' -join '|' }
-        }
-        'ContentVersion'
-        'WhenChanged'
-        'Identity'
-        'Guid'
-        'ExchangeVersion'
-        'MaximumSupportedExchangeObjectVersion'
-    ) | Sort-Object Name | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_DataLossProtection.csv')
+    if (Get-Command Get-DLPPolicy -ErrorAction SilentlyContinue) {
+        Get-DLPPolicy | Select-Object @(
+            'Name'
+            'State'
+            'Mode'
+            'Description'
+            'PublisherName'
+            @{
+                Name       = 'Keywords'
+                Expression = { @($_.Keywords) -ne '' -join '|' }
+            }
+            'ContentVersion'
+            'WhenChanged'
+            'Identity'
+            'Guid'
+            'ExchangeVersion'
+            'MaximumSupportedExchangeObjectVersion'
+        ) | Sort-Object Name | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_DataLossProtection.csv')
+    }
 
     # Exchange Transport Rules
     Write-Verbose "Retrieving Exchange Transport Rules"

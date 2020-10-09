@@ -7,7 +7,7 @@ function Get-DomainFederationDataFromO365 {
     try {
         $uri = "https://login.microsoftonline.com/common/userrealm/?user=testuser@$DomainName&api-version=2.1&checkForMicrosoftAccount=true"
 
-        Invoke-RestMethod -Uri $uri -ErrorAction Stop
+        Invoke-RestMethod -Uri $uri -ErrorAction Stop -UseBasicParsing
 
     }
     catch {
