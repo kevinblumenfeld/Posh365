@@ -137,7 +137,7 @@
     $Mailboxes = Get-ExMailbox -DetailedReport | Where-Object { $_.RecipientTypeDetails -ne 'DiscoveryMailbox' }
     $Mailboxes | Export-Csv @CSVSplat -Path (Join-Path -Path $Detailed -ChildPath 'ExchangeMailboxes.csv')
     $Mailboxes | Select-Object $MailboxProp | Sort-Object DisplayName | Export-Csv @CSVSplat -Path (Join-Path -Path $CSV -ChildPath 'Ex_Mailboxes.csv')
-    $Mailboxes | Group-Object { ($_.MailboxGB.ToString().split('.')[0]).padleft(2) } | Sort-Object name -Descending | Select-Object @(
+    $Mailboxes | Group-Object { ($_.MailboxGB.ToString().split('.')[0]).padleft(2) } -ErrorAction SilentlyContinue | Sort-Object name -Descending | Select-Object @(
         @{
             Name       = 'Count of Mailboxes'
             Expression = { $_.Count }
