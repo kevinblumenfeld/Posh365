@@ -46,7 +46,7 @@
         [decimal]$Minor = [regex]::matches($CurrentServerVersion, '(?<=Version \d{2}.)[^< ]*').value
         [decimal]$AdminBuild = $CurrentServerVersion -replace '.+Build\s*|\)'
 
-        if (($Major -eq 15) -and ($Minor -eq 1) -and ($AdminBuild -ge 466.34)) {
+        if (($Major -eq 15) -and ($Minor -ge 1) -and ($AdminBuild -ge 466.34)) {
             $ExServerList = Get-ExchangeServer
             $ServerList = foreach ($ExServer in $ExServerList) {
                 [decimal]$Major = [regex]::matches($ExServer.AdminDisplayVersion.toString(), '(?<=Version )[^.< ]*').value
@@ -242,7 +242,7 @@
 
         if ($hash[$build]) { $Version = $hash[$build] }
 
-        else { $version = $bui }
+        else { $version = $build }
 
         $html += "<tr>"
         $html += "<td>" + $Server.name + "</td>"
@@ -414,7 +414,7 @@
     $html += "</tr>"
 
     foreach ($Server in $ServerList) {
-        if (($Server.Major -eq 15 -and $Server.AdminBuild -ge 847) -or ($Server.Major -eq 15 -and $Server.Minor -eq 1)) {
+        if (($Server.Major -eq 15 -and $Server.AdminBuild -ge 847) -or ($Server.Major -eq 15 -and $Server.Minor -ge 1)) {
             Write-Host "Getting MAPI/HTTP Information for server: " -NoNewLine
             Write-Host "$($Server.name)" -ForegroundColor Cyan
             if ($ADProperties) {

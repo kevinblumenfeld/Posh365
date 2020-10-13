@@ -21,6 +21,11 @@ function Get-365MsolUser {
 
     .EXAMPLE
     'contoso.com','fabrikam.com' | Get-365MsolUser -DetailedReport| Export-Csv c:\scripts\365MsolUsers.csv -notypeinformation -encoding UTF8
+    
+    .EXAMPLE
+    foreach ($UPN in $UPNList) { 
+        Get-365MsolUser -UserPrincipalName $UPN -DetailedReport | Export-Csv c:\scripts\365MsolUsers.csv -notypeinformation -encoding UTF8
+    }
 
     .EXAMPLE
     'contoso.com','fabrikam.com' | Get-365MsolUser | Export-Csv c:\scripts\365MsolUsers.csv -notypeinformation -encoding UTF8
@@ -28,11 +33,16 @@ function Get-365MsolUser {
     #>
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)]
-        [switch] $DetailedReport,
+        [Parameter()]
+        [switch] 
+        $DetailedReport,
+        
+        [Parameter()]
+        $UserPrincipalName,
 
-        [Parameter(ValueFromPipeline = $true, Mandatory = $false)]
-        [string[]] $DomainFilter
+        [Parameter(ValueFromPipeline)]
+        [string[]]
+        $DomainFilter
     )
     Begin {
         if ($DetailedReport) {
@@ -79,6 +89,10 @@ function Get-365MsolUser {
             $CalculatedProps = @(
                 @{n = "proxyAddresses" ; e = { @($_.proxyAddresses) -ne '' -join '|' } }
             )
+        }
+        if ($UserPrincipalName) {
+            Get-MsolUser -UserPrincipalName $UserPrincipalName | Select-Object ($Selectproperties + $CalculatedProps)
+            continue
         }
     }
     process {
