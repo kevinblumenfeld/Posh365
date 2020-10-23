@@ -214,7 +214,6 @@ function MessageSearch {
         $__HardDelete,
 
         [Parameter()]
-        [mailaddress]
         $_From,
 
         [Parameter()]

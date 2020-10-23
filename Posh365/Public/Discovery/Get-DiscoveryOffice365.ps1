@@ -100,7 +100,7 @@ function Get-DiscoveryOffice365 {
         if ($Menu.DiscoveryItems -match 'ExchangeOnline|Permission' ) { $ConnectHash.Add('EXO2', $true) }
         if ($Menu.DiscoveryItems -match 'AzureAD|LicensingReport' ) { $ConnectHash.Add('AzureAD', $true) }
         if ($Menu.DiscoveryItems -match 'MSOnline' ) { $ConnectHash.Add('MSOnline', $true) }
-        if ($Menu.DiscoveryItems -match 'Compliance' ) { $ConnectHash.Add('Compliance', $true) }
+        # if ($Menu.DiscoveryItems -match 'Compliance' ) { $ConnectHash.Add('Compliance', $true) }
         $ConnectionType = 'Connect without MFA', 'Connect with MFA', 'I am already connected' | ForEach-Object {
             [PSCustomObject]@{
                 ConnectionType = $_
@@ -117,7 +117,8 @@ function Get-DiscoveryOffice365 {
             if ($Menu.DiscoveryItems -match 'ExchangeOnline|Permission' ) { $TenantName = Test-365ServiceConnection -ExchangeOnline }
             if ($Menu.DiscoveryItems -match 'AzureAD|LicensingReport' ) { $TenantName = Test-365ServiceConnection -AzureAD }
             if ($Menu.DiscoveryItems -match 'MSOnline' ) { $TenantName = Test-365ServiceConnection -MSOnline }
-            if ($Menu.DiscoveryItems -match 'Compliance' ) { $TenantName = Test-365ServiceConnection -Compliance }
+            # if ($Menu.DiscoveryItems -match 'Compliance' ) { $TenantName = Test-365ServiceConnection -Compliance }
+            if ($Menu.DiscoveryItems -match 'CreateExcel' ) { $TenantName = $Tenant }
         } until ($TenantName)
 
         $PoshPath = Join-Path ([Environment]::GetFolderPath("Desktop")) -ChildPath 'Posh365'
@@ -171,7 +172,7 @@ function Get-DiscoveryOffice365 {
             'AcceptMessagesOnlyFromDLMembers', 'ForwardingAddress', 'ForwardingSmtpAddress', 'DeliverToMailboxAndForward'
             'UserPrincipalName', 'PrimarySmtpAddress', 'Identity', 'AddressBookPolicy', 'Guid', 'LitigationHoldEnabled'
             'LitigationHoldDuration', 'LitigationHoldOwner', 'InPlaceHolds', 'x500', 'EmailAddresses', 'ExchangeObjectId'
-            'ExchangeGuid','ArchiveGuid'
+            'ExchangeGuid', 'ArchiveGuid'
         )
         $EXOContactsProperties = @(
             'DisplayName', 'PrimarySmtpAddress', 'WindowsEmailAddress', 'ExternalEmailAddress', 'EmailAddresses'
@@ -684,6 +685,22 @@ function Get-DiscoveryOffice365 {
                 }
             }
             { $menu.DiscoveryItems -contains 'Compliance' -or $Compliance } {
+                Remove-PSSession *
+                if ($ConnectionType.ConnectionType -like "*without*") {
+                    Connect-Cloud -Tenant $Tenant -Compliance -Verbose:$false
+                }
+                elseif ($ConnectionType.ConnectionType -like "*with MFA*") {
+                    Connect-CloudMFA -Tenant $Tenant -Compliance -Verbose:$false
+                }
+                $TenantName = Test-365ServiceConnection -Compliance
+                # Needs to be a sep function - MS says they are fixing this module so this is a bandaid 
+                $TenantPath = Join-Path $DiscoPath -ChildPath $TenantName
+                $Detailed = Join-Path $TenantPath -ChildPath 'Detailed'
+                $CSV = Join-Path $TenantPath -ChildPath 'CSV'
+                $null = New-Item -ItemType Directory -Path $DiscoPath  -ErrorAction SilentlyContinue
+                $null = New-Item -ItemType Directory -Path $TenantPath  -ErrorAction SilentlyContinue
+                $null = New-Item -ItemType Directory -Path $Detailed  -ErrorAction SilentlyContinue
+                $null = New-Item -ItemType Directory -Path $CSV  -ErrorAction SilentlyContinue
                 Write-Verbose "Gathering Security and Compliance Roles"
                 if ($MFAHash) {
                     Get-ComplianceRoleReport -MFAHash $MFAHash | Export-Csv $Compliance_Roles @ExportCSVSplat
@@ -704,6 +721,7 @@ function Get-DiscoveryOffice365 {
                 Export-Csv $Compliance_AlertPolicies @ExportCSVSplat
             }
             { $menu.DiscoveryItems -contains 'CreateExcel' -or $CreateExcel } {
+                Write-Verbose "Creating Excel"
                 $EA = $ErrorActionPreference
                 $ErrorActionPreference = "SilentlyContinue"
                 $ExcelSplat = @{
@@ -742,6 +760,7 @@ function Get-DiscoveryOffice365 {
                 $ErrorActionPreference = $EA
             }
             { $menu.DiscoveryItems -contains 'CreateBitTitanFile' -or $CreateBitTitanFile } {
+                Write-Verbose "Creating BitTitan File - Batchex.xlsx"
                 $MsolHash = @{ }
                 Import-Csv $MSOL_Users | ForEach-Object {
                     $MsolHash.Add($_.UserPrincipalName, @{
@@ -761,9 +780,9 @@ function Get-DiscoveryOffice365 {
                 }
 
                 Import-Csv $EXO_Mailboxes | Select-Object @(
-                     @{
+                    @{
                         Name       = 'BatchName'
-                        Expression = {'zNOBATCH'}
+                        Expression = { 'zNOBATCH' }
                     }
                     'DisplayName'
                     'Migrate'
