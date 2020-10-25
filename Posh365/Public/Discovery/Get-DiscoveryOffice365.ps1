@@ -307,6 +307,7 @@ function Get-DiscoveryOffice365 {
         $Compliance_Roles = (Join-Path $CSV 'Compliance_Roles.csv')
         $Compliance_DLPPolicies = (Join-Path $CSV 'Compliance_DLPPolicies.csv')
         $Compliance_RetentionPolicies = (Join-Path $CSV 'Compliance_RetentionPolicies.csv')
+        $Compliance_RetentionPolicyRules = (Join-Path $CSV 'Compliance_RetentionPolicyRules.csv')
         $Compliance_AlertPolicies = (Join-Path $CSV 'Compliance_AlertPolicies.csv')
 
         $365_UnifiedGroups = (Join-Path $CSV '365_UnifiedGroups.csv')
@@ -713,8 +714,46 @@ function Get-DiscoveryOffice365 {
                 Export-Csv $Compliance_DLPPolicies @ExportCSVSplat
 
                 Write-Verbose "Gathering Compliance Retention Policies"
-                Get-RetentionCompliancePolicy -DistributionDetail | Select-Object $ComplianceRetentionPoliciesProperties |
-                Export-Csv $Compliance_RetentionPolicies @ExportCSVSplat
+                $CompliancePolicyList = Get-RetentionCompliancePolicy -DistributionDetail | Select-Object $ComplianceRetentionPoliciesProperties
+                $CompliancePolicyList | Export-Csv $Compliance_RetentionPolicies @ExportCSVSplat
+
+                Write-Verbose "Gathering Compliance Retention Rules"
+                $PolicyAndRuleReport = foreach ($CompliancePolicy in $CompliancePolicyList) {
+                    $RuleList = Get-RetentionComplianceRule -Policy $CompliancePolicy.Guid
+                    foreach ($Rule in $RuleList) {
+                        [PSCustomObject]@{
+                            PolicyName                          = $CompliancePolicy.Name
+                            PolicyEnabled                       = $CompliancePolicy.Enabled
+                            PolicyWorkload                      = $CompliancePolicy.Workload
+                            RuleName                            = $Rule.Name
+                            Priority                            = $Rule.Priority
+                            RetentionComplianceAction           = $Rule.RetentionComplianceAction
+                            RetentionDuration                   = @($Rule.RetentionDuration) -ne '' -join '|'
+                            RetentionDurationDisplayHint        = $Rule.RetentionDurationDisplayHint
+                            Workload                            = $Rule.Workload
+                            ApplyComplianceTag                  = @($Rule.ApplyComplianceTag) -ne '' -join '|'
+                            Comment                             = $Rule.Comment
+                            ComplianceTagProperty               = $Rule.ComplianceTagProperty
+                            ContentContainsSensitiveInformation = @($Rule.ContentContainsSensitiveInformation) -ne '' -join '|'
+                            ContentDateFrom                     = @($Rule.ContentDateFrom) -ne '' -join '|'
+                            ContentDateTo                       = @($Rule.ContentDateTo) -ne '' -join '|'
+                            ContentMatchQuery                   = $Rule.ContentMatchQuery
+                            CreatedBy                           = $Rule.CreatedBy
+                            Disabled                            = $Rule.Disabled
+                            ExcludedItemClasses                 = @($Rule.ExcludedItemClasses) -ne '' -join '|'
+                            ExpirationDateOption                = $Rule.ExpirationDateOption
+                            Guid                                = $Rule.Guid
+                            LastModifiedBy                      = $Rule.LastModifiedBy
+                            Mode                                = $Rule.Mode
+                            Policy                              = $Rule.Policy
+                            PublishComplianceTag                = $Rule.PublishComplianceTag
+                            WhenChangedUTC                      = $Rule.WhenChangedUTC
+                            WhenCreatedUTC                      = $Rule.WhenCreatedUTC
+                            ExchangeObjectId                    = $Rule.ExchangeObjectId
+                        }
+                    }
+                }
+                $PolicyAndRuleReport | Select-Object * | Export-Csv $Compliance_RetentionPolicyRules @ExportCSVSplat
 
                 Write-Verbose "Gathering Compliance Alert Policies"
                 Get-ProtectionAlert | Select-Object $ComplianceAlertPoliciesProperties |
