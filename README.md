@@ -58,7 +58,7 @@ Connect-PoshGraph -Tenant Contoso
 ```powershell
 Get-DiscoveryOffice365 -Tenant Contoso -Verbose
 ```
-**Choose** all but Compliance & click OK  
+**Choose** all items & click OK  
 **Choose** Connection type & click OK  
 
 ><sub>**First time running this?** Let's install PowerShellGet2:</sub>  
