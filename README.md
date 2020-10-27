@@ -31,6 +31,8 @@ Connect-Cloud -Tenant Contoso -EXO2 -MSOnline -AzureAD -GCCHIGH
 Connect-Cloud -Tenant Contoso -EXO2 -MFA #when using MFA
 Connect-Cloud -Tenant Contoso -Teams
 Connect-Cloud -Tenant Contoso -Teams -GCCHIGH
+Connect-Cloud -Tenant Contoso -AZ
+Connect-Cloud -Tenant Contoso -AZ -GCCHIGH
 Connect-Cloud -Tenant Contoso -SharePoint
 Connect-Cloud -Tenant Contoso -Compliance
 Connect-Cloud -Tenant Contoso -DeleteCreds #Deletes locally encrypted creds only
