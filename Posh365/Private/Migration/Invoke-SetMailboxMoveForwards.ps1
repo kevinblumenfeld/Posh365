@@ -44,7 +44,6 @@ function Invoke-SetMailboxMoveForward {
                 switch ($User) {
                     { $_.ForwardingAddress } { $SetSplat.Add('ForwardingAddress', $_.ForwardingAddress) }
                     { $_.ForwardingSmtpAddress } { $SetSplat.Add('ForwardingSmtpAddress', $_.ForwardingSmtpAddress) }
-                    { $_.ForwardingRecipientType } { $SetSplat.Add('ForwardingRecipientType', $_.ForwardingRecipientType) }
                     { $_.DeliverToMailboxAndForward } { $SetSplat.Add('DeliverToMailboxAndForward', $_.DeliverToMailboxAndForward -as [bool]) }
                     Default { }
                 }

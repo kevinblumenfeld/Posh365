@@ -126,10 +126,6 @@ function Connect-Cloud {
 
         [Parameter()]
         [switch]
-        $Azure,
-
-        [Parameter()]
-        [switch]
         $Skype,
 
         [Parameter()]
@@ -210,7 +206,7 @@ function Connect-Cloud {
         }
     }
     if (($ExchangeOnline -or $MSOnline -or $All365 -or $Skype -or
-            $SharePoint -or $Compliance -or $AzureADver2 -or $AzureAD -or $EXO2 -or $Teams -or $Azure) -and (-not $MFA)) {
+            $SharePoint -or $Compliance -or $AzureADver2 -or $AzureAD -or $EXO2 -or $Teams) -and (-not $MFA)) {
         if (Test-Path ($KeyPath + "$($Tenant).cred")) {
             $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).cred") | ConvertTo-SecureString
             $UsernameString = Get-Content ($KeyPath + "$($Tenant).ucred")
@@ -347,10 +343,6 @@ function Connect-Cloud {
             }
         }
     }
-    # Azure
-    if ($Azure) {
-        Get-LAAzureConnected
-    }
     # Azure AD
     If ($AzureAD -or $AzureADver2 -or $All365) {
         if (-not $MFA) {
@@ -455,7 +447,13 @@ function Connect-Cloud {
         $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).cred") | ConvertTo-SecureString
         $UsernameString = Get-Content ($KeyPath + "$($Tenant).ucred")
         $Credential = [System.Management.Automation.PSCredential]::new($UsernameString, $PwdSecureString)
-        Connect-AzAccount -Credential $Credential
+        $AZHash = @{
+            Credential = $Credential
+        }
+        if ($GCCHIGH) {
+            $AZHash['Environment'] = 'AzureUSGovernment'
+        }
+        Connect-AzAccount 
         Write-Host "You have successfully connected to Az Cmdlets" -foregroundcolor "magenta" -backgroundcolor "white"
     }
     if ($Compliance) {
@@ -463,14 +461,4 @@ function Connect-Cloud {
         Connect-ExchangeOnline -ConnectionUri 'https://ps.compliance.protection.outlook.com/powershell-liveid' @Splat
         Write-Host "You have successfully connected to Security & Compliance Center" -foregroundcolor "magenta" -backgroundcolor "white"
     }
-}
-function Get-LAAzureConnected {
-    if (-not ($null = Get-Module -Name Az.Accounts -ListAvailable)) {
-        Install-Module -Name Az.Accounts -Scope CurrentUser -force -AllowClobber
-    }
-    Connect-AzAccount -Credential $Credential
-    while (-not $Sub) {
-        $Sub = Get-AzSubscription | Out-GridView -PassThru -Title "Choose subscription and click OK"
-    }
-    Select-AzSubscription -Subscription $Sub.Id
 }
