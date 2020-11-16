@@ -1,18 +1,22 @@
 function Get-SPOWeb {
 
     param (
-        [Parameter(Mandatory = $true, Position = 1)]
-        [string]$UsernameString,
-        [Parameter(Mandatory = $true, Position = 2)]
-        [string]$Url,
-        [Parameter(Mandatory = $true, Position = 3)]
+        [Parameter(Mandatory, Position = 1)]
+        [string]
+        $UsernameString,
+
+        [Parameter(Mandatory, Position = 2)]
+        [string]
+        $Url,
+
+        [Parameter(Mandatory, Position = 3)]
         $PwdSecureString,
-        [Parameter(Mandatory = $true, Position = 4)]
+
+        [Parameter(Mandatory, Position = 4)]
         $curUser,
-        [Parameter(Mandatory = $true, Position = 5)]
-        $Display
-        
-        
+
+        [Parameter(Mandatory, Position = 5)]
+        $Display        
     )
 
     $errorActionPreference = 'Stop'
@@ -27,7 +31,7 @@ function Get-SPOWeb {
     try {
         $null = $clientContext.ExecuteQuery()
     }
-    Catch {
+    catch {
         if ($_.exception.Message -like "*(404)*" -or $_.exception.Message -like "*Not Found*"  ) {
             $errorMessage = "(404)NotFound"
         }
@@ -37,10 +41,10 @@ function Get-SPOWeb {
     }
     
     $null = Invoke-LoadMethod -Object $clientContext.Site -PropertyName "Usage"
-    Try {
+    try {
         $null = $clientContext.ExecuteQuery()
     }
-    Catch {
+    catch {
         if ($_.exception.Message -like "*(404)*" -or $_.exception.Message -like "*Not Found*"  ) {
             $errorMessage = "(404)NotFound"
         }
@@ -76,8 +80,7 @@ function Get-SPOWeb {
         StorageUsed_GB      = $storageUsed_GB
         PercentageUsed      = $percentageUsed
         BytesUsed           = $BytesUsed
-        Message             = $errorMessage
-            
+        Log                 = $errorMessage
     } 
 
     $null = $clientContext.Dispose()

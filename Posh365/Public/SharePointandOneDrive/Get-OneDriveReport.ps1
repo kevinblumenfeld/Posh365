@@ -1,6 +1,26 @@
 function Get-OneDriveReport {
+    <#
+    .SYNOPSIS
+    Report on OneDrive usage, storage available, storage used, percentage used, bytes used
+    
+    .DESCRIPTION
+    Report on OneDrive usage, storage available, storage used, percentage used, bytes used
+    
+    .PARAMETER Tenant
+    You must use Connect-Cloud without MFA as the creds are retrieved from where Connect-Cloud stores them (by TENANT)
+    Connect-Cloud -Tenant CONTOSO -SharePoint
+    
+    .EXAMPLE
+    Connect-Cloud -Tenant CONTOSO -SharePoint
+    Get-OneDriveReport -Verbose | Export-PoshExcel .\OneDriveUsage.xlsx
+    
+    .NOTES
+    if user is not assigned OneDrive license you may see the following message in the LOG column in the output :
+        "Exception calling "ExecuteQuery" with "0" argument(s). The remote server returned an error: (401) Unauthorized."
+    #>
+    
     param(
-        [parameter(Position = 0, Mandatory = $true)]
+        [parameter(Mandatory)]
         [string] $Tenant
     )
 
@@ -8,12 +28,8 @@ function Get-OneDriveReport {
         $mysiteHost = (Get-SPOSite -Limit all -Template SPSMSITEHOST -ErrorAction stop).url
     }
     catch {
-        Write-Host "You are not connected to SharePoint Online"
-        Write-Host "We will now attempt to connect to SharePoint Online"
-        Write-Host "If you require MFA, please connect prior with this command:"
-        Write-Host "Connect-Cloud YourTenant -Sharepoint -MFA"
-        Connect-Cloud $Tenant -SharePoint
-        $mysiteHost = (Get-SPOSite -Limit all -Template SPSMSITEHOST).url
+        Write-Host "You are not connected to SharePoint Online" -ForegroundColor Red
+        continue
     }
 
     $RootPath = $env:USERPROFILE + "\ps\"
@@ -21,18 +37,24 @@ function Get-OneDriveReport {
     $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).cred") | ConvertTo-SecureString
     $UsernameString = Get-Content ($KeyPath + "$($Tenant).ucred")
 
-    $user = Get-SPOUser -Limit All -Site $mysiteHost
+    $UserList = Get-SPOUser -Limit All -Site $mysiteHost
 
-    foreach ($curUser in $user) {
-        $Display = $curUser.DisplayName
-        $curUser = $curUser.LoginName
-        $curUserConverted = $curUser.Replace(".", "_").Replace("@", "_")
-        write-Verbose "CurUser: $CurUser"
-        $site = $mysiteHost + "personal/" + $curUserConverted
+    foreach ($User in $UserList) {
+
+        $User = ($User.LoginName).Replace(".", "_").Replace("@", "_")
+        Write-Verbose "User: $User"
+        $site = $mysiteHost + "personal/" + $User
         if ($site.Contains("ylo00")) {
             continue
         }
-        Write-Verbose "Processing $site"
-        Get-SPOWeb -UsernameString $UsernameString -Url $site -PwdSecureString $PwdSecureString -curUser $curUser -Display $Display
+        Write-Verbose "Processing: $site"
+        $Params = @{
+            UsernameString  = $UsernameString
+            Url             = $site
+            PwdSecureString = $PwdSecureString
+            curUser         = $User
+            Display         = $User.DisplayName
+        }
+        Get-SPOWeb @Params
     }
 }

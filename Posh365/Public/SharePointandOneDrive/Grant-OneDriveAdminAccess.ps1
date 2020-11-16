@@ -1,56 +1,59 @@
 function Grant-OneDriveAdminAccess {
+    <#
+    .SYNOPSIS
+    Grant Full Access to each users OneDrive to a single Global Administrator
+    
+    .DESCRIPTION
+    Grant Full Access to each users OneDrive to a single Global Administrator
+    
+    .PARAMETER GAUsername
+    Username of Global Admin used to connect to SharePoint Online
+    
+    .EXAMPLE
+    Grant-OneDriveAdminAccess -GAUserName AdminSmith | Export-PoshExcel .\GrantLog.xlsx
+    
+    .NOTES
+    General notes
+    #>
+    
+    [CmdletBinding()]
     param(
-        [parameter(Position = 0, Mandatory = $true)]
-        [string] $Tenant
+
+        [Parameter(Mandatory)]
+        $GAUsername
     )
 
     try {
         $mysiteHost = (Get-SPOSite -Limit all -Template SPSMSITEHOST -ErrorAction stop).url
     }
     catch {
-        Write-Host "You are not connected to SharePoint Online"
-        Write-Host "We will now attempt to connect to SharePoint Online"
-        Write-Host "If you require MFA, please connect prior with this command:"
-        Write-Host "Connect-Cloud YourTenant -Sharepoint -MFA"
-        Connect-Cloud $Tenant -SharePoint
-        $mysiteHost = (Get-SPOSite -Limit all -Template SPSMSITEHOST).url
-        Write-Verbose "MySiteHost: " $mysiteHost
+        Write-Host "You are not connected to SharePoint Online" -ForegroundColor Red
+        continue
     }
 
-    $RootPath = $env:USERPROFILE + "\ps\"
-    $KeyPath = $Rootpath + "creds\"
-    $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).cred") | ConvertTo-SecureString
-    $UsernameString = Get-Content ($KeyPath + "$($Tenant).ucred")
+    $UserList = (Get-SPOUser -Limit All -Site $mysiteHost).LoginName
 
-    $ReportPath = '.\'
-    $ErrorFileTime = ("GrantOneDriveAdminAccess_Log_ERROR_" + $(get-date -Format _yyyy-MM-dd_HH-mm-ss) + ".csv")
-    $ErrorCSVPath = Join-Path $ReportPath $ErrorFileTime
-    $FileTime = ("GrantOneDriveAdminAccess_Log_" + $(get-date -Format _yyyy-MM-dd_HH-mm-ss) + ".csv")
-    $CSVPath = Join-Path $ReportPath $FileTime
-
-    $user = (Get-SPOUser -Limit All -Site $mysiteHost).LoginName
-
-    foreach ($curUser in $user) {
-        $curUser = $curUser.Replace(".", "_").Replace("@", "_")
-        $site = $mysiteHost + "personal/" + $curUser
+    foreach ($User in $UserList) {
+        $User = $User.Replace(".", "_").Replace("@", "_")
+        $site = $mysiteHost + "personal/" + $User
         if ($site.Contains("ylo00")) {
             continue
         }
         try {
-            Set-SPOUser -Site $site -LoginName $UsernameString -IsSiteCollectionAdmin:$true
+            Set-SPOUser -Site $site -LoginName $GAUsername -IsSiteCollectionAdmin:$true
             Write-Verbose "Processing $site"
             [PSCustomObject]@{
-                User    = $curUser
-                Site    = $site
-                Success = "Success"
-            } | Export-Csv $CSVPath -Append -NoTypeInformation -Encoding UTF8
+                User = $User
+                Site = $site
+                Log  = "Success"
+            }
         }
         Catch {
             [PSCustomObject]@{
-                User  = $curUser
-                Site  = $site
-                Error = $_.Exception.Message
-            } | Export-Csv $ErrorCSVPath -Append -NoTypeInformation -Encoding UTF8
+                User = $User
+                Site = $site
+                Log  = $_.Exception.Message
+            }
         }
     }
 }
