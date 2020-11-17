@@ -28,13 +28,16 @@ function Get-IntunePolicyHash {
                 catch { }
             }
         }
+        elseif ($Item.Name -eq 'apps') {
+            $PropertyHash['Apps'] = @($Item.apps.id) -ne '' -join "`r`n"
+        }
         else {
             $PropertyHash[$Item.Name] = @($Item.value) -ne '' -join '|'
         }
     }
 
     if ($GroupNameList) {
-        $PropertyHash['Assignments'] = @($GroupNameList) -ne '' -join '|'
+        $PropertyHash['Assignments'] = @($GroupNameList) -ne '' -join "`r`n"
     }
 
     $PropertyHash

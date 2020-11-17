@@ -67,6 +67,9 @@ function Connect-Cloud {
     .PARAMETER Compliance
     Connects to Security & Compliance Center
 
+    .PARAMETER Intune
+    Connects to Intue
+
     .PARAMETER AzureADver2
     Connects to Azure AD Version 2
 
@@ -142,6 +145,10 @@ function Connect-Cloud {
 
         [Parameter()]
         [switch]
+        $Intune,
+
+        [Parameter()]
+        [switch]
         $Az,
 
         [Parameter()]
@@ -210,21 +217,7 @@ function Connect-Cloud {
         if (Test-Path ($KeyPath + "$($Tenant).cred")) {
             $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).cred") | ConvertTo-SecureString
             $UsernameString = Get-Content ($KeyPath + "$($Tenant).ucred")
-            $Credential = try {
-                New-Object System.Management.Automation.PSCredential -ArgumentList $UsernameString, $PwdSecureString -ErrorAction Stop
-            }
-            catch {
-                if ($_.exception.Message -match '"userName" is not valid. Change the value of the "userName" argument and run the operation again') {
-                    Connect-Cloud $Tenant -DeleteCreds
-                    Write-Warning "                    Bad Username                                    "
-                    Write-Warning "          Please try your last command again...                     "
-                    Write-Warning "...you will be prompted to enter your Office 365 credentials again. "
-                    Break
-                }
-                Else {
-                    $error[0]
-                }
-            }
+            $Credential = [System.Management.Automation.PSCredential]::new($UsernameString, $PwdSecureString)
         }
         else {
             $Credential = Get-Credential -Message "ENTER USERNAME & PASSWORD FOR OFFICE 365/AZURE AD"
@@ -444,21 +437,43 @@ function Connect-Cloud {
     }
     if ($Az) {
         Connect-CloudModuleImport -Az
-        $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).cred") | ConvertTo-SecureString
-        $UsernameString = Get-Content ($KeyPath + "$($Tenant).ucred")
-        $Credential = [System.Management.Automation.PSCredential]::new($UsernameString, $PwdSecureString)
+        if (Test-Path ($KeyPath + "$($Tenant).cred")) {
+            $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).cred") | ConvertTo-SecureString
+            $UsernameString = Get-Content ($KeyPath + "$($Tenant).ucred")
+            $Credential = [System.Management.Automation.PSCredential]::new($UsernameString, $PwdSecureString)
+        }
+        else {
+            $Credential = Get-Credential -Message "ENTER USERNAME & PASSWORD FOR AZ"
+            $Credential.Password | ConvertFrom-SecureString | Out-File ($KeyPath + "$($Tenant).cred") -Force
+            $Credential.UserName | Out-File ($KeyPath + "$($Tenant).ucred")
+        }
         $AZHash = @{
             Credential = $Credential
         }
         if ($GCCHIGH) {
             $AZHash['Environment'] = 'AzureUSGovernment'
         }
-        Connect-AzAccount 
+        Connect-AzAccount @AZHash
         Write-Host "You have successfully connected to Az Cmdlets" -foregroundcolor "magenta" -backgroundcolor "white"
     }
     if ($Compliance) {
         Get-PSSession | Remove-PSSession
         Connect-ExchangeOnline -ConnectionUri 'https://ps.compliance.protection.outlook.com/powershell-liveid' @Splat
+        Write-Host "You have successfully connected to Security & Compliance Center" -foregroundcolor "magenta" -backgroundcolor "white"
+    }
+    if ($Intune) {
+        Connect-CloudModuleImport -Intune
+        if (Test-Path ($KeyPath + "$($Tenant).cred")) {
+            $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).cred") | ConvertTo-SecureString
+            $UsernameString = Get-Content ($KeyPath + "$($Tenant).ucred")
+            $Credential = [System.Management.Automation.PSCredential]::new($UsernameString, $PwdSecureString)
+        }
+        else {
+            $Credential = Get-Credential -Message "ENTER USERNAME & PASSWORD FOR AZ"
+            $Credential.Password | ConvertFrom-SecureString | Out-File ($KeyPath + "$($Tenant).cred") -Force
+            $Credential.UserName | Out-File ($KeyPath + "$($Tenant).ucred")
+        }
+        Connect-MSGraph -Credential $Credential
         Write-Host "You have successfully connected to Security & Compliance Center" -foregroundcolor "magenta" -backgroundcolor "white"
     }
 }

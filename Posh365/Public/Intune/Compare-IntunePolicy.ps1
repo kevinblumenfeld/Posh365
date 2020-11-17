@@ -42,16 +42,16 @@ function Compare-IntunePolicy {
     }
 
     if ($PolicyType -eq 'AppProtectionPolicyAndroid') {
-        $Object = Get-IntuneAppProtectionPolicyAndroid -Expand assignments
+        $Object = Get-IntuneAppProtectionPolicyAndroid -Expand assignments, apps
     }
     elseif ($PolicyType -eq 'AppProtectionPolicyiOS') {
-        $Object = Get-IntuneAppProtectionPolicyIos -Expand assignments
+        $Object = Get-IntuneAppProtectionPolicyIos -Expand assignments, apps
     }
     elseif ($PolicyType -eq 'AppConfigManagedApps') {
-        $Object = Get-IntuneAppConfigurationPolicyTargeted -Expand assignments
+        $Object = Get-IntuneAppConfigurationPolicyTargeted -Expand assignments, apps
     }
     elseif ($PolicyType -eq 'AppConfigManagedDevices') {
-        $Object = Get-DeviceAppManagement_MobileAppConfigurations -Expand assignments
+        $Object = Get-DeviceAppManagement_MobileAppConfigurations -Expand assignments, apps
     }
 
     $DisplayNameReference = $Object | Select-Object DisplayName | Out-GridView -OutputMode Single -Title 'Choose Reference Object'
