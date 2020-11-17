@@ -29,7 +29,7 @@ function Get-IntunePolicyHash {
             }
         }
         elseif ($Item.Name -eq 'apps') {
-            $PropertyHash['Apps'] = @($Item.apps.id) -ne '' -join "`r`n"
+            $PropertyHash['Apps'] = @($Item.value.id) -ne '' -join "`r`n"
         }
         else {
             $PropertyHash[$Item.Name] = @($Item.value) -ne '' -join '|'

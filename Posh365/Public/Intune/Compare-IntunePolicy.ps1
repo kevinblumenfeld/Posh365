@@ -1,19 +1,24 @@
 function Compare-IntunePolicy {
     <#
     .SYNOPSIS
-    Short description
+    Compare two Intune Policies
 
     .DESCRIPTION
-    Long description
-
-    .PARAMETER Reference
-    DisplayName of Intune Policy, Configuration, Profile
-
-    .PARAMETER Difference
-    DisplayName of Intune Policy, Configuration, Profile
+    Compare two Intune Policies
 
     .EXAMPLE
-    Compare-IntunePolicy -Reference 'iOS_MAM_ProtectionPolicy_01' -Difference 'iOS_MAM_ProtectionPolicy_02'
+    Compare-IntunePolicy
+
+    This example will let you choose the policy type and both policies with Out-GridView menus
+
+    .EXAMPLE
+    Compare-IntunePolicy | Out-GridView
+
+    .EXAMPLE
+    Compare-IntunePolicy | Export-PoshExcel .\Comparison.xlsx
+
+    .EXAMPLE
+    Compare-IntunePolicy | Export-Csv .\Comparison.csv -notypeinformation
 
     .NOTES
     General notes
@@ -21,15 +26,15 @@ function Compare-IntunePolicy {
 
     [CmdletBinding()]
     param (
-        [Parameter()]
-        $Reference,
+        # [Parameter()]
+        # $Reference,
 
-        [Parameter()]
-        $Difference,
+        # [Parameter()]
+        # $Difference,
 
-        [Parameter()]
-        [ValidateSet('AppProtectionPolicyAndroid', 'AppProtectionPolicyiOS', 'AppConfigManagedApps', 'AppConfigManagedDevices')]
-        $PolicyType
+        # [Parameter()]
+        # [ValidateSet('AppProtectionPolicyAndroid', 'AppProtectionPolicyiOS', 'AppConfigManagedApps', 'AppConfigManagedDevices')]
+        # $PolicyType
     )
 
     if (-not $PolicyType) {
@@ -38,6 +43,7 @@ function Compare-IntunePolicy {
                 PolicyType = $_
             }
         } | Out-GridView -OutputMode Single -Title 'Choose Policy Type'
+        if (-not $Type) { return }
         $PolicyType = $Type.PolicyType
     }
 
@@ -51,13 +57,14 @@ function Compare-IntunePolicy {
         $Object = Get-IntuneAppConfigurationPolicyTargeted -Expand assignments, apps
     }
     elseif ($PolicyType -eq 'AppConfigManagedDevices') {
-        $Object = Get-DeviceAppManagement_MobileAppConfigurations -Expand assignments, apps
+        $Object = Get-DeviceAppManagement_MobileAppConfigurations -Expand assignments
     }
 
     $DisplayNameReference = $Object | Select-Object DisplayName | Out-GridView -OutputMode Single -Title 'Choose Reference Object'
     $DisplayNameDifference = $Object | Select-Object DisplayName | Out-GridView -OutputMode Single -Title 'Choose Difference Object'
     $Reference = $Object | Where-Object { $_.DisplayName -eq $DisplayNameReference.DisplayName }
     $Difference = $Object | Where-Object { $_.DisplayName -eq $DisplayNameDifference.DisplayName }
+    if (-not ($Reference -and $Difference)) { return }
     $ReferenceHash = Get-IntunePolicyHash -Policy $Reference
     $DifferenceHash = Get-IntunePolicyHash -Policy $Difference
 
@@ -72,6 +79,8 @@ function Compare-IntunePolicy {
             $RefKey -ne 'targetedManagedAppConfigurationReferenceUrl' -and
             $RefKey -ne 'targetedManagedAppConfigurationId' -and
             $RefKey -ne 'assignments@odata.context' -and
+            $RefKey -ne 'apps@odata.context' -and
+            $RefKey -ne 'managedDeviceMobileAppConfigurationId' -and
             $RefKey -ne 'iosMobileAppConfigurationReferenceUrl'
         ) {
             $MainHash[$RefKey] = @{
