@@ -8,7 +8,11 @@ function Get-MailboxMoveFolderResult {
 
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        $FolderPermission
+        $FolderPermission,
+
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        $UserChoiceRegex
     )
     end {
         $OrElements = foreach ($Direction in $DirectionChoice.Options) {

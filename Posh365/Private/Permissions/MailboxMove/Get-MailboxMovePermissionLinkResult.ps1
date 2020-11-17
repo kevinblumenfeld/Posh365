@@ -45,6 +45,7 @@ function Get-MailboxMovePermissionLinkResult {
                 PermissionChoice  = $PermissionChoice
                 DirectionChoice   = $DirectionChoice
                 MailboxPermission = $MailboxPermission
+                UserChoiceRegex   = $UserChoiceRegex
             }
             Get-MailboxMoveDelegateResult @DelegateResult | Where-Object { $_.PrimarySmtpAddress -and $_.GrantedSMTP -and
                 $BatchHash[$_.PrimarySmtpAddress].isMigrated -ne (-not $IncludeMigrated) -and $BatchHash[$_.GrantedSMTP].isMigrated -ne (-not $IncludeMigrated)
@@ -77,6 +78,7 @@ function Get-MailboxMovePermissionLinkResult {
             $FolderResult = @{
                 DirectionChoice  = $DirectionChoice
                 FolderPermission = $FolderPermission
+                UserChoiceRegex  = $UserChoiceRegex
             }
             Get-MailboxMoveFolderResult @FolderResult | Where-Object { $_.PrimarySmtpAddress -and $_.GrantedSMTP -and
                 $BatchHash[$_.PrimarySmtpAddress].isMigrated -ne (-not $IncludeMigrated) -and $BatchHash[$_.GrantedSMTP].isMigrated -ne (-not $IncludeMigrated)

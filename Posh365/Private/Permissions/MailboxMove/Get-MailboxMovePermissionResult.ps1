@@ -89,6 +89,7 @@ function Get-MailboxMovePermissionResult {
             $FolderResult = @{
                 DirectionChoice  = $DirectionChoice
                 FolderPermission = $FolderPermission
+                UserChoiceRege   = $UserChoiceRegex
             }
             if ($Remove) {
                 $FolderOrRights = 'Folder'

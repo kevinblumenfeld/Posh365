@@ -4,7 +4,7 @@ function Get-DomainMatchingServicePrincipal {
 
     )
     end {
-        $DomainList = (Get-MsolDomain).name.foreach{ [regex]::Escape($_) } -join '|'
+        $DomainList = '^(?:{0})$' -f ((Get-MsolDomain).name.foreach{ [regex]::Escape($_) } -join '|')
         $SPNList = Get-MsolServicePrincipal -All
 
         $SPNList.Where{ $_.ServicePrincipalNames -match $DomainList } | Select-Object @(

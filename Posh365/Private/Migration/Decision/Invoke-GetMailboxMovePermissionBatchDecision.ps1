@@ -44,7 +44,7 @@ function Invoke-GetMailboxMovePermissionBatchDecision {
         if (-not ($DirectionChoice = Get-PermissionDirectionDecision)) {
             break
         }
-        $UserChoiceRegex = (@($UserChoice.PrimarySMTPAddress) -ne '' | ForEach-Object { [Regex]::Escape($_) }) -join '|'
+        $UserChoiceRegex = '^(?:{0})$' -f ((@($UserChoice.PrimarySMTPAddress) -ne '' | ForEach-Object { [Regex]::Escape($_) }) -join '|')
         $PermissionResult = @{
             SharePointURL     = $SharePointURL
             ExcelFile         = $ExcelFile

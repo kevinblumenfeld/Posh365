@@ -12,7 +12,11 @@ function Get-MailboxMoveDelegateResult {
 
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        $MailboxPermission
+        $MailboxPermission,
+
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        $UserChoiceRegex
     )
     end {
         $MailboxPermissionRegex = (($PermissionChoice | Where-Object { $_.Options -match "FullAccess|SendAs|SendOnBehalf" }) |

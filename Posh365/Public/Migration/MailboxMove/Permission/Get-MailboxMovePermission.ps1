@@ -87,7 +87,7 @@ function Get-MailboxMovePermission {
                 $UserChoice = Import-MailboxCsvDecision -MailboxCSV $MailboxCSV
             }
         }
-        $UserChoiceRegex = ($UserChoice.PrimarySMTPAddress | ForEach-Object { [Regex]::Escape($_) }) -join '|'
+        $UserChoiceRegex = '^(?:{0})$' -f (($UserChoice.PrimarySMTPAddress | ForEach-Object { [Regex]::Escape($_) }) -join '|')
         $PermissionChoice = Get-PermissionDecision
         $DirectionChoice = Get-PermissionDirectionDecision
 
