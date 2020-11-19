@@ -34,18 +34,19 @@ function Get-LegacyIntunePolicyDetails {
 
     $MainHash = @{ }
     foreach ($RefKey in $DifferenceHash.keys) {
-        if ($RefKey -ne 'Id' -and
-            $RefKey -ne 'iosManagedAppProtectionReferenceUrl' -and
-            $RefKey -ne 'Description' -and
-            $RefKey -ne 'ManagedAppPolicyId' -and
-            $RefKey -ne 'version' -and
-            $RefKey -ne 'targetedManagedAppConfigurationReferenceUrl' -and
-            $RefKey -ne 'targetedManagedAppConfigurationId' -and
-            $RefKey -ne 'assignments@odata.context' -and
-            $RefKey -ne 'apps@odata.context' -and
-            $RefKey -ne 'managedDeviceMobileAppConfigurationId' -and
-            $RefKey -ne 'iosMobileAppConfigurationReferenceUrl'
-        ) {
+        # if ($RefKey -ne 'Id' -and
+        #     $RefKey -ne 'iosManagedAppProtectionReferenceUrl' -and
+        #     $RefKey -ne 'Description' -and
+        #     $RefKey -ne 'ManagedAppPolicyId' -and
+        #     $RefKey -ne 'version' -and
+        #     $RefKey -ne 'targetedManagedAppConfigurationReferenceUrl' -and
+        #     $RefKey -ne 'targetedManagedAppConfigurationId' -and
+        #     $RefKey -ne 'assignments@odata.context' -and
+        #     $RefKey -ne 'apps@odata.context' -and
+        #     $RefKey -ne 'managedDeviceMobileAppConfigurationId' -and
+        #     $RefKey -ne 'iosMobileAppConfigurationReferenceUrl'
+        # )
+        {
             $MainHash[$RefKey] = $DifferenceHash[$RefKey]
         }
     }
