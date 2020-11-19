@@ -93,8 +93,8 @@ function Compare-IntunePolicy {
         [PSCustomObject]@{
             'Type'                  = $PolicyType
             'Property'              = $MainKey
-            $Reference.displayName  = $MainHash[$MainKey]['Difference']
-            $Difference.displayName = $MainHash[$MainKey]['Reference']
+            $Reference.displayName  = $MainHash[$MainKey]['Reference']
+            $Difference.displayName = $MainHash[$MainKey]['Difference']
         }
     }
 }
