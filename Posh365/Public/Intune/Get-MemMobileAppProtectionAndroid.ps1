@@ -5,8 +5,7 @@ function Get-MemMobileAppProtectionAndroid {
     $Excludes = @(
         'allowedDataIngestionLocations', 'allowedDataStorageLocations', 'apps', 'assignments'
         'deploymentSummary', 'exemptedAppPackages', 'displayName', 'allowedAndroidDeviceModels'
-        'approvedKeyboards', 'deploymentSummary@odata.context', 'apps@odata.context'
-        'deploymentSummary@odata.context', 'assignments@odata.context'
+        'approvedKeyboards', 'apps@odata.context', 'deploymentSummary@odata.context', 'assignments@odata.context'
         'allowedInboundDataTransferSources', 'allowedOutboundDataTransferDestinations'
         'allowedOutboundClipboardSharingLevel', 'allowedOutboundClipboardSharingExceptionLength'
         'managedBrowserToOpenLinksRequired', 'managedBrowser', 'createdDateTime'
@@ -17,6 +16,9 @@ function Get-MemMobileAppProtectionAndroid {
         'previousPinBlockCount', 'targetedAppManagementLevels', 'saveAsBlocked'
         'dataBackupBlocked', 'dialerRestrictionLevel', 'customDialerAppPackageId'
         'customDialerAppDisplayName', 'blockDataIngestionIntoOrganizationDocuments'
+        'screenCaptureBlocked', 'keyboardsRestricted', 'encryptAppData'
+        'disableAppEncryptionIfDeviceEncryptionIsEnabled', 'contactSyncBlocked'
+        'printBlocked', 'customBrowserDisplayName', 'customBrowserPackageId'
     )
     Get-MemMobileAppProtectionAndroidData | Select-Object -ExcludeProperty $Excludes -Property @(
         @{
@@ -108,8 +110,54 @@ function Get-MemMobileAppProtectionAndroid {
             }
         }
         @{
-            Name       = 'managedBrowserToOpenLinksRequired'
+            Name       = 'screenCaptureBlocked' # Screen capture and Google Assistant
+            Expression = { $_.screenCaptureBlocked }
+        }
+        @{
+            Name       = 'keyboardsRestricted' # Approved keyboards
+            Expression = { $_.keyboardsRestricted }
+        }
+        @{
+            Name       = 'approvedKeyboards' # Select keyboards to approve
+            Expression = { if ($_.keyboardsRestricted) {
+                    @($_.approvedKeyboards.foreach{ '{0} --> {1}' -f $_.Name, $_.Value }) -ne '' -join "`r`n"
+                }
+            }
+        }
+        @{
+            Name       = 'encryptAppData' # Encrypt org data
+            Expression = { $_.encryptAppData }
+        }
+        @{
+            Name       = 'disableAppEncryptionIfDeviceEncryptionIsEnabled' # Encrypt org data on enrolled devices
+            Expression = { if ($_.encryptAppData) {
+                    $_.disableAppEncryptionIfDeviceEncryptionIsEnabled
+                }
+            }
+        }
+        @{
+            Name       = 'contactSyncBlocked' # Sync policy managed app data with native apps
+            Expression = { $_.contactSyncBlocked }
+        }
+        @{
+            Name       = 'printBlocked' # Printing org data
+            Expression = { $_.printBlocked }
+        }
+        @{
+            Name       = 'managedBrowserToOpenLinksRequired' # (Coupled with below) Restrict web content transfer with other apps
             Expression = { $_.managedBrowserToOpenLinksRequired }
+        }
+        @{
+            Name       = 'managedBrowser' # (Coupled with above) Restrict web content transfer with other apps
+            Expression = { $_.managedBrowser }
+        }
+        @{
+            Name       = 'customBrowserPackageId' # Unmanaged Browser ID
+            Expression = { $_.customBrowserPackageId }
+        }
+        @{
+            Name       = 'customBrowserDisplayName' # Unmanaged Browser Name
+            Expression = { $_.customBrowserDisplayName }
         }
         @{
             Name       = 'pinRequired'
@@ -155,10 +203,6 @@ function Get-MemMobileAppProtectionAndroid {
         @{
             Name       = 'allowedAndroidDeviceModels'
             Expression = { @($_.allowedAndroidDeviceModels) -ne '' -join "`r`n" }
-        }
-        @{
-            Name       = 'approvedKeyboards'
-            Expression = { @($_.approvedKeyboards) -ne '' -join "`r`n" }
         }
         @{
             Name       = 'exemptedAppPackages'
