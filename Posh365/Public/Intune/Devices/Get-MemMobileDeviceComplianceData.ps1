@@ -1,11 +1,11 @@
-function Get-MemMobileDeviceConfig {
+function Get-MemMobileDeviceComplianceData {
     [CmdletBinding()]
     param (
 
     )
     if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
     $RestSplat = @{
-        Uri     = "https://graph.microsoft.com/beta/deviceManagement/deviceConfigurations?`$filter=isof('microsoft.graph.windowsUpdateForBusinessConfiguration')&`$expand=assignments"
+        Uri     = "https://graph.microsoft.com/beta/deviceManagement/deviceCompliancePolicies/?`$expand=assignments,scheduledActionsForRule(`$expand=scheduledActionConfigurations)"
         Headers = @{ "Authorization" = "Bearer $Token" }
         Method  = 'Get'
     }

@@ -1,11 +1,11 @@
-function Get-MemMobileAppProtectioniOS {
+function Get-MemMobileAppProtectionAndroidData {
     [CmdletBinding()]
     param (
 
     )
     if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
     $RestSplat = @{
-        Uri     = "https://graph.microsoft.com/beta/deviceAppManagement/iosManagedAppProtections?`$expand=deploymentSummary,apps,assignments"
+        Uri     = "https://graph.microsoft.com/beta/deviceAppManagement/androidManagedAppProtections?`$expand=deploymentSummary,apps,assignments"
         Headers = @{ "Authorization" = "Bearer $Token" }
         Method  = 'Get'
     }

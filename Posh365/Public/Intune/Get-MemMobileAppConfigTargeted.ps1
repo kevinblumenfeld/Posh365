@@ -1,4 +1,4 @@
-function Get-MemMobileAppConfigTargetedReport {
+function Get-MemMobileAppConfigTargeted {
     param (
 
     )
@@ -7,7 +7,7 @@ function Get-MemMobileAppConfigTargetedReport {
         'assignments@odata.context', 'deploymentSummary@odata.context'
         'apps@odata.context'
     )
-    Get-MemMobileAppConfigTargeted | Select-Object -ExcludeProperty $Excludes -Property @(
+    Get-MemMobileAppConfigTargetedData | Select-Object -ExcludeProperty $Excludes -Property @(
         @{
             Name       = 'DisplayName'
             Expression = { $_.DisplayName }

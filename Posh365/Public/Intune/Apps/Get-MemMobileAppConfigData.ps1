@@ -1,4 +1,4 @@
-function Get-MemMobileAppConfig {
+function Get-MemMobileAppConfigData {
     [CmdletBinding()]
     param (
 

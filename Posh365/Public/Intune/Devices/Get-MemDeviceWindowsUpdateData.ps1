@@ -1,11 +1,11 @@
-function Get-MemMobileDeviceConfigiOSWiFi {
+function Get-MemMobileDeviceConfigData {
     [CmdletBinding()]
     param (
 
     )
     if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
     $RestSplat = @{
-        Uri     = "https://graph.microsoft.com/beta/deviceManagement/deviceConfigurations?`$filter=isof('microsoft.graph.iosWiFiConfiguration')&`$expand=assignments"
+        Uri     = "https://graph.microsoft.com/beta/deviceManagement/deviceConfigurations?`$filter=isof('microsoft.graph.windowsUpdateForBusinessConfiguration')&`$expand=assignments"
         Headers = @{ "Authorization" = "Bearer $Token" }
         Method  = 'Get'
     }

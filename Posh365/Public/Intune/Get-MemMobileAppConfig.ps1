@@ -1,4 +1,4 @@
-function Get-MemMobileAppConfigReport {
+function Get-MemMobileAppConfig {
     param (
 
     )
@@ -8,7 +8,7 @@ function Get-MemMobileAppConfigReport {
         'profileApplicability', 'permissionActions', 'appSupportsOemConfig'
         'packageId'
     )
-    Get-MemMobileAppConfig | Select-Object -ExcludeProperty $Excludes -Property @(
+    Get-MemMobileAppConfigData | Select-Object -ExcludeProperty $Excludes -Property @(
         @{
             Name       = 'DisplayName'
             Expression = { $_.DisplayName }

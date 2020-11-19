@@ -1,14 +1,15 @@
-function Get-PoshConditionalAccessPolicy {
+function Get-MemMobileAppData {
     [CmdletBinding()]
     param (
-
+        [Parameter()]
+        $AppId
     )
     if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
     $RestSplat = @{
-        Uri     = "https://graph.microsoft.com/beta/identity/conditionalAccess/policies"
+        Uri     = 'https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/{0}' -f $AppId
         Headers = @{ "Authorization" = "Bearer $Token" }
         Method  = 'Get'
     }
-    Invoke-RestMethod @RestSplat -Verbose:$false | Select-Object -ExpandProperty value
+    Invoke-RestMethod @RestSplat -Verbose:$false
 
 }
