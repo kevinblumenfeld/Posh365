@@ -87,7 +87,7 @@ function Get-LegacyIntunePolicy {
             }
             @{
                 Name       = 'CustomSettings'
-                Expression = { ($_.CustomSettings.foreach{ $_.Name }) -ne '' -join "`r`n" }
+                Expression = { @($_.CustomSettings.foreach{ $_.Name }) -ne '' -join "`r`n" }
             }
             @{
                 Name       = 'Settings'

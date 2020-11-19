@@ -15,7 +15,7 @@ function Get-MemMobileAppConfig {
         }
         @{
             Name       = 'targetedMobileApps'
-            Expression = { @(($_.targetedMobileApps.foreach{ Get-MemMobileApp -AppId $_ }).displayName) -ne '' -join "`r`n" }
+            Expression = { @(($_.targetedMobileApps.foreach{ Get-MemMobileAppData -AppId $_ }).displayName) -ne '' -join "`r`n" }
         }
         @{
             Name       = 'assignments'

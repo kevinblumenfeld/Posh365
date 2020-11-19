@@ -22,7 +22,7 @@ function Get-MemMobileAppConfigTargeted {
         }
         @{
             Name       = 'CustomSettings'
-            Expression = { ($_.CustomSettings.foreach{ '{0} --> {1}' -f $_.Name, $_.Value }) -ne '' -join "`r`n" }
+            Expression = { @($_.CustomSettings.foreach{ '{0} --> {1}' -f $_.Name, $_.Value }) -ne '' -join "`r`n" }
         }
         '*'
     )
