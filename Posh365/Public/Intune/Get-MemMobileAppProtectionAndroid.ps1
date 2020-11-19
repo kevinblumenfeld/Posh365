@@ -14,12 +14,18 @@ function Get-MemMobileAppProtectionAndroid {
         'pinRequired', 'maximumPinRetries', 'simplePinBlocked', 'minimumPinLength'
         'pinCharacterSet', 'periodBeforePinReset', 'disableAppPinIfDevicePinIsSet'
         'appActionIfMaximumPinRetriesExceeded', 'pinRequiredInsteadOfBiometricTimeout'
-        'previousPinBlockCount'
+        'previousPinBlockCount', 'targetedAppManagementLevels', 'saveAsBlocked'
+        'dataBackupBlocked', 'dialerRestrictionLevel', 'customDialerAppPackageId'
+        'customDialerAppDisplayName', 'blockDataIngestionIntoOrganizationDocuments'
     )
     Get-MemMobileAppProtectionAndroidData | Select-Object -ExcludeProperty $Excludes -Property @(
         @{
             Name       = 'DisplayName'
             Expression = { $_.DisplayName }
+        }
+        @{
+            Name       = 'targetedAppManagementLevels'
+            Expression = { $_.targetedAppManagementLevels }
         }
         @{
             Name       = 'apps'
@@ -30,28 +36,76 @@ function Get-MemMobileAppProtectionAndroid {
             Expression = { @(($_.Assignments.Target.GroupID.foreach{ Get-GraphGroup -GroupId $_ }).displayName) -ne '' -join "`r`n" }
         }
         @{
-            Name       = 'allowedDataIngestionLocations'
-            Expression = { @($_.allowedDataIngestionLocations) -ne '' -join "`r`n" }
+            Name       = 'dataBackupBlocked' # Backup org data to Android backup services
+            Expression = { $_.dataBackupBlocked }
         }
         @{
-            Name       = 'allowedDataStorageLocations'
-            Expression = { @($_.allowedDataStorageLocations) -ne '' -join "`r`n" }
-        }
-        @{
-            Name       = 'allowedInboundDataTransferSources'
-            Expression = { $_.allowedInboundDataTransferSources }
-        }
-        @{
-            Name       = 'allowedOutboundDataTransferDestinations'
+            Name       = 'allowedOutboundDataTransferDestinations' # Send org data to other apps
             Expression = { $_.allowedOutboundDataTransferDestinations }
         }
         @{
-            Name       = 'allowedOutboundClipboardSharingLevel'
+            Name       = 'saveAsBlocked' # Save copies of org data
+            Expression = { if ($_.allowedOutboundDataTransferDestinations -eq 'managedApps') {
+                    $_.saveAsBlocked
+                }
+            }
+        }
+        @{
+            Name       = 'allowedDataStorageLocations' # Allow user to save copies to selected services
+            Expression = { if ($_.allowedOutboundDataTransferDestinations -eq 'managedApps' -and $_.saveAsBlocked -eq $true) {
+                    @($_.allowedDataStorageLocations) -ne '' -join "`r`n"
+                }
+            }
+        }
+        @{
+            Name       = 'dialerRestrictionLevel' # Transfer telecommunication data to
+            Expression = { if ($_.allowedOutboundDataTransferDestinations -eq 'managedApps') {
+                    $_.dialerRestrictionLevel
+                }
+            }
+        }
+        @{
+            Name       = 'customDialerAppPackageId' # Dialer App Package ID
+            Expression = { if ($_.allowedOutboundDataTransferDestinations -eq 'managedApps' -and $_.dialerRestrictionLevel -eq 'customApp') {
+                    $_.customDialerAppPackageId
+                }
+            }
+        }
+        @{
+            Name       = 'customDialerAppDisplayName' # Dialer App Name
+            Expression = { if ($_.allowedOutboundDataTransferDestinations -eq 'managedApps' -and $_.dialerRestrictionLevel -eq 'customApp') {
+                    $_.customDialerAppDisplayName
+                }
+            }
+        }
+        @{
+            Name       = 'allowedInboundDataTransferSources' # Receive data from other apps
+            Expression = { $_.allowedInboundDataTransferSources }
+        }
+        @{
+            Name       = 'blockDataIngestionIntoOrganizationDocuments' # Open data into Org documents
+            Expression = { if ($_.allowedInboundDataTransferSources -eq 'managedApps') {
+                    $_.blockDataIngestionIntoOrganizationDocuments
+                }
+            }
+        }
+        @{
+            Name       = 'allowedDataIngestionLocations' # Allow users to open data from selected services
+            Expression = { if ($_.allowedInboundDataTransferSources -eq 'managedApps' -and $_.blockDataIngestionIntoOrganizationDocuments -eq $true) {
+                    @($_.allowedDataIngestionLocations) -ne '' -join "`r`n"
+                }
+            }
+        }
+        @{
+            Name       = 'allowedOutboundClipboardSharingLevel' # Restrict cut, copy, and paste between other apps
             Expression = { $_.allowedOutboundClipboardSharingLevel }
         }
         @{
-            Name       = 'allowedOutboundClipboardSharingExceptionLength'
-            Expression = { $_.allowedOutboundClipboardSharingExceptionLength }
+            Name       = 'allowedOutboundClipboardSharingExceptionLength' # Cut and copy character limit for any app
+            Expression = { if ($_.allowedOutboundClipboardSharingLevel -ne 'allApps') {
+                    $_.allowedOutboundClipboardSharingExceptionLength
+                }
+            }
         }
         @{
             Name       = 'managedBrowserToOpenLinksRequired'
@@ -71,15 +125,15 @@ function Get-MemMobileAppProtectionAndroid {
         }
         @{
             Name       = 'minimumPinLength'
-            Expression = { $_.allowedOutboundClipboardSharingLevel }
+            Expression = { $_.minimumPinLength }
         }
         @{
             Name       = 'pinCharacterSet'
-            Expression = { $_.allowedOutboundClipboardSharingExceptionLength }
+            Expression = { $_.pinCharacterSet }
         }
         @{
             Name       = 'periodBeforePinReset'
-            Expression = { $_.managedBrowserToOpenLinksRequired }
+            Expression = { $_.periodBeforePinReset }
         }
         @{
             Name       = 'disableAppPinIfDevicePinIsSet'
@@ -91,11 +145,11 @@ function Get-MemMobileAppProtectionAndroid {
         }
         @{
             Name       = 'pinRequiredInsteadOfBiometricTimeout'
-            Expression = { $_.disableAppPinIfDevicePinIsSet }
+            Expression = { $_.pinRequiredInsteadOfBiometricTimeout }
         }
         @{
             Name       = 'previousPinBlockCount'
-            Expression = { $_.managedBrowser }
+            Expression = { $_.previousPinBlockCount }
         }
         '*'
         @{
