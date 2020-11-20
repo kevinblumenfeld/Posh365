@@ -28,7 +28,7 @@ function Get-LegacyIntunePolicyDetails {
         $Object = Get-DeviceAppManagement_MobileAppConfigurations -Expand assignments
     }
 
-    $DisplayNameReference = $Object | Select-Object DisplayName | Out-GridView -OutputMode Single -Title 'Choose Reference Object'
+    $DisplayNameReference = $Object | Select-Object DisplayName | Out-GridView -OutputMode Single -Title 'Choose one object'
     $Difference = $Object | Where-Object { $_.DisplayName -eq $DisplayNameReference.DisplayName }
     $DifferenceHash = Get-IntunePolicyHash -Policy $Difference
 

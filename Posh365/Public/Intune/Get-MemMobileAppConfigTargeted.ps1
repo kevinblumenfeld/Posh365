@@ -5,7 +5,7 @@ function Get-MemMobileAppConfigTargeted {
     $Excludes = @(
         'assignments', 'apps', 'DisplayName', 'customSettings'
         'assignments@odata.context', 'deploymentSummary@odata.context'
-        'apps@odata.context'
+        'apps@odata.context', 'deployedAppCount', 'isAssigned'
     )
     Get-MemMobileAppConfigTargetedData | Select-Object -ExcludeProperty $Excludes -Property @(
         @{
@@ -23,6 +23,14 @@ function Get-MemMobileAppConfigTargeted {
         @{
             Name       = 'CustomSettings'
             Expression = { @($_.CustomSettings.foreach{ '{0} --> {1}' -f $_.Name, $_.Value }) -ne '' -join "`r`n" }
+        }
+        @{
+            Name       = 'deployedAppCount'
+            Expression = { $_.deployedAppCount }
+        }
+        @{
+            Name       = 'isAssigned'
+            Expression = { $_.isAssigned }
         }
         '*'
     )

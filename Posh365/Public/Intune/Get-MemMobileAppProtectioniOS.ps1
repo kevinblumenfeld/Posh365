@@ -1,10 +1,10 @@
-function Get-MemMobileAppProtectionAndroid {
+function Get-MemMobileAppProtectioniOS {
     param (
 
     )
     $Excludes = @(
         'allowedDataIngestionLocations', 'allowedDataStorageLocations', 'apps', 'assignments'
-        'deploymentSummary', 'exemptedAppPackages', 'displayName', 'allowedAndroidDeviceModels'
+        'deploymentSummary', 'exemptedAppPackages', 'displayName', 'allowedIosDeviceModels'
         'approvedKeyboards', 'apps@odata.context', 'deploymentSummary@odata.context', 'assignments@odata.context'
         'allowedInboundDataTransferSources', 'allowedOutboundDataTransferDestinations'
         'allowedOutboundClipboardSharingLevel', 'allowedOutboundClipboardSharingExceptionLength'
@@ -19,8 +19,9 @@ function Get-MemMobileAppProtectionAndroid {
         'screenCaptureBlocked', 'keyboardsRestricted', 'encryptAppData'
         'disableAppEncryptionIfDeviceEncryptionIsEnabled', 'contactSyncBlocked'
         'printBlocked', 'customBrowserDisplayName', 'customBrowserPackageId'
+        'exemptedAppProtocols'
     )
-    Get-MemMobileAppProtectionAndroidData | Select-Object -ExcludeProperty $Excludes -Property @(
+    Get-MemMobileAppProtectioniOSData | Select-Object -ExcludeProperty $Excludes -Property @(
         @{
             Name       = 'DisplayName'
             Expression = { $_.DisplayName }
@@ -46,9 +47,9 @@ function Get-MemMobileAppProtectionAndroid {
             Expression = { $_.allowedOutboundDataTransferDestinations }
         }
         @{
-            Name       = 'exemptedAppPackages'
-            Expression = { if ($_.allowedOutboundDataTransferDestinations -eq 'managedApps') {
-                    @($_.exemptedAppPackages.foreach{ '{0} --> {1}' -f $_.Name, $_.Value }) -ne '' -join "`r`n"
+            Name       = 'exemptedAppProtocols' # Select apps to exempt
+            Expression = { if ($_.allowedOutboundDataTransferDestinations -notmatch 'None|allApps') {
+                    @($_.exemptedAppProtocols.foreach{ '{0} --> {1}' -f $_.Name, $_.Value }) -ne '' -join "`r`n"
                 }
             }
         }
@@ -208,8 +209,12 @@ function Get-MemMobileAppProtectionAndroid {
         }
         '*'
         @{
-            Name       = 'allowedAndroidDeviceModels'
-            Expression = { @($_.allowedAndroidDeviceModels) -ne '' -join "`r`n" }
+            Name       = 'allowedIosDeviceModels'
+            Expression = { @($_.allowedIosDeviceModels) -ne '' -join "`r`n" }
+        }
+        @{
+            Name       = 'exemptedAppPackages'
+            Expression = { @($_.exemptedAppPackages.foreach{ '{0} --> {1}' -f $_.Name, $_.Value }) -ne '' -join "`r`n" }
         }
         @{
             Name       = 'createdDateTime'
