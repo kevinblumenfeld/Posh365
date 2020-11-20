@@ -1,13 +1,12 @@
-function Get-MemMobileDeviceComplianceiOS {
+function Get-MemMobileDeviceConfigiOSWifi {
     param (
 
     )
     $Excludes = @(
-        'assignments', 'displayName', 'scheduledactionsforrule', 'createdDateTime', 'lastModifiedDateTime'
-        'version', 'assignments@odata.context', 'scheduledActionsForRule@odata.context', 'roleScopeTagIds'
-        'id', '@odata.type'
+        'assignments', 'displayName', 'createdDateTime', 'lastModifiedDateTime'
+        'version', 'assignments@odata.context', 'roleScopeTagIds', 'id', '@odata.type'
     )
-    Get-MemMobileDeviceComplianceiOSData | Select-Object -ExcludeProperty $Excludes -Property @(
+    Get-MemMobileDeviceConfigiOSWiFiData | Select-Object -ExcludeProperty $Excludes -Property @(
         @{
             Name       = 'DisplayName'
             Expression = { $_.DisplayName }
@@ -17,10 +16,6 @@ function Get-MemMobileDeviceComplianceiOS {
             Expression = { @(($_.Assignments.Target.GroupID.foreach{
                             try { Get-GraphGroup -ErrorAction Stop -GroupId $_ }
                             catch { } }).displayName) -ne '' -join "`r`n" }
-        }
-        @{
-            Name       = 'ActionsforNonCompliance'
-            Expression = { @($_.scheduledActionsForRule.scheduledActionConfigurations.foreach{ '{0} --> {1} hrs' -f $_.actionType, $_.gracePeriodHours }) -ne '' -join "`r`n" }
         }
         '*'
         @{

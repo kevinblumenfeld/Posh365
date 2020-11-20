@@ -1,4 +1,4 @@
-function Get-MemMobileAppData {
+function Get-MemMobileApp {
     [CmdletBinding()]
     param (
         [Parameter()]
@@ -10,6 +10,5 @@ function Get-MemMobileAppData {
         Headers = @{ "Authorization" = "Bearer $Token" }
         Method  = 'Get'
     }
-    Invoke-RestMethod @RestSplat -Verbose:$false
-
+    Invoke-RestMethod @RestSplat -Verbose:$false | Select-Object -ExpandProperty Value
 }

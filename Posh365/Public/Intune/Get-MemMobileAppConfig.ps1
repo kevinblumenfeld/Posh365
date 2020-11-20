@@ -6,7 +6,8 @@ function Get-MemMobileAppConfig {
         'assignments', 'settings', 'targetedMobileApps', 'DisplayName'
         'assignments@odata.context', 'payloadJson', 'encodedSettingXml'
         'profileApplicability', 'permissionActions', 'appSupportsOemConfig'
-        'packageId'
+        'packageId', 'version', '@odata.type', 'id', 'roleScopeTagIds'
+        'lastModifiedDateTime', 'createdDateTime'
     )
     Get-MemMobileAppConfigData | Select-Object -ExcludeProperty $Excludes -Property @(
         @{
@@ -15,7 +16,9 @@ function Get-MemMobileAppConfig {
         }
         @{
             Name       = 'targetedMobileApps'
-            Expression = { @(($_.targetedMobileApps.foreach{ Get-MemMobileAppData -AppId $_ }).displayName) -ne '' -join "`r`n" }
+            Expression = { @(($_.targetedMobileApps.foreach{
+                            try { Get-MemMobileApp -AppId $_ }
+                            catch { } }).displayName) -ne '' -join "`r`n" }
         }
         @{
             Name       = 'assignments'
@@ -43,6 +46,30 @@ function Get-MemMobileAppConfig {
         @{
             Name       = 'packageId'
             Expression = { $_.packageId }
+        }
+        @{
+            Name       = 'createdDateTime'
+            Expression = { $_.createdDateTime }
+        }
+        @{
+            Name       = 'lastModifiedDateTime'
+            Expression = { $_.lastModifiedDateTime }
+        }
+        @{
+            Name       = 'roleScopeTagIds'
+            Expression = { $_.roleScopeTagIds }
+        }
+        @{
+            Name       = 'id'
+            Expression = { $_.id }
+        }
+        @{
+            Name       = '@odata.type'
+            Expression = { $_.'@odata.type' }
+        }
+        @{
+            Name       = 'version'
+            Expression = { $_.version }
         }
     )
 }

@@ -7,7 +7,7 @@ function Get-MemMobileDeviceComplianceAndroidWork {
         'version', 'assignments@odata.context', 'scheduledActionsForRule@odata.context', 'roleScopeTagIds'
         'id', '@odata.type'
     )
-    Get-MemMobileDeviceComplianceiOSData | Select-Object -ExcludeProperty $Excludes -Property @(
+    Get-MemMobileDeviceComplianceAndroidWorkData | Select-Object -ExcludeProperty $Excludes -Property @(
         @{
             Name       = 'DisplayName'
             Expression = { $_.DisplayName }
@@ -20,7 +20,7 @@ function Get-MemMobileDeviceComplianceAndroidWork {
         }
         @{
             Name       = 'ActionsforNonCompliance'
-            Expression = { @($_.scheduledActionsForRule.scheduledActionConfigurations.foreach{ '{0} --> {1}' -f $_.actionType, $_.gracePeriodHours }) -ne '' -join "`r`n" }
+            Expression = { @($_.scheduledActionsForRule.scheduledActionConfigurations.foreach{ '{0} --> {1} hrs' -f $_.actionType, $_.gracePeriodHours }) -ne '' -join "`r`n" }
         }
         '*'
         @{
