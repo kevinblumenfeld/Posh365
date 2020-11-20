@@ -19,6 +19,7 @@ function Connect-GraphInteractive {
         $DeleteCreds
     )
 
+    $host.ui.RawUI.WindowTitle = "Tenant: $($Tenant.ToUpper())"
     if ($App) { $Global:Tenant = '{0}-{1}' -f $Tenant, $App }
     else { $Global:Tenant = $Tenant }
 

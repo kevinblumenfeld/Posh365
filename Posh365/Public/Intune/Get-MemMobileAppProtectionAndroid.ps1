@@ -35,7 +35,9 @@ function Get-MemMobileAppProtectionAndroid {
         }
         @{
             Name       = 'assignments'
-            Expression = { @(($_.Assignments.Target.GroupID.foreach{ Get-GraphGroup -GroupId $_ }).displayName) -ne '' -join "`r`n" }
+            Expression = { @(($_.Assignments.Target.GroupID.foreach{
+                            try { Get-GraphGroup -ErrorAction Stop -GroupId $_ }
+                            catch { } }).displayName) -ne '' -join "`r`n" }
         }
         @{
             Name       = 'dataBackupBlocked' # Backup org data to Android backup services
