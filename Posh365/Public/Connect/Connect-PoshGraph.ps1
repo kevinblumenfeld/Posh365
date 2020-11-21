@@ -12,7 +12,7 @@ function Connect-PoshGraph {
 
         [Parameter()]
         [switch]
-        $ApplicationOnly,
+        $AppOnly,
 
         [Parameter()]
         [switch]
@@ -34,7 +34,7 @@ function Connect-PoshGraph {
     $MarshalSecret = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Configuration.Password)
     $Secret = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($MarshalSecret)
 
-    $Request = if ($ApplicationOnly) {
+    $Request = if ($AppOnly) {
         @{
             Method = "Post"
             Body   = @{

@@ -12,7 +12,7 @@ function Connect-GraphInteractive {
 
         [Parameter()]
         [switch]
-        $ApplicationOnly,
+        $AppOnly,
 
         [Parameter()]
         [switch]
@@ -20,37 +20,42 @@ function Connect-GraphInteractive {
     )
 
     $host.ui.RawUI.WindowTitle = "Tenant: $($Tenant.ToUpper())"
-    if ($App) { $Global:Tenant = '{0}-{1}' -f $Tenant, $App }
-    else { $Global:Tenant = $Tenant }
+    $TenantPath, $TenantConfig, $TenantCred, $AppOnly, $TimeToRefresh, $Token, $RefreshToken = $null
+    $Global:Tenant = $Tenant
+    $Global:TenantPath = Join-Path -Path $Env:USERPROFILE -ChildPath ('.Posh365/Credentials/Graph/{0}' -f $Global:Tenant)
 
-    $Global:TenantPath = Join-Path -Path $Env:USERPROFILE -ChildPath ('.Posh365/Credentials/Graph/{0}' -f $Tenant)
-    $Global:TenantCred = Join-Path -Path $TenantPath -ChildPath ('{0}Cred.xml' -f $Tenant)
-    $Global:TenantConfig = Join-Path -Path $TenantPath -ChildPath ('{0}Config.xml' -f $Tenant)
+    # Application flow
+    $Global:TenantConfig = Join-Path -Path $Global:TenantPath -ChildPath ('{0}Config.xml' -f $Global:Tenant)
+    $XML = Import-Clixml $Global:TenantConfig
+
+    # Delegate flow
+    $Global:TenantCred = Join-Path -Path $Global:TenantPath -ChildPath ('{0}Cred.xml' -f $Global:Tenant)
+    if ($Applicationonly -or -not (Test-Path $Global:TenantCred)) {
+        $Global:AppOnly = $true
+        [PSCredential]$Configuration = $XML.Cred
+        $MarshalSecret = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Configuration.Password)
+        $Secret = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($MarshalSecret)
+    }
     if ($DeleteCreds) {
         Remove-Item -Path $TenantConfig, $TenantCred -Force -ErrorAction SilentlyContinue
         continue
     }
-    $XML = Import-Clixml $TenantConfig
 
-    [System.Management.Automation.PSCredential]$Configuration = $XML.Cred
-    $MarshalSecret = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Configuration.Password)
-    $Secret = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($MarshalSecret)
-
-    $Request = if ($ApplicationOnly) {
+    $Request = if ($Global:AppOnly) {
         @{
             Method = "Post"
             Body   = @{
                 Grant_Type    = 'client_credentials'
                 Client_Id     = $XML.ClientId
                 Client_Secret = $Secret
-                scope         = 'https://graph.microsoft.com/.default'
+                scope         = 'offline_access https://graph.microsoft.com/.default'
                 resource      = 'https://graph.microsoft.com/' #this neeeds to be removed
             }
             Uri    = 'https://login.microsoftonline.com/{0}/oauth2/token' -f $Configuration.Username
         }
     }
     else {
-        [System.Management.Automation.PSCredential]$Credential = Import-Clixml -Path $TenantCred
+        [PSCredential]$Credential = Import-Clixml -Path $Global:TenantCred
         $MarshalPassword = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Credential.Password)
         $Password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($MarshalPassword)
         @{
