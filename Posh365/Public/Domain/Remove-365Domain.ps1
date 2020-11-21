@@ -123,7 +123,7 @@
             $Total = $MsolUser.count
 
             ForEach ($CurMsoluser in $MsolUser) {
-                if ($CurMsoluser.UserPrincipalName -notmatch $RoutingDomain) {
+                if ($CurMsoluser.UserPrincipalName -notlike $RoutingDomain) {
                     $MsolProxyAddress = '{0}@{1}' -f $CurMsoluser.UserPrincipalName.Split("@")[0], $DomainSuffix
                     try {
                         Set-MsolUserPrincipalName -ObjectId $($CurMsoluser.ObjectId).ToString() -NewUserPrincipalName $MsolProxyAddress -ErrorAction Stop

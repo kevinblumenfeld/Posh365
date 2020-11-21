@@ -16,8 +16,9 @@ function Get-ConditionalAccessPolicy {
     $LocationList = Get-GraphLocation | Select-Object -ExpandProperty value
     foreach ($Location in $LocationList) {
         $LocationHash[$Location.id] = @{
-            ipRanges  = $Location.ipRanges.cidrAddress
-            isTrusted = $Location.isTrusted
+            displayName = $Location.displayName
+            ipRanges    = $Location.ipRanges.cidrAddress
+            isTrusted   = $Location.isTrusted
         }
     }
     Get-ConditionalAccessPolicyData | Select-Object @(
@@ -39,14 +40,27 @@ function Get-ConditionalAccessPolicy {
             Name       = 'includeLocations'
             Expression = { @($_.Conditions.locations.includeLocations.foreach{
                         if ($LocationHash.ContainsKey($_)) {
-                            $LocationHash[$_]['ipRanges']
+                            if ($LocationHash[$_]['isTrusted']) { $isTrusted = 'isTrusted:True' } else { $isTrusted = 'isTrusted:False' }
+                            $LocName = $LocationHash[$_]['displayName']
+                            ($LocationHash[$_]['ipRanges']).foreach{
+                                '{0} ({1}) {2}' -f $_, $LocName, $isTrusted
+                            }
                         }
-                        else { $_ } }) -ne '' -join "`r`n" }
+                        else { $_ } }) -ne '' -join "`r`n"
+            }
         }
         @{
             Name       = 'excludeLocations'
-            Expression = { @($_.Conditions.locations.excludeLocations).foreach{
-                    if ($LocationHash.ContainsKey($_)) { $LocationHash[$_] } else { $_ } } -ne '' -join "`r`n" }
+            Expression = { @($_.Conditions.locations.excludeLocations.foreach{
+                        if ($LocationHash.ContainsKey($_)) {
+                            if ($LocationHash[$_]['isTrusted']) { $isTrusted = 'isTrusted:True' } else { $isTrusted = 'isTrusted:False' }
+                            $LocName = $LocationHash[$_]['displayName']
+                            ($LocationHash[$_]['ipRanges']).foreach{
+                                '{0} ({1}) {2}' -f $_, $LocName, $isTrusted
+                            }
+                        }
+                        else { $_ } }) -ne '' -join "`r`n"
+            }
         }
         @{
             Name       = 'includeDeviceStates'
@@ -73,25 +87,25 @@ function Get-ConditionalAccessPolicy {
         @{
             Name       = 'includeUsers'
             Expression = { @($_.Conditions.users.includeUsers.foreach{
-                        try { Get-GraphUser -UserId $_ }
+                        try { (Get-GraphUser -UserId $_).displayName }
                         catch { } }) -ne '' -join "`r`n" }
         }
         @{
             Name       = 'excludeUsers'
             Expression = { @($_.Conditions.users.excludeUsers.foreach{
-                        try { Get-GraphUser -UserId $_ }
+                        try { (Get-GraphUser -UserId $_).displayName }
                         catch { } }) -ne '' -join "`r`n" }
         }
         @{
             Name       = 'includeGroups'
             Expression = { @($_.Conditions.users.includeGroups.foreach{
-                        try { Get-GraphGroup -UserId $_ }
+                        try { (Get-GraphGroup -UserId $_).displayName }
                         catch { } }) -ne '' -join "`r`n" }
         }
         @{
             Name       = 'excludeGroups'
             Expression = { @($_.Conditions.users.excludeGroups.foreach{
-                        try { Get-GraphGroup -UserId $_ }
+                        try { (Get-GraphGroup -UserId $_).displayName }
                         catch { } }) -ne '' -join "`r`n" }
         }
         @{
@@ -104,6 +118,25 @@ function Get-ConditionalAccessPolicy {
             Expression = { @($_.Conditions.applications.excludeRoles.foreach{
                         if ($RoleHash.ContainsKey($_)) { $RoleHash[$_] } }) -ne '' -join "`r`n" }
         }
+        @{
+            Name       = 'includePlatforms'
+            Expression = { @($_.Conditions.platforms.includePlatforms) -ne '' -join "`r`n" }
+        }
+        @{
+            Name       = 'excludePlatforms'
+            Expression = { @($_.Conditions.platforms.excludePlatforms) -ne '' -join "`r`n" }
+        }
+        @{
+            Name       = 'operator'
+            Expression = { @($_.Grantcontrols.operator) -ne '' -join "`r`n" }
+        }
+        @{
+            Name       = 'builtInControls'
+            Expression = { @($_.Grantcontrols.builtInControls) -ne '' -join "`r`n" }
+        }
+        @{
+            Name       = 'persistentBrowser'
+            Expression = { @($_.sessioncontrols.persistentBrowser).foreach{ if ($_.mode) { 'mode:{0} isEnabled:{1}' -f $_.mode, $_.isEnabled } } }
+        }
     )
-
 }
