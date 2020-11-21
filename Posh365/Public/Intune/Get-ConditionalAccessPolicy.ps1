@@ -8,9 +8,9 @@ function Get-ConditionalAccessPolicy {
         $SPHash[$SP.appId] = $SP.displayName
     }
     $RoleHash = @{ }
-    $RoleList = Get-AzureADServicePrincipal
+    $RoleList = Get-GraphUnifiedRole
     foreach ($Role in $RoleList) {
-        $RoleHash[$Role.appId] = $Role.displayName
+        $RoleHash[$Role.id] = $Role.displayName
     }
     $LocationHash = @{ }
     $LocationList = Get-GraphLocation | Select-Object -ExpandProperty value
@@ -110,12 +110,12 @@ function Get-ConditionalAccessPolicy {
         }
         @{
             Name       = 'includeRoles'
-            Expression = { @($_.Conditions.applications.includeRoles.foreach{
+            Expression = { @($_.Conditions.users.includeRoles.foreach{
                         if ($RoleHash.ContainsKey($_)) { $RoleHash[$_] } }) -ne '' -join "`r`n" }
         }
         @{
             Name       = 'excludeRoles'
-            Expression = { @($_.Conditions.applications.excludeRoles.foreach{
+            Expression = { @($_.Conditions.users.excludeRoles.foreach{
                         if ($RoleHash.ContainsKey($_)) { $RoleHash[$_] } }) -ne '' -join "`r`n" }
         }
         @{
@@ -136,7 +136,19 @@ function Get-ConditionalAccessPolicy {
         }
         @{
             Name       = 'persistentBrowser'
-            Expression = { @($_.sessioncontrols.persistentBrowser).foreach{ if ($_.mode) { 'mode:{0} isEnabled:{1}' -f $_.mode, $_.isEnabled } } }
+            Expression = { @($_.sessioncontrols.persistentBrowser).foreach{ if ($_.isEnabled) { 'mode:{0} persistent isEnabled:{1}' -f $_.mode, $_.isEnabled } } }
+        }
+        @{
+            Name       = 'signInFrequency'
+            Expression = { @($_.sessioncontrols.signInFrequency).foreach{ if ($_.isEnabled) { '{0} {1} isEnabled:{2}' -f $_.value, $_.type, $_.isEnabled } } }
+        }
+        @{
+            Name       = 'cloudAppSecurity'
+            Expression = { @($_.sessioncontrols.cloudAppSecurity).foreach{ if ($_.isEnabled) { 'cloudAppSecurityType:{0} isEnabled:{1}' -f $_.cloudAppSecurityType, $_.isEnabled } } }
+        }
+        @{
+            Name       = 'applicationEnforcedRestrictions'
+            Expression = { @($_.sessioncontrols.applicationEnforcedRestrictions) -ne '' -join "`r`n" }
         }
     )
 }

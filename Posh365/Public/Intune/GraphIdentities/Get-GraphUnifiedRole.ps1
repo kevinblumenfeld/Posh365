@@ -1,12 +1,10 @@
-function Get-GraphRole {
+function Get-GraphUnifiedRole {
     [CmdletBinding()]
     param (
-        [Parameter()]
-        $Id
     )
     if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
     $RestSplat = @{
-        Uri     = 'https://graph.microsoft.com/beta/directoryRoles/{0}' -f $Id
+        Uri     = 'https://graph.microsoft.com/beta/roleManagement/directory/roleDefinitions'
         Headers = @{ "Authorization" = "Bearer $Token" }
         Method  = 'Get'
     }
