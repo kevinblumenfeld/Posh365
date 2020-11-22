@@ -4,7 +4,7 @@ function Get-MemMobileApp {
         [Parameter()]
         $AppId
     )
-    if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
+    if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
     $RestSplat = @{
         Uri     = 'https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/{0}' -f $AppId
         Headers = @{ "Authorization" = "Bearer $Token" }

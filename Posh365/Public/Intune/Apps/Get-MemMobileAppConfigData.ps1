@@ -3,7 +3,7 @@ function Get-MemMobileAppConfigData {
     param (
 
     )
-    if ([datetime]::UtcNow -ge $Global:TimeToRefresh) { Connect-PoshGraphRefresh }
+    if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
     $RestSplat = @{
         Uri     = 'https://graph.microsoft.com/beta/deviceAppManagement/mobileAppConfigurations?$expand=assignments'
         Headers = @{ "Authorization" = "Bearer $Token" }

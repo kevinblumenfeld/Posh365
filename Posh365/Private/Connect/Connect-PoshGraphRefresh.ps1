@@ -1,10 +1,8 @@
 function Connect-PoshGraphRefresh {
     [CmdletBinding()]
     param (    )
-
-    $TenantPath = Join-Path -Path $Env:USERPROFILE -ChildPath ('.Posh365/Credentials/Graph/{0}' -f $Global:Tenant)
-
-    if (-not $Global:AppOnly) {
+    $TenantPath = Join-Path -Path $Env:USERPROFILE -ChildPath ('.Posh365/Credentials/Graph/{0}' -f $Tenant)
+    if (-not $AppOnly) {
         $TenantCred = Join-Path -Path $TenantPath -ChildPath ('{0}Cred.xml' -f $Tenant)
         [System.Management.Automation.PSCredential]$TCred = Import-Clixml -Path $TenantCred
         $TP = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($TCred.Password)
@@ -46,4 +44,5 @@ function Connect-PoshGraphRefresh {
     $TenantResponse = Invoke-RestMethod @Request
     $Script:TimeToRefresh = ([datetime]::UtcNow).AddSeconds($TenantResponse.expires_in - 10)
     $Script:Token = $TenantResponse.access_token
+
 }

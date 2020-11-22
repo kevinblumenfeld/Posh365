@@ -7,10 +7,6 @@ function Connect-GraphInteractive {
         $Tenant,
 
         [Parameter()]
-        [string]
-        $App,
-
-        [Parameter()]
         [switch]
         $AppOnly,
 
@@ -20,17 +16,17 @@ function Connect-GraphInteractive {
     )
 
     $host.ui.RawUI.WindowTitle = "Tenant: $($Tenant.ToUpper())"
-    $TenantPath, $TenantConfig, $TenantCred, $AppOnly, $TimeToRefresh, $Token, $RefreshToken = $null
+    $Global:TimeToRefresh, $Global:Token, $Global:RefreshToken, $Global:AppOnly, $Global:Tenant = $null
     $Global:Tenant = $Tenant
-    $Global:TenantPath = Join-Path -Path $Env:USERPROFILE -ChildPath ('.Posh365/Credentials/Graph/{0}' -f $Global:Tenant)
+    $TenantPath = Join-Path -Path $Env:USERPROFILE -ChildPath ('.Posh365/Credentials/Graph/{0}' -f $Global:Tenant)
 
     # Application flow
-    $Global:TenantConfig = Join-Path -Path $Global:TenantPath -ChildPath ('{0}Config.xml' -f $Global:Tenant)
-    $XML = Import-Clixml $Global:TenantConfig
+    $TenantConfig = Join-Path -Path $TenantPath -ChildPath ('{0}Config.xml' -f $Global:Tenant)
+    $XML = Import-Clixml $TenantConfig
 
     # Delegate flow
-    $Global:TenantCred = Join-Path -Path $Global:TenantPath -ChildPath ('{0}Cred.xml' -f $Global:Tenant)
-    if ($Applicationonly -or -not (Test-Path $Global:TenantCred)) {
+    $TenantCred = Join-Path -Path $TenantPath -ChildPath ('{0}Cred.xml' -f $Global:Tenant)
+    if ($Applicationonly -or -not (Test-Path $TenantCred)) {
         $Global:AppOnly = $true
         [PSCredential]$Configuration = $XML.Cred
         $MarshalSecret = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Configuration.Password)
@@ -55,7 +51,7 @@ function Connect-GraphInteractive {
         }
     }
     else {
-        [PSCredential]$Credential = Import-Clixml -Path $Global:TenantCred
+        [PSCredential]$Credential = Import-Clixml -Path $TenantCred
         $MarshalPassword = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Credential.Password)
         $Password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($MarshalPassword)
         @{
@@ -75,4 +71,5 @@ function Connect-GraphInteractive {
     $Global:TimeToRefresh = ([datetime]::UtcNow).AddSeconds($TenantResponse.expires_in - 10)
     $Global:Token = $TenantResponse.access_token
     $Global:RefreshToken = $TenantResponse.refresh_token
+
 }
