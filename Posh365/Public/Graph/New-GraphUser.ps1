@@ -10,7 +10,7 @@ function New-GraphUser {
     )
     process {
         foreach ($User in $UserList) {
-            if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
+            if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
             $Headers = @{
                 'Authorization' = "Bearer $Token"
                 'Content-Type'  = 'application/json'
@@ -32,7 +32,7 @@ function New-GraphUser {
                 Body    = ($test | ConvertTo-Json)
             }
             try { Invoke-RestMethod @RestSplat -Verbose:$false -ErrorAction Stop }
-            catch { write-host "Error: $($_.Exception.Message)" -ForegroundColor Red }
+            catch { Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red }
         }
     }
 }

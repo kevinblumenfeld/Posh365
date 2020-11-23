@@ -3,7 +3,7 @@ function Get-MemMobileAppProtectioniOSData {
     param (
 
     )
-    if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
+    if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
     $RestSplat = @{
         Uri     = "https://graph.microsoft.com/beta/deviceAppManagement/iosManagedAppProtections?`$expand=deploymentSummary,apps,assignments"
         Headers = @{ "Authorization" = "Bearer $Token" }

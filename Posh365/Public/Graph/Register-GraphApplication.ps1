@@ -39,6 +39,5 @@ function Register-GraphApplication {
         # $Username = Read-Host "Enter username for a Global Adminstrator"
         # $Password = Read-Host "Enter password"
 
-
     }
 }

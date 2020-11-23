@@ -16,7 +16,7 @@ function Get-GraphMailFolderPathId {
     Parameter description
 
     .EXAMPLE
-    Get-GraphUser -Tenant contoso -UserPrincipalName "joe@contoso.com" | Get-GraphMailFolderStructure -Tenant contoso -FolderPath "inbox\Sub1\Sub1"
+    Get-GraphUserList -Tenant contoso -UserPrincipalName "joe@contoso.com" | Get-GraphMailFolderStructure -Tenant contoso -FolderPath "inbox\Sub1\Sub1"
 
     .NOTES
     General notes

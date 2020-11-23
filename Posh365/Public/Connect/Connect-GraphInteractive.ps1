@@ -15,31 +15,29 @@ function Connect-GraphInteractive {
         $DeleteCreds
     )
 
+    $Script:Tenant = $Tenant
+    if (-not $AppOnly) { $AppOnly = $null } else { $Script:AppOnly = $AppOnly }
     $host.ui.RawUI.WindowTitle = "Tenant: $($Tenant.ToUpper())"
-    $Global:TimeToRefresh, $Global:Token, $Global:RefreshToken, $Global:AppOnly, $Global:Tenant = $null
-    $Global:Tenant = $Tenant
-    $TenantPath = Join-Path -Path $Env:USERPROFILE -ChildPath ('.Posh365/Credentials/Graph/{0}' -f $Global:Tenant)
+    $TenantPath = Join-Path -Path $Env:USERPROFILE -ChildPath ('.Posh365/Credentials/Graph/{0}' -f $Script:Tenant)
 
-    # Application flow
-    $TenantConfig = Join-Path -Path $TenantPath -ChildPath ('{0}Config.xml' -f $Global:Tenant)
+    # Application flow (Config)
+    $TenantConfig = Join-Path -Path $TenantPath -ChildPath ('{0}Config.xml' -f $Script:Tenant)
     $XML = Import-Clixml $TenantConfig
+    [PSCredential]$Configuration = $XML.Cred
+    $MarshalSecret = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Configuration.Password)
+    $Secret = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($MarshalSecret)
 
-    # Delegate flow
-    $TenantCred = Join-Path -Path $TenantPath -ChildPath ('{0}Cred.xml' -f $Global:Tenant)
-    if ($Applicationonly -or -not (Test-Path $TenantCred)) {
-        $Global:AppOnly = $true
-        [PSCredential]$Configuration = $XML.Cred
-        $MarshalSecret = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Configuration.Password)
-        $Secret = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($MarshalSecret)
-    }
+    # Delegate flow (Creds)
+    $TenantCred = Join-Path -Path $TenantPath -ChildPath ('{0}Cred.xml' -f $Script:Tenant)
+    if (-not (Test-Path $TenantCred)) { $Script:AppOnly = $true }
+
     if ($DeleteCreds) {
         Remove-Item -Path $TenantConfig, $TenantCred -Force -ErrorAction SilentlyContinue
         continue
     }
-
-    $Request = if ($Global:AppOnly) {
+    $Request = if ($Script:AppOnly) {
         @{
-            Method = "Post"
+            Method = 'POST'
             Body   = @{
                 Grant_Type    = 'client_credentials'
                 Client_Id     = $XML.ClientId
@@ -51,6 +49,7 @@ function Connect-GraphInteractive {
         }
     }
     else {
+        # Delegate flow (Creds)
         [PSCredential]$Credential = Import-Clixml -Path $TenantCred
         $MarshalPassword = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Credential.Password)
         $Password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($MarshalPassword)
@@ -68,8 +67,7 @@ function Connect-GraphInteractive {
         }
     }
     $TenantResponse = Invoke-RestMethod @Request
-    $Global:TimeToRefresh = ([datetime]::UtcNow).AddSeconds($TenantResponse.expires_in - 10)
-    $Global:Token = $TenantResponse.access_token
-    $Global:RefreshToken = $TenantResponse.refresh_token
-
+    $Script:TimeToRefresh = ([datetime]::UtcNow).AddSeconds($TenantResponse.expires_in - 10)
+    $Script:Token = $TenantResponse.access_token
+    $Script:RefreshToken = $TenantResponse.refresh_token
 }

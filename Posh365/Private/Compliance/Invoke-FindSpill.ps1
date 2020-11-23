@@ -114,18 +114,18 @@ function Invoke-FindSpill {
 
         if ($FolderList) {
             if (-not $Splat['UserPrincipalName']) {
-                Get-GraphUserAll | Get-GraphMailFolder -WellKnownFolder $FolderList -Recurse:$Recurse | Get-GraphMailFolderMessageById @Params
+                Get-GraphUserAll | Get-GraphMailFolder -WellKnownFolder $FolderList -Recurse:$Recurse | Get-GraphMailFolderMessageByID @Params
             }
             else {
-                $Splat['UserPrincipalName'] | Get-GraphUser | Get-GraphMailFolder -WellKnownFolder $FolderList -Recurse:$Recurse | Get-GraphMailFolderMessageById @Params
+                $Splat['UserPrincipalName'] | Get-GraphUserList | Get-GraphMailFolder -WellKnownFolder $FolderList -Recurse:$Recurse | Get-GraphMailFolderMessageByID @Params
             }
         }
         if ($Script:IncludeRecoverableItems) {
             if (-not $Splat['UserPrincipalName']) {
-                Get-GraphUserAll | Get-GraphUser | Get-GraphMailFolderRecoverableItems -ErrorAction SilentlyContinue | Get-GraphMailFolderMessageById @Params
+                Get-GraphUserAll | Get-GraphUserList | Get-GraphMailFolderRecoverableItems -ErrorAction SilentlyContinue | Get-GraphMailFolderMessageByID @Params
             }
             else {
-                $Splat['UserPrincipalName'] | Get-GraphUser | Get-GraphMailFolderRecoverableItems -ErrorAction SilentlyContinue | Get-GraphMailFolderMessageById @Params
+                $Splat['UserPrincipalName'] | Get-GraphUserList | Get-GraphMailFolderRecoverableItems -ErrorAction SilentlyContinue | Get-GraphMailFolderMessageByID @Params
             }
         }
     }

@@ -3,7 +3,7 @@ function Get-ConditionalAccessPolicyData {
     param (
 
     )
-    if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
+    if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
     $RestSplat = @{
         Uri     = "https://graph.microsoft.com/beta/identity/conditionalAccess/policies"
         Headers = @{ "Authorization" = "Bearer $Token" }

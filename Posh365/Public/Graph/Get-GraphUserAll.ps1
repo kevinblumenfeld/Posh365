@@ -17,7 +17,7 @@ function Get-GraphUserAll {
     }
     do {
         try {
-            if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
+            if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
             (Invoke-RestMethod @RestSplat -Verbose:$false -ErrorAction Stop).value
             if ($Response.'@odata.nextLink' -match 'skip') { $Next = $Response.'@odata.nextLink' }
             else { $Next = $null }

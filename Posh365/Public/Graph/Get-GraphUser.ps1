@@ -1,23 +1,15 @@
 function Get-GraphUser {
     [CmdletBinding()]
     param (
-        [Parameter(ValueFromPipeline, ValueFromPipelineByPropertyName)]
-        [string[]]
-        $UserPrincipalName
+        [Parameter()]
+        $UserId
     )
-    begin {
-        if (-not $MyInvocation.ExpectingInput -and -not $PSBoundParameters.ContainsKey('UserPrincipalName')) { Get-GraphUserAll }
+    if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
+    $RestSplat = @{
+        Uri     = 'https://graph.microsoft.com/beta/users/{0}' -f $UserId
+        Headers = @{ "Authorization" = "Bearer $Token" }
+        Method  = 'Get'
     }
-    process {
-        foreach ($UPN in $UserPrincipalName) {
-            if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
-            $RestSplat = @{
-                Uri     = 'https://graph.microsoft.com/beta/users/{0}' -f $UPN
-                Headers = @{ "Authorization" = "Bearer $Token" }
-                Method  = 'Get'
-            }
-            try { Invoke-RestMethod @RestSplat -Verbose:$false -ErrorAction Stop }
-            catch { Write-Host "Error: $UPN - $($_.Exception.Message)" -ForegroundColor Red }
-        }
-    }
+    Invoke-RestMethod @RestSplat -Verbose:$false
+
 }

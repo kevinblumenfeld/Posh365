@@ -8,7 +8,7 @@ function Get-GraphMailFolderRecoverableItems {
         $Script:tree = @{ 'root' = [System.Collections.Generic.List[PSObject]]::new() }
 
         foreach ($UPN in $UserPrincipalName) {
-            if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
+            if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
             $RestSplat = @{
                 Uri     = "https://graph.microsoft.com/beta/users/{0}/mailfolders/root/childFolders?`$top=1000" -f $UPN.UserPrincipalName
                 Headers = @{ "Authorization" = "Bearer $Token" }

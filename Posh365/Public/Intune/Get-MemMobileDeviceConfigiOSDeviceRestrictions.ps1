@@ -5,6 +5,8 @@ function Get-MemMobileDeviceConfigiOSDeviceRestrictions {
     $Excludes = @(
         'assignments', 'displayName', 'createdDateTime', 'lastModifiedDateTime'
         'version', 'assignments@odata.context', 'roleScopeTagIds', 'id', '@odata.type'
+        'emailInDomainSuffixes', 'safariManagedDomains', 'safariPasswordAutoFillDomains'
+        'appsSingleAppModeList', 'appsVisibilityList', 'compliantAppsList', 'networkUsageRules'
     )
     Get-MemMobileDeviceConfigiOSDeviceRestrictionsData | Select-Object -ExcludeProperty $Excludes -Property @(
         @{
@@ -18,6 +20,30 @@ function Get-MemMobileDeviceConfigiOSDeviceRestrictions {
                             catch { } }).displayName) -ne '' -join "`r`n" }
         }
         '*'
+        @{
+            Name       = 'emailInDomainSuffixes'
+            Expression = { @($_.emailInDomainSuffixes) -ne '' -join "`r`n" }
+        }
+        @{
+            Name       = 'safariManagedDomains'
+            Expression = { @($_.safariManagedDomains) -ne '' -join "`r`n" }
+        }
+        @{
+            Name       = 'safariPasswordAutoFillDomains'
+            Expression = { @($_.safariPasswordAutoFillDomains) -ne '' -join "`r`n" }
+        }
+        @{
+            Name       = 'appsSingleAppModeList'
+            Expression = { @($_.appsSingleAppModeList) -ne '' -join "`r`n" }
+        }
+        @{
+            Name       = 'compliantAppsList'
+            Expression = { @($_.compliantAppsList) -ne '' -join "`r`n" }
+        }
+        @{
+            Name       = 'networkUsageRules'
+            Expression = { @($_.networkUsageRules) -ne '' -join "`r`n" }
+        }
         @{
             Name       = 'createdDateTime'
             Expression = { $_.createdDateTime }

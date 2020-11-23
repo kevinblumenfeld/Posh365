@@ -3,7 +3,7 @@ function Get-MemMobileDeviceComplianceAndroidWorkData {
     param (
 
     )
-    if ([datetime]::UtcNow -ge $Script:TimeToRefresh) { Connect-PoshGraphRefresh }
+    if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
     $RestSplat = @{
         Uri     = "https://graph.microsoft.com/beta/deviceManagement/deviceCompliancePolicies?`$filter=isof('microsoft.graph.androidWorkProfileCompliancePolicy')&`$expand=assignments,scheduledActionsForRule(`$expand=scheduledActionConfigurations)"
         Headers = @{ "Authorization" = "Bearer $Token" }

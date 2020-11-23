@@ -54,7 +54,7 @@ function Connect-PoshGraphOld {
     }
 
     $loginRequest = @{
-        Method = "Post"
+        Method = 'POST'
         Body   = @{
             'client_id'     = $ClientID
             'client_secret' = $Secret

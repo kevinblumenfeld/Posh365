@@ -7,10 +7,6 @@ function Connect-PoshGraph {
         $Tenant,
 
         [Parameter()]
-        [string]
-        $App,
-
-        [Parameter()]
         [switch]
         $AppOnly,
 
@@ -18,9 +14,7 @@ function Connect-PoshGraph {
         [switch]
         $DeleteCreds
     )
-
-    if ($App) { $Tenant = '{0}-{1}' -f $Tenant, $App }
-
+    # Move code from Connect-GraphInteractive here and delete Connect-GraphInteractive
     $TenantPath = Join-Path -Path $Env:USERPROFILE -ChildPath ('.Posh365/Credentials/Graph/{0}' -f $Tenant)
     $TenantCred = Join-Path -Path $TenantPath -ChildPath ('{0}Cred.xml' -f $Tenant)
     $TenantConfig = Join-Path -Path $TenantPath -ChildPath ('{0}Config.xml' -f $Tenant)
@@ -36,7 +30,7 @@ function Connect-PoshGraph {
 
     $Request = if ($AppOnly) {
         @{
-            Method = "Post"
+            Method = 'POST'
             Body   = @{
                 Grant_Type    = 'client_credentials'
                 Client_Id     = $XML.ClientId
