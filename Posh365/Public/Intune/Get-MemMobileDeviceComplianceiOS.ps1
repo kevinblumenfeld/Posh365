@@ -5,7 +5,7 @@ function Get-MemMobileDeviceComplianceiOS {
     $Excludes = @(
         'assignments', 'displayName', 'scheduledactionsforrule', 'createdDateTime', 'lastModifiedDateTime'
         'version', 'assignments@odata.context', 'scheduledActionsForRule@odata.context', 'roleScopeTagIds'
-        'id', '@odata.type'
+        'id', '@odata.type', 'restrictedApps'
     )
     Get-MemMobileDeviceComplianceiOSData | Select-Object -ExcludeProperty $Excludes -Property @(
         @{
@@ -23,6 +23,10 @@ function Get-MemMobileDeviceComplianceiOS {
             Expression = { @($_.scheduledActionsForRule.scheduledActionConfigurations.foreach{ '{0} --> {1} hrs' -f $_.actionType, $_.gracePeriodHours }) -ne '' -join "`r`n" }
         }
         '*'
+        @{
+            Name       = 'restrictedApps'
+            Expression = { @($_.restrictedApps) -ne '' -join "`r`n" }
+        }
         @{
             Name       = 'createdDateTime'
             Expression = { $_.createdDateTime }

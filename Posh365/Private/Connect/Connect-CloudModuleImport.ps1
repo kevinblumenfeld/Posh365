@@ -91,12 +91,13 @@ function Connect-CloudModuleImport {
                 Install-Module -Name AzureAD -Scope CurrentUser -Force -AllowClobber
             }
         }
-        $SharePoint {
+        $Intune {
             if (-not ($null = Get-Module -Name Microsoft.Graph.Intune -ListAvailable)) {
                 Install-Module -Name Microsoft.Graph.Intune -Scope CurrentUser -Force -AllowClobber
             }
+            Import-Module -Name Microsoft.Graph.Intune -force
         }
-        $Intune {
+        $SharePoint {
             if (-not ($null = Get-Module -Name Microsoft.Online.SharePoint.PowerShell -ListAvailable)) {
                 Install-Module -Name Microsoft.Online.SharePoint.PowerShell -Scope CurrentUser -Force -AllowClobber
             }

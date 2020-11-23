@@ -474,6 +474,6 @@ function Connect-Cloud {
             $Credential.UserName | Out-File ($KeyPath + "$($Tenant).ucred")
         }
         Connect-MSGraph -Credential $Credential
-        Write-Host "You have successfully connected to Security & Compliance Center" -foregroundcolor "magenta" -backgroundcolor "white"
+        Write-Host "You have successfully connected to Microsoft's Intune Graph Module" -foregroundcolor "magenta" -backgroundcolor "white"
     }
 }

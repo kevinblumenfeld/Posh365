@@ -19,7 +19,6 @@ function Connect-PoshGraphRefresh {
     $MarshalSecret = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Configuration.Password)
     $Secret = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($MarshalSecret)
 
-    Write-Host "ClientID (REFRESH) $($XML.ClientId)" -ForegroundColor Yellow
     $Request = if ($AppOnly) {
         @{
             Method = 'POST'
