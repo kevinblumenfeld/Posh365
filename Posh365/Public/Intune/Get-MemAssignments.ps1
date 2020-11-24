@@ -1,10 +1,19 @@
 function Get-MemAssignments {
     param (
-
+        [Parameter()]
+        [switch]
+        $AssignedOnly
     )
 
-    $AHash = @{ }
+    $AHash = [ordered]@{ }
 
+    Write-Host "Gathering Assignments for Mobile Apps" -ForegroundColor Cyan
+    Get-MemMobileApp | ForEach-Object {
+        $AHash['{0} ({1})' -f $_.DisplayName, $_.Store] = @{
+            Type        = 'MobileApps'
+            Assignments = $_.Assignments
+        }
+    }
     Write-Host "Gathering Assignments for Mobile App Configurations" -ForegroundColor Cyan
     Get-MemMobileAppConfig | ForEach-Object {
         $AHash[$_.DisplayName] = @{
@@ -12,7 +21,6 @@ function Get-MemAssignments {
             Assignments = $_.Assignments
         }
     }
-
     Write-Host "Gathering Assignments for Mobile App Configurations Targeted" -ForegroundColor Cyan
     Get-MemMobileAppConfigTargeted | ForEach-Object {
         $AHash[$_.DisplayName] = @{
@@ -70,11 +78,25 @@ function Get-MemAssignments {
         }
     }
 
-    foreach ($Key in $AHash.keys) {
-        [PSCustomObject]@{
-            Type        = $AHash[$Key]['Type']
-            DisplayName = $Key
-            Assignments = $AHash[$Key]['Assignments']
+    if ($AssignedOnly) {
+        foreach ($Key in $AHash.keys) {
+            if ($AHash[$Key]['Assignments']) {
+                [PSCustomObject]@{
+                    Type        = $AHash[$Key]['Type']
+                    DisplayName = $Key
+                    Assignments = $AHash[$Key]['Assignments']
+                }
+            }
         }
     }
+    else {
+        foreach ($Key in $AHash.keys) {
+            [PSCustomObject]@{
+                Type        = $AHash[$Key]['Type']
+                DisplayName = $Key
+                Assignments = $AHash[$Key]['Assignments']
+            }
+        }
+    }
+
 }

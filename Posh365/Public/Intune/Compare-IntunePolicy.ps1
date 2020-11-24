@@ -26,38 +26,46 @@ function Compare-IntunePolicy {
 
     [CmdletBinding()]
     param (
-        # [Parameter()]
-        # $Reference,
 
-        # [Parameter()]
-        # $Difference,
-
-        # [Parameter()]
-        # [ValidateSet('AppProtectionPolicyAndroid', 'AppProtectionPolicyiOS', 'AppConfigManagedApps', 'AppConfigManagedDevices')]
-        # $PolicyType
     )
 
-    if (-not $PolicyType) {
-        $Type = @('AppProtectionPolicyAndroid', 'AppProtectionPolicyiOS', 'AppConfigManagedApps', 'AppConfigManagedDevices') | ForEach-Object {
-            [PSCustomObject]@{
-                PolicyType = $_
-            }
-        } | Out-GridView -OutputMode Single -Title 'Choose Policy Type'
-        if (-not $Type) { return }
-        $PolicyType = $Type.PolicyType
-    }
+    $Type = @(
+        'MobileAppConfig', 'MobileAppConfigTargeted', 'MobileAppProtectionAndroid', 'MobileAppProtectioniOS'
+        'MobileDeviceComplianceAndroidAtWork', 'MobileDeviceComplianceiOS', 'MobileDeviceConfigiOSDeviceRestrictions'
+        'MobileDeviceConfigiOSEmail', 'MobileDeviceConfigiOSWiFi') | ForEach-Object {
+        [PSCustomObject]@{
+            PolicyType = $_
+        }
+    } | Out-GridView -OutputMode Single -Title 'Choose Policy Type'
+    if (-not $Type) { return }
+    $PolicyType = $Type.PolicyType
 
-    if ($PolicyType -eq 'AppProtectionPolicyAndroid') {
-        $Object = Get-IntuneAppProtectionPolicyAndroid -Expand assignments, apps
+    if ($PolicyType -eq 'MobileAppConfig') {
+        $Object = Get-MemMobileAppConfig
     }
-    elseif ($PolicyType -eq 'AppProtectionPolicyiOS') {
-        $Object = Get-IntuneAppProtectionPolicyIos -Expand assignments, apps
+    elseif ($PolicyType -eq 'MobileAppConfigTargeted') {
+        $Object = Get-MemMobileAppConfigTargeted
     }
-    elseif ($PolicyType -eq 'AppConfigManagedApps') {
-        $Object = Get-IntuneAppConfigurationPolicyTargeted -Expand assignments, apps
+    elseif ($PolicyType -eq 'MobileAppProtectionAndroid') {
+        $Object = Get-MemMobileAppProtectionAndroid
     }
-    elseif ($PolicyType -eq 'AppConfigManagedDevices') {
-        $Object = Get-DeviceAppManagement_MobileAppConfigurations -Expand assignments
+    elseif ($PolicyType -eq 'MobileAppProtectioniOS') {
+        $Object = Get-MemMobileAppProtectioniOS
+    }
+    elseif ($PolicyType -eq 'MobileDeviceComplianceAndroidAtWork') {
+        $Object = Get-MemMobileDeviceComplianceAndroidWork
+    }
+    elseif ($PolicyType -eq 'MobileDeviceComplianceiOS') {
+        $Object = Get-MemMobileDeviceComplianceiOS
+    }
+    elseif ($PolicyType -eq 'MobileDeviceConfigiOSDeviceRestrictions') {
+        $Object = Get-MemMobileDeviceConfigiOSDeviceRestrictions
+    }
+    elseif ($PolicyType -eq 'MobileDeviceConfigiOSEmail') {
+        $Object = Get-MemMobileDeviceConfigiOSEmail
+    }
+    elseif ($PolicyType -eq 'MobileDeviceConfigiOSWiFi') {
+        $Object = Get-MemMobileDeviceConfigiOSWifi
     }
 
     $DisplayNameReference = $Object | Select-Object DisplayName | Out-GridView -OutputMode Single -Title 'Choose Reference Object'
