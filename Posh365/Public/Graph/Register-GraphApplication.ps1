@@ -1,4 +1,40 @@
 function Register-GraphApplication {
+    <#
+    .SYNOPSIS
+    Register Apps with preset permissions for quick access to graph endpoints
+
+    .DESCRIPTION
+    Register Apps with preset permissions for quick access to graph endpoints
+    Use those permissions with the connection script, Connect-PoshGraph
+
+    Please seee examples!
+
+    .PARAMETER Tenant
+    Use this to uniquely identify the tenant and permissions.
+    You will use this to connect to graph with "Connect-PoshGraph"
+
+    Please see examples!
+
+    .PARAMETER App
+    Currently just Intune but more to follow.
+
+    Note: The name of the app in Azure AD will be named Intune + the date/time it was added (but you won't need this information to connect)
+
+    .EXAMPLE
+
+    Register-GraphApplication -Tenant Contoso -App Intune
+
+    Connect-PoshGraph -Tenant Contoso
+
+    .EXAMPLE
+
+    Register-GraphApplication -Tenant ContosoIntune -App Intune
+
+    Connect-PoshGraph -Tenant ContosoIntune
+
+    .NOTES
+    General notes
+    #>
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -33,7 +69,7 @@ function Register-GraphApplication {
 
     Write-Host "`r`nWe will create an Azure AD Application with the " -ForegroundColor Cyan -NoNewline
     Write-Host "$App" -ForegroundColor Green -NoNewLine
-    Write-Host " API permission set. Credentials will be encrypted to $TenantPath. Once complete, connect to Graph with: " -ForegroundColor Cyan -NoNewline
+    Write-Host " API permission set. Credentials will be encrypted to $TenantPath. Once complete, connect to Graph with: `r`n" -ForegroundColor Cyan
     Write-Host "Connect-PoshGraph " -ForegroundColor Yellow -NoNewline
     Write-Host "-Tenant " -ForegroundColor White -NoNewline
     Write-Host "$Tenant`r`n`r`n" -ForegroundColor Green
