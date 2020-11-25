@@ -6,6 +6,13 @@ function Register-GraphApplication {
     .DESCRIPTION
     Register Apps with preset permissions for quick access to graph endpoints
     Use those permissions with the connection script, Connect-PoshGraph
+    Please check the Azure AD app that this app creates to understand the permissions you have prior to running any commands.
+
+    Make sure you that clearly understand and inspect any script before you run them!!!
+    I am not responsible for any data in your tenant.  Please test, test and test so more.
+
+    If you want to add or remove permissions you can find your app here:
+    https://aad.portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/RegisteredApps
 
     Please seee examples!
 
@@ -16,9 +23,12 @@ function Register-GraphApplication {
     Please see examples!
 
     .PARAMETER App
-    Currently just Intune but more to follow.
+    Currently just Intune and Teams to choose from, but more to follow.
 
     Note: The name of the app in Azure AD will be named Intune + the date/time it was added (but you won't need this information to connect)
+
+    .PARAMETER AddDelegateCredentials
+    A GUI will appear, type username and password and click "Export Tenant Credentials"
 
     .EXAMPLE
 
@@ -42,7 +52,11 @@ function Register-GraphApplication {
 
         [Parameter(Mandatory)]
         [ValidateSet('Intune', 'Teams')]
-        $App
+        $App,
+
+        [Parameter()]
+        [switch]
+        $AddDelegateCredentials
     )
 
     $PoshPath = Join-Path -Path $Env:USERPROFILE -ChildPath '.Posh365/Credentials/Graph'
@@ -125,6 +139,11 @@ function Register-GraphApplication {
         Cred     = [PSCredential]::new($ConfigObject.TenantTenantID, $ConfigObject.TenantSecret)
         ClientId = $ConfigObject.TenantClientID
     } | Export-Clixml -Path $TenantConfig
+
+    if ($AddDelegateCredentials -or $App -match 'Teams') {
+        Write-Host "A GUI will now open, type your Global Admin Username & Password and click - Export Tenant Credentials -" -ForegroundColor Cyan -BackgroundColor White
+        Export-GraphConfig -Tenant $Tenant
+    }
 
     Write-Host ('Tenant configuration encrypted to: {0}' -f $TenantConfig)
 }
