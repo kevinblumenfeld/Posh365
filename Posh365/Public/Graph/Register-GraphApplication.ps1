@@ -34,16 +34,24 @@ function Register-GraphApplication {
 
     Register-GraphApplication -Tenant Contoso -App Intune
 
+    # The registration is a one-time thing.
+    # Once it is complete, use the below command each time to connect to Graph
     Connect-PoshGraph -Tenant Contoso
+
 
     .EXAMPLE
 
     Register-GraphApplication -Tenant ContosoIntune -App Intune
 
+
+    # The registration is a one-time thing.
+    # Once it is complete, use the below command each time to connect to Graph
     Connect-PoshGraph -Tenant ContosoIntune
+
 
     .NOTES
     General notes
+
     #>
     [CmdletBinding()]
     param (
@@ -144,11 +152,11 @@ function Register-GraphApplication {
     } | Export-Clixml -Path $TenantConfig
 
     if ($AddDelegateCredentials -or $App -match 'Teams') {
-        Write-Host "Also, a GUI will now appear. " -ForegroundColor Black -BackgroundColor White
-        Write-Host "Type $($AzureAD.Account) and the password in the fields labeled, Username & Password."  -ForegroundColor Black -BackgroundColor White -NoNewline
-        Write-Host "Then click - Export Tenant Credentials - button"  -ForegroundColor Black -BackgroundColor White
+        Write-Host "`r`nAlso, the Microsoft Graph Credential Export Tool will now appear. " -ForegroundColor Green
+        Write-Host "In the fields labeled, Username & Password, enter: $($AzureAD.Account) and password."  -ForegroundColor Black -BackgroundColor White
+        Write-Host "Then click the button, Export Tenant Credentials"  -ForegroundColor Black -BackgroundColor White
         Export-GraphConfig -Tenant $Tenant
     }
 
-    Write-Host ('Tenant configuration encrypted to: {0}' -f $TenantConfig)
+    Write-Host ('{0}Tenant configuration encrypted to: {1}{0}' -f [Environment]::NewLine, $TenantConfig)
 }
