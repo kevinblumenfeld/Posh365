@@ -9,12 +9,12 @@ function Register-GraphApplication {
     Please check the Azure AD app that this app creates to understand the permissions you have prior to running any commands.
 
     Make sure you that clearly understand and inspect any script before you run them!!!
-    I am not responsible for any data in your tenant.  Please test, test and test so more.
+    I am not responsible for any data in your tenant.  Please test thoroughly.
 
     If you want to add or remove permissions you can find your app here:
     https://aad.portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/RegisteredApps
 
-    Please seee examples!
+    Please see examples!
 
     .PARAMETER Tenant
     Use this to uniquely identify the tenant and permissions.
@@ -95,7 +95,10 @@ function Register-GraphApplication {
         Install-Module -Name AzureAD -Scope CurrentUser -Force -AllowClobber
         Import-Module -Name AzureAD -force
     }
-    If (-not ($null = Get-Command -Name 'Import-TemplateApp')) {
+    try {
+        $null = Get-Command -Name 'Import-TemplateApp' -ErrorAction Stop
+    }
+    catch {
         Write-Host "Installing CloneApp module" -ForegroundColor Cyan
         Install-Module -Name CloneApp -Scope CurrentUser -Force -AllowClobber
         Import-Module -Name CloneApp -force
@@ -104,12 +107,12 @@ function Register-GraphApplication {
     Write-Host "Disconnecting any possible connections to Azure AD" -ForegroundColor White
     try { $null = Disconnect-AzureAD -ErrorAction Stop } catch { }
     try {
-        Write-Host "Please enter your Azure AD Credentials to login to Azure AD . . . " -ForegroundColor White
+        Write-Host "In the window that appears, please enter your credentials to login to Azure AD . . . " -ForegroundColor White -NoNewline
         $AzureAD = Connect-AzureAD -ErrorAction Stop
-        Write-Host "Connected to Azure AD!" -ForegroundColor Cyan
-        Write-Host "Tenant: " -ForegroundColor Green -NoNewline
+        Write-Host "Connected" -ForegroundColor Green
+        Write-Host "Azure AD Tenant: " -ForegroundColor Green -NoNewline
         Write-Host "$($AzureAD.TenantId)" -ForegroundColor White
-        Write-Host "Account: " -ForegroundColor Green -NoNewline
+        Write-Host "Azure AD Account: " -ForegroundColor Green -NoNewline
         Write-Host "$($AzureAD.Account)" -ForegroundColor White
     }
     catch {
@@ -141,7 +144,9 @@ function Register-GraphApplication {
     } | Export-Clixml -Path $TenantConfig
 
     if ($AddDelegateCredentials -or $App -match 'Teams') {
-        Write-Host "A GUI will now open, type your Global Admin Username & Password and click - Export Tenant Credentials -" -ForegroundColor Cyan -BackgroundColor White
+        Write-Host "Also, a GUI will now appear. " -ForegroundColor Black -BackgroundColor White
+        Write-Host "Type $($AzureAD.Account) and the password in the fields labeled, Username & Password."  -ForegroundColor Black -BackgroundColor White -NoNewline
+        Write-Host "Then click - Export Tenant Credentials - button"  -ForegroundColor Black -BackgroundColor White
         Export-GraphConfig -Tenant $Tenant
     }
 
