@@ -73,7 +73,7 @@ function Register-GraphApplication {
         Force       = $true
         ErrorAction = 'SilentlyContinue'
     }
-    if (-not (Test-Path $PoshPath)) { New-Item $PoshPath @ItemSplat }
+    if (-not (Test-Path $PoshPath)) { $null = New-Item $PoshPath @ItemSplat }
     $TenantPath = Join-Path -Path $PoshPath -ChildPath $Tenant
 
     if (Test-Path $TenantPath) {
@@ -86,7 +86,7 @@ function Register-GraphApplication {
             return
         }
     }
-    if (-not (Test-Path $TenantPath)) { New-Item $TenantPath @ItemSplat }
+    if (-not (Test-Path $TenantPath)) { $null = New-Item $TenantPath @ItemSplat }
 
 
     Write-Host "`r`nWe will create an Azure AD Application with the " -ForegroundColor Cyan -NoNewline
@@ -103,14 +103,15 @@ function Register-GraphApplication {
         Install-Module -Name AzureAD -Scope CurrentUser -Force -AllowClobber
         Import-Module -Name AzureAD -force
     }
-    try {
-        $null = Get-Command -Name 'Import-TemplateApp' -ErrorAction Stop
-    }
-    catch {
+
+    $Latest = Find-Module CloneApp -Repository PSGallery
+    $Installed = Get-Module -Name CloneApp -ListAvailable
+    if ($Latest.Version -ne $Installed.Version) {
         Write-Host "Installing CloneApp module" -ForegroundColor Cyan
         Install-Module -Name CloneApp -Scope CurrentUser -Force -AllowClobber
         Import-Module -Name CloneApp -force
     }
+
 
     Write-Host "Disconnecting any possible connections to Azure AD" -ForegroundColor White
     try { $null = Disconnect-AzureAD -ErrorAction Stop } catch { }
