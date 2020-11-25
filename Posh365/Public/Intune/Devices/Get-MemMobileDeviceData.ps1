@@ -1,17 +1,11 @@
-function Get-GraphUserAll {
+function Get-MemMobileDeviceData {
     [CmdletBinding()]
     param (
-        [Parameter()]
-        [switch]
-        $IncludeGuests
-    )
-    if (-not $IncludeGuests) {
-        $uri = "https://graph.microsoft.com/beta/users/?`$filter=userType eq 'Member'"
-    }
-    else { $Uri = 'https://graph.microsoft.com/beta/users' }
 
+    )
+    if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
     $RestSplat = @{
-        Uri     = $Uri
+        Uri     = "https://graph.microsoft.com/beta/deviceManagement/managedDevices"
         Headers = @{ "Authorization" = "Bearer $Token" }
         Method  = 'Get'
     }
@@ -26,6 +20,5 @@ function Get-GraphUserAll {
             Headers = @{ "Authorization" = "Bearer $Token" }
             Method  = 'Get'
         }
-
     } until (-not $next)
 }

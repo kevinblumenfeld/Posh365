@@ -26,7 +26,9 @@ function Compare-IntunePolicy {
 
     [CmdletBinding()]
     param (
-
+        [Parameter()]
+        [switch]
+        $RawData
     )
 
     $Type = @(
@@ -40,33 +42,65 @@ function Compare-IntunePolicy {
     if (-not $Type) { return }
     $PolicyType = $Type.PolicyType
 
-    if ($PolicyType -eq 'MobileAppConfig') {
-        $Object = Get-MemMobileAppConfig
+    if (-not $RawData) {
+        if ($PolicyType -eq 'MobileAppConfig') {
+            $Object = Get-MemMobileAppConfig
+        }
+        elseif ($PolicyType -eq 'MobileAppConfigTargeted') {
+            $Object = Get-MemMobileAppConfigTargeted
+        }
+        elseif ($PolicyType -eq 'MobileAppProtectionAndroid') {
+            $Object = Get-MemMobileAppProtectionAndroid
+        }
+        elseif ($PolicyType -eq 'MobileAppProtectioniOS') {
+            $Object = Get-MemMobileAppProtectioniOS
+        }
+        elseif ($PolicyType -eq 'MobileDeviceComplianceAndroidAtWork') {
+            $Object = Get-MemMobileDeviceComplianceAndroidWork
+        }
+        elseif ($PolicyType -eq 'MobileDeviceComplianceiOS') {
+            $Object = Get-MemMobileDeviceComplianceiOS
+        }
+        elseif ($PolicyType -eq 'MobileDeviceConfigiOSDeviceRestrictions') {
+            $Object = Get-MemMobileDeviceConfigiOSDeviceRestrictions
+        }
+        elseif ($PolicyType -eq 'MobileDeviceConfigiOSEmail') {
+            $Object = Get-MemMobileDeviceConfigiOSEmail
+        }
+        elseif ($PolicyType -eq 'MobileDeviceConfigiOSWiFi') {
+            $Object = Get-MemMobileDeviceConfigiOSWifi
+        }
     }
-    elseif ($PolicyType -eq 'MobileAppConfigTargeted') {
-        $Object = Get-MemMobileAppConfigTargeted
+    else {
+        if ($PolicyType -eq 'MobileAppConfig') {
+            $Object = Get-MemMobileAppConfigData
+        }
+        elseif ($PolicyType -eq 'MobileAppConfigTargeted') {
+            $Object = Get-MemMobileAppConfigTargetedData
+        }
+        elseif ($PolicyType -eq 'MobileAppProtectionAndroid') {
+            $Object = Get-MemMobileAppProtectionAndroidData
+        }
+        elseif ($PolicyType -eq 'MobileAppProtectioniOS') {
+            $Object = Get-MemMobileAppProtectioniOSData
+        }
+        elseif ($PolicyType -eq 'MobileDeviceComplianceAndroidAtWork') {
+            $Object = Get-MemMobileDeviceComplianceAndroidWorkData
+        }
+        elseif ($PolicyType -eq 'MobileDeviceComplianceiOS') {
+            $Object = Get-MemMobileDeviceComplianceiOSData
+        }
+        elseif ($PolicyType -eq 'MobileDeviceConfigiOSDeviceRestrictions') {
+            $Object = Get-MemMobileDeviceConfigiOSDeviceRestrictionsData
+        }
+        elseif ($PolicyType -eq 'MobileDeviceConfigiOSEmail') {
+            $Object = Get-MemMobileDeviceConfigiOSEmailData
+        }
+        elseif ($PolicyType -eq 'MobileDeviceConfigiOSWiFi') {
+            $Object = Get-MemMobileDeviceConfigiOSWiFiData
+        }
     }
-    elseif ($PolicyType -eq 'MobileAppProtectionAndroid') {
-        $Object = Get-MemMobileAppProtectionAndroid
-    }
-    elseif ($PolicyType -eq 'MobileAppProtectioniOS') {
-        $Object = Get-MemMobileAppProtectioniOS
-    }
-    elseif ($PolicyType -eq 'MobileDeviceComplianceAndroidAtWork') {
-        $Object = Get-MemMobileDeviceComplianceAndroidWork
-    }
-    elseif ($PolicyType -eq 'MobileDeviceComplianceiOS') {
-        $Object = Get-MemMobileDeviceComplianceiOS
-    }
-    elseif ($PolicyType -eq 'MobileDeviceConfigiOSDeviceRestrictions') {
-        $Object = Get-MemMobileDeviceConfigiOSDeviceRestrictions
-    }
-    elseif ($PolicyType -eq 'MobileDeviceConfigiOSEmail') {
-        $Object = Get-MemMobileDeviceConfigiOSEmail
-    }
-    elseif ($PolicyType -eq 'MobileDeviceConfigiOSWiFi') {
-        $Object = Get-MemMobileDeviceConfigiOSWifi
-    }
+
 
     $DisplayNameReference = $Object | Select-Object DisplayName | Out-GridView -OutputMode Single -Title 'Choose Reference Object'
     $DisplayNameDifference = $Object | Select-Object DisplayName | Out-GridView -OutputMode Single -Title 'Choose Difference Object'

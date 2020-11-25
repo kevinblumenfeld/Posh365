@@ -2,18 +2,25 @@ function Get-MemAssignments {
     param (
         [Parameter()]
         [switch]
-        $AssignedOnly
+        $AssignedOnly,
+
+        [Parameter()]
+        [switch]
+        $DontIncludeMobileApps
     )
 
     $AHash = [ordered]@{ }
 
-    Write-Host "Gathering Assignments for Mobile Apps" -ForegroundColor Cyan
-    Get-MemMobileApp | ForEach-Object {
-        $AHash['{0} ({1})' -f $_.DisplayName, $_.Store] = @{
-            Type        = 'MobileApps'
-            Assignments = $_.Assignments
+    if (-not $DontIncludeMobileApps) {
+        Write-Host "Gathering Assignments for Mobile Apps" -ForegroundColor Cyan
+        Get-MemMobileApp | ForEach-Object {
+            $AHash['{0} ({1})' -f $_.DisplayName, $_.Store] = @{
+                Type        = 'MobileApps'
+                Assignments = $_.Assignments
+            }
         }
     }
+
     Write-Host "Gathering Assignments for Mobile App Configurations" -ForegroundColor Cyan
     Get-MemMobileAppConfig | ForEach-Object {
         $AHash[$_.DisplayName] = @{
