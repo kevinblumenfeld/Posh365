@@ -10,5 +10,5 @@ function Get-MemMobileAppData {
         Headers = @{ "Authorization" = "Bearer $Token" }
         Method  = 'Get'
     }
-    Invoke-RestMethod @RestSplat -Verbose:$false | Select-Object -ExpandProperty Value
+    Invoke-RestMethod @RestSplat -Verbose:$false #| Select-Object -ExpandProperty Value
 }

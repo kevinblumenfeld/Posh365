@@ -7,7 +7,7 @@ function Get-MemMobileApp {
         'minimumSupportedOperatingSystem', 'roleScopeTagIds', 'isAssigned'
         '@odata.type'
     )
-    Get-MemMobileAppData | Select-Object -ExcludeProperty $Excludes -Property @(
+    Get-MemMobileAppData | Select-Object -ExpandProperty Value | Select-Object -ExcludeProperty $Excludes -Property @(
         @{
             Name       = 'DisplayName'
             Expression = { $_.DisplayName }
