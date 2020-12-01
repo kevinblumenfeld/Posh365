@@ -23,11 +23,11 @@ function Get-PSGUser {
                 }) -ne '' -join '|'
             User                       = $User.User
             Department                 = $User.Department
+            Title                      = $User.Organizations.Title
             PhonePrimary               = @(@($User.Phones).ForEach{ if ($_.Primary) {
                         if ($_.Type) { '{0}:{1}' -f $_.Type, $_.Value }
                         else { $_.Value }
-                    }
-                }) -ne '' -join '|'
+                    } }) -ne '' -join '|'
             PhoneType                  = @(@($User.Phones).ForEach{ if ($_.Type) { '{0}:{1}' -f $_.Type, $_.Value }
                     else { $_.Value }
                 }) -ne '' -join '|'
@@ -40,6 +40,8 @@ function Get-PSGUser {
             Forward                    = @(@($Forward).ForEach{ if ($_.Enabled) { '{0}:{1}' -f $_.Disposition, $_.EmailAddress }
                     elseif ($_.EmailAddress) { 'DISABLED::{0}:{1}' -f $_.Disposition, $_.EmailAddress }
                 }) -ne '' -join '|'
+            RecoveryPhone              = $User.RecoveryPhone
+            RecoveryEmail              = $User.RecoveryEmail
             Suspended                  = $User.Suspended
             SuspensionReason           = $User.SuspensionReason
             ChangePasswordAtNextLogin  = $User.changePasswordAtNextLogin
