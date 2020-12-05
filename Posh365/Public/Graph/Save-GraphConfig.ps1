@@ -1,4 +1,5 @@
 ﻿function Save-GraphConfig {
+    # CAN DELETE
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]

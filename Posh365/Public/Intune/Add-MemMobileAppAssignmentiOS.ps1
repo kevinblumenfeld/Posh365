@@ -28,50 +28,50 @@ function Add-MemMobileAppAssignmentiOS {
         [ValidateSet('Required', 'Available', 'AvailableWithoutEnrollment', 'Uninstall')]
         $intent
     )
-    begin {
-        if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
-        $PSFun = @($PSCmdlet.ParameterSetName) -ne '' -join ','
-        Write-Host "$PSFun" -ForegroundColor Green
-        if ($GroupName) {
-            $GroupId = Get-GraphGroup -Name $GroupName | Select-Object -ExpandProperty Value | Select-Object -ExpandProperty Id
-            if (-not $GroupId) { Write-Host "GroupID: $GroupId" -ForegroundColor yellow ; break }
-            Write-Host "GroupID: $GroupId" -ForegroundColor Cyan
-        }
-    }
-    process {
-        foreach ($Name in $AppName) {
-            switch ($PSCmdlet.ParameterSetName) {
-                'PSAppName' {
-                    $AppId = Get-MemMobileAppData -Name $Name | Select-Object -ExpandProperty Value | Select-Object -ExpandProperty Id
-                    if ($AppId.count -gt 1) {
-                        "Write-host"
-                    }
-                    Write-Host "AppID: $AppId" -ForegroundColor Cyan
-                    if (-not $AppId) { return }
-                }
-            }
-            $RestSplat = @{
-                Uri     = 'https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/{0}/assign' -f $AppId
-                Headers = @{ "Authorization" = "Bearer $Token" }
-                Method  = 'POST'
-                Body    = [PSCustomObject]@{
-                    assignments = @{
-                        target   = @{
-                            '@odata.type' = '#microsoft.graph.groupAssignmentTarget'
-                            groupId       = $GroupId
-                        }
-                        intent   = $intent
-                        settings = @{
-                            '@odata.type'            = '#microsoft.graph.iosStoreAppAssignmentSettings'
-                            vpnConfigurationId       = $VpnId
-                            uninstallOnDeviceRemoval = $UninstallOnDeviceRemoval
-                        }
-                    }
-                } | ConvertTo-Json
-            }
-            Invoke-RestMethod @RestSplat
-        }
-    }
+    # begin {
+    #     if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
+    #     $PSFun = @($PSCmdlet.ParameterSetName) -ne '' -join ','
+    #     Write-Host "$PSFun" -ForegroundColor Green
+    #     if ($GroupName) {
+    #         $GroupId = Get-GraphGroup -Name $GroupName | Select-Object -ExpandProperty Value | Select-Object -ExpandProperty Id
+    #         if (-not $GroupId) { Write-Host "GroupID: $GroupId" -ForegroundColor yellow ; break }
+    #         Write-Host "GroupID: $GroupId" -ForegroundColor Cyan
+    #     }
+    # }
+    # process {
+    #     foreach ($Name in $AppName) {
+    #         switch ($PSCmdlet.ParameterSetName) {
+    #             'PSAppName' {
+    #                 $AppId = Get-MemMobileAppData -Name $Name | Select-Object -ExpandProperty Value | Select-Object -ExpandProperty Id
+    #                 if ($AppId.count -gt 1) {
+    #                     "Write-host"
+    #                 }
+    #                 Write-Host "AppID: $AppId" -ForegroundColor Cyan
+    #                 if (-not $AppId) { return }
+    #             }
+    #         }
+    #         $RestSplat = @{
+    #             Uri     = 'https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/{0}/assign' -f $AppId
+    #             Headers = @{ "Authorization" = "Bearer $Token" }
+    #             Method  = 'POST'
+    #             Body    = [PSCustomObject]@{
+    #                 assignments = @{
+    #                     target   = @{
+    #                         '@odata.type' = '#microsoft.graph.groupAssignmentTarget'
+    #                         groupId       = $GroupId
+    #                     }
+    #                     intent   = $intent
+    #                     settings = @{
+    #                         '@odata.type'            = '#microsoft.graph.iosStoreAppAssignmentSettings'
+    #                         vpnConfigurationId       = $VpnId
+    #                         uninstallOnDeviceRemoval = $UninstallOnDeviceRemoval
+    #                     }
+    #                 }
+    #             } | ConvertTo-Json
+    #         }
+    #         Invoke-RestMethod @RestSplat
+    #     }
+    # }
 }
 # {
 #     "mobileAppAssignments": [

@@ -19,6 +19,9 @@ function Get-DiscoveryIntune {
     Write-Host "Gathering Policy Assignments" -ForegroundColor Cyan
     Get-MemAssignments | Export-Csv "$CSV\Assignments.csv" -NoTypeInformation
 
+    Write-Host "Gathering App Assignments" -ForegroundColor Cyan
+    Get-MemGroupAppAssignment | Export-Csv "$CSV\MobileAppAssignments.csv" -NoTypeInformation
+
     Write-Host "Gathering Conditional Access Policies" -ForegroundColor Cyan
     Get-ConditionalAccessPolicy | Export-Csv "$CSV\ConditionalAccessPolicy.csv" -NoTypeInformation
 
@@ -36,6 +39,9 @@ function Get-DiscoveryIntune {
 
     Write-Host "Gathering Mobile App Protection Policies - Android" -ForegroundColor Cyan
     Get-MemMobileAppProtectionAndroid | Export-Csv "$CSV\MobileAppProtectionAndroid.csv" -NoTypeInformation
+
+    Write-Host "Gathering Mobile Devices" -ForegroundColor Cyan
+    Get-MemMobileDevice | Export-Csv "$CSV\MobileDevice.csv" -NoTypeInformation
 
     Write-Host "Gathering Mobile Device Compliance Policies - Android at Work" -ForegroundColor Cyan
     Get-MemMobileDeviceComplianceAndroidWork | Export-Csv "$CSV\MobileDeviceComplianceAndroidWork.csv" -NoTypeInformation
@@ -66,7 +72,7 @@ function Get-DiscoveryIntune {
 
         Import-Csv $_.fullname | Export-Excel @ExcelSplat -WorksheetName (-join $_.BaseName[0..29]) -Path (Join-Path $TenantPath 'Base_Intune_Discovery.xlsx')
 
-        if ( $_.BaseName -eq 'App' -or $_.BaseName -eq 'Assignments') {
+        if ( $_.BaseName -eq 'MobileApp' -or $_.BaseName -eq 'Assignments' -or $_.BaseName -eq 'MobileAppAssignments' -or $_.BaseName -eq 'MobileDevice') {
             Import-Csv $_.fullname | Export-Excel @ExcelSplat -WorksheetName (-join $_.BaseName[0..29]) -Path (Join-Path $TenantPath 'Intune_Discovery.xlsx')
         }
         else {
