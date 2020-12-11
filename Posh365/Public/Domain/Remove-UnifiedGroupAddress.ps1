@@ -40,11 +40,11 @@ function Remove-UnifiedGroupAddress {
             'ExchangeGuid'
             'Guid'
         )
-        $RemoveList = $RemoveList.Where{ $_.EmailList }
+        $RemoveList = $RemoveList | Where-Object { $_.EmailList }
         foreach ($Remove in $RemoveList) {
             try {
                 Write-Host "$($Remove.DisplayName)" -ForegroundColor White
-                Get-UnifiedGroup -Identity $Remove.Identity | Set-UnifiedGroup -EmailAddresses @{Remove = @($Remove.EmailList) }
+                Set-UnifiedGroup -Identity $Remove.Guid.ToString() -EmailAddresses @{Remove = @($Remove.EmailList) } -erroraction Stop
                 Write-Host "$($Remove.DisplayName) Removed" -ForegroundColor Green
                 [PSCustomObject]@{
                     Action             = "REMOVEEMAILS"

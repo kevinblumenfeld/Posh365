@@ -40,7 +40,7 @@ function Remove-GroupAddress {
             'ExchangeGuid'
             'Guid'
         )
-        $RemoveList = $RemoveList.Where{ $_.EmailList }
+        $RemoveList = $RemoveList | Where-Object { $_.EmailList }
         foreach ($Remove in $RemoveList) {
             try {
                 Write-Host "$($Remove.DisplayName)" -ForegroundColor White

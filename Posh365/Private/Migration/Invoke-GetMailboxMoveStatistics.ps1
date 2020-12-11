@@ -21,7 +21,9 @@ Function Invoke-GetMailboxMoveStatistics {
                     DisplayName                = $Stat.DisplayName
                     PercentComplete            = $Stat.PercentComplete
                     BadItemLimit               = $Stat.BadItemLimit
+                    BadItemsEncountered        = $Stat.BadItemsEncountered
                     LargeItemLimit             = $Stat.LargeItemLimit
+                    LargeItemsEncountered      = $Stat.LargeItemsEncountered
                     CompleteAfter              = $Stat.CompleteAfter
                     TotalMailboxSize           = [regex]::Matches("$($Stat.TotalMailboxSize)", "^[^(]*").value
                     ItemsTransferred           = $Stat.ItemsTransferred

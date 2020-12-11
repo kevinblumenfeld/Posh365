@@ -1,24 +1,16 @@
 function Get-MemMobileDeviceData {
     [CmdletBinding()]
     param (
+        [Parameter(Mandatory)]
+        $imei
 
     )
     if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
     $RestSplat = @{
-        Uri     = "https://graph.microsoft.com/beta/deviceManagement/managedDevices"
+        Uri     = "https://graph.microsoft.com/v1.0/deviceManagement/managedDevices/?`$filter=imei eq '$imei'"
         Headers = @{ "Authorization" = "Bearer $Token" }
         Method  = 'Get'
     }
-    do {
-        if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
-        $Response = Invoke-RestMethod @RestSplat -Verbose:$false
-        $Response.value
-        if ($Response.'@odata.nextLink' -match 'skip') { $Next = $Response.'@odata.nextLink' }
-        else { $Next = $null }
-        $RestSplat = @{
-            Uri     = $Next
-            Headers = @{ "Authorization" = "Bearer $Token" }
-            Method  = 'Get'
-        }
-    } until (-not $next)
+    Invoke-RestMethod @RestSplat -Verbose:$false | Select-Object -ExpandProperty Value
+
 }
