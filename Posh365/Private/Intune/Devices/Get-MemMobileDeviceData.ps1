@@ -15,7 +15,6 @@ function Get-MemMobileDeviceData {
     elseif ($SerialNumber){
         $filter = "serialNumber eq '$SerialNumber'"
     }
-    write-host "filter: $filter" -ForegroundColor Cyan
     $RestSplat = @{
         Uri     = "https://graph.microsoft.com/beta/deviceManagement/managedDevices/?`$filter={0}" -f $filter
         Headers = @{ "Authorization" = "Bearer $Token" }
