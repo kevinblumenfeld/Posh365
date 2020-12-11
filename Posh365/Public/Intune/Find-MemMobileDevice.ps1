@@ -1,4 +1,20 @@
 function Find-MemMobileDevice {
+    <#
+    .SYNOPSIS
+    Loop till a mobile device is found and compliant
+
+    .DESCRIPTION
+    Loop till a mobile device is found and compliant
+
+    .PARAMETER imei
+    Phone's imei number
+
+    .EXAMPLE
+    Find-MemMobileDevice -imei '673281231034555'
+
+    .NOTES
+    General notes
+    #>
     param (
         [Parameter(Mandatory)]
         $imei
@@ -19,7 +35,7 @@ function Find-MemMobileDevice {
             Write-Host 'Device not found' -ForegroundColor Red
         }
         elseif ($Device.complianceState -eq 'Compliant') {
-            $Device | Select-Object *
+            $Device | Select-Object *ID*, *NAME*
             Write-Host 'Device Found COMPLIANT!' -ForegroundColor Green
         }
         else {
