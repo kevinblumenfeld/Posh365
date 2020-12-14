@@ -5,7 +5,11 @@ function Get-MemMobileDevice {
         $SerialNumber,
 
         [Parameter(Mandatory, ParameterSetName = 'imei')]
-        $imei
+        $imei,
+
+        [Parameter(Mandatory, ParameterSetName = 'ManagementState')]
+        [ValidateSet('retirePending', 'managed')]
+        $managementState
     )
     if ($imei) {
         Get-MemMobileDeviceData -imei $imei | Select-Object @(
@@ -14,6 +18,11 @@ function Get-MemMobileDevice {
     }
     elseif ($SerialNumber) {
         Get-MemMobileDeviceData -SerialNumber $SerialNumber | Select-Object @(
+            '*'
+        )
+    }
+    elseif ($managementState) {
+        Get-MemMobileDeviceData -ManagementState $managementState | Select-Object @(
             '*'
         )
     }

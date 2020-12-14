@@ -59,7 +59,7 @@ function Register-GraphApplication {
         $Tenant,
 
         [Parameter(Mandatory)]
-        [ValidateSet('Intune', 'Teams')]
+        [ValidateSet('Intune', 'Teams', 'IntunePrivileged')]
         $App,
 
         [Parameter()]
@@ -152,7 +152,7 @@ function Register-GraphApplication {
         ClientId = $ConfigObject.TenantClientID
     } | Export-Clixml -Path $TenantConfig
 
-    if ($AddDelegateCredentials -or $App -match 'Teams') {
+    if ($AddDelegateCredentials -or $App -ne 'Intune') {
         Write-Host "`r`nAlso, the Microsoft Graph Credential Export Tool will now appear. " -ForegroundColor Green
         Write-Host "In the fields labeled, Username & Password, enter: $($AzureAD.Account) and password."  -ForegroundColor Black -BackgroundColor White
         Write-Host "Then click the button, Export Tenant Credentials"  -ForegroundColor Black -BackgroundColor White
