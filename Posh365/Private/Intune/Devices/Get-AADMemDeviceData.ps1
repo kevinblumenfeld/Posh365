@@ -39,7 +39,7 @@ function Get-AADMemDeviceData {
     elseif ($NonCompliantOnly) {
         $filter = "?`$filter=isCompliant eq false"
     }
-    Write-Host "Filter: $Filter" -ForegroundColor Cyan
+
     $RestSplat = @{
         Uri     = "https://graph.microsoft.com/beta/devices/{0}" -f $filter
         Headers = @{ "Authorization" = "Bearer $Token" }
