@@ -1,4 +1,4 @@
-function Get-MemMobileDeviceData {
+function Get-MemDeviceData {
     [CmdletBinding(DefaultParameterSetName = 'PlaceHolder')]
     param (
         [Parameter(Mandatory, ParameterSetName = 'SerialNumber')]
@@ -14,16 +14,16 @@ function Get-MemMobileDeviceData {
     if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
 
     if ($imei) {
-        $filter = "imei eq '$imei'"
+        $filter = "?`$filter=imei eq '$imei'"
     }
     elseif ($SerialNumber) {
-        $filter = "serialNumber eq '$SerialNumber'"
+        $filter = "?`$filter=serialNumber eq '$SerialNumber'"
     }
     elseif ($managementState) {
-        $filter = "managementState eq '$ManagementState'"
+        $filter = "?`$filter=managementState eq '$ManagementState'"
     }
     $RestSplat = @{
-        Uri     = "https://graph.microsoft.com/beta/deviceManagement/managedDevices/?`$filter={0}" -f $filter
+        Uri     = "https://graph.microsoft.com/beta/deviceManagement/managedDevices/{0}" -f $filter
         Headers = @{ "Authorization" = "Bearer $Token" }
         Method  = 'Get'
     }

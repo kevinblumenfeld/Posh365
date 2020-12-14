@@ -1,4 +1,4 @@
-function Get-MemMobileDevice {
+function Get-MemDevice {
     [CmdletBinding(DefaultParameterSetName = 'PlaceHolder')]
     param (
         [Parameter(Mandatory, ParameterSetName = 'SerialNumber')]
@@ -12,17 +12,17 @@ function Get-MemMobileDevice {
         $managementState
     )
     if ($imei) {
-        Get-MemMobileDeviceData -imei $imei | Select-Object @(
+        Get-MemDeviceData -imei $imei | Select-Object @(
             '*'
         )
     }
     elseif ($SerialNumber) {
-        Get-MemMobileDeviceData -SerialNumber $SerialNumber | Select-Object @(
+        Get-MemDeviceData -SerialNumber $SerialNumber | Select-Object @(
             '*'
         )
     }
     elseif ($managementState) {
-        Get-MemMobileDeviceData -ManagementState $managementState | Select-Object @(
+        Get-MemDeviceData -ManagementState $managementState | Select-Object @(
             '*'
         )
     }

@@ -1,4 +1,4 @@
-function Find-MemMobileDevice {
+function Find-MemDevice {
     <#
     .SYNOPSIS
     Loop till a mobile device is found and compliant
@@ -10,7 +10,7 @@ function Find-MemMobileDevice {
     Phone's imei number
 
     .EXAMPLE
-    Find-MemMobileDevice -imei '673281231034555'
+    Find-MemDevice -imei '673281231034555'
 
     .NOTES
     General notes
@@ -22,7 +22,7 @@ function Find-MemMobileDevice {
     do {
         $Device = $null
         try {
-            $Device = Get-MemMobileDevice -imei $imei -ErrorAction Stop
+            $Device = Get-MemDevice -imei $imei -ErrorAction Stop
         }
         catch {
             Write-Host 'Device not found ERROR!!!!' -ForegroundColor Red

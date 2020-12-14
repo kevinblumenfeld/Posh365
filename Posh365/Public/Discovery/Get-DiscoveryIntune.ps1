@@ -41,7 +41,7 @@ function Get-DiscoveryIntune {
     Get-MemMobileAppProtectionAndroid | Export-Csv "$CSV\MobileAppProtectionAndroid.csv" -NoTypeInformation
 
     Write-Host "Gathering Mobile Devices" -ForegroundColor Cyan
-    Get-MemMobileDevice | Export-Csv "$CSV\MobileDevice.csv" -NoTypeInformation
+    Get-MemDevice | Export-Csv "$CSV\MobileDevice.csv" -NoTypeInformation
 
     Write-Host "Gathering Mobile Device Compliance Policies - Android at Work" -ForegroundColor Cyan
     Get-MemMobileDeviceComplianceAndroidWork | Export-Csv "$CSV\MobileDeviceComplianceAndroidWork.csv" -NoTypeInformation

@@ -1,11 +1,14 @@
-function Get-AADMemMobileDeviceData {
+function Get-AADMemDeviceData {
     [cmdletbinding(DefaultParameterSetName = 'PlaceHolder')]
     param (
+        [Parameter(Mandatory, ParameterSetName = 'SearchString')]
+        $SearchString,
+
         [Parameter(Mandatory, ParameterSetName = 'ID')]
         $Id,
 
         [Parameter(Mandatory, ParameterSetName = 'OS')]
-        [ValidateSet('iOS', 'AndroidForWork', 'Windows')]
+        [ValidateSet('IPhone', 'iOS', 'AndroidForWork', 'Windows')]
         $OS,
 
         [Parameter(Mandatory, ParameterSetName = 'Compliant')]
@@ -18,7 +21,13 @@ function Get-AADMemMobileDeviceData {
     )
 
     if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
-    if ($Id) {
+
+    if ($SearchString) {
+        #$filter = "?`$search=""displayName:{0}""" -f $SearchString
+        $SearchString = $SearchString -replace "'", "''"
+        $filter = "?`$filter=startswith(displayName,'$SearchString')"
+    }
+    elseif ($Id) {
         $filter = $Id
     }
     elseif ($OS) {
@@ -30,8 +39,9 @@ function Get-AADMemMobileDeviceData {
     elseif ($NonCompliantOnly) {
         $filter = "?`$filter=isCompliant eq false"
     }
+    Write-Host "Filter: $Filter" -ForegroundColor Cyan
     $RestSplat = @{
-        Uri     = "https://graph.microsoft.com/beta/devices/{0}" -f $filter
+        Uri     = "https://graph.microsoft.com/beta/devices{0}" -f $filter
         Headers = @{ "Authorization" = "Bearer $Token" }
         Method  = 'Get'
     }
