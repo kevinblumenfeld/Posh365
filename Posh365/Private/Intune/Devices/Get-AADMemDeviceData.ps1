@@ -41,7 +41,7 @@ function Get-AADMemDeviceData {
     }
     Write-Host "Filter: $Filter" -ForegroundColor Cyan
     $RestSplat = @{
-        Uri     = "https://graph.microsoft.com/beta/devices{0}" -f $filter
+        Uri     = "https://graph.microsoft.com/beta/devices/{0}" -f $filter
         Headers = @{ "Authorization" = "Bearer $Token" }
         Method  = 'Get'
     }
