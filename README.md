@@ -18,12 +18,12 @@ Install-Module Posh365 -Force -Scope CurrentUser
 ###### Update Posh365
 ```powershell
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-Install-Module Posh365 -Force  
+Install-Module Posh365 -Force
 Import-Module Posh365 -Force
 ```
 ### `Connect`
 
-**Connect-Cloud** Connect to one or more services: Az, AzureAD, Compliance, Exo2, MSOnline, SharePoint & Teams
+**Connect-Cloud** Connect to one or more services: Az, AzureAD, Compliance, Exo2, MSOnline, SharePoint & Teams.  Credentials are locally encrypted for reuse - no need to reenter credentials the next time you need to connect.
 
 ```powershell
 Connect-Cloud -Tenant Contoso -EXO2 -MSOnline -AzureAD
@@ -49,10 +49,10 @@ Connect-Exchange -Server EXHybrid #Encrypts and reuses creds locally
 Connect-Exchange -Server EXHybrid -DontViewEntireForest
 Connect-Exchange -Server EXHybrid -DeleteExchangeCreds #Deletes locally encrypted creds only
 ```
-**Export-GraphConfig** Use a GUI to save/encrypt ClientID, TenantID, Secret, UserName & Password  
+**Export-GraphConfig** Use a GUI to save/encrypt ClientID, TenantID, Secret, UserName & Password
 **Connect-PoshGraph** Use saved encrypted credentials to connnect to Graph and Azure APIs
 ```powershell
-Export-GraphConfig -Tenant Contoso 
+Export-GraphConfig -Tenant Contoso
 Connect-PoshGraph -Tenant Contoso
 ```
 
@@ -60,26 +60,26 @@ Connect-PoshGraph -Tenant Contoso
 ```powershell
 Get-DiscoveryOffice365 -Tenant Contoso -Verbose
 ```
-**Choose** all items & click OK  
-**Choose** Connection type & click OK  
+**Choose** all items & click OK
+**Choose** Connection type & click OK
 
-><sub>**First time running this?** Let's install PowerShellGet2:</sub>  
+><sub>**First time running this?** Let's install PowerShellGet2:</sub>
 
-<sub>1. Run: Connect-Cloud -Tenant Contoso -EXO2</sub>  
-<sub>2. Sign in as Global Admin & restart powershell when prompted</sub>  
-<sub>3. Run: Get-DiscoveryOffice365 -Tenant Contoso -Verbose</sub>  
+<sub>1. Run: Connect-Cloud -Tenant Contoso -EXO2</sub>
+<sub>2. Sign in as Global Admin & restart powershell when prompted</sub>
+<sub>3. Run: Get-DiscoveryOffice365 -Tenant Contoso -Verbose</sub>
 
 ### `Discover On-Premises`
-> <sub>Requires RSAT</sub>  
+> <sub>Requires RSAT</sub>
 ```powershell
 Get-DiscoveryOnPrem -Verbose
 ```
-<sub>1. Run: Get-Discovery -Verbose</sub>  
-<sub>2. Enter name of Exchange Server when prompted</sub>  
-<sub>3. Click link for Batches, copy/paste code on-premises</sub>  
-<sub>4. Click link for Permissions, copy/paste code on-premises</sub>  
-<sub>5. Add both documents to the root of SharePoint > Documents</sub>  
-<sub>6. Add BATCH01 to BatchName column in Batches.xlsx for pilot</sub>  
+<sub>1. Run: Get-Discovery -Verbose</sub>
+<sub>2. Enter name of Exchange Server when prompted</sub>
+<sub>3. Click link for Batches, copy/paste code on-premises</sub>
+<sub>4. Click link for Permissions, copy/paste code on-premises</sub>
+<sub>5. Add both documents to the root of SharePoint > Documents</sub>
+<sub>6. Add BATCH01 to BatchName column in Batches.xlsx for pilot</sub>
 
 
 | Document to add to SharePoint | Paste code on-premises (not EMS) |
@@ -89,17 +89,17 @@ Get-DiscoveryOnPrem -Verbose
 
 
 ### `Migrate from Hybrid to Office 365`
-> <sub>**Note**: Each command presents a GUI for selection and confirmation</sub>  
-> <sub>**Connect to Exchange Online.** Connect-Cloud -Tenant Contoso -EXO2</sub>  
+> <sub>**Note**: Each command presents a GUI for selection and confirmation</sub>
+> <sub>**Connect to Exchange Online.** Connect-Cloud -Tenant Contoso -EXO2</sub>
 #### `Analyze Permissions`
-**Update-MailboxMovePermissionBatch** GUI to analyze permissions of mailboxes from Batches.xlsx. Will output new Batches.xlsx to desktop. Can add to SharePoint as new Batches file. 
+**Update-MailboxMovePermissionBatch** GUI to analyze permissions of mailboxes from Batches.xlsx. Will output new Batches.xlsx to desktop. Can add to SharePoint as new Batches file.
 ```powershell
 $params = @{
     SharePointURL = 'https://contoso.sharepoint.com/sites/migrate'
     ExcelFile     = 'Batches.xlsx'
 }
 Update-MailboxMovePermissionBatch @params
-```  
+```
 
 #### `Migrate`
 
@@ -167,7 +167,7 @@ Complete-MailboxMove
 Complete-MailboxMove -Schedule #GUI presented to pick time, date, and users
 ```
 #### `Report on Migration`
-**Get-MailboxMoveStatistics** Gets move request statistics for any or all move requests. Multi-select or select all, click OK 
+**Get-MailboxMoveStatistics** Gets move request statistics for any or all move requests. Multi-select or select all, click OK
 ```powershell
 Get-MailboxMoveStatistics
 Get-MailboxMoveStatistics -IncludeCompleted
@@ -180,7 +180,7 @@ Get-MailboxMoveReport
 #### `License`
 
 **Set-MailboxMoveLicense** GUI to license users via AzureAD
-> <sub>**Connect to AzureAD** Connect-Cloud -Tenant Contoso -AzureAD</sub>  
+> <sub>**Connect to AzureAD** Connect-Cloud -Tenant Contoso -AzureAD</sub>
 ```powershell
 Set-MailboxMoveLicense
 Set-MailboxMoveLicense -MailboxCSV .\UserPrincipalName.csv
@@ -213,7 +213,7 @@ Get-MailboxMoveLicenseCount
 ```powershell
 Get-MailboxMoveLicenseReport -Path C:\temp\
 ```
-### `Mail Flow`  
+### `Mail Flow`
 #### `Message Trace`
 
 **Trace-Message** GUI to trace Exchange Online messages. Select messages & click OK for trace details
@@ -230,7 +230,7 @@ Trace-ExchangeMessage # all messages from past 15 minutes
 Trace-ExchangeMessage -StartSearchHoursAgo 10 -ExportToCsv
 Trace-ExchangeMessage -StartSearchHoursAgo 10 -ExportToExcel -SkipHealthMessages
 ```
-### `Administration`  
+### `Administration`
 #### `Managed Folder Assistant`
 **Get-MfaStats** Return Managed Folder Assistant statistics as an object. Switch to start the MFA too
 ```powershell
@@ -241,7 +241,7 @@ Trace-ExchangeMessage -StartSearchHoursAgo 10 -ExportToExcel -SkipHealthMessages
 (Get-EXOMailbox -Properties Office -Filter "Office -eq 'Redmond'").UserPrincipalName | Get-MfaStats
 (Get-EXOMailbox -Properties Office -Filter "Office -eq 'Redmond'").UserPrincipalName | Get-MfaStats -StartMFA
 ```
-### `Networking`  
+### `Networking`
 #### `Office365 Endpoints`
 **Get-OfficeEndpoints** URLs and IPs, initial and "changes since", CSV and Excel output (click to enlarge)
 
