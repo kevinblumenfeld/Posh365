@@ -1,7 +1,7 @@
 function Get-GraphGroup {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'PlaceHolder')]
     param (
-        [Parameter()]
+        [Parameter(ParameterSetName = 'GroupID')]
         $GroupId,
 
         [Parameter(ParameterSetName = 'Name')]
@@ -10,22 +10,14 @@ function Get-GraphGroup {
 
     if ([datetime]::UtcNow -ge $TimeToRefresh) { Connect-PoshGraphRefresh }
     switch ($PSCmdlet.ParameterSetName) {
+        'GroupID' {
+            Get-GraphGroupData -GroupId $GroupId
+        }
         'Name' {
-            $RestSplat = @{
-                Uri     = "https://graph.microsoft.com/beta/groups/?`$filter=displayName eq '$Name'"
-                Headers = @{ "Authorization" = "Bearer $Token" }
-                Method  = 'Get'
-            }
+            Get-GraphGroupData -Name $Name | Select-Object -ExpandProperty Value
         }
         default {
-            $RestSplat = @{
-                Uri     = 'https://graph.microsoft.com/beta/groups/{0}' -f $GroupId
-                Headers = @{ "Authorization" = "Bearer $Token" }
-                Method  = 'Get'
-            }
+            Get-GraphGroupData | Select-Object -ExpandProperty Value
         }
-
     }
-    Invoke-RestMethod @RestSplat -Verbose:$false
-
 }
