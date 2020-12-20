@@ -46,7 +46,7 @@ function Get-ExchangeLog {
     $LogFileName = (Get-ChildItem -Path $LogPath -File | Sort-Object LastWriteTime -Descending | Select-Object -skip ($LogNumber - 1) -First 1).fullname
     $Data = Import-Csv -Path $LogFileName
     if ($UserNameContains) {
-        ($Data | Select-Object -Skip 5).where{ $_.AuthenticatedUser -like "*$UserName*" }
+        ($Data | Select-Object -Skip 5).where{ $_.AuthenticatedUser -like "*$UserNameContains*" }
     }
     else {
         $Data | Select-Object -Skip 5
