@@ -9,6 +9,10 @@ function Get-IISLog {
         $SearchString,
 
         [Parameter()]
+        [int]
+        $Last,
+
+        [Parameter()]
         [switch]
         $BackEnd,
 
@@ -30,8 +34,12 @@ function Get-IISLog {
         $LogPath = 'C:\inetpub\logs\LogFiles\W3SVC{0}' -f $LastDigit
     }
     $LogTemp = 'C:\Scripts\TempLog{0}.csv' -f [Guid]::NewGuid().toString().SubString(25)
-
-    $RawLog = Get-Content (Get-ChildItem -Path $LogPath -File | Select-Object -skip ($LogNumber - 1) -First 1).fullname
+    $LastSplat = @{}
+    if ($Last) {
+        $LastSplat['Last'] = $Last
+    }
+    $FilePath = (Get-ChildItem -Path $LogPath -File | Sort-Object LastWriteTime -Descending | Select-Object -skip ($LogNumber - 1) -First 1).fullname
+    $RawLog = Get-Content @LastSplat -Path $FilePath
     $TrimmedLog = $RawLog | Select-String -Pattern '#D.*|#F.*|#S.*|#V.*' -NotMatch
 
     $CleanLog = [system.collections.generic.list[string]]::new()
@@ -43,7 +51,7 @@ function Get-IISLog {
         $TrimmedLog.foreach{ $CleanLog.Add(@($_)) }
     }
 
-    $LogHeader = ($RawLog | Select-Object -Skip 3 -First 1) -replace "#Fields: ", "" -replace "-", "" -replace "\(", "" -replace "\)", ""
+    $LogHeader = (Get-Content -Path $FilePath -TotalCount 4 )[-1] -replace "#Fields: ", "" -replace "-", "" -replace "\(", "" -replace "\)", ""
 
     Set-Content -LiteralPath $LogTemp -Value ( [System.String]::Format("{0}{1}{2}", $LogHeader, [Environment]::NewLine, ( [System.String]::Join( [Environment]::NewLine, $CleanLog ) ) ) )
     $NewLog = Import-Csv -Path $LogTemp -Delimiter " "
