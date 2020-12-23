@@ -87,13 +87,14 @@ function Import-GoogleToEXOGroup {
             $Alias = ($CurGroup.Email -split "@")[0]
 
             # Managers and Owners
-            $ManagedBy = [System.Collections.Generic.HashSet[string]]::new()
+            $ManagedBy = [System.Collections.Generic.Hashset[string]]::new()
 
             if (-not $DontAddManagersToManagedBy -and -not [string]::IsNullOrWhiteSpace($CurGroup.Managers)) {
                 $CurGroup.Managers -split "`r`n" | ForEach-Object {
                     $ManagedBy.Add($_) > $null
                 }
             }
+
             if (-not $DontAddOwnersToManagedBy -and -not [string]::IsNullOrWhiteSpace($CurGroup.Owners)) {
                 $CurGroup.Owners -split "`r`n" | ForEach-Object {
                     $ManagedBy.Add($_) > $null
@@ -101,23 +102,25 @@ function Import-GoogleToEXOGroup {
             }
 
             # whoCanJoin
-            $MemberJoinRestriction = switch ($CurGroup.whoCanJoin) {
-                'ALL_IN_DOMAIN_CAN_JOIN' { 'Open' }
-                'ANYONE_CAN_JOIN' { 'Open' }
-                'CAN_REQUEST_TO_JOIN' {
-                    if ($CAN_REQUEST_TO_JOIN_TranslatesTo) {
-                        $CAN_REQUEST_TO_JOIN_TranslatesTo
+            if (-not $SecurityGroup) {
+                $MemberJoinRestriction = switch ($CurGroup.whoCanJoin) {
+                    'ALL_IN_DOMAIN_CAN_JOIN' { 'Open' }
+                    'ANYONE_CAN_JOIN' { 'Open' }
+                    'CAN_REQUEST_TO_JOIN' {
+                        if ($CAN_REQUEST_TO_JOIN_TranslatesTo) {
+                            $CAN_REQUEST_TO_JOIN_TranslatesTo
+                        }
+                        else {
+                            'ApprovalRequired'
+                        }
                     }
-                    else {
-                        'ApprovalRequired'
-                    }
-                }
-                'INVITED_CAN_JOIN' {
-                    if ($INVITED_CAN_JOIN_TranslatesTo) {
-                        $INVITED_CAN_JOIN_TranslatesTo
-                    }
-                    else {
-                        'ApprovalRequired'
+                    'INVITED_CAN_JOIN' {
+                        if ($INVITED_CAN_JOIN_TranslatesTo) {
+                            $INVITED_CAN_JOIN_TranslatesTo
+                        }
+                        else {
+                            'ApprovalRequired'
+                        }
                     }
                 }
             }
@@ -146,12 +149,11 @@ function Import-GoogleToEXOGroup {
                 Name                    = $CurGroup.Name
                 DisplayName             = $CurGroup.Name
                 Alias                   = $Alias
-                ManagedBy               = $ManagedBy
+                ManagedBy               = $ManagedBy.split("`r`n")
                 PrimarySmtpAddress      = $CurGroup.Email
                 MemberJoinRestriction   = $MemberJoinRestriction
                 MemberDepartRestriction = $MemberDepartRestriction
                 Notes                   = $CurGroup.Description
-
             }
 
             # Are Owners and/or Managers copied to the Group's Membership?
@@ -171,15 +173,23 @@ function Import-GoogleToEXOGroup {
             }
 
             # messageModerationLevel (A moderator approves messages sent to recipient before delivered)
-            switch ($CurGroup.messageModerationLevel) {
+            $ModeratedBy = [System.Collections.Generic.Hashset[string]]::new()
 
+            $CurGroup.Owners -split "`r`n" | ForEach-Object {
+                $ModeratedBy.Add($_) > $null
+            }
+
+            switch ($CurGroup.messageModerationLevel) {
                 'MODERATE_NONE' { $SetHash['ModerationEnabled'] = $false }
-                'MODERATE_ALL_MESSAGES' { $SetHash['ModerationEnabled'] = $true }
+                'MODERATE_ALL_MESSAGES' {
+                    $SetHash['ModerationEnabled'] = $true
+                    $SetHash['ModeratedBy'] = $ModeratedBy.split("`r`n")
+                }
                 'MODERATE_NON_MEMBERS' {
                     $SetHash['ModerationEnabled'] = $true
-                    $SetHash['BypassModerationFromSendersOrMembers'] = $CurGroup.Email
-                }
+                    $SetHash['BypassModerationFromSende`rsOrMembers'] = $CurGroup.Email
 
+                }
             }
             switch ($CurGroup.sendMessageDenyNotification) {
                 'TRUE' { $SetHash['SendModerationNotifications'] = 'ALWAYS' }
@@ -211,7 +221,7 @@ function Import-GoogleToEXOGroup {
                 }
             }
             if ($SecurityGroup) {
-                $NewHash['Type'] = 'Security'
+                $NewSplat['Type'] = 'Security'
             }
 
             # Create a splat with only parameters with values for Set-DistributionGroup
