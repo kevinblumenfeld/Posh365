@@ -187,7 +187,7 @@ function Import-GoogleToEXOGroup {
                 }
                 'MODERATE_NON_MEMBERS' {
                     $SetHash['ModerationEnabled'] = $true
-                    $SetHash['BypassModerationFromSende`rsOrMembers'] = $CurGroup.Email
+                    $SetHash['BypassModerationFromSendersOrMembers'] = $CurGroup.Email
 
                 }
             }
