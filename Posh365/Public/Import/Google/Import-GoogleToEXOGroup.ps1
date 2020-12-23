@@ -58,6 +58,9 @@ function Import-GoogleToEXOGroup {
         [switch] $DontAddOwnersToManagedBy,
 
         [Parameter()]
+        [switch] $SecurityGroup,
+
+        [Parameter()]
         [switch] $DontAddManagersToManagedBy,
 
         [Parameter()]
@@ -120,22 +123,22 @@ function Import-GoogleToEXOGroup {
             }
 
             # When "whoCanAdd" is "NONE_CAN_ADD" this overrides any "MemberJoinRestriction"
-            if ($NONE_CAN_ADD_members_Overrides) {
+            if ($NONE_CAN_ADD_members_Overrides -or -not $SecurityGroup) {
                 $MemberJoinRestriction = switch ($NONE_CAN_ADD_members_Overrides) {
                     'MemberJoinRestrictionTo_Closed' { 'Closed' }
                     'MemberJoinRestrictionTo_ApprovalRequired' { 'ApprovalRequired' }
                     'MemberJoinRestrictionTo_Open' { 'Open' }
                 }
             }
-
             # whoCanLeave
-            $MemberDepartRestriction = switch ($CurGroup.whoCanLeaveGroup) {
+            if (-not $SecurityGroup) {
+                $MemberDepartRestriction = switch ($CurGroup.whoCanLeaveGroup) {
 
-                'ALL_MEMBERS_CAN_LEAVE' { 'Open' }
-                'ALL_MANAGERS_CAN_LEAVE' { 'Closed' }
-                'NONE_CAN_LEAVE' { 'Closed' }
-                Default { 'Open' }
-
+                    'ALL_MEMBERS_CAN_LEAVE' { 'Open' }
+                    'ALL_MANAGERS_CAN_LEAVE' { 'Closed' }
+                    'NONE_CAN_LEAVE' { 'Closed' }
+                    Default { 'Open' }
+                }
             }
 
             $NewHash = @{
@@ -206,6 +209,9 @@ function Import-GoogleToEXOGroup {
                 if ($NewHash.item($Key) -ne $null) {
                     $NewSplat.add($Key, $($NewHash.item($Key)))
                 }
+            }
+            if ($SecurityGroup) {
+                $NewHash['Type'] = 'Security'
             }
 
             # Create a splat with only parameters with values for Set-DistributionGroup

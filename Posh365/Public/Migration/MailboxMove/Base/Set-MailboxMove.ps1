@@ -36,7 +36,11 @@ Function Set-MailboxMove {
 
         [Parameter()]
         [int]
-        $BadItemLimit
+        $BadItemLimit,
+
+        [Parameter()]
+        [switch]
+        $DontAcceptLargeDataLoss
     )
     if ($TenantToTenant) {
         $SetSplat = @{ }
@@ -51,6 +55,9 @@ Function Set-MailboxMove {
     }
     if ($BadItemLimit) {
         $SetSplat.Add('BadItemLimit', $BadItemLimit)
+    }
+    if ($DontAcceptLargeDataLoss) {
+        $SetSplat.Add('AcceptLargeDataLoss', $false)
     }
     Invoke-SetMailboxMove @SetSplat | Out-GridView -Title "Results of Set Mailbox Move"
 }

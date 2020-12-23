@@ -12,13 +12,17 @@ Function Invoke-SetMailboxMove {
 
         [Parameter()]
         [int]
-        $BadItemLimit
+        $BadItemLimit,
+
+        [Parameter()]
+        [switch]
+        $AcceptLargeDataLoss
     )
 
     $UserChoice = Import-MailboxMoveDecision -NotCompleted
     if ($UserChoice -ne 'Quit' ) {
         $SetSplat = @{
-            AcceptLargeDataLoss = $true
+            AcceptLargeDataLoss = $AcceptLargeDataLoss
             Confirm             = $false
             warningaction       = 'silentlycontinue'
             ErrorAction         = 'Stop'
@@ -38,9 +42,9 @@ Function Invoke-SetMailboxMove {
                 [PSCustomObject]@{
                     DisplayName                = $User.DisplayName
                     Result                     = 'SUCCESS'
-                    SuspendWhenReadyToComplete = $SetSplat.SuspendWhenReadyToComplete
-                    LargeItemLimit             = $SetSplat.LargeItemLimit
-                    BadItemLimit               = $SetSplat.BadItemLimit
+                    SuspendWhenReadyToComplete = $SetSplat['SuspendWhenReadyToComplete']
+                    LargeItemLimit             = $SetSplat['LargeItemLimit']
+                    BadItemLimit               = $SetSplat['BadItemLimit']
                     AcceptLargeDataLoss        = 'TRUE'
                     Log                        = 'SUCCESS'
                     Action                     = 'SET'
@@ -50,9 +54,9 @@ Function Invoke-SetMailboxMove {
                 [PSCustomObject]@{
                     DisplayName                = $User.DisplayName
                     Result                     = 'FAILED'
-                    SuspendWhenReadyToComplete = $SetSplat.SuspendWhenReadyToComplete
-                    LargeItemLimit             = $SetSplat.LargeItemLimit
-                    BadItemLimit               = $SetSplat.BadItemLimit
+                    SuspendWhenReadyToComplete = $SetSplat['SuspendWhenReadyToComplete']
+                    LargeItemLimit             = $SetSplat['LargeItemLimit']
+                    BadItemLimit               = $SetSplat['BadItemLimit']
                     AcceptLargeDataLoss        = 'TRUE'
                     Log                        = $_.Exception.Message
                     Action                     = 'SET'
