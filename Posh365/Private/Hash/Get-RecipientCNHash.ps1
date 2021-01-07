@@ -1,4 +1,4 @@
-﻿function Get-RecipientCNHash {
+function Get-RecipientCNHash {
     [CmdletBinding()]
 
     param ( )
