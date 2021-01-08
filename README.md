@@ -1,6 +1,8 @@
 
 # Posh365
 
+  [![](https://img.shields.io/powershellgallery/v/Posh365.svg)](https://www.powershellgallery.com/packages/Posh365) [![](https://img.shields.io/powershellgallery/dt/Posh365.svg)](https://www.powershellgallery.com/packages/Posh365)
+
 ###### Install
 ```powershell
 Set-ExecutionPolicy RemoteSigned
