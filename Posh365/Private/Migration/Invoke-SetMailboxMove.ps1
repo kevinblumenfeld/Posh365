@@ -27,10 +27,10 @@ Function Invoke-SetMailboxMove {
             warningaction       = 'silentlycontinue'
             ErrorAction         = 'Stop'
         }
-        if ($LargeItemLimit) {
+        if ($PSBoundParameters.ContainsKey('LargeItemLimit')) {
             $SetSplat.Add('LargeItemLimit', $LargeItemLimit)
         }
-        if ($BadItemLimit) {
+        if ($PSBoundParameters.ContainsKey('BadItemLimit')) {
             $SetSplat.Add('BadItemLimit', $BadItemLimit)
         }
         if ($SuspendWhenReadyToComplete) {

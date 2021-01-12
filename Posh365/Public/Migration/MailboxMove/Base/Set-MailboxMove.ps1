@@ -50,10 +50,10 @@ Function Set-MailboxMove {
             SuspendWhenReadyToComplete = $SuspendWhenReadyToComplete
         }
     }
-    if ($LargeItemLimit) {
+    if ($PSBoundParameters.ContainsKey('LargeItemLimit')) {
         $SetSplat.Add('LargeItemLimit', $LargeItemLimit)
     }
-    if ($BadItemLimit) {
+    if ($PSBoundParameters.ContainsKey('BadItemLimit')) {
         $SetSplat.Add('BadItemLimit', $BadItemLimit)
     }
     if ($DontAcceptLargeDataLoss) {
