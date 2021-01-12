@@ -44,11 +44,7 @@ function Get-DistributionGroupMembership {
         foreach ($Item in $Identity) {
             Write-Verbose "Looking up memberships for '$Item'."
             try {
-                $Recipient = $null
                 $Recipient = Get-Recipient -Identity $Item -ErrorAction Stop
-                Write-Host ("R: {0}" -f $Recipient.DisplayName) -ForegroundColor Cyan
-                Write-Host ("T: {0}" -f $Recipient.RecipientTypeDetails) -ForegroundColor Cyan
-                Write-Host ("E: {0}" -f $Recipient.PrimarySmtpAddress) -ForegroundColor Cyan
             }
             catch {
                 Write-Error "Unable to find recipient '{0}': {1}" -f $Item, $_.exception.message
@@ -86,7 +82,7 @@ function Get-DistributionGroupMembership {
                 if ($GroupObj.RecipientTypeDetails -in 'NonUniversalGroup', 'GroupMailbox', 'RoleGroup') {
                     continue
                 }
-                Write-Host ("Start recursing for '{0}'." -f $GroupObj.WindowsEmailAddress) -ForegroundColor Green
+                Write-Verbose ("Start recursing for '{0}'." -f $GroupObj.WindowsEmailAddress)
                 Get-DistributionGroupMembership -Identity $GroupObj.Guid.ToString() -Recurse -Processed $Processed
                 Write-Verbose "Done recursing for '$($GroupObj.WindowsEmailAddress)'."
             }
