@@ -1,23 +1,11 @@
 function Get-DistributionGroupMembers {
     <#
+
     .SYNOPSIS
-        Determines the Groups that a recipient is a member of.  Either recursively or not.
-        Original function developed my Mark Kraus.  https://www.reddit.com/r/PowerShell/comments/5ndp4n/get_all_distribution_groups_for_a_user_with/
-        Check out his blog here: https://get-powershellblog.blogspot.com
+    needs to be moved to the new code Get-DistributionGroupMembership
 
-    .DESCRIPTION
-        Determines the Groups that a recipient is a member of.  Either recursively or not.
+    #>
 
-    .PARAMETER Recurse
-        Reveals nested group membership
-
-    .PARAMETER Processed
-        Parameter used internally by function to hold those that have been processed (loopback detection)
-
-    .EXAMPLE
-        "Group01@contoso.com" | Get-DistributionGroupMembers -Recurse -Verbose
-
-#>
     [CmdletBinding(SupportsShouldProcess = $true)]
     param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
@@ -33,7 +21,7 @@ function Get-DistributionGroupMembers {
         if (-not $processed) {
             $Processed = @()
         }
-    }    
+    }
     process {
         foreach ($CurIdentity in $Identity) {
             Write-Verbose "Looking up memberships for '$CurIdentity'."
@@ -50,10 +38,10 @@ function Get-DistributionGroupMembers {
             $Processed += $Recipient.PrimarySmtpAddress
             $Results = @()
             Write-Verbose "RTD: '$($Recipient.RecipientTypeDetails)'"
-            Get-DistributionGroupMember -Identity $Recipient.DistinguishedName -ResultSize Unlimited | 
-                Where-Object {$_.PrimarySmtpAddress -notin $Processed} |
-                ForEach-Object {
-                $_ | Where-Object {$_.RecipientTypeDetails -notin 'NonUniversalGroup', 'GroupMailbox', 'RoleGroup','MailNonUniversalGroup','MailUniversalSecurityGroup','MailUniversalDistributionGroup','DynamicDistributionGroup','PublicFolder','UniversalDistributionGroup','UniversalSecurityGroup','NonUniversalGroup'} | Select -ExpandProperty DistinguishedName
+            Get-DistributionGroupMember -Identity $Recipient.DistinguishedName -ResultSize Unlimited |
+            Where-Object { $_.PrimarySmtpAddress -notin $Processed } |
+            ForEach-Object {
+                $_ | Where-Object { $_.RecipientTypeDetails -notin 'NonUniversalGroup', 'GroupMailbox', 'RoleGroup', 'MailNonUniversalGroup', 'MailUniversalSecurityGroup', 'MailUniversalDistributionGroup', 'DynamicDistributionGroup', 'PublicFolder', 'UniversalDistributionGroup', 'UniversalSecurityGroup', 'NonUniversalGroup' } | Select-Object -ExpandProperty DistinguishedName
                 $Results += $_
             }
             if (-not $Recurse) {

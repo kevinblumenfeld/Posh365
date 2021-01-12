@@ -15,75 +15,81 @@ function Get-DistributionGroupMembership {
         Parameter used internally by function to hold those that have been processed (loopback detection)
 
     .EXAMPLE
-        "john@contoso.com" | Get-DistributionGroupMembership -Recurse -Verbose
+        Get-Recipient pat@contoso.com | Get-DistributionGroupMembership -Recurse
+
+    .EXAMPLE
+        Get-Recipient pat@contoso.com | Get-DistributionGroupMembership -Recurse -Verbose
+
+    .EXAMPLE
+        Get-Recipient pat@contoso.com | Get-DistributionGroupMembership -Recurse | Export-Csv .\membership.csv -notypeinformation
 
 #>
-    [CmdletBinding(SupportsShouldProcess = $true)]
+    [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true, ValueFromPipeline = $True, ValueFromPipelineByPropertyName = $True)]
+        [Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [string[]]$Identity,
 
         [Parameter()]
         [switch]$Recurse,
 
         [Parameter()]
-        [string[]]$Processed
+        [System.Collections.Generic.List[string[]]]$Processed
     )
     begin {
         if (-not $processed) {
-            $Processed = @()
+            $Processed = [System.Collections.Generic.List[string[]]]::New()
         }
     }
     process {
-        foreach ($CurIdentity in $Identity) {
-            $Item = $_
-            if (-not $PSCmdlet.ShouldProcess($CurIdentity)) {
-                continue
-            }
-            Write-Verbose "Looking up memberships for '$CurIdentity'."
+        foreach ($Item in $Identity) {
+            Write-Verbose "Looking up memberships for '$Item'."
             try {
-                $Recipient = Get-Recipient -Identity $CurIdentity -ErrorAction Stop
+                $Recipient = $null
+                $Recipient = Get-Recipient -Identity $Item -ErrorAction Stop
+                Write-Host ("R: {0}" -f $Recipient.DisplayName) -ForegroundColor Cyan
+                Write-Host ("T: {0}" -f $Recipient.RecipientTypeDetails) -ForegroundColor Cyan
+                Write-Host ("E: {0}" -f $Recipient.PrimarySmtpAddress) -ForegroundColor Cyan
             }
             catch {
-                $ErrorMessage = $_.exception.message
-                $Message = "Unable to find recipient '{0}': {1}" -f $CurIdentity, $ErrorMessage
-                Write-Error $Message
+                Write-Error "Unable to find recipient '{0}': {1}" -f $Item, $_.exception.message
                 continue
             }
+
             Write-Verbose "Adding '$($Recipient.PrimarySmtpAddress)' to processed list"
-            $Processed += $Recipient.PrimarySmtpAddress
-            $Results = @()
+            $Processed.Add($Recipient.PrimarySmtpAddress.ToString())
+
+            $GroupObject = [System.Collections.Generic.List[PSObject]]::New()
+
             $Filter = "members -eq '{0}'" -f $Recipient.DistinguishedName
-            Get-Group -ResultSize Unlimited -filter $Filter |
-            Where-Object { $_.WindowsEmailAddress -notin $Processed } |
-            ForEach-Object {
-                if ($_.RecipientTypeDetails -notin 'NonUniversalGroup', 'GroupMailbox', 'RoleGroup') {
+            $GroupList = Get-Group -ResultSize Unlimited -filter $Filter
+            foreach ($Group in $GroupList) {
+                if ($Group.RecipientTypeDetails -notin 'NonUniversalGroup', 'GroupMailbox', 'RoleGroup' -and $Group.WindowsEmailAddress -notin $Processed) {
                     [PSCustomObject]@{
-                        Email                   = $Item
+                        DisplayName             = $Recipient.DisplayName
+                        Identity                = $Item
                         PrimarySmtpAddress      = $Recipient.PrimarySmtpAddress
-                        ContactType             = $Recipient.RecipientTypeDetails
-                        RecipientTypeDetails    = $_.RecipientTypeDetails
-                        Group                   = $_.DisplayName
-                        GroupPrimarySmtpAddress = $_.WindowsEmailAddress
-                        Guid                    = ($_.Guid).Guid.ToString()
-                        GroupType               = $_.GroupType
+                        RecipientType           = $Recipient.RecipientTypeDetails
+                        RecipientTypeDetails    = $Group.RecipientTypeDetails
+                        Group                   = $Group.DisplayName
+                        GroupPrimarySmtpAddress = $Group.WindowsEmailAddress
+                        Guid                    = $Group.Guid.ToString()
+                        GroupType               = $Group.GroupType
                     }
-                    # $_
-                    $Results += $_
+                    $GroupObject.Add($Group)
                 }
             }
             if (-not $Recurse) {
                 continue
             }
-            Foreach ($Result in $Results) {
+            foreach ($GroupObj in $GroupObject) {
                 #Skip "Office 365 Groups" as they fail recipient checks and cannot be members of other groups
-                if ($Result.RecipientTypeDetails -in 'NonUniversalGroup', 'GroupMailbox', 'RoleGroup') {
-                    Continue
+                if ($GroupObj.RecipientTypeDetails -in 'NonUniversalGroup', 'GroupMailbox', 'RoleGroup') {
+                    continue
                 }
-                Write-Verbose "Start recursing for '$($Result.WindowsEmailAddress)'."
-                Get-DistributionGroupMembership -Identity $Result.Guid.ToString() -Recurse -Processed $Processed
-                Write-Verbose "Done recursing for '$($Result.WindowsEmailAddress)'."
-            }#End Foreach result
-        } #End Foreach Identity
-    } #End Process
-} #End Function
+                Write-Host ("Start recursing for '{0}'." -f $GroupObj.WindowsEmailAddress) -ForegroundColor Green
+                Get-DistributionGroupMembership -Identity $GroupObj.Guid.ToString() -Recurse -Processed $Processed
+                Write-Verbose "Done recursing for '$($GroupObj.WindowsEmailAddress)'."
+            }
+        }
+    }
+}
