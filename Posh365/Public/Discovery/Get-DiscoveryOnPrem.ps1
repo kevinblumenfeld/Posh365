@@ -602,6 +602,6 @@
 
     # Complete
     Write-Verbose "Script Complete"
-    Write-Verbose "Results can be found on the Desktop in a folder named, Discovery"
+    Write-Host ("Results can be found on Desktop here: {0}" -f (Join-Path $Discovery 'Discovery.xlsx')) -ForegroundColor Green
 }
 
