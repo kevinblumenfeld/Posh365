@@ -20,6 +20,8 @@ Function Invoke-GetMailboxMoveStatistics {
                     BatchName                  = $Stat.BatchName
                     DisplayName                = $Stat.DisplayName
                     PercentComplete            = $Stat.PercentComplete
+                    OverallDuration            = '{0:d2} days {1:d2}:{2:d2}' -f $Stat.OverallDuration.Days, $Stat.OverallDuration.Hours, $Stat.OverallDuration.Minutes
+                    TotalFailedDuration        = '{0:d2} days {1:d2}:{2:d2}' -f $Stat.TotalFailedDuration.Days, $Stat.TotalFailedDuration.Hours, $Stat.TotalFailedDuration.Minutes
                     BadItemLimit               = $Stat.BadItemLimit
                     BadItemsEncountered        = $Stat.BadItemsEncountered
                     LargeItemLimit             = $Stat.LargeItemLimit
@@ -29,15 +31,16 @@ Function Invoke-GetMailboxMoveStatistics {
                     ItemsTransferred           = $Stat.ItemsTransferred
                     TotalMailboxItemCount      = $Stat.TotalMailboxItemCount
                     StatusDetail               = $Stat.StatusDetail
+                    DataConsistencyScore       = $Stat.DataConsistencyScore
                     Suspend                    = $Stat.Suspend
                     SuspendWhenReadyToComplete = $Stat.SuspendWhenReadyToComplete
+                    RemoteDatabase             = $Stat.RemoteDatabase
                     RecipientTypeDetails       = $Stat.RecipientTypeDetails
                     RemoteHostName             = $Stat.RemoteHostName
                     RequestStyle               = $Stat.RequestStyle
                     TargetDatabase             = $Stat.TargetDatabase
                     ExchangeGuid               = $Stat.ExchangeGuid
-                    Guid                       = $Stat.Guid
-                    Name                       = $Stat.Name
+                    Message                    = $Stat.Message
                 }
             }
         }

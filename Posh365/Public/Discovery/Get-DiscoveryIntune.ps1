@@ -79,4 +79,5 @@ function Get-DiscoveryIntune {
             Import-Csv $_.fullname | Format-Vertical | Export-Excel @ExcelSplat -WorksheetName (-join $_.BaseName[0..29]) -Path (Join-Path $TenantPath 'Intune_Discovery.xlsx')
         }
     }
+    Write-Host ("Results can be found on Desktop here: {0}" -f (Join-Path $TenantPath 'Intune_Discovery.xlsx')) -ForegroundColor Green
 }

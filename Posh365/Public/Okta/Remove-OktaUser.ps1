@@ -1,10 +1,45 @@
 function Remove-OktaUser {
     <#
         .SYNOPSIS
-            Searches for specific Okta Users and deletes them!
+            Searches for specific Okta Users and FIRST Deactivates them and on a SECOND pass, deletes them!
+
+            IMPORTANT: If you would like to permanently delete the user, you must retain a list of IDs.
+                        The process would look like this.
+                        1. Obtain a list of IDs that you would like to hard delete.
+                        2. Use this function - $IDList | % {Remove-OktaUserReport -Id $_.Id} # This places the user in a deactivated state
+                        3. Repeat step #2 - in otherwords it takes takes two Remove-OktaUser to hard delete
+            - If you do not have a list of IDs of the Deactivated users, you cannot query for them via the API, Okta has not exposed it
+            - In a pinch you could use F12 when loading https://YourOktaTenant.okta.com/admin/users  ## I USED FIREFOX (BELOW) ##
+                - The following GET will be displayed https://YourOktaTenant.okta.com/api/internal/people?filter=EVERYONE
+                - Right click it and Select COPY > COPY RESPONSE HEADERS
+                - You will then be able to use:
+
+                Get-Clipboard | ConvertFrom-Json|Select -expand personlist | ? {$_.status -eq 'Deactivated'} | % {Remove-OktaUser -Id $_.id}
+
+                WARNING!!! THIS WILL REMOVE EVERY SINGLE DEACTIVATED USER and IF YOU ARE NOT CAREFUL YOUR ENTIRE TENANT!!!!!!!!
+                BE SURE YOU HAVE TESTED THIS EXTENSIVELY!!!!
+                I AM NOT RESPONSIBLE FOR ANY LOSS OR ISSUES!!!
 
         .DESCRIPTION
-            Searches for specific Okta Users and deletes them!
+            Searches for specific Okta Users and FIRST Deactivates them and on a SECOND pass, deletes them!
+
+            IMPORTANT: If you would like to permanently delete the user, you must retain a list of IDs.
+                        The process would look like this.
+                        1. Obtain a list of IDs that you would like to hard delete.
+                        2. Use this function - $IDList | % {Remove-OktaUserReport -Id $_.Id} # This places the user in a deactivated state
+                        3. Repeat step #2 - in otherwords it takes takes two Remove-OktaUser to hard delete
+            - If you do not have a list of IDs of the Deactivated users, you cannot query for them via the API, Okta has not exposed it
+            - In a pinch you could use F12 when loading https://YourOktaTenant.okta.com/admin/users  ## I USED FIREFOX (BELOW) ##
+                - The following GET will be displayed https://YourOktaTenant.okta.com/api/internal/people?filter=EVERYONE
+                - Right click it and Select COPY > COPY RESPONSE HEADERS
+                - You will then be able to use:
+
+                Get-Clipboard | ConvertFrom-Json|Select -expand personlist | ? {$_.status -eq 'Deactivated'} | % {Remove-OktaUser -Id $_.id}
+
+                WARNING!!! THIS WILL REMOVE EVERY SINGLE DEACTIVATED USER and IF YOU ARE NOT CAREFUL YOUR ENTIRE TENANT!!!!!!!!
+                BE SURE YOU HAVE TESTED THIS EXTENSIVELY!!!!
+                I AM NOT RESPONSIBLE FOR ANY LOSS OR ISSUES!!!
+
 
         .PARAMETER SearchString
             Queries firstName, lastName, and email for a match to the -SearchString value specified.
@@ -47,7 +82,7 @@ function Remove-OktaUser {
         $SearchResult = (Get-OktaUserReport -SearchString $SearchString).id
         foreach ($CurSearchResult in $SearchResult) {
             $RestSplat = @{
-                Uri     = 'https://{0}.okta.com/api/v1/users/{1}?sendEmail=true' -f $Url, $CurSearchResult
+                Uri     = 'https://{0}.okta.com/api/v1/users/{1}' -f $Url, $CurSearchResult
                 Headers = $Headers
                 Method  = 'DELETE'
             }
@@ -86,7 +121,7 @@ function Remove-OktaUser {
     }
     else {
         $RestSplat = @{
-            Uri     = 'https://{0}.okta.com/api/v1/users/{1}?sendEmail=true' -f $Url, $id
+            Uri     = 'https://{0}.okta.com/api/v1/users/{1}' -f $Url, $id
             Headers = $Headers
             Method  = 'DELETE'
         }
