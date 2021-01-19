@@ -15,7 +15,11 @@
 
         [Parameter()]
         [switch]
-        $AddDetailedExcel
+        $AddDetailedExcel,
+
+        [Parameter()]
+        [switch]
+        $SkipVirtualDirectoryReport
     )
 
     try {
@@ -128,9 +132,13 @@
     #### EXCHANGE ####
     ##################
 
-    # Exchange Mailboxes
+    # Exchange Virtual Directories
+    if (-not $SkipVirtualDirectoryReport) {
+
     Write-Verbose "Retrieve Exchange Virtual Directory Information"
     Get-VirtualDirectoryInfo -ReportPath $CSV
+
+    }
 
     # Exchange Mailboxes
     Write-Verbose "Retrieving Exchange Mailboxes"
