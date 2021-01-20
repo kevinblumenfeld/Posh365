@@ -3,7 +3,7 @@ function Get-ConditionalAccessPolicy {
 
     )
     $SPHash = @{ }
-    $SPList = Get-AzureADServicePrincipal
+    $SPList = Get-AzureADSP
     foreach ($SP in $SPList) {
         $SPHash[$SP.appId] = $SP.displayName
     }

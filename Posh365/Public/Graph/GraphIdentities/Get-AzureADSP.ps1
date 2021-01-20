@@ -1,4 +1,4 @@
-function Get-AzureADServicePrincipal {
+function Get-AzureADSP {
     [CmdletBinding()]
     param (
 
