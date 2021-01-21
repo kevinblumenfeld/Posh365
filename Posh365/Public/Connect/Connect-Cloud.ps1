@@ -458,7 +458,13 @@ function Connect-Cloud {
     }
     if ($Compliance) {
         Get-PSSession | Remove-PSSession
-        Connect-ExchangeOnline -ConnectionUri 'https://ps.compliance.protection.outlook.com/powershell-liveid' @Splat
+        if (-not $GCCHIGH) {
+            Connect-ExchangeOnline -ConnectionUri 'https://ps.compliance.protection.outlook.com/powershell-liveid' @Splat
+        }
+        else {
+            Connect-ExchangeOnline -ConnectionUri 'https://ps.compliance.protection.office365.us/powershell-liveid' @Splat
+        }
+
         Write-Host "You have successfully connected to Security & Compliance Center" -foregroundcolor "magenta" -backgroundcolor "white"
     }
     if ($Intune) {

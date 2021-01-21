@@ -10,7 +10,7 @@ function Get-ComplianceRoleReport {
         MFAHash {
             foreach ($ComplianceRole in $ComplianceRoleList) {
                 Write-Verbose "Processing $($ComplianceRole.DisplayName)"
-                $RoleMemberList = Get-RoleGroupMember -Identity $ComplianceRole.Identity
+                $RoleMemberList = Get-RoleGroupMember -Identity $ComplianceRole.Identity -ResultSize Unlimited
                 foreach ($RoleMember in $RoleMemberList) {
                     [PSCustomObject]@{
                         'Role'              = $ComplianceRole.DisplayName
@@ -27,7 +27,7 @@ function Get-ComplianceRoleReport {
         Default {
             foreach ($ComplianceRole in $ComplianceRoleList) {
                 Write-Verbose "Processing $($ComplianceRole.DisplayName)"
-                $RoleMemberList = Get-RoleGroupMember -Identity $ComplianceRole.Identity
+                $RoleMemberList = Get-RoleGroupMember -Identity $ComplianceRole.Identity -ResultSize Unlimited
                 foreach ($RoleMember in $RoleMemberList) {
                     [PSCustomObject]@{
                         'Role'              = $ComplianceRole.DisplayName

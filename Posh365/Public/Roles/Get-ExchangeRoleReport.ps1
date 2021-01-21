@@ -10,7 +10,7 @@ function Get-ExchangeRoleReport {
         MFAHash {
             foreach ($ExchangeRole in $ExchangeRoleList) {
                 Write-Verbose "Processing $($ExchangeRole.Name)"
-                $RoleMemberList = Get-RoleGroupMember -Identity $ExchangeRole.Identity
+                $RoleMemberList = Get-RoleGroupMember -Identity $ExchangeRole.Identity -ResultSize Unlimited
                 foreach ($RoleMember in $RoleMemberList) {
                     [PSCustomObject]@{
                         'Role'              = $ExchangeRole.Name
@@ -27,7 +27,7 @@ function Get-ExchangeRoleReport {
         Default {
             foreach ($ExchangeRole in $ExchangeRoleList) {
                 Write-Verbose "Processing $($ExchangeRole.Name)"
-                $RoleMemberList = Get-RoleGroupMember -Identity $ExchangeRole.Identity
+                $RoleMemberList = Get-RoleGroupMember -Identity $ExchangeRole.Identity -ResultSize Unlimited
                 foreach ($RoleMember in $RoleMemberList) {
                     [PSCustomObject]@{
                         'Role'              = $ExchangeRole.Name
