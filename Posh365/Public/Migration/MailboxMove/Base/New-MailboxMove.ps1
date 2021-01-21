@@ -40,10 +40,10 @@ function New-MailboxMove {
     Tenant        = 'contoso'
     }
     New-MailboxMove @params
- 
+
     .EXAMPLE
     # For GCC use the full tenant adderess like in the example:
-    
+
     $params = @{
     SharePointURL = 'https://contoso.sharepoint.com/sites/migrate'
     ExcelFile     = 'Batches.xlsx'
@@ -59,7 +59,7 @@ function New-MailboxMove {
     General notes
     #>
 
-    [CmdletBinding(DefaultParameterSetName = 'SharePoint')]
+    [CmdletBinding(DefaultParameterSetName = 'PlaceHolder')]
     [Alias('NMM')]
     param (
         [Parameter()]
@@ -81,13 +81,17 @@ function New-MailboxMove {
         [string]
         $MailboxCSV,
 
+        [Parameter(Mandatory, ParameterSetName = 'Object')]
+        [ValidateNotNullOrEmpty()]
+        $Object,
+
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [Alias('RemoteTenant')]
         [string]
         $RemoteHost,
 
-        [Parameter(Mandatory)]
+        [Parameter()]
         [ValidateNotNullOrEmpty()]
         [Alias('TargetDeliveryDomain')]
         [string]
@@ -123,7 +127,7 @@ function New-MailboxMove {
     }
     else {
         if ($Tenant -notmatch '\.mail\.onmicrosoft\.com|\.onmicrosoft\.us') {
-            $Tenant = '{0}.mail.onmicrosoft.com' -f $Tenant
+            $Tenant = Get-AcceptedDomain | Where-Object { $_.DomainName -like '*.mail.onmicrosoft.*' } | Select-Object -ExpandProperty DomainName
         }
     }
     switch ($PSCmdlet.ParameterSetName) {
@@ -137,6 +141,9 @@ function New-MailboxMove {
         'CSV' {
             $UserChoice = Import-MailboxCsvDecision -MailboxCSV $MailboxCSV
         }
+        'Object' {
+            $UserChoice = Import-MailboxCsvDecision -Object $Object
+        }
     }
     if ($UserChoice -ne 'Quit' ) {
         $Sync = @{
@@ -144,18 +151,18 @@ function New-MailboxMove {
             Tenant     = $Tenant
         }
         if ($BadItemLimit) {
-            $Sync.Add('BadItemLimit', $BadItemLimit)
+            $Sync['BadItemLimit'] = $BadItemLimit
         }
         if ($LargeItemLimit) {
-            $Sync.Add('LargeItemLimit', $LargeItemLimit)
+            $Sync['LargeItemLimit'] = $LargeItemLimit
         }
         if ($TenantToTenant) {
-            $Sync.Add('IncrementalSyncInterval', $IncrementalSyncIntervalHours)
+            $Sync['IncrementalSyncInterval'] = $IncrementalSyncIntervalHours
             $UserChoice | Invoke-T2TNewMailboxMove @Sync | Out-GridView -Title "Results of New Tenant to Tenant Mailbox Move"
         }
         else {
             if ($IncrementalSyncIntervalHours) {
-                $Sync.Add('IncrementalSyncInterval', $IncrementalSyncIntervalHours)
+                $Sync['IncrementalSyncInterval'] = $IncrementalSyncIntervalHours
             }
             $UserChoice | Invoke-NewMailboxMove @Sync | Out-GridView -Title "Results of New Mailbox Move"
         }

@@ -15,10 +15,10 @@ function Invoke-TestMailboxMove {
         foreach ($User in $UserList) {
             $TestError = [System.Collections.Generic.List[string]]::New()
             $PreFlightHash = @{
-                'BatchName'          = $User.BatchName
-                'DisplayName'        = $User.DisplayName
-                'UserPrincipalName'  = $User.UserPrincipalName
-                'OrganizationalUnit' = $User.OrganizationalUnit
+                BatchName          = $User.BatchName
+                DisplayName        = $User.DisplayName
+                UserPrincipalName  = $User.UserPrincipalName
+                OrganizationalUnit = $User.OrganizationalUnit
             }
             $ErrorValue = [System.Collections.Generic.List[string]]::New()
             try {

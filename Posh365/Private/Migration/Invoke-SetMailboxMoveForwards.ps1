@@ -37,7 +37,7 @@ function Invoke-SetMailboxMoveForward {
                 $SetSplat = @{
                     warningaction = 'silentlycontinue'
                     ErrorAction   = 'Stop'
-                    Identity      = $User.UserPrincipalName
+                    Identity      = $User.ExchangeGuid.toString()
                     Confirm       = $false
                     Force         = $true
                 }
@@ -50,22 +50,24 @@ function Invoke-SetMailboxMoveForward {
                 try {
                     Set-Mailbox @SetSplat
                     [PSCustomObject]@{
-                        DisplayName = $User.DisplayName
-                        Result      = 'SUCCESS'
-                        Identity    = $User.UserPrincipalName
-                        Forward     = @($User.ForwardingAddress, $User.ForwardingSmtpAddress).where{ $_ } -join '|'
-                        Log         = 'SUCCESS'
-                        Action      = 'SET'
+                        DisplayName  = $User.DisplayName
+                        Result       = 'SUCCESS'
+                        Identity     = $User.UserPrincipalName
+                        ExchangeGuid = $User.ExchangeGuid.toString()
+                        Forward      = @($User.ForwardingAddress, $User.ForwardingSmtpAddress).where{ $_ } -join '|'
+                        Log          = 'SUCCESS'
+                        Action       = 'SET'
                     }
                 }
                 catch {
                     [PSCustomObject]@{
-                        DisplayName = $User.DisplayName
-                        Result      = 'FAILED'
-                        Identity    = $User.UserPrincipalName
-                        Forward     = @($User.ForwardingAddress, $User.ForwardingSmtpAddress).where{ $_ } -join '|'
-                        Log         = $_.Exception.Message
-                        Action      = 'SET'
+                        DisplayName  = $User.DisplayName
+                        Result       = 'FAILED'
+                        Identity     = $User.UserPrincipalName
+                        ExchangeGuid = $User.ExchangeGuid.toString()
+                        Forward      = @($User.ForwardingAddress, $User.ForwardingSmtpAddress).where{ $_ } -join '|'
+                        Log          = $_.Exception.Message
+                        Action       = 'SET'
                     }
                 }
             }

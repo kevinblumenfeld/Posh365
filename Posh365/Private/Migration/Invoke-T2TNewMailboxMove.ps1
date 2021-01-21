@@ -48,30 +48,32 @@ function Invoke-T2TNewMailboxMove {
             }
             # New-MoveRequest –OutBound -Identity <mailboxguid> -RemoteTenant "Contoso.onmicrosoft.com" -TargetDeliveryDomain Contoso.onmicrosoft.com -BadItemLimit 50 -CompleteAfter (Get-Date).AddMonths(12) -IncrementalSyncInterval '24:00:00'
             try {
+                # VERIFY THE LAST CHANGE TO    UserPrincipalName  = $User.ExchangeGuid works for T2T!!
                 $Result = New-MoveRequest @Param -WarningAction SilentlyContinue -ErrorAction Stop
                 [PSCustomObject]@{
-                    'DisplayName'        = $User.DisplayName
-                    'UserPrincipalName'  = $User.UserPrincipalName
-                    'Result'             = 'SUCCESS'
-                    'MailboxSize'        = [regex]::Matches("$($Result.TotalMailboxSize)", "^[^(]*").value
-                    'ArchiveSize'        = [regex]::Matches("$($Result.TotalArchiveSize)", "^[^(]*").value
-                    'SourceExchangeGuid' = $User.ExchangeGuid
-                    'TargetExchangeGuid' = $Result.ExchangeGuid
-                    'Log'                = $Result.StatusDetail
-                    'Action'             = 'NEW'
+                    DisplayName        = $User.DisplayName
+                    UserPrincipalName  = $User.ExchangeGuid
+                    Result             = 'SUCCESS'
+                    MailboxSize        = [regex]::Matches("$($Result.TotalMailboxSize)", "^[^(]*").value
+                    ArchiveSize        = [regex]::Matches("$($Result.TotalArchiveSize)", "^[^(]*").value
+                    SourceExchangeGuid = $User.ExchangeGuid
+                    TargetExchangeGuid = $Result.ExchangeGuid
+                    Log                = $Result.StatusDetail
+                    Action             = 'NEW'
                 }
             }
             catch {
                 [PSCustomObject]@{
-                    'DisplayName'        = $User.DisplayName
-                    'UserPrincipalName'  = $User.UserPrincipalName
-                    'Result'             = 'FAILED'
-                    'MailboxSize'        = ''
-                    'ArchiveSize'        = ''
-                    'SourceExchangeGuid' = $User.ExchangeGuid
-                    'TargetExchangeGuid' = $Result.ExchangeGuid
-                    'Log'                = $_.Exception.Message
-                    'Action'             = 'NEW'
+                    DisplayName        = $User.DisplayName
+                    UserPrincipalName  = $User.UserPrincipalName
+                    ExchangeGuid       = $User.ExchangeGuid
+                    Result             = 'FAILED'
+                    MailboxSize        = ''
+                    ArchiveSize        = ''
+                    SourceExchangeGuid = $User.ExchangeGuid
+                    TargetExchangeGuid = $Result.ExchangeGuid
+                    Log                = $_.Exception.Message
+                    Action             = 'NEW'
                 }
             }
         }

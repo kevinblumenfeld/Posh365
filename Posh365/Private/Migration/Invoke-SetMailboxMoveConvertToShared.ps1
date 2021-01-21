@@ -37,26 +37,28 @@ function Invoke-SetMailboxMoveConvertToShared {
                 $SetSplat = @{
                     warningaction = 'silentlycontinue'
                     ErrorAction   = 'Stop'
-                    Identity      = $User.UserPrincipalName
+                    Identity      = $User.ExchangeGuid.toString()
                     Type          = 'Shared'
                 }
                 try {
                     Set-Mailbox @SetSplat
                     [PSCustomObject]@{
-                        DisplayName = $User.DisplayName
-                        Result      = 'SUCCESS'
-                        Identity    = $User.UserPrincipalName
-                        Log         = 'SUCCESS'
-                        Action      = 'CONVERTTOSHARED'
+                        DisplayName  = $User.DisplayName
+                        Result       = 'SUCCESS'
+                        Identity     = $User.UserPrincipalName
+                        ExchangeGuid = $User.ExchangeGuid.toString()
+                        Log          = 'SUCCESS'
+                        Action       = 'CONVERTTOSHARED'
                     }
                 }
                 catch {
                     [PSCustomObject]@{
-                        DisplayName = $User.DisplayName
-                        Result      = 'FAILED'
-                        Identity    = $User.UserPrincipalName
-                        Log         = $_.Exception.Message
-                        Action      = 'CONVERTTOSHARED'
+                        DisplayName  = $User.DisplayName
+                        Result       = 'FAILED'
+                        Identity     = $User.UserPrincipalName
+                        ExchangeGuid = $User.ExchangeGuid.toString()
+                        Log          = $_.Exception.Message
+                        Action       = 'CONVERTTOSHARED'
                     }
                 }
             }

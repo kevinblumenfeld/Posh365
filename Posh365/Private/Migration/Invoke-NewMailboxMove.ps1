@@ -68,7 +68,7 @@ function Invoke-NewMailboxMove {
     process {
         foreach ($User in $UserList) {
             $Param = @{
-                Identity                   = $User.UserPrincipalName
+                Identity                   = $User.ExchangeGuid.toString()
                 RemoteCredential           = $RemoteCred
                 Remote                     = $true
                 RemoteHostName             = $RemoteHost
@@ -90,6 +90,7 @@ function Invoke-NewMailboxMove {
                 [PSCustomObject]@{
                     'DisplayName'       = $User.DisplayName
                     'UserPrincipalName' = $User.UserPrincipalName
+                    'ExchangeGuid'      = $User.ExchangeGuid
                     'Result'            = 'SUCCESS'
                     'MailboxSize'       = [regex]::Matches("$($Result.TotalMailboxSize)", "^[^(]*").value
                     'ArchiveSize'       = [regex]::Matches("$($Result.TotalArchiveSize)", "^[^(]*").value
@@ -101,6 +102,7 @@ function Invoke-NewMailboxMove {
                 [PSCustomObject]@{
                     'DisplayName'       = $User.DisplayName
                     'UserPrincipalName' = $User.UserPrincipalName
+                    'ExchangeGuid'      = $User.ExchangeGuid
                     'Result'            = 'FAILED'
                     'MailboxSize'       = ''
                     'ArchiveSize'       = ''

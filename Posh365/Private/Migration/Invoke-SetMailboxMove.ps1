@@ -28,19 +28,20 @@ Function Invoke-SetMailboxMove {
             ErrorAction         = 'Stop'
         }
         if ($PSBoundParameters.ContainsKey('LargeItemLimit')) {
-            $SetSplat.Add('LargeItemLimit', $LargeItemLimit)
+            $SetSplat['LargeItemLimit'] = $LargeItemLimit
         }
         if ($PSBoundParameters.ContainsKey('BadItemLimit')) {
-            $SetSplat.Add('BadItemLimit', $BadItemLimit)
+            $SetSplat['BadItemLimit'] = $BadItemLimit
         }
         if ($SuspendWhenReadyToComplete) {
-            $SetSplat.Add('SuspendWhenReadyToComplete', $true)
+            $SetSplat['SuspendWhenReadyToComplete'] = $true
         }
         foreach ($User in $UserChoice) {
             try {
                 Set-MoveRequest -Identity $User.Guid @SetSplat
                 [PSCustomObject]@{
                     DisplayName                = $User.DisplayName
+                    ExchangeGuid               = $User.ExchangeGuid.toString()
                     Result                     = 'SUCCESS'
                     SuspendWhenReadyToComplete = $SetSplat['SuspendWhenReadyToComplete']
                     LargeItemLimit             = $SetSplat['LargeItemLimit']
@@ -53,6 +54,7 @@ Function Invoke-SetMailboxMove {
             catch {
                 [PSCustomObject]@{
                     DisplayName                = $User.DisplayName
+                    ExchangeGuid               = $User.ExchangeGuid.toString()
                     Result                     = 'FAILED'
                     SuspendWhenReadyToComplete = $SetSplat['SuspendWhenReadyToComplete']
                     LargeItemLimit             = $SetSplat['LargeItemLimit']

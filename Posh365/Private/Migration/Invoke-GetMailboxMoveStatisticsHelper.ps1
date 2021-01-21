@@ -7,16 +7,20 @@ Function Invoke-GetMailboxMoveStatisticsHelper {
     (
         [Parameter()]
         [switch]
-        $IncludeCompleted
+        $IncludeCompleted,
+
+        [Parameter()]
+        [switch]
+        $RemoveAndRestart
     )
-    end {
-        if ($IncludeCompleted) {
-            $MoveList = Invoke-GetMailboxMovePassThru -IncludeCompleted
-            $MoveList | Invoke-GetMailboxMoveStatistics | Out-GridView -Title "Statistics of mailbox moves"
-        }
-        else {
-            $MoveList = Invoke-GetMailboxMovePassThru
-            $MoveList | Invoke-GetMailboxMoveStatistics | Out-GridView -Title "Statistics of mailbox moves"
-        }
+
+    $MoveList = Invoke-GetMailboxMovePassThru -IncludeCompleted:$IncludeCompleted -RemoveAndRestart:$RemoveAndRestart
+    if (-not $RemoveAndRestart) {
+        $MoveList | Invoke-GetMailboxMoveStatistics | Out-GridView -Title "Statistics of mailbox moves"
     }
+    else {
+        $MoveList | Invoke-GetMailboxMoveStatistics
+    }
+
+
 }

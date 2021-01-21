@@ -37,7 +37,7 @@ function Invoke-SetMailboxMoveAddressBookPolicy {
                 $SetSplat = @{
                     warningaction     = 'silentlycontinue'
                     ErrorAction       = 'Stop'
-                    Identity          = $User.UserPrincipalName
+                    Identity          = $User.ExchangeGuid.toString()
                     AddressBookPolicy = $User.AddressBookPolicy
                 }
                 try {
@@ -46,6 +46,7 @@ function Invoke-SetMailboxMoveAddressBookPolicy {
                         DisplayName       = $User.DisplayName
                         Result            = 'SUCCESS'
                         Identity          = $User.UserPrincipalName
+                        ExchangeGuid      = $User.ExchangeGuid.toString()
                         AddressBookPolicy = $User.AddressBookPolicy
                         Log               = 'SUCCESS'
                         Action            = 'SET'
@@ -56,6 +57,7 @@ function Invoke-SetMailboxMoveAddressBookPolicy {
                         DisplayName       = $User.DisplayName
                         Result            = 'FAILED'
                         Identity          = $User.UserPrincipalName
+                        ExchangeGuid      = $User.ExchangeGuid.toString()
                         AddressBookPolicy = $User.AddressBookPolicy
                         Log               = $_.Exception.Message
                         Action            = 'SET'

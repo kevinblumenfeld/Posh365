@@ -4,7 +4,11 @@ Function Invoke-GetMailboxMovePassThru {
     (
         [Parameter()]
         [switch]
-        $IncludeCompleted
+        $IncludeCompleted,
+
+        [Parameter()]
+        [switch]
+        $RemoveAndRestart
     )
 
     if ($IncludeCompleted) {

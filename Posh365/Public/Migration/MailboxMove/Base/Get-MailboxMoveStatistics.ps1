@@ -26,13 +26,12 @@ Function Get-MailboxMoveStatistics {
     (
         [Parameter()]
         [switch]
-        $IncludeCompleted
+        $IncludeCompleted,
+
+        [Parameter()]
+        [switch]
+        $RemoveAndRestart
     )
 
-    if ($IncludeCompleted) {
-        Invoke-GetMailboxMoveStatisticsHelper -IncludeCompleted
-    }
-    else {
-        Invoke-GetMailboxMoveStatisticsHelper
-    }
+    Invoke-GetMailboxMoveStatisticsHelper -IncludeCompleted:$IncludeCompleted -RemoveAndRestart:$RemoveAndRestart
 }

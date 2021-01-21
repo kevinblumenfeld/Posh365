@@ -37,7 +37,7 @@ function Invoke-SetMailboxMoveRetentionPolicy {
                 $SetSplat = @{
                     warningaction   = 'silentlycontinue'
                     ErrorAction     = 'Stop'
-                    Identity        = $User.UserPrincipalName
+                    Identity        = $User.ExchangeGuid.toString()
                     RetentionPolicy = $User.RetentionPolicy
                 }
                 try {
@@ -46,6 +46,7 @@ function Invoke-SetMailboxMoveRetentionPolicy {
                         DisplayName     = $User.DisplayName
                         Result          = 'SUCCESS'
                         Identity        = $User.UserPrincipalName
+                        ExchangeGuid    = $User.ExchangeGuid.toString()
                         RetentionPolicy = $User.RetentionPolicy
                         Log             = 'SUCCESS'
                         Action          = 'SET'
@@ -56,6 +57,7 @@ function Invoke-SetMailboxMoveRetentionPolicy {
                         DisplayName     = $User.DisplayName
                         Result          = 'FAILED'
                         Identity        = $User.UserPrincipalName
+                        ExchangeGuid    = $User.ExchangeGuid.toString()
                         RetentionPolicy = $User.RetentionPolicy
                         Log             = $_.Exception.Message
                         Action          = 'SET'

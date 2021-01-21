@@ -1,11 +1,23 @@
 Function Invoke-RemoveMailboxMove {
     [CmdletBinding()]
-    param
-    (
-
+    param (
+        [Parameter()]
+        $RandRObject
     )
     end {
-        $UserChoice = Import-MailboxMoveDecision
+        if ($RandRObject) {
+            $UserChoice = $RandRObject | Select-Object @(
+                'DisplayName'
+                @{
+                    Name       = 'Guid'
+                    Expression = { $_.ExchangeGuid.toString() }
+                }
+            )
+        }
+        else {
+            $UserChoice = Import-MailboxMoveDecision
+        }
+
         if ($UserChoice -ne 'Quit' ) {
             foreach ($User in $UserChoice) {
                 try {
