@@ -5,7 +5,7 @@ function Get-ComplianceRoleReport {
         [hashtable]
         $MFAHash
     )
-    $ComplianceRoleList = Get-RoleGroup
+    $ComplianceRoleList = Get-RoleGroup -ResultSize Unlimited
     switch ($PSBoundParameters.Keys) {
         MFAHash {
             foreach ($ComplianceRole in $ComplianceRoleList) {
