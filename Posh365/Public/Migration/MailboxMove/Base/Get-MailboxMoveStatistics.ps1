@@ -29,6 +29,7 @@ Function Get-MailboxMoveStatistics {
         $IncludeCompleted,
 
         [Parameter()]
+        [Alias('PassThruData')]
         [switch]
         $RemoveAndRestart
     )

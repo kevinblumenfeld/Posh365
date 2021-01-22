@@ -22,12 +22,9 @@ Function Resume-MailboxMove {
         [switch]
         $DontAutoComplete
     )
-    end {
-        if ($DontAutoComplete) {
-            Invoke-ResumeMailboxMove -DontAutoComplete | Out-GridView -Title "Results of Resume Mailbox Move (SuspendWhenReadyToComplete=True)"
-        }
-        else {
-            Invoke-ResumeMailboxMove | Out-Gridview -Title "Results of Resume Mailbox Move"
-        }
+
+    $UserChoice = Get-MailboxMoveStatistics -PassThruData | Out-GridView -PassThru -Title 'Choose Mailboxes to Resume'
+    if ($UserChoice) {
+        Invoke-ResumeMailboxMove -UserChoice $UserChoice -DontAutoComplete:$DontAutoComplete | Out-GridView -Title "Results of Resume Mailbox Move"
     }
 }
