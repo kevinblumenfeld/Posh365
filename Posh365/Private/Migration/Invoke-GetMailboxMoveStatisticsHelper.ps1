@@ -72,7 +72,7 @@ Function Invoke-GetMailboxMoveStatisticsHelper {
                 }).foreach{ $_['ID'] }
             foreach ($Delete in $DeleteList) {
                 try {
-                    Write-Host "Attempting to delete list ID: $Delete." -ForegroundColor Green
+                    Write-Host "Attempting to delete old stats document. ID# $Delete." -ForegroundColor Green
                     Move-PnPListItemToRecycleBin -List 'Shared Documents' -Identity $Delete -force -ErrorAction Stop
                 }
                 catch {
