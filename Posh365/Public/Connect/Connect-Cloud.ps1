@@ -116,8 +116,9 @@ function Connect-Cloud {
         $ExchangeOnline,
 
         [Parameter()]
+        [Alias('EXO2')]
         [switch]
-        $EXO2,
+        $EXO,
 
         [Parameter()]
         [switch]
@@ -213,7 +214,7 @@ function Connect-Cloud {
         }
     }
     if (($ExchangeOnline -or $MSOnline -or $All365 -or $Skype -or
-            $SharePoint -or $Compliance -or $AzureADver2 -or $AzureAD -or $EXO2 -or $Teams) -and (-not $MFA)) {
+            $SharePoint -or $Compliance -or $AzureADver2 -or $AzureAD -or $EXO -or $Teams) -and (-not $MFA)) {
         if (Test-Path ($KeyPath + "$($Tenant).cred")) {
             $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).cred") | ConvertTo-SecureString
             $UsernameString = Get-Content ($KeyPath + "$($Tenant).ucred")
@@ -421,7 +422,7 @@ function Connect-Cloud {
         }
         Connect-MicrosoftTeams @TeamsSplat
     }
-    if ($EXO2 -or $ExchangeOnline -or $Compliance) {
+    if ($EXO -or $ExchangeOnline -or $Compliance) {
         $Script:RestartConsole = $null
         Connect-CloudModuleImport -EXO2
         if ($RestartConsole) { return }
@@ -431,7 +432,7 @@ function Connect-Cloud {
         else { $Splat['UserPrincipalName'] = $Credential.UserName }
         if ($EXOPrefix) { $Splat['Prefix'] = 'EXO' }
     }
-    if ($Exo2 -or $ExchangeOnline) {
+    if ($EXO -or $ExchangeOnline) {
         Connect-ExchangeOnline @Splat -ShowBanner:$false
         Write-Host "You have successfully connected to Exchange Online" -foregroundcolor "magenta" -backgroundcolor "white"
     }

@@ -20,7 +20,7 @@ Function Get-MailboxMoveStatistics {
     Connect to Exchange Online prior to using
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'PlaceHolder')]
     [Alias('GMMS')]
     param
     (
@@ -28,11 +28,22 @@ Function Get-MailboxMoveStatistics {
         [switch]
         $IncludeCompleted,
 
-        [Parameter()]
+        [Parameter(ParameterSetName = 'RandR')]
         [Alias('PassThruData')]
         [switch]
-        $RemoveAndRestart
-    )
+        $RemoveAndRestart,
 
-    Invoke-GetMailboxMoveStatisticsHelper -IncludeCompleted:$IncludeCompleted -RemoveAndRestart:$RemoveAndRestart
+        [Parameter(ParameterSetName = 'SharePoint')]
+        [string]
+        $UploadToSharePointURL
+    )
+    if ($UploadToSharePointURL) {
+        Invoke-GetMailboxMoveStatisticsHelper -IncludeCompleted:$true -UploadToSharePointURL $UploadToSharePointURL
+    }
+    elseif ($RemoveAndRestart) {
+        Invoke-GetMailboxMoveStatisticsHelper -IncludeCompleted:$IncludeCompleted -RemoveAndRestart:$RemoveAndRestart
+    }
+    else {
+        Invoke-GetMailboxMoveStatisticsHelper -IncludeCompleted:$IncludeCompleted
+    }
 }

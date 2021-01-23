@@ -16,7 +16,7 @@ Function Invoke-GetMailboxMoveStatistics {
             foreach ($Stat in $StatList) {
                 [PSCustomObject]@{
                     Identity                   = $Stat.Identity
-                    Status                     = $Stat.Status
+                    Status                     = $Stat.Status.toString()
                     BatchName                  = $Stat.BatchName
                     DisplayName                = $Stat.DisplayName
                     PercentComplete            = $Stat.PercentComplete
@@ -30,7 +30,7 @@ Function Invoke-GetMailboxMoveStatistics {
                     TotalMailboxSize           = [regex]::Matches("$($Stat.TotalMailboxSize)", "^[^(]*").value
                     ItemsTransferred           = $Stat.ItemsTransferred
                     TotalMailboxItemCount      = $Stat.TotalMailboxItemCount
-                    StatusDetail               = $Stat.StatusDetail
+                    StatusDetail               = $Stat.StatusDetail.toString()
                     DataConsistencyScore       = $Stat.DataConsistencyScore
                     Suspend                    = $Stat.Suspend
                     SuspendWhenReadyToComplete = $Stat.SuspendWhenReadyToComplete
