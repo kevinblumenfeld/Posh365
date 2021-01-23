@@ -7,8 +7,9 @@ Function Get-MailboxMoveStatistics {
     Get Move Request Statistics and refresh by clicking OK
     Uses Out-GridView to display and allows user to click OK to refresh
 
-    .PARAMETER NotCompleted
-    To only see the move requests that have yet to be completed
+    .PARAMETER IncludeCompleted
+    To include completed move requests in the report
+    Currently, completed move requests are always displayed with -ShowAllStats (To offer the choice, I will correct this on the next release)
 
     .EXAMPLE
     Get-MailboxMoveStatistics
@@ -16,8 +17,22 @@ Function Get-MailboxMoveStatistics {
     .EXAMPLE
     Get-MailboxMoveStatistics -IncludeCompleted
 
+    .EXAMPLE
+    Get-MailboxMoveStatistics -UploadToSharePointURL "https://contoso.sharepoint.com/sites/Migration" -ShowAllStats
+
     .NOTES
-    Connect to Exchange Online prior to using
+    Add a schedule task if you like:
+
+        $Splat = @{
+            TaskName        = "Hourly Migration Stats Task"
+            User            = "user@domain.root"
+            RepeatInMinutes = 60
+            Executable      = "PowerShell.exe"
+            Argument        = '-ExecutionPolicy RemoteSigned -Command "Connect-Cloud Contoso -EXO ; Get-MailboxMoveStatistics -UploadToSharePointURL "https://contoso.sharepoint.com/sites/Migration" -ShowAllStats"'
+        }
+
+        Add-TaskByMinute @Splat
+
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'PlaceHolder')]
@@ -35,10 +50,14 @@ Function Get-MailboxMoveStatistics {
 
         [Parameter(ParameterSetName = 'SharePoint')]
         [string]
-        $UploadToSharePointURL
+        $UploadToSharePointURL,
+
+        [Parameter(ParameterSetName = 'SharePoint')]
+        [switch]
+        $ShowAllStats
     )
     if ($UploadToSharePointURL) {
-        Invoke-GetMailboxMoveStatisticsHelper -IncludeCompleted:$true -UploadToSharePointURL $UploadToSharePointURL
+        Invoke-GetMailboxMoveStatisticsHelper -IncludeCompleted:$true -UploadToSharePointURL $UploadToSharePointURL -ShowAllStats:$ShowAllStats
     }
     elseif ($RemoveAndRestart) {
         Invoke-GetMailboxMoveStatisticsHelper -IncludeCompleted:$IncludeCompleted -RemoveAndRestart:$RemoveAndRestart

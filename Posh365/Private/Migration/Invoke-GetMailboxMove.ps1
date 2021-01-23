@@ -1,29 +1,4 @@
 Function Invoke-GetMailboxMove {
-    <#
-    .SYNOPSIS
-    Get Mailbox Moves
-
-    .DESCRIPTION
-    Get Mailbox Moves
-
-    .PARAMETER NotCompleted
-    Use this switch to view only Mailbox Moves that have yet to be completed
-
-    .EXAMPLE
-    Get-MailboxMove
-
-    .EXAMPLE
-    Get-MailboxMove | Out-GridView
-
-    .EXAMPLE
-    Get-MailboxMove -NotCompleted
-
-    .EXAMPLE
-    Get-MailboxMove -NotCompleted | Out-Gridview
-
-    .NOTES
-    Connect to Exchange Online
-    #>
 
     [CmdletBinding()]
     param

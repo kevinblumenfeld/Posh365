@@ -15,10 +15,19 @@ Function Invoke-GetMailboxMoveStatisticsHelper {
 
         [Parameter()]
         [string]
-        $UploadToSharePointURL
+        $UploadToSharePointURL,
+
+        [Parameter()]
+        [switch]
+        $ShowAllStats
     )
 
-    $MoveList = Invoke-GetMailboxMovePassThru -IncludeCompleted:$IncludeCompleted -RemoveAndRestart:$RemoveAndRestart
+    if ($ShowAllStats) {
+        $MoveList = Invoke-GetMailboxMove
+    }
+    else {
+        $MoveList = Invoke-GetMailboxMovePassThru -IncludeCompleted:$IncludeCompleted -RemoveAndRestart:$RemoveAndRestart
+    }
     if ($UploadToSharePointURL) {
         $TempExcel = Join-Path -Path $Env:Temp -ChildPath ('{0}.xlsx' -f [guid]::newguid().guid)
         $StatSplat = @{
