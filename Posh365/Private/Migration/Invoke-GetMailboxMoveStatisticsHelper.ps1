@@ -58,13 +58,29 @@ Function Invoke-GetMailboxMoveStatisticsHelper {
         Write-Host "Report created. . . " -ForegroundColor White
         Write-Host "Uploading to $UploadToSharePointURL . . . " -ForegroundColor Green
         try {
-            $StatsFile = ('Stats {0}.xlsx' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
+            $StatsFile = ('Migration Stats {0}.xlsx' -f [DateTime]::Now.ToString('yyyy-MM-dd-hhmm'))
             $StatsFilePath = Join-Path -Path $Env:Temp -ChildPath $StatsFile
             Rename-Item -Path $TempExcel -NewName $StatsFilePath
-            $null = Add-PoshPnPFile -SharePointUrl $UploadToSharePointURL -FilePath $StatsFilePath
+
+            $null = Add-PoshPnPFile -SharePointUrl $UploadToSharePointURL -FilePath $StatsFilePath -ErrorAction Stop
             Write-Host "Upload of the file " -ForegroundColor White -NoNewline
             Write-Host "$StatsFile " -ForegroundColor Cyan -NoNewline
-            Write-Host "is complete." -ForegroundColor White
+            Write-Host "is complete. Removing any older stats files Shared Documents. . ." -ForegroundColor White
+
+            $DeleteList = ((Get-PnPListItem  -List 'Shared Documents' -Fields 'Name', 'Guid').fieldvalues.where{
+                    $_.FileLeafRef -like 'Migration Stats 20*.xlsx' -and -not $_.FileLeafRef -eq $StatsFile
+                }).foreach{ $_['ID'] }
+            foreach ($Delete in $DeleteList) {
+                try {
+                    Move-PnPListItemToRecycleBin -List 'Shared Documents' -Identity $Delete -force -ErrorAction Stop
+                }
+                catch {
+                    Write-Host "There was an issue deleting file with ID: $Delete.  It is most likely open by a user and can be deleted at a later date." -ForegroundColor Cyan
+                }
+            }
+        }
+        catch {
+            Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Yellow
         }
         finally {
             Remove-Item -Path $StatsFilePath -Force -Confirm:$false -ErrorAction SilentlyContinue
@@ -77,6 +93,4 @@ Function Invoke-GetMailboxMoveStatisticsHelper {
     else {
         $MoveList | Invoke-GetMailboxMoveStatistics
     }
-
-
 }
