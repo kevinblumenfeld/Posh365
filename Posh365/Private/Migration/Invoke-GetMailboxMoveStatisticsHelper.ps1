@@ -68,14 +68,17 @@ Function Invoke-GetMailboxMoveStatisticsHelper {
             Write-Host "is complete. Removing any older stats files Shared Documents. . ." -ForegroundColor White
 
             $DeleteList = ((Get-PnPListItem  -List 'Shared Documents' -Fields 'Name', 'Guid').fieldvalues.where{
-                    $_.FileLeafRef -like 'Migration Stats 20*.xlsx' -and -not $_.FileLeafRef -eq $StatsFile
+                    $_.FileLeafRef -like 'Migration Stats 20*.xlsx' -and  $_.FileLeafRef -ne $StatsFile
                 }).foreach{ $_['ID'] }
             foreach ($Delete in $DeleteList) {
                 try {
+                    Write-Host "Attempting to delete list ID: $Delete." -ForegroundColor Green
                     Move-PnPListItemToRecycleBin -List 'Shared Documents' -Identity $Delete -force -ErrorAction Stop
                 }
                 catch {
                     Write-Host "There was an issue deleting file with ID: $Delete.  It is most likely open by a user and can be deleted at a later date." -ForegroundColor Cyan
+                    Write-Host "Error Message: " -ForegroundColor Red -NoNewline
+                    Write-Host "$($_.Exception.Message)" -ForegroundColor White
                 }
             }
         }
