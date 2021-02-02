@@ -8,6 +8,8 @@ Remove Product Key and License from an existing Office Install
 Remove Product Key and License from an existing Office Install
 Often used when moving from one Office 365 tenant to another.
 
+Verify which line number to use as product team may have made changes https://github.com/kevinblumenfeld/Posh365/issues/54
+
 .EXAMPLE
 Remove-OfficeLicense
 

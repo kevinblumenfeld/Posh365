@@ -61,6 +61,9 @@ function Connect-Cloud {
     .PARAMETER Skype
     Connects to Skype Online
 
+    .PARAMETER SharePointPNP
+    Connects to SharePoint Online
+
     .PARAMETER SharePoint
     Connects to SharePoint Online
 
@@ -104,7 +107,7 @@ function Connect-Cloud {
 
     #>
 
-    [CmdletBinding(SupportsShouldProcess = $true)]
+    [CmdletBinding(DefaultParameterSetName = 'PlaceHolder')]
     Param
     (
         [Parameter(Position = 0, Mandatory)]
@@ -139,6 +142,14 @@ function Connect-Cloud {
         [Parameter()]
         [switch]
         $SharePoint,
+
+        [Parameter(Mandatory, ParameterSetName = 'PNP')]
+        [switch]
+        $SharePointPNP,
+
+        [Parameter(Mandatory, ParameterSetName = 'PNP')]
+        [string]
+        $PNPUrl,
 
         [Parameter()]
         [switch]
@@ -214,7 +225,7 @@ function Connect-Cloud {
         }
     }
     if (($ExchangeOnline -or $MSOnline -or $All365 -or $Skype -or
-            $SharePoint -or $Compliance -or $AzureADver2 -or $AzureAD -or $EXO -or $Teams) -and (-not $MFA)) {
+            $SharePoint -or $SharePointPNP -or $Compliance -or $AzureADver2 -or $AzureAD -or $EXO -or $Teams) -and (-not $MFA)) {
         if (Test-Path ($KeyPath + "$($Tenant).cred")) {
             $PwdSecureString = Get-Content ($KeyPath + "$($Tenant).cred") | ConvertTo-SecureString
             $UsernameString = Get-Content ($KeyPath + "$($Tenant).ucred")
@@ -308,34 +319,50 @@ function Connect-Cloud {
     }
     # SharePoint Online
     if ($SharePoint -or $All365) {
-        $SharePointAdminSite = 'https://' + $Tenant + '-admin.sharepoint.com'
-        try {
-            Import-Module Microsoft.Online.SharePoint.PowerShell -DisableNameChecking -ErrorAction Stop
-        }
-        catch {
-            Install-Module -Name Microsoft.Online.SharePoint.PowerShell -force -AllowClobber
-        }
-        if (-not $MFA) {
-            try {
-                Connect-SPOService -Url $SharePointAdminSite -credential $Credential -ErrorAction stop
-                Write-Host "You have successfully connected to SharePoint" -foregroundcolor "magenta" -backgroundcolor "white"
-            }
-            catch {
-                $_
-                Write-Warning "Unable to Connect to SharePoint Online."
-            }
+        if ($GCCHIGH) {
+            $SharePointAdminSite = 'https://' + $Tenant + '-admin.sharepoint.us'
         }
         else {
+            $SharePointAdminSite = 'https://' + $Tenant + '-admin.sharepoint.com'
+        }
+        if ($SharePoint -or $All365) {
             try {
-                Connect-SPOService -Url $SharePointAdminSite -ErrorAction stop
-                Write-Host "You have successfully connected to SharePoint" -foregroundcolor "magenta" -backgroundcolor "white"
+                Import-Module Microsoft.Online.SharePoint.PowerShell -DisableNameChecking -ErrorAction Stop
             }
             catch {
-                Write-Warning "Unable to Connect to SharePoint Online."
-                Write-Warning "verify the tenant name: $Tenant is correct"
-                Write-Warning "This was the URL attempted: https:`/`/$Tenant`-admin.sharepoint.com"
+                Install-Module -Name Microsoft.Online.SharePoint.PowerShell -force -AllowClobber
+            }
+            if (-not $MFA) {
+                try {
+                    Connect-SPOService -Url $SharePointAdminSite -credential $Credential -ErrorAction stop
+                    Write-Host "You have successfully connected to SharePoint" -foregroundcolor "magenta" -backgroundcolor "white"
+                }
+                catch {
+                    $_
+                    Write-Warning "Unable to Connect to SharePoint Online."
+                }
+            }
+            else {
+                try {
+                    Connect-SPOService -Url $SharePointAdminSite -ErrorAction stop
+                    Write-Host "You have successfully connected to SharePoint" -foregroundcolor "magenta" -backgroundcolor "white"
+                }
+                catch {
+                    Write-Warning "Unable to Connect to SharePoint Online."
+                    Write-Warning "verify the tenant name: $Tenant is correct"
+                    Write-Warning "This was the URL attempted: https:`/`/$Tenant`-admin.sharepoint.com"
+                }
             }
         }
+    }
+    if ($SharePointPNP -or $All365) {
+        try {
+            Import-Module PnP.PowerShell -DisableNameChecking -ErrorAction Stop
+        }
+        catch {
+            Install-Module -Name PnP.PowerShell -force -AllowClobber
+        }
+        Connect-PnPOnline -Url $PNPUrl -UseWebLogin
     }
     # Azure AD
     If ($AzureAD -or $AzureADver2 -or $All365) {
