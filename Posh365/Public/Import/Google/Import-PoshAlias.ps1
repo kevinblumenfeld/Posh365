@@ -150,49 +150,229 @@ function Import-PoshAlias {
     }
     elseif ($AddtoObjectType -eq 'ActiveDirectory') {
         foreach ($Alias in $AliasList) {
+            $Found = $null
             if ($Alias.Alias -and $Alias.TargetType -eq 'User') {
-                try {
-                    Set-ADUser -Identity $Alias.Target -Add @{'ProxyAddresses' = 'smtp:{0}' -f $Alias.Alias } -ErrorAction Stop
-                    Write-Host "Success adding alias $($Alias.Alias) to ADUser $($Alias.Target)" -ForegroundColor Green
-                    [PSCustomObject]@{
-                        Alias      = $Alias.Alias
-                        Target     = $Alias.Target
-                        TargetType = $Alias.TargetType
-                        Result     = 'SUCCESS'
-                        Log        = 'SUCCESS'
+                if ($Alias.Target -like '*@*') {
+                    # GET ADUSER
+                    try {
+                        $Found = Get-ADUser -Filter "mail -eq '$($Alias.Target)'"
+                        Write-Host "Success finding ADUSER $($Alias.Target) via MAIL attribute" -ForegroundColor Green
+                        [PSCustomObject]@{
+                            Alias      = $Alias.Alias
+                            Target     = $Alias.Target
+                            TargetType = $Alias.TargetType
+                            Found      = 'MAIL'
+                            Action     = 'GETADUSER'
+                            Result     = 'SUCCESS'
+                            Log        = 'SUCCESS'
+                        }
+                    }
+                    catch {
+                        Write-Host "Failed finding ADUSER $($Alias.Target) via MAIL attribute" -ForegroundColor Red
+                        [PSCustomObject]@{
+                            Alias      = $Alias.Alias
+                            Target     = $Alias.Target
+                            TargetType = $Alias.TargetType
+                            Found      = 'MAIL'
+                            Action     = 'GETADUSER'
+                            Result     = 'FAILED'
+                            Log        = $_.Exception.Message
+                        }
                     }
                 }
-                catch {
-                    Write-Host "Failed adding alias $($Alias.Alias) to ADUser $($Alias.Target)" -ForegroundColor Red
-                    [PSCustomObject]@{
-                        Alias      = $Alias.Alias
-                        Target     = $Alias.Target
-                        TargetType = $Alias.TargetType
-                        Result     = 'FAILED'
-                        Log        = $_.Exception.Message
+                else {
+                    try {
+                        $Found = Get-ADUser -Filter "SamAccountName -eq '$($Alias.Target)'"
+                        Write-Host "Success finding ADUSER $($Alias.Target) via SAMACCOUNTNAME attribute" -ForegroundColor Green
+                        [PSCustomObject]@{
+                            Alias      = $Alias.Alias
+                            Target     = $Alias.Target
+                            TargetType = $Alias.TargetType
+                            Found      = 'SAMACCOUNTNAME'
+                            Action     = 'GETADUSER'
+                            Result     = 'SUCCESS'
+                            Log        = 'SUCCESS'
+                        }
+                    }
+                    catch {
+                        Write-Host "Failed finding ADUSER $($Alias.Target) via SAMACCOUNTNAME attribute" -ForegroundColor Red
+                        [PSCustomObject]@{
+                            Alias      = $Alias.Alias
+                            Target     = $Alias.Target
+                            TargetType = $Alias.TargetType
+                            Found      = 'SAMACCOUNTNAME'
+                            Action     = 'GETADUSER'
+                            Result     = 'FAILED'
+                            Log        = $_.Exception.Message
+                        }
+                    }
+                }
+                # SET ADUSER
+                if ($Found) {
+                    try {
+                        $Found | Set-ADUser -Add @{'ProxyAddresses' = 'smtp:{0}' -f $Alias.Alias } -ErrorAction Stop
+                        Write-Host "Success adding ADUSER alias $($Alias.Alias)" -ForegroundColor Green
+                        [PSCustomObject]@{
+                            Alias      = $Alias.Alias
+                            Target     = $Alias.Target
+                            TargetType = $Alias.TargetType
+                            Found      = 'ADUSER'
+                            Action     = 'SETADUSER'
+                            Result     = 'SUCCESS'
+                            Log        = 'SUCCESS'
+                        }
+                    }
+                    catch {
+                        Write-Host "Failed adding ADUSER alias $($Alias.Alias)" -ForegroundColor Red
+                        [PSCustomObject]@{
+                            Alias      = $Alias.Alias
+                            Target     = $Alias.Target
+                            TargetType = $Alias.TargetType
+                            Found      = 'ADUSER'
+                            Action     = 'SETADUSER'
+                            Result     = 'FAILED'
+                            Log        = $_.Exception.Message
+                        }
+                    }
+
+                }
+                if (($Found.mail -and $Alias.Target) -and ($Found.mail -eq $Alias.Target)) {
+                    try {
+                        $Found | Set-ADUser -Add @{'ProxyAddresses' = 'SMTP:{0}' -f $Alias.Target } -ErrorAction Stop
+                        Write-Host "Success adding ADUSER PrimarySmtpAddress to proxyaddresses $($Alias.Target)" -ForegroundColor Green
+                        [PSCustomObject]@{
+                            Alias      = $Alias.Alias
+                            Target     = $Alias.Target
+                            TargetType = $Alias.TargetType
+                            Found      = 'MAILMATCHESTARGET'
+                            Action     = 'SETADUSER'
+                            Result     = 'SUCCESS'
+                            Log        = 'SUCCESS'
+                        }
+                    }
+                    catch {
+                        Write-Host "Failed adding ADUSER PrimarySmtpAddress to proxyaddresses $($Alias.Target)" -ForegroundColor Red
+                        [PSCustomObject]@{
+                            Alias      = $Alias.Alias
+                            Target     = $Alias.Target
+                            TargetType = $Alias.TargetType
+                            Found      = 'MAILMATCHESTARGET'
+                            Action     = 'SETADUSER'
+                            Result     = 'FAILED'
+                            Log        = $_.Exception.Message
+                        }
                     }
                 }
             }
             elseif ($Alias.Alias -and $Alias.TargetType -eq 'Group') {
-                try {
-                    Set-ADGroup -Identity $Alias.Target -Add @{'ProxyAddresses' = 'smtp:{0}' -f $Alias.Alias } -ErrorAction Stop
-                    Write-Host "Failed adding alias $($Alias.Alias) to ADGroup $($Alias.Target)" -ForegroundColor Green
-                    [PSCustomObject]@{
-                        Alias      = $Alias.Alias
-                        Target     = $Alias.Target
-                        TargetType = $Alias.TargetType
-                        Result     = 'SUCCESS'
-                        Log        = 'SUCCESS'
+                if ($Alias.Target -like '*@*') {
+                    # GET ADGROUP
+                    try {
+                        $Found = Get-ADGroup -Filter "mail -eq '$($Alias.Target)'"
+                        Write-Host "Success finding ADGroup $($Alias.Target) via MAIL attribute" -ForegroundColor Green
+                        [PSCustomObject]@{
+                            Alias      = $Alias.Alias
+                            Target     = $Alias.Target
+                            TargetType = $Alias.TargetType
+                            Found      = 'MAIL'
+                            Action     = 'GETADGROUP'
+                            Result     = 'SUCCESS'
+                            Log        = 'SUCCESS'
+                        }
+                    }
+                    catch {
+                        Write-Host "Failed finding ADGroup $($Alias.Target) via MAIL attribute" -ForegroundColor Red
+                        [PSCustomObject]@{
+                            Alias      = $Alias.Alias
+                            Target     = $Alias.Target
+                            TargetType = $Alias.TargetType
+                            Found      = 'MAIL'
+                            Action     = 'GETADGROUP'
+                            Result     = 'FAILED'
+                            Log        = $_.Exception.Message
+                        }
                     }
                 }
-                catch {
-                    Write-Host "Failed adding alias $($Alias.Alias) to ADGroup $($Alias.Target)" -ForegroundColor Red
-                    [PSCustomObject]@{
-                        Alias      = $Alias.Alias
-                        Target     = $Alias.Target
-                        TargetType = $Alias.TargetType
-                        Result     = 'FAILED'
-                        Log        = $_.Exception.Message
+                else {
+                    try {
+                        $Found = Get-ADGroup -Filter "SamAccountName -eq '$($Alias.Target)'"
+                        Write-Host "Success finding ADGroup $($Alias.Target) via SAMACCOUNTNAME attribute" -ForegroundColor Green
+                        [PSCustomObject]@{
+                            Alias      = $Alias.Alias
+                            Target     = $Alias.Target
+                            TargetType = $Alias.TargetType
+                            Found      = 'SAMACCOUNTNAME'
+                            Action     = 'GETADGROUP'
+                            Result     = 'SUCCESS'
+                            Log        = 'SUCCESS'
+                        }
+                    }
+                    catch {
+                        Write-Host "Failed finding ADGroup $($Alias.Target) via SAMACCOUNTNAME attribute" -ForegroundColor Red
+                        [PSCustomObject]@{
+                            Alias      = $Alias.Alias
+                            Target     = $Alias.Target
+                            TargetType = $Alias.TargetType
+                            Found      = 'SAMACCOUNTNAME'
+                            Action     = 'GETADGROUP'
+                            Result     = 'FAILED'
+                            Log        = $_.Exception.Message
+                        }
+                    }
+                }
+                # SET ADGROUP
+                if ($Found) {
+                    try {
+                        $Found | Set-ADGroup -Add @{'ProxyAddresses' = 'smtp:{0}' -f $Alias.Alias } -ErrorAction Stop
+                        Write-Host "Success adding ADGROUP alias $($Alias.Alias)" -ForegroundColor Green
+                        [PSCustomObject]@{
+                            Alias      = $Alias.Alias
+                            Target     = $Alias.Target
+                            TargetType = $Alias.TargetType
+                            Found      = 'ADGroup'
+                            Action     = 'SETADGROUP'
+                            Result     = 'SUCCESS'
+                            Log        = 'SUCCESS'
+                        }
+                    }
+                    catch {
+                        Write-Host "Failed adding ADGROUP alias $($Alias.Alias)" -ForegroundColor Red
+                        [PSCustomObject]@{
+                            Alias      = $Alias.Alias
+                            Target     = $Alias.Target
+                            TargetType = $Alias.TargetType
+                            Found      = 'ADGroup'
+                            Action     = 'SETADGROUP'
+                            Result     = 'FAILED'
+                            Log        = $_.Exception.Message
+                        }
+                    }
+                }
+                if (($Found.mail -and $Alias.Target) -and ($Found.mail -eq $Alias.Target)) {
+                    try {
+                        $Found | Set-ADGroup -Add @{'ProxyAddresses' = 'SMTP:{0}' -f $Alias.Target } -ErrorAction Stop
+                        Write-Host "Success adding ADGROUP PrimarySmtpAddress to proxyaddresses $($Alias.Target)" -ForegroundColor Green
+                        [PSCustomObject]@{
+                            Alias      = $Alias.Alias
+                            Target     = $Alias.Target
+                            TargetType = $Alias.TargetType
+                            Found      = 'MAILMATCHESTARGET'
+                            Action     = 'SETADGROUP'
+                            Result     = 'SUCCESS'
+                            Log        = 'SUCCESS'
+                        }
+                    }
+                    catch {
+                        Write-Host "Failed adding ADGROUP PrimarySmtpAddress to proxyaddresses $($Alias.Target)" -ForegroundColor Red
+                        [PSCustomObject]@{
+                            Alias      = $Alias.Alias
+                            Target     = $Alias.Target
+                            TargetType = $Alias.TargetType
+                            Found      = 'MAILMATCHESTARGET'
+                            Action     = 'SETADGROUP'
+                            Result     = 'FAILED'
+                            Log        = $_.Exception.Message
+                        }
                     }
                 }
             }
