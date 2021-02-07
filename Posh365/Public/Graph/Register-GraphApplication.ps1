@@ -59,12 +59,16 @@ function Register-GraphApplication {
         $Tenant,
 
         [Parameter(Mandatory)]
-        [ValidateSet('Intune', 'Teams', 'IntunePrivileged')]
+        [ValidateSet('EXO', 'Intune', 'Teams', 'IntunePrivileged')]
         $App,
 
         [Parameter()]
         [switch]
-        $AddDelegateCredentials
+        $AddDelegateCredentials,
+
+        [Parameter()]
+        [switch]
+        $ReturnAppObject
     )
 
     $PoshPath = Join-Path -Path $Env:USERPROFILE -ChildPath '.Posh365/Credentials/Graph'
@@ -77,7 +81,7 @@ function Register-GraphApplication {
     $TenantPath = Join-Path -Path $PoshPath -ChildPath $Tenant
 
     if (Test-Path $TenantPath) {
-        Write-Host "$TenantPath is already in use" -ForegroundColor Yellow -NoNewline
+        Write-Host "Connect-PoshGraph already has a connection named, $TenantPath" -ForegroundColor Yellow -NoNewline
         $UsePath = Read-Host ". Type 'YES' to overwrite"
         if ($UsePath -ne 'YES') {
             Write-Host "Please rerun your command and choose another name to represent your connection" -ForegroundColor Green
@@ -152,7 +156,7 @@ function Register-GraphApplication {
         ClientId = $ConfigObject.TenantClientID
     } | Export-Clixml -Path $TenantConfig
 
-    if ($AddDelegateCredentials -or $App -ne 'Intune') {
+    if ($AddDelegateCredentials -or $App -notmatch 'Intune|EXO') {
         Write-Host "`r`nAlso, the Microsoft Graph Credential Export Tool will now appear. " -ForegroundColor Green
         Write-Host "In the fields labeled, Username & Password, enter: $($AzureAD.Account) and password."  -ForegroundColor Black -BackgroundColor White
         Write-Host "Then click the button, Export Tenant Credentials"  -ForegroundColor Black -BackgroundColor White
@@ -160,4 +164,8 @@ function Register-GraphApplication {
     }
 
     Write-Host ('{0}Tenant configuration encrypted to: {1}{0}' -f [Environment]::NewLine, $TenantConfig)
+
+    if ($ReturnAppObject) {
+        $ConfigObject
+    }
 }
