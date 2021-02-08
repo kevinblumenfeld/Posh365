@@ -157,6 +157,10 @@ function Connect-Cloud {
 
         [Parameter()]
         [switch]
+        $EXOCBA,
+
+        [Parameter()]
+        [switch]
         $Intune,
 
         [Parameter()]
@@ -184,7 +188,7 @@ function Connect-Cloud {
         [switch]
         $EXOPrefix
     )
-    if ($Tenant -like '*.onmicrosoft.com') { $Tenant = $Tenant.Split('.')[0] }
+    if ($Tenant -like '*.onmicrosoft.*') { $Tenant = $Tenant.Split('.')[0] }
 
     $host.ui.RawUI.WindowTitle = "Tenant: $($Tenant.ToUpper())"
     $RootPath = $env:USERPROFILE + "\ps\"
@@ -209,11 +213,11 @@ function Connect-Cloud {
         New-Item -ItemType Directory -Force -Path ($RootPath + $Tenant + "\logs\")
     }
     try {
-        Start-Transcript -ErrorAction Stop -path ($RootPath + $Tenant + "\logs\" + "transcript-" + ($(Get-Date -Format _yyyy-MM-dd_HH-mm-ss)) + ".txt")
+        Start-Transcript -ErrorAction Stop -Path ($RootPath + $Tenant + "\logs\" + "transcript-" + ($(Get-Date -Format _yyyy-MM-dd_HH-mm-ss)) + ".txt")
     }
     catch {
         Stop-Transcript -ErrorAction SilentlyContinue
-        Start-Transcript -path ($RootPath + $Tenant + "\logs\" + "transcript-" + ($(Get-Date -Format _yyyy-MM-dd_HH-mm-ss)) + ".txt")
+        Start-Transcript -Path ($RootPath + $Tenant + "\logs\" + "transcript-" + ($(Get-Date -Format _yyyy-MM-dd_HH-mm-ss)) + ".txt")
     }
     # Create KeyPath Directory
     if (-not (Test-Path $KeyPath)) {
@@ -246,6 +250,25 @@ function Connect-Cloud {
             $Credential.UserName | Out-File ($KeyPath + "$($Tenant).ucred")
         }
     }
+    if ($EXOCBA) {
+        $EXOCBAPath = (Join-Path $KeyPath "$($Tenant).EXOCBA.xml")
+        if (Test-Path $EXOCBAPath ) {
+
+            $Script:RestartConsole = $null
+            Connect-CloudModuleImport -EXO2
+            if ($RestartConsole) { return }
+
+            $EXOCBASplat = Import-Clixml $EXOCBAPath
+            if ($GCCHIGH) { $EXOCBASplat['ExchangeEnvironmentName'] = 'O365USGovGCCHigh' }
+
+            Connect-ExchangeOnline @EXOCBASplat -ShowBanner:$false
+            Write-Host "You have successfully connected to Exchange Online with certificate" -ForegroundColor "magenta" -BackgroundColor "white"
+        }
+        else {
+            Write-Warning "No Exchange Online Certificate-Based connection found"
+            Write-Host "To create the connect, run: New-ExoCBAConnection -Tenant $Tenant" -ForegroundColor Green
+        }
+    }
     if ($MSOnline -or $All365) {
         if (-not ($null = Get-Module -Name MSOnline -ListAvailable -ErrorAction Stop)) {
             Install-Module -Name MSOnline -Scope CurrentUser -Force -AllowClobber
@@ -264,7 +287,7 @@ function Connect-Cloud {
                     $MSOLSplat['AzureEnvironment'] = 'USGovernment'
                 }
                 Connect-MsolService @MSOLSplat
-                Write-Host "You have successfully connected to MSONLINE" -foregroundcolor "magenta" -backgroundcolor "white"
+                Write-Host "You have successfully connected to MSONLINE" -ForegroundColor "magenta" -BackgroundColor "white"
             }
             catch {
                 if ($_.exception.Message -match "password") {
@@ -291,7 +314,7 @@ function Connect-Cloud {
         if (-not $MFA) {
             try {
                 $sfboSession = New-CsOnlineSession -ErrorAction Stop -Credential $Credential -OverrideAdminDomain "$Tenant.onmicrosoft.com"
-                Write-Host "You have successfully connected to Skype" -foregroundcolor "magenta" -backgroundcolor "white"
+                Write-Host "You have successfully connected to Skype" -ForegroundColor "magenta" -BackgroundColor "white"
             }
             catch [System.Management.Automation.CommandNotFoundException] {
                 Write-Warning "Skype for Business Online Module not found.  Please download and install it from here:"
@@ -305,7 +328,7 @@ function Connect-Cloud {
         else {
             try {
                 $sfboSession = New-CsOnlineSession -UserName $Credential.UserName -OverrideAdminDomain "$Tenant.onmicrosoft.com" -ErrorAction Stop
-                Write-Host "You have successfully connected to Skype" -foregroundcolor "magenta" -backgroundcolor "white"
+                Write-Host "You have successfully connected to Skype" -ForegroundColor "magenta" -BackgroundColor "white"
             }
             catch [System.Management.Automation.CommandNotFoundException] {
                 Write-Warning "Skype for Business Online Module not found.  Please download and install it from here:"
@@ -330,12 +353,12 @@ function Connect-Cloud {
                 Import-Module Microsoft.Online.SharePoint.PowerShell -DisableNameChecking -ErrorAction Stop
             }
             catch {
-                Install-Module -Name Microsoft.Online.SharePoint.PowerShell -force -AllowClobber
+                Install-Module -Name Microsoft.Online.SharePoint.PowerShell -Force -AllowClobber
             }
             if (-not $MFA) {
                 try {
                     Connect-SPOService -Url $SharePointAdminSite -credential $Credential -ErrorAction stop
-                    Write-Host "You have successfully connected to SharePoint" -foregroundcolor "magenta" -backgroundcolor "white"
+                    Write-Host "You have successfully connected to SharePoint" -ForegroundColor "magenta" -BackgroundColor "white"
                 }
                 catch {
                     $_
@@ -345,7 +368,7 @@ function Connect-Cloud {
             else {
                 try {
                     Connect-SPOService -Url $SharePointAdminSite -ErrorAction stop
-                    Write-Host "You have successfully connected to SharePoint" -foregroundcolor "magenta" -backgroundcolor "white"
+                    Write-Host "You have successfully connected to SharePoint" -ForegroundColor "magenta" -BackgroundColor "white"
                 }
                 catch {
                     Write-Warning "Unable to Connect to SharePoint Online."
@@ -360,7 +383,7 @@ function Connect-Cloud {
             Import-Module PnP.PowerShell -DisableNameChecking -ErrorAction Stop
         }
         catch {
-            Install-Module -Name PnP.PowerShell -force -AllowClobber
+            Install-Module -Name PnP.PowerShell -Force -AllowClobber
         }
         Connect-PnPOnline -Url $PNPUrl -UseWebLogin
     }
@@ -383,7 +406,7 @@ function Connect-Cloud {
                         $AzureADSplat['AzureEnvironmentName'] = 'AzureUSGovernment'
                     }
                     Connect-AzureAD @AzureADSplat
-                    Write-Host "You have successfully connected to AzureADver2" -foregroundcolor "magenta" -backgroundcolor "white"
+                    Write-Host "You have successfully connected to AzureADver2" -ForegroundColor "magenta" -BackgroundColor "white"
                 }
                 catch {
                     if ($error[0]) {
@@ -419,7 +442,7 @@ function Connect-Cloud {
                         $AzureADSplat['AzureEnvironmentName'] = 'AzureUSGovernment'
                     }
                     Connect-AzureAD @AzureADSplat
-                    Write-Host "You have successfully connected to AzureADver2" -foregroundcolor "magenta" -backgroundcolor "white"
+                    Write-Host "You have successfully connected to AzureADver2" -ForegroundColor "magenta" -BackgroundColor "white"
                 }
                 catch {
                     if ($error[0]) {
@@ -461,7 +484,7 @@ function Connect-Cloud {
     }
     if ($EXO -or $ExchangeOnline) {
         Connect-ExchangeOnline @Splat -ShowBanner:$false
-        Write-Host "You have successfully connected to Exchange Online" -foregroundcolor "magenta" -backgroundcolor "white"
+        Write-Host "You have successfully connected to Exchange Online" -ForegroundColor "magenta" -BackgroundColor "white"
     }
     if ($Az) {
         Connect-CloudModuleImport -Az
@@ -482,7 +505,7 @@ function Connect-Cloud {
             $AZHash['Environment'] = 'AzureUSGovernment'
         }
         Connect-AzAccount @AZHash
-        Write-Host "You have successfully connected to Az Cmdlets" -foregroundcolor "magenta" -backgroundcolor "white"
+        Write-Host "You have successfully connected to Az Cmdlets" -ForegroundColor "magenta" -BackgroundColor "white"
     }
     if ($Compliance) {
         Get-PSSession | Remove-PSSession
@@ -493,7 +516,7 @@ function Connect-Cloud {
             Connect-ExchangeOnline -ConnectionUri 'https://ps.compliance.protection.office365.us/powershell-liveid' @Splat
         }
 
-        Write-Host "You have successfully connected to Security & Compliance Center" -foregroundcolor "magenta" -backgroundcolor "white"
+        Write-Host "You have successfully connected to Security & Compliance Center" -ForegroundColor "magenta" -BackgroundColor "white"
     }
     if ($Intune) {
         Connect-CloudModuleImport -Intune
@@ -508,6 +531,6 @@ function Connect-Cloud {
             $Credential.UserName | Out-File ($KeyPath + "$($Tenant).ucred")
         }
         Connect-MSGraph -Credential $Credential
-        Write-Host "You have successfully connected to Microsoft's Intune Graph Module" -foregroundcolor "magenta" -backgroundcolor "white"
+        Write-Host "You have successfully connected to Microsoft's Intune Graph Module" -ForegroundColor "magenta" -BackgroundColor "white"
     }
 }

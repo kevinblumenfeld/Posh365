@@ -53,7 +53,7 @@ function Register-GraphApplication {
     General notes
 
     #>
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'PlaceHolder')]
     param (
         [Parameter(Mandatory)]
         $Tenant,
@@ -68,7 +68,11 @@ function Register-GraphApplication {
 
         [Parameter()]
         [switch]
-        $ReturnAppObject
+        $ReturnAppObject,
+
+        [Parameter(ParameterSetName = 'ExchangeCBA')]
+        [switch]
+        $AlsoCreateGraphConnection
     )
 
     $PoshPath = Join-Path -Path $Env:USERPROFILE -ChildPath '.Posh365/Credentials/Graph'
@@ -81,43 +85,46 @@ function Register-GraphApplication {
     $TenantPath = Join-Path -Path $PoshPath -ChildPath $Tenant
 
     if (Test-Path $TenantPath) {
-        Write-Host "Connect-PoshGraph already has a connection named, $TenantPath" -ForegroundColor Yellow -NoNewline
-        $UsePath = Read-Host ". Type 'YES' to overwrite"
-        if ($UsePath -ne 'YES') {
-            Write-Host "Please rerun your command and choose another name to represent your connection" -ForegroundColor Green
-            Write-Host "Perhaps, try appending the the app's function to the company name" -ForegroundColor Green
-            Write-Host "For example, Contoso-Intune" -ForegroundColor Green
-            return
+        if ($AlsoCreateGraphConnection -or $PSCmdlet.ParameterSetName -notcontains 'ExchangeCBA') {
+            Write-Host "Connect-PoshGraph already has a connection named, $TenantPath" -ForegroundColor Yellow -NoNewline
+            $UsePath = Read-Host ". Type 'YES' to overwrite"
+            if ($UsePath -ne 'YES') {
+                Write-Host "Please rerun your command and choose another name to represent your connection" -ForegroundColor Green
+                Write-Host "Perhaps, try appending the the app's function to the company name" -ForegroundColor Green
+                Write-Host "For example, Contoso-Intune" -ForegroundColor Green
+                continue
+            }
         }
     }
     if (-not (Test-Path $TenantPath)) { $null = New-Item $TenantPath @ItemSplat }
 
+    if ($AlsoCreateGraphConnection -or $PSCmdlet.ParameterSetName -notcontains 'ExchangeCBA')  {
+        Write-Host "`r`nWe will create an Azure AD Application with the " -ForegroundColor Cyan -NoNewline
+        Write-Host "$App" -ForegroundColor Green -NoNewline
 
-    Write-Host "`r`nWe will create an Azure AD Application with the " -ForegroundColor Cyan -NoNewline
-    Write-Host "$App" -ForegroundColor Green -NoNewLine
-    Write-Host " API permission set. Credentials will be encrypted to $TenantPath. Once complete, connect to Graph with: `r`n" -ForegroundColor Cyan
-    Write-Host "Connect-PoshGraph " -ForegroundColor Yellow -NoNewline
-    Write-Host "-Tenant " -ForegroundColor White -NoNewline
-    Write-Host "$Tenant`r`n`r`n" -ForegroundColor Green
+        Write-Host " API permission set. Credentials will be encrypted to $TenantPath. Once complete, connect to Graph with: `r`n" -ForegroundColor Cyan
+        Write-Host "Connect-PoshGraph " -ForegroundColor Yellow -NoNewline
+        Write-Host "-Tenant " -ForegroundColor White -NoNewline
+        Write-Host "$Tenant`r`n`r`n" -ForegroundColor Green
 
+    }
 
-
-    If (-not ($null = Get-Module -Name 'AzureAD', 'AzureADPreview' -ListAvailable)) {
+    if (-not ($null = Get-Module -Name 'AzureAD', 'AzureADPreview' -ListAvailable)) {
         Write-Host "Installing AzureAD module" -ForegroundColor Cyan
         Install-Module -Name AzureAD -Scope CurrentUser -Force -AllowClobber
-        Import-Module -Name AzureAD -force
+        Import-Module -Name AzureAD -Force
     }
 
     $Latest = Find-Module CloneApp -Repository PSGallery
-    $Installed = Get-Module -Name CloneApp -ListAvailable
+    $Installed = Get-Module -Name CloneApp -ListAvailable | Sort-Object version -Descending | Select-Object -First 1
     if ($Latest.Version -ne $Installed.Version) {
         Write-Host "Installing CloneApp module" -ForegroundColor Cyan
         Install-Module -Name CloneApp -Scope CurrentUser -Force -AllowClobber
-        Import-Module -Name CloneApp -force
+        Import-Module -Name CloneApp -Force
     }
 
-
     Write-Host "Disconnecting any possible connections to Azure AD" -ForegroundColor White
+
     try { $null = Disconnect-AzureAD -ErrorAction Stop } catch { }
     try {
         Write-Host "In the window that appears, please enter your credentials to login to Azure AD . . . " -ForegroundColor White -NoNewline
@@ -143,18 +150,23 @@ function Register-GraphApplication {
         Owner               = ($AzureAD.Account).toString()
     }
     $NewApp = Import-TemplateApp @Params
-    $PoshPath = Join-Path -Path $Env:USERPROFILE -ChildPath '.Posh365/Credentials/Graph'
 
     $ConfigObject = [PSCustomObject]@{
         TenantClientID = $NewApp.ApplicationId
         TenantTenantID = $NewApp.TenantId
         TenantSecret   = $NewApp.Secret | ConvertTo-SecureString -AsPlainText -Force
     }
-    $TenantConfig = Join-Path -Path $TenantPath -ChildPath ('{0}Config.xml' -f $Tenant)
-    [PSCustomObject]@{
-        Cred     = [PSCredential]::new($ConfigObject.TenantTenantID, $ConfigObject.TenantSecret)
-        ClientId = $ConfigObject.TenantClientID
-    } | Export-Clixml -Path $TenantConfig
+
+    if ($AlsoCreateGraphConnection -or $PSCmdlet.ParameterSetName -notcontains 'ExchangeCBA')  {
+
+        $TenantConfig = Join-Path -Path $TenantPath -ChildPath ('{0}Config.xml' -f $Tenant)
+        [PSCustomObject]@{
+            Cred     = [PSCredential]::new($ConfigObject.TenantTenantID, $ConfigObject.TenantSecret)
+            ClientId = $ConfigObject.TenantClientID
+        } | Export-Clixml -Path $TenantConfig
+
+        Write-Host ('{0}Tenant configuration encrypted to: {1}{0}' -f [Environment]::NewLine, $TenantConfig)
+    }
 
     if ($AddDelegateCredentials -or $App -notmatch 'Intune|EXO') {
         Write-Host "`r`nAlso, the Microsoft Graph Credential Export Tool will now appear. " -ForegroundColor Green
@@ -162,8 +174,6 @@ function Register-GraphApplication {
         Write-Host "Then click the button, Export Tenant Credentials"  -ForegroundColor Black -BackgroundColor White
         Export-GraphConfig -Tenant $Tenant
     }
-
-    Write-Host ('{0}Tenant configuration encrypted to: {1}{0}' -f [Environment]::NewLine, $TenantConfig)
 
     if ($ReturnAppObject) {
         $ConfigObject

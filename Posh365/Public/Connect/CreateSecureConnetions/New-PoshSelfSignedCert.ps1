@@ -2,19 +2,31 @@ function New-PoshSelfSignedCert {
 
     Param(
 
-        [Parameter(Mandatory)]
+        [Parameter(ParameterSetName = 'ExchangeCBA')]
+        [switch]
+        $ExchangeCBA,
+
+        [Parameter(Mandatory, ParameterSetName = 'ExchangeCBA')]
+        [Parameter(ParameterSetName = 'SSL')]
+        [string]
+        $Tenant,
+
+        [Parameter(Mandatory, ParameterSetName = 'SSL')]
         [string[]]
         $DnsName,
 
-        [Parameter()]
+        [Parameter(ParameterSetName = 'SSL')]
+        [Parameter(ParameterSetName = 'ExchangeCBA')]
         [string]
         $CertificateFileName,
 
-        [Parameter()]
+        [Parameter(ParameterSetName = 'SSL')]
+        [Parameter(ParameterSetName = 'ExchangeCBA')]
         [int]
         $Duration = 1,
 
-        [Parameter()]
+        [Parameter(ParameterSetName = 'SSL')]
+        [Parameter(ParameterSetName = 'ExchangeCBA')]
         [SecureString]
         $Password
     )
@@ -29,8 +41,15 @@ function New-PoshSelfSignedCert {
     if (-not (Test-Path $PoshCertPath)) { $null = New-Item $PoshCertPath @ItemSplat }
 
     $Path = Join-Path -Path $PoshCertPath -ChildPath $Tenant
+    if (-not (Test-Path $Path)) { $null = New-Item $Path @ItemSplat }
 
-    $CertName = '{0}_{1}' -f $DnsName[0], [DateTime]::Now.toString("yyyyMMdd_HHmmss")
+    if ($DnsName) {
+        $CertNamePrefix = $DnsName[0]
+    }
+    else {
+        $CertNamePrefix = $Tenant
+    }
+    $CertName = '{0}_{1}' -f $CertNamePrefix, [DateTime]::Now.toString("yyyyMMdd_HHmmss")
     $CerPath = Join-Path -Path $Path -ChildPath "$CertName.cer"
     $PFXPath = Join-Path -Path $Path -ChildPath "$CertName.pfx"
 
@@ -39,7 +58,24 @@ function New-PoshSelfSignedCert {
     }
 
     # Create certificate
-    $mycert = New-SelfSignedCertificate -DnsName $DnsName[0] -CertStoreLocation "cert:\LocalMachine\My" -NotAfter (Get-Date).AddYears($Duration) -KeySpec KeyExchange
+    if ($ExchangeCBA) {
+        $CertSplat = @{
+            Subject           = 'Exchange Online Secure App Model'
+            CertStoreLocation = 'cert:\CurrentUser\My'
+            KeySpec           = 'KeyExchange'
+            FriendlyName      = 'Exchange Online Certificate Auth'
+            NotAfter          = (Get-Date).AddYears($Duration)
+        }
+    }
+    else {
+        $CertSplat = @{
+            DnsName           = @($DnsName)
+            CertStoreLocation = "cert:\LocalMachine\My"
+            NotAfter          = (Get-Date).AddYears($Duration)
+        }
+    }
+
+    $mycert = New-SelfSignedCertificate @CertSplat
 
     # Export certificate to .pfx file
     $null = $mycert | Export-PfxCertificate -FilePath $PFXPath -Password $(ConvertTo-SecureString -String $Password -AsPlainText -Force)
