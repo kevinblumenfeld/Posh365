@@ -72,7 +72,11 @@ function Register-GraphApplication {
 
         [Parameter(ParameterSetName = 'ExchangeCBA')]
         [switch]
-        $AlsoCreateGraphConnection
+        $AlsoCreateGraphConnection,
+
+        [Parameter()]
+        [switch]
+        $GCCHigh
     )
 
     $PoshPath = Join-Path -Path $Env:USERPROFILE -ChildPath '.Posh365/Credentials/Graph'
@@ -98,7 +102,7 @@ function Register-GraphApplication {
     }
     if (-not (Test-Path $TenantPath)) { $null = New-Item $TenantPath @ItemSplat }
 
-    if ($AlsoCreateGraphConnection -or $PSCmdlet.ParameterSetName -notcontains 'ExchangeCBA')  {
+    if ($AlsoCreateGraphConnection -or $PSCmdlet.ParameterSetName -notcontains 'ExchangeCBA') {
         Write-Host "`r`nWe will create an Azure AD Application with the " -ForegroundColor Cyan -NoNewline
         Write-Host "$App" -ForegroundColor Green -NoNewline
 
@@ -148,16 +152,18 @@ function Register-GraphApplication {
         GistFilename        = '{0}.xml' -f $App
         SecretDurationYears = 10
         Owner               = ($AzureAD.Account).toString()
+        GCCHIGH             = $GCCHigh
     }
     $NewApp = Import-TemplateApp @Params
 
     $ConfigObject = [PSCustomObject]@{
         TenantClientID = $NewApp.ApplicationId
         TenantTenantID = $NewApp.TenantId
+        TenantObjectID = $NewApp.ObjectId
         TenantSecret   = $NewApp.Secret | ConvertTo-SecureString -AsPlainText -Force
     }
 
-    if ($AlsoCreateGraphConnection -or $PSCmdlet.ParameterSetName -notcontains 'ExchangeCBA')  {
+    if ($AlsoCreateGraphConnection -or $PSCmdlet.ParameterSetName -notcontains 'ExchangeCBA') {
 
         $TenantConfig = Join-Path -Path $TenantPath -ChildPath ('{0}Config.xml' -f $Tenant)
         [PSCustomObject]@{

@@ -27,8 +27,8 @@ function New-PoshSelfSignedCert {
 
         [Parameter(ParameterSetName = 'SSL')]
         [Parameter(ParameterSetName = 'ExchangeCBA')]
-        [SecureString]
-        $Password
+        [switch]
+        $ExportToPFX
     )
 
     $PoshCertPath = Join-Path -Path $Env:USERPROFILE -ChildPath '.Posh365/Certificates'
@@ -53,7 +53,7 @@ function New-PoshSelfSignedCert {
     $CerPath = Join-Path -Path $Path -ChildPath "$CertName.cer"
     $PFXPath = Join-Path -Path $Path -ChildPath "$CertName.pfx"
 
-    if (-not $Password) {
+    if ($ExportToPFX) {
         $Password = Read-Host -Prompt "Enter Password to protect private key" -AsSecureString
     }
 
@@ -78,7 +78,10 @@ function New-PoshSelfSignedCert {
     $mycert = New-SelfSignedCertificate @CertSplat
 
     # Export certificate to .pfx file
-    $null = $mycert | Export-PfxCertificate -FilePath $PFXPath -Password $(ConvertTo-SecureString -String $Password -AsPlainText -Force)
+    if ($ExportToPFX) {
+        $null = $mycert | Export-PfxCertificate -FilePath $PFXPath -Password $(ConvertTo-SecureString -String $Password -AsPlainText -Force)
+    }
+
 
     # Export certificate to .cer file
     $null = $mycert | Export-Certificate -FilePath $CerPath
@@ -86,9 +89,9 @@ function New-PoshSelfSignedCert {
     # Invoke-Item $Path
 
     [PSCustomObject]@{
-        Path    = $Path.ToString()
-        CerPath = $CerPath.ToString()
-        PFXPath = $PFXPath.ToString()
+        Path    = $Path
+        CerPath = $CerPath
+        PFXPath = $PFXPath
     }
 }
 
