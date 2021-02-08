@@ -1,26 +1,31 @@
 function New-ExoCBAConnection {
     <#
     .SYNOPSIS
+
     Creates a connection to Exchange Online authenticated by certificate
 
     .DESCRIPTION
+
     Creates a connection to Exchange Online authenticated by certificate
-    1. Creates Azure AD App
-    2. Adds needed API Permissions to App
-    3. Opens browser to grant admin consent
-    4. Creates self-signed certificate
-    5. Adds certificate to Current User' personal store
-    6. Uploads certificate to Azure AD App
-    7. Encrypts and saves AppID, thumbprint, and tenant domain
-    8. Enables you to connect to Exchange Online with the certificate: Connect-Cloud -Tenant Contoso -EXOCBA
+        1. Creates Azure AD App
+        2. Adds needed API Permissions to App ( Exchange.ManageAsApp )
+        3. Opens browser to grant admin consent
+        4. Creates self-signed certificate
+        5. Adds certificate to Current User's personal store
+        6. Uploads certificate to Azure AD App
+        7. Encrypts and saves AppID, thumbprint, and tenant domain with export-clixml
+        8. Connecting to Exchange Online is as easy as running this command: Connect-Cloud -Tenant Contoso -EXOCBA
 
     .PARAMETER Tenant
+
     if tenant is contoso.onmicrosoft.com use contoso
 
     .PARAMETER Duration
+
     By default 1 year. Specify longer duration if desired.
 
     .EXAMPLE
+
     New-ExoCBAConnection -Tenant contoso
 
     .NOTES
@@ -105,7 +110,7 @@ function New-ExoCBAConnection {
     $null = New-AzureADApplicationKeyCredential @UploadSplat
     Write-Host "`r`n`r`n"
     Write-Host "Waiting for Application ID $($AppObject.TenantClientID)." -ForegroundColor Yellow
-    Write-Host "If this takes longer than 2 minutes, paste the green link above into a brower to grant admin consent" -ForegroundColor Green
+    Write-Host "If this takes longer than 2 minutes, paste the green link above into a browser to grant admin consent" -ForegroundColor Green
     do {
         Write-Host "Waiting for Application ID $($AppObject.TenantClientID)." -ForegroundColor Yellow
         Start-Sleep -Seconds 10

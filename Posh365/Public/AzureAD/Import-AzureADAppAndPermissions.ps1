@@ -197,5 +197,5 @@ function Import-AzureADAppAndPermissions {
     }
     [PSCustomObject]$Output
 
-    if ($ConsentAction -match 'OpenBrower|Both') { Start-Process $ConsentURL }
+    if ($ConsentAction -match 'OpenBrowser|Both') { Start-Process $ConsentURL }
 }
