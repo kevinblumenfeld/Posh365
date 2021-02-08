@@ -6,23 +6,28 @@ function New-ExoCBAConnection {
 
     .DESCRIPTION
 
-    Creates a connection to Exchange Online authenticated by certificate
+    Creates a connection to Exchange Online authenticated by a certificate
+
         1. Creates Azure AD App
         2. Adds needed API Permissions to App ( Exchange.ManageAsApp )
         3. Opens browser to grant admin consent
-        4. Creates self-signed certificate
+        4. Creates a self-signed certificate
         5. Adds certificate to Current User's personal store
         6. Uploads certificate to Azure AD App
-        7. Encrypts and saves AppID, thumbprint, and tenant domain with export-clixml
+        7. Encrypts and saves AppID, thumbprint, and tenant domain with Export-Clixml
         8. Connecting to Exchange Online is as easy as running this command: Connect-Cloud -Tenant Contoso -EXOCBA
 
     .PARAMETER Tenant
 
-    if tenant is contoso.onmicrosoft.com use contoso
+    if the tenant is contoso.onmicrosoft.com use contoso
 
     .PARAMETER Duration
 
-    By default 1 year. Specify longer duration if desired.
+    By default, 1 year. Specify longer duration if desired.
+
+    .PARAMETER GCCHigh
+
+    Use this switch for GCCHigh tenants
 
     .EXAMPLE
 
@@ -30,20 +35,16 @@ function New-ExoCBAConnection {
 
     .NOTES
 
-    Once you run this function, you will be given the exact syntax to connect to Exchange Online with the certificate you created.
+    Once you run this function, you will be given the exact syntax to connect to Exchange Online using CBA. For example:
 
-    You will be given two (2) different commands - Using either command is fine.
+        Connect-Cloud -Tenant Contoso -EXOCBA
 
-    You can now connect to Exchange Online with:
+    Note: It will also output an alternate method to connect:
 
-    --> Connect-Cloud -Tenant Contoso -EXOCBA
-
-    You can also use this command:
-
-    --> Connect-ExchangeOnline -AppId e527b732-95f9-abcd-aa66-1d8a07870898 -CertificateThumbprint 9427165D630XXXXXXXE7F5F85005D4A77BE0B -Organization contoso.onmicrosoft.com
-
+        Connect-ExchangeOnline -AppId e527b732-95f9-abcd-aa66-1d8a07870898 -CertificateThumbprint 9427165D630XXXXXXXE7F5F85005D4A77BE0B -Organization contoso.onmicrosoft.com
 
     #>
+
     Param(
 
         [Parameter(Mandatory)]
