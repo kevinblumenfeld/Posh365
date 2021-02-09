@@ -155,7 +155,7 @@ function Import-PoshAlias {
                 if ($Alias.Target -like '*@*') {
                     # GET ADUSER
                     try {
-                        $Found = Get-ADUser -Filter "mail -eq '$($Alias.Target)'"
+                        $Found = Get-ADUser -Filter "mail -eq '$($Alias.Target)'" -properties mail, proxyaddresses
                         Write-Host "Success finding ADUSER $($Alias.Target) via MAIL attribute" -ForegroundColor Green
                         [PSCustomObject]@{
                             Alias      = $Alias.Alias
