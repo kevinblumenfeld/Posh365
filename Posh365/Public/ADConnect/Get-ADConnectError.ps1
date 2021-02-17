@@ -19,7 +19,7 @@ function Get-ADConnectError {
     Param (
 
     )
-    $ErrList = Get-MsolDirSyncProvisioningError
+    $ErrList = Get-MsolDirSyncProvisioningError -All
 
     foreach ($Err in $ErrList) {
         $ProvList = $Err.ProvisioningErrors
