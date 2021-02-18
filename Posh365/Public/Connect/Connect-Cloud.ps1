@@ -186,7 +186,11 @@ function Connect-Cloud {
 
         [Parameter()]
         [switch]
-        $EXOPrefix
+        $EXOPrefix,
+
+        [Parameter()]
+        [switch]
+        $NoTranscript
     )
     if ($Tenant -like '*.onmicrosoft.*') { $Tenant = $Tenant.Split('.')[0] }
 
@@ -212,13 +216,17 @@ function Connect-Cloud {
     if (-not (Test-Path ($RootPath + $Tenant + "\logs\"))) {
         New-Item -ItemType Directory -Force -Path ($RootPath + $Tenant + "\logs\")
     }
-    try {
-        Start-Transcript -ErrorAction Stop -Path ($RootPath + $Tenant + "\logs\" + "transcript-" + ($(Get-Date -Format _yyyy-MM-dd_HH-mm-ss)) + ".txt")
+    if (-not $NoTranscript) {
+        try {
+
+            Start-Transcript -ErrorAction Stop -Path ($RootPath + $Tenant + "\logs\" + "transcript-" + ($(Get-Date -Format _yyyy-MM-dd_HH-mm-ss)) + ".txt")
+        }
+        catch {
+            Stop-Transcript -ErrorAction SilentlyContinue
+            Start-Transcript -Path ($RootPath + $Tenant + "\logs\" + "transcript-" + ($(Get-Date -Format _yyyy-MM-dd_HH-mm-ss)) + ".txt")
+        }
     }
-    catch {
-        Stop-Transcript -ErrorAction SilentlyContinue
-        Start-Transcript -Path ($RootPath + $Tenant + "\logs\" + "transcript-" + ($(Get-Date -Format _yyyy-MM-dd_HH-mm-ss)) + ".txt")
-    }
+
     # Create KeyPath Directory
     if (-not (Test-Path $KeyPath)) {
         try {
