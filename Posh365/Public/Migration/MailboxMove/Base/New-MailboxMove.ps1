@@ -110,7 +110,7 @@ function New-MailboxMove {
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [int]
-        $IncrementalSyncIntervalHours,
+        $IncrementalSyncIntervalHours = 24,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]

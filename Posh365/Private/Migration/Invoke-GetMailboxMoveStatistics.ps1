@@ -27,6 +27,7 @@ Function Invoke-GetMailboxMoveStatistics {
                     LargeItemLimit             = $Stat.LargeItemLimit
                     LargeItemsEncountered      = $Stat.LargeItemsEncountered
                     CompleteAfter              = $Stat.CompleteAfter
+                    SyncInterval               = $Stat.EffectiveIncrementalSyncInterval
                     TotalMailboxSize           = [regex]::Matches("$($Stat.TotalMailboxSize)", "^[^(]*").value
                     ItemsTransferred           = $Stat.ItemsTransferred
                     TotalMailboxItemCount      = $Stat.TotalMailboxItemCount

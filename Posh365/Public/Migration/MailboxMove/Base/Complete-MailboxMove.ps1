@@ -43,7 +43,8 @@ function Complete-MailboxMove {
             $UserChoice | Invoke-CompleteMailboxMove -CompleteAfter $UTCTimeandDate | Out-GridView -Title "Scheduling of complete mailbox move results"
         }
         else {
-            $UserChoice | Invoke-CompleteMailboxMove | Out-GridView -Title "Completion of mailbox move results"
+            # Standardized on CompleteAfter methodology so this uses T2T function but is not T2T
+            $UserChoice | Invoke-T2TCompleteMailboxMove | Out-GridView -Title "Completion of mailbox move results"
         }
     }
 }

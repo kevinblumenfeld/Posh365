@@ -1,74 +1,164 @@
 function Set-TimedMailboxMove {
 
-    [CmdletBinding(DefaultParameterSetName = 'PlaceHolder')]
+    [CmdletBinding()]
     param (
-        [Parameter(Mandatory, ParameterSetName = 'All')]
+        [Parameter(Mandatory)]
         [String]
         $Tenant,
 
-        [Parameter(ParameterSetName = 'All')]
+        [Parameter()]
         [switch]
         $GCCHigh,
 
-        [Parameter(Mandatory, ParameterSetName = 'Resume')]
-        [Parameter(ParameterSetName = 'All')]
+        [Parameter()]
+        [string[]]
+        $Batch,
+
+        [Parameter()]
+        [int]
+        $CompleteAfterDays = 365,
+
+        [Parameter()]
+        [int]
+        $IncrementalSyncHours = 24,
+
+        [Parameter()]
+        [switch]
+        $Set,
+
+        [Parameter()]
         [switch]
         $Resume,
 
-        [Parameter(Mandatory, ParameterSetName = 'Suspend')]
-        [Parameter(ParameterSetName = 'All')]
+        [Parameter()]
         [switch]
-        $Suspend
+        $Suspend,
+
+        [Parameter()]
+        [int]
+        $BadItemLimit,
+
+        [Parameter()]
+        [int]
+        $LargeItemLimit,
+
+        [Parameter()]
+        [switch]
+        $FailedOnly
     )
 
     Get-PSSession | Remove-PSSession
+
     Connect-Cloud -Tenant $Tenant -EXOCBA -GCCHigh:$GCCHigh -NoTranscript
-    if ($Suspend) {
-        $SuspendList = Get-MoveRequest -ResultSize Unlimited -MoveStatus InProgress
-        foreach ($Sus in $SuspendList) {
+
+    if ($FailedOnly) {
+        $Incomplete = Get-MoveRequest -ResultSize Unlimited | Where-Object {
+            $_.Status -eq "Failed" -and $_.BatchName -match ($Batch -join '|')
+        }
+    }
+    else {
+        $Incomplete = Get-MoveRequest -ResultSize Unlimited | Where-Object {
+            $_.Status -notlike "*Completed*" -and $_.BatchName -match ($Batch -join '|')
+        }
+    }
+
+    if ($Set -or $Resume) {
+
+        :CantSet foreach ($In in $Incomplete) {
+
             try {
-                Suspend-MoveRequest -Identity $Sus.ExchangeGuid -Confirm:$false
+
+                $SetSplat = @{
+                    Identity                   = $In.ExchangeGuid
+                    CompleteAfter              = (Get-Date).AddDays($CompleteAfterDays)
+                    IncrementalSyncInterval    = [timespan]::new($IncrementalSyncHours, 00, 00)
+                    SuspendWhenReadyToComplete = $false
+                    ErrorAction                = 'Stop'
+                }
+
+                if ($BadItemLimit) {
+                    $SetSplat['BadItemLimit'] = $BadItemLimit
+                }
+                if ($LargeItemLimit) {
+                    $SetSplat['LargeItemLimit'] = $LargeItemLimit
+                }
+                if ($LargeItemLimit -or $BadItemLimit) {
+                    $SetSplat['WarningAction'] = 'Ignore'
+                }
+
+                Set-MoveRequest @SetSplat
+
                 [PSCustomObject]@{
-                    DisplayName  = $Sus.DisplayName
-                    BatchName    = $Sus.BatchName
-                    ExchangeGuid = $Sus.ExchangeGuid
-                    Action       = 'SUSPEND'
+                    DisplayName  = $In.DisplayName
+                    BatchName    = $In.BatchName
+                    ExchangeGuid = $In.ExchangeGuid
+                    Action       = 'SET'
                     Result       = 'SUCCESS'
                     Log          = 'SUCCESS'
                 }
             }
             catch {
                 [PSCustomObject]@{
-                    DisplayName  = $Sus.DisplayName
-                    BatchName    = $Sus.BatchName
-                    ExchangeGuid = $Sus.ExchangeGuid
-                    Action       = 'SUSPEND'
+                    DisplayName  = $In.DisplayName
+                    BatchName    = $In.BatchName
+                    ExchangeGuid = $In.ExchangeGuid
+                    Action       = 'SET'
                     Result       = 'FAILED'
                     Log          = $_.Exception.Message
+                }
+                continue CantSet
+            }
+            if ($Resume) {
+
+                try {
+
+                    Resume-MoveRequest -Identity $In.ExchangeGuid -Confirm:$false -ErrorAction Stop
+
+                    [PSCustomObject]@{
+                        DisplayName  = $In.DisplayName
+                        BatchName    = $In.BatchName
+                        ExchangeGuid = $In.ExchangeGuid
+                        Action       = 'RESUME'
+                        Result       = 'SUCCESS'
+                        Log          = 'SUCCESS'
+                    }
+                }
+                catch {
+                    [PSCustomObject]@{
+                        DisplayName  = $In.DisplayName
+                        BatchName    = $In.BatchName
+                        ExchangeGuid = $In.ExchangeGuid
+                        Action       = 'RESUME'
+                        Result       = 'FAILED'
+                        Log          = $_.Exception.Message
+                    }
                 }
             }
         }
     }
-    if ($Resume) {
-        $ResumeList = Get-MoveRequest -ResultSize Unlimited | Where-Object { $_.Status -match 'Failed|Suspended|AutoSuspended' }
-        foreach ($Res in $ResumeList) {
+    if ($Suspend) {
+
+        foreach ($In in $Incomplete) {
+
             try {
-                Resume-MoveRequest -Identity $Res.ExchangeGuid -SuspendWhenReadyToComplete:$true
+
+                Suspend-MoveRequest -Identity $In.ExchangeGuid -Confirm:$false -ErrorAction Stop
+
                 [PSCustomObject]@{
-                    DisplayName  = $Res.DisplayName
-                    BatchName    = $Res.BatchName
-                    ExchangeGuid = $Res.ExchangeGuid
-                    Action       = 'RESUME'
+                    DisplayName  = $In.DisplayName
+                    BatchName    = $In.BatchName
+                    ExchangeGuid = $In.ExchangeGuid
+                    Action       = 'SUSPEND'
                     Result       = 'SUCCESS'
                     Log          = 'SUCCESS'
                 }
             }
             catch {
                 [PSCustomObject]@{
-                    DisplayName  = $Res.DisplayName
-                    BatchName    = $Res.BatchName
-                    ExchangeGuid = $Res.ExchangeGuid
-                    Action       = 'RESUME'
+                    DisplayName  = $In.DisplayName
+                    BatchName    = $In.BatchName
+                    ExchangeGuid = $In.ExchangeGuid
+                    Action       = 'SUSPEND'
                     Result       = 'FAILED'
                     Log          = $_.Exception.Message
                 }
