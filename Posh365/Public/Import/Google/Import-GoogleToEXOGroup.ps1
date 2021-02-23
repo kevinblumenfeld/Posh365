@@ -35,7 +35,7 @@ function Import-GoogleToEXOGroup {
     Use this parameter to override with either 'Open' or 'Closed'
 
     .EXAMPLE
-    Import-Csv C:\scripts\GoogleGroups.csv | Import-GoogleToEXOGroup -CsvLogPath C:\Scripts\EXOGroupResults.csv
+    Import-Csv C:\scripts\GoogleGroups.csv | Import-GoogleToEXOGroup | Export-Csv ./results.csv -nti -append
 
     .NOTES
     Choosing both -DontAddOwnersToManagedBy & -DontAddManagersToManagedBy results in
@@ -48,8 +48,6 @@ function Import-GoogleToEXOGroup {
     [CmdletBinding()]
     Param
     (
-        [Parameter(Mandatory)]
-        $CsvLogPath,
 
         [Parameter(Mandatory, ValueFromPipeline)]
         $Group,
@@ -92,7 +90,7 @@ function Import-GoogleToEXOGroup {
     process {
         foreach ($CurGroup in $Group) {
 
-            $Alias = ($CurGroup.Email -split "@")[0]
+            $Alias = ($CurGroup.Email.split('@'))[0]
 
             $ManagedBy = [System.Collections.Generic.Hashset[string]]::new()
 
@@ -104,7 +102,7 @@ function Import-GoogleToEXOGroup {
                 #
                 ########################
 
-                $CurGroup.Managers -split '|' | ForEach-Object {
+                $CurGroup.Managers.split('|') | ForEach-Object {
 
                     if ($MUHash.Contains($_)) {
 
@@ -134,7 +132,7 @@ function Import-GoogleToEXOGroup {
                 #
                 ########################
 
-                $CurGroup.Owners -split '|' | ForEach-Object {
+                $CurGroup.Owners.split('|') | ForEach-Object {
 
                     if ($MUHash.Contains($_)) {
 
@@ -246,7 +244,7 @@ function Import-GoogleToEXOGroup {
 
                     $ModeratedBy = [System.Collections.Generic.Hashset[string]]::new()
 
-                    $CurGroup.Owners -split '|' | ForEach-Object {
+                    $CurGroup.Owners.split('|') | ForEach-Object {
 
                         if ($MUHash.Contains($_)) {
 
@@ -266,7 +264,7 @@ function Import-GoogleToEXOGroup {
                             }
                         }
                     }
-                    $CurGroup.Managers -split '|' | ForEach-Object {
+                    $CurGroup.Managers.split('|') | ForEach-Object {
 
                         if ($MUHash.Contains($_)) {
 
