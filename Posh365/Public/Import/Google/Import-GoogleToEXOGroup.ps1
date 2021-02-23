@@ -290,7 +290,9 @@ function Import-GoogleToEXOGroup {
                     'MODERATE_NONE' { $SetHash['ModerationEnabled'] = $false }
                     'MODERATE_ALL_MESSAGES' {
                         $SetHash['ModerationEnabled'] = $true
-                        $SetHash['ModeratedBy'] = $ModeratedBy
+                        if ($ModeratedBy.count -ge 1) {
+                            $SetHash['ModeratedBy'] = $ModeratedBy
+                        }
                     }
                     'MODERATE_NON_MEMBERS' {
                         $SetHash['ModerationEnabled'] = $true
@@ -422,7 +424,6 @@ function Import-GoogleToEXOGroup {
                         Email           = $CurGroup.Email
                         Message         = $Failure
                         ExtendedMessage = $_.Exception.Message
-
                     }
 
                     Write-HostLog -Message "Creating`t$($CurGroup.Name)`t$Failure" -Status "Failed"
