@@ -5,19 +5,17 @@ function Get-PSGGroupDetails {
 
     )
 
-    # $GroupList =  Get-GSGroup -Filter *
-    # $SettingsList = $GroupList | Get-GSGroupSettings
-
-    $GroupList = Import-Csv C:\Scripts\TAPeople.csv
-    $SettingsList = Import-Csv C:\Scripts\TASettings.csv
+    $GroupList = Get-GSGroup -Filter *
+    $SettingsList = $GroupList | Get-GSGroupSettings
 
     $GroupHash = @{ }
+
     foreach ($Group in $GroupList) {
-        <#
+        $MemberList, $OwnerList, $ManagerList = $null
         $MemberList = Get-GSGroupMember -Identity $Group.Email
         $OwnerList = $MemberList.where{ $_.Role -eq 'OWNER' }
         $ManagerList = $MemberList.where{ $_.Role -eq 'MANAGER' }
-        #>
+
         $GroupHash[$Group.Email] = @{
             Name               = $Group.Name
             Aliases            = @($Group.Aliases) -ne '' -join '|'
@@ -31,7 +29,6 @@ function Get-PSGGroupDetails {
             Owners             = @($OwnerList) -ne '' -join '|'
         }
     }
-
 
     foreach ($Setting in $SettingsList) {
 
