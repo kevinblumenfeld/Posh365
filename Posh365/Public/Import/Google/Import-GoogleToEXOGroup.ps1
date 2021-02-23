@@ -78,245 +78,362 @@ function Import-GoogleToEXOGroup {
         [ValidateSet('MemberJoinRestrictionTo_Closed', 'MemberJoinRestrictionTo_ApprovalRequired', 'MemberJoinRestrictionTo_Open')]
         [string] $NONE_CAN_ADD_members_Overrides
     )
-    Begin {
+    begin {
+        $MUHash = [System.Collections.Generic.Hashset[string]]::new()
+
+        $MailUserList = Get-MailUser -ResultSize Unlimited
+
+        foreach ($MailUser in $MailUserList) {
+
+            $MUHash.Add($MailUser.PrimarySmtpAddress) > $null
+        }
 
     }
-    Process {
-        ForEach ($CurGroup in $Group) {
+    process {
+        foreach ($CurGroup in $Group) {
 
             $Alias = ($CurGroup.Email -split "@")[0]
 
-            # Managers and Owners
             $ManagedBy = [System.Collections.Generic.Hashset[string]]::new()
 
             if (-not $DontAddManagersToManagedBy -and -not [string]::IsNullOrWhiteSpace($CurGroup.Managers)) {
-                $CurGroup.Managers -split "`r`n" | ForEach-Object {
-                    $ManagedBy.Add($_) > $null
+
+                ########################
+                #
+                # Managers --> ManagedBy
+                #
+                ########################
+
+                $CurGroup.Managers -split '|' | ForEach-Object {
+
+                    if ($MUHash.Contains($_)) {
+
+                        $ManagedBy.Add($_) > $null
+                    }
+                    else {
+
+                        [PSCustomObject]@{
+                            Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
+                            Result          = 'FAILED'
+                            Action          = 'FINDING_MANAGER_FOR_MANAGEDBY'
+                            Object          = 'GROUP'
+                            Name            = $CurGroup.Name
+                            Email           = $CurGroup.Email
+                            Message         = $_
+                            ExtendedMessage = 'FAILED'
+                        }
+                    }
                 }
             }
 
             if (-not $DontAddOwnersToManagedBy -and -not [string]::IsNullOrWhiteSpace($CurGroup.Owners)) {
-                $CurGroup.Owners -split "`r`n" | ForEach-Object {
-                    $ManagedBy.Add($_) > $null
-                }
-            }
 
-            # whoCanJoin
-            if (-not $SecurityGroup) {
-                $MemberJoinRestriction = switch ($CurGroup.whoCanJoin) {
-                    'ALL_IN_DOMAIN_CAN_JOIN' { 'Open' }
-                    'ANYONE_CAN_JOIN' { 'Open' }
-                    'CAN_REQUEST_TO_JOIN' {
-                        if ($CAN_REQUEST_TO_JOIN_TranslatesTo) {
-                            $CAN_REQUEST_TO_JOIN_TranslatesTo
-                        }
-                        else {
-                            'ApprovalRequired'
+                ########################
+                #
+                # Owners --> ManagedBy
+                #
+                ########################
+
+                $CurGroup.Owners -split '|' | ForEach-Object {
+
+                    if ($MUHash.Contains($_)) {
+
+                        $ManagedBy.Add($_) > $null
+                    }
+                    else {
+
+                        [PSCustomObject]@{
+                            Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
+                            Result          = 'FAILED'
+                            Action          = 'FINDING_OWNER_FOR_MANAGEDBY'
+                            Object          = 'GROUP'
+                            Name            = $CurGroup.Name
+                            Email           = $CurGroup.Email
+                            Message         = $_
+                            ExtendedMessage = 'FAILED'
                         }
                     }
-                    'INVITED_CAN_JOIN' {
-                        if ($INVITED_CAN_JOIN_TranslatesTo) {
-                            $INVITED_CAN_JOIN_TranslatesTo
+                }
+
+                # whoCanJoin
+                if (-not $SecurityGroup) {
+
+                    $MemberJoinRestriction = switch ($CurGroup.whoCanJoin) {
+                        'ALL_IN_DOMAIN_CAN_JOIN' { 'Open' }
+                        'ANYONE_CAN_JOIN' { 'Open' }
+                        'CAN_REQUEST_TO_JOIN' {
+                            if ($CAN_REQUEST_TO_JOIN_TranslatesTo) {
+                                $CAN_REQUEST_TO_JOIN_TranslatesTo
+                            }
+                            else {
+                                'ApprovalRequired'
+                            }
                         }
-                        else {
-                            'ApprovalRequired'
+                        'INVITED_CAN_JOIN' {
+                            if ($INVITED_CAN_JOIN_TranslatesTo) {
+                                $INVITED_CAN_JOIN_TranslatesTo
+                            }
+                            else {
+                                'ApprovalRequired'
+                            }
                         }
                     }
                 }
-            }
 
-            # When "whoCanAdd" is "NONE_CAN_ADD" this overrides any "MemberJoinRestriction"
-            if ($NONE_CAN_ADD_members_Overrides -or -not $SecurityGroup) {
-                $MemberJoinRestriction = switch ($NONE_CAN_ADD_members_Overrides) {
-                    'MemberJoinRestrictionTo_Closed' { 'Closed' }
-                    'MemberJoinRestrictionTo_ApprovalRequired' { 'ApprovalRequired' }
-                    'MemberJoinRestrictionTo_Open' { 'Open' }
+                # When "whoCanAdd" is "NONE_CAN_ADD" this overrides any "MemberJoinRestriction"
+                if ($NONE_CAN_ADD_members_Overrides -or -not $SecurityGroup) {
+
+                    $MemberJoinRestriction = switch ($NONE_CAN_ADD_members_Overrides) {
+                        'MemberJoinRestrictionTo_Closed' { 'Closed' }
+                        'MemberJoinRestrictionTo_ApprovalRequired' { 'ApprovalRequired' }
+                        'MemberJoinRestrictionTo_Open' { 'Open' }
+                    }
                 }
-            }
-            # whoCanLeave
-            if (-not $SecurityGroup) {
-                $MemberDepartRestriction = switch ($CurGroup.whoCanLeaveGroup) {
+                # whoCanLeave
+                if (-not $SecurityGroup) {
 
-                    'ALL_MEMBERS_CAN_LEAVE' { 'Open' }
-                    'ALL_MANAGERS_CAN_LEAVE' { 'Closed' }
-                    'NONE_CAN_LEAVE' { 'Closed' }
-                    Default { 'Open' }
-                }
-            }
-
-            $NewHash = @{
-
-                Name                    = $CurGroup.Name
-                DisplayName             = $CurGroup.Name
-                Alias                   = $Alias
-                ManagedBy               = $ManagedBy.split("`r`n")
-                PrimarySmtpAddress      = $CurGroup.Email
-                MemberJoinRestriction   = $MemberJoinRestriction
-                MemberDepartRestriction = $MemberDepartRestriction
-                Notes                   = $CurGroup.Description
-            }
-
-            # Are Owners and/or Managers copied to the Group's Membership?
-            if ($DontCopyManagedByToMember) {
-                $NewHash['CopyOwnerToMember'] = $false
-            }
-            else {
-                $NewHash['CopyOwnerToMember'] = $true
-            }
-
-            $SetHash = @{
-                Identity = $CurGroup.Email
-            }
-
-            if ($CurGroup.includeInGlobalAddressList) {
-                $SetHash['HiddenFromAddressListsEnabled'] = -not [bool]::Parse($CurGroup.includeInGlobalAddressList)
-            }
-
-            # messageModerationLevel (A moderator approves messages sent to recipient before delivered)
-            $ModeratedBy = [System.Collections.Generic.Hashset[string]]::new()
-
-            $CurGroup.Owners -split "`r`n" | ForEach-Object {
-                $ModeratedBy.Add($_) > $null
-            }
-
-            switch ($CurGroup.messageModerationLevel) {
-                'MODERATE_NONE' { $SetHash['ModerationEnabled'] = $false }
-                'MODERATE_ALL_MESSAGES' {
-                    $SetHash['ModerationEnabled'] = $true
-                    $SetHash['ModeratedBy'] = $ModeratedBy.split("`r`n")
-                }
-                'MODERATE_NON_MEMBERS' {
-                    $SetHash['ModerationEnabled'] = $true
-                    $SetHash['BypassModerationFromSendersOrMembers'] = $CurGroup.Email
-
-                }
-            }
-            switch ($CurGroup.sendMessageDenyNotification) {
-                'TRUE' { $SetHash['SendModerationNotifications'] = 'ALWAYS' }
-                'FALSE' { $SetHash['SendModerationNotifications'] = 'NEVER' }
-                Default { $SetHash['SendModerationNotifications'] = 'NEVER' }
-            }
-
-            # whoCanPostMessage (who can email the DL)
-            switch ($CurGroup.whoCanPostMessage) {
-
-                'ANYONE_CAN_POST' { $SetHash['RequireSenderAuthenticationEnabled'] = $false }
-                'ALL_IN_DOMAIN_CAN_POST' { $SetHash['RequireSenderAuthenticationEnabled'] = $true }
-                'ALL_MANAGERS_CAN_POST' {
-                    $SetHash['RequireSenderAuthenticationEnabled'] = $true
-                    $SetHash['AcceptMessagesOnlyFromSendersOrMembers'] = $ManagedBy
-                }
-                'ALL_MEMBERS_CAN_POST' {
-                    $SetHash['RequireSenderAuthenticationEnabled'] = $true
-                    $SetHash['AcceptMessagesOnlyFromSendersOrMembers'] = $CurGroup.Email
+                    $MemberDepartRestriction = switch ($CurGroup.whoCanLeaveGroup) {
+                        'ALL_MEMBERS_CAN_LEAVE' { 'Open' }
+                        'ALL_MANAGERS_CAN_LEAVE' { 'Closed' }
+                        'NONE_CAN_LEAVE' { 'Closed' }
+                        Default { 'Open' }
+                    }
                 }
 
-            }
-
-            # Create a splat with only parameters with values for New-DistributionGroup
-            $NewSplat = @{ }
-            ForEach ($Key in $NewHash.keys) {
-                if ($NewHash.item($Key) -ne $null) {
-                    $NewSplat.add($Key, $($NewHash.item($Key)))
+                $NewHash = @{
+                    Name                    = $CurGroup.Name
+                    DisplayName             = $CurGroup.Name
+                    Alias                   = $Alias
+                    PrimarySmtpAddress      = $CurGroup.Email
+                    MemberJoinRestriction   = $MemberJoinRestriction
+                    MemberDepartRestriction = $MemberDepartRestriction
+                    Notes                   = $CurGroup.Description
                 }
-            }
-            if ($SecurityGroup) {
-                $NewSplat['Type'] = 'Security'
-            }
 
-            # Create a splat with only parameters with values for Set-DistributionGroup
-            $SetSplat = @{ }
-            ForEach ($Key in $SetHash.keys) {
-                if ($SetHash.item($Key) -ne $null) {
-                    $SetSplat.add($Key, $($SetHash.item($Key)))
+                if ($ManagedBy.count -ge 1) {
+
+                    $NewHash['ManagedBy'] = $ManagedBy
                 }
-            }
+                # Are Owners and/or Managers copied to the Group's Membership?
+                if ($DontCopyManagedByToMember) {
 
-            try {
+                    $NewHash['CopyOwnerToMember'] = $false
+                }
+                else {
 
-                $NewDL = New-DistributionGroup @NewSplat -ErrorAction Stop
+                    $NewHash['CopyOwnerToMember'] = $true
+                }
 
-                [PSCustomObject]@{
+                $SetHash = @{
 
-                    Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
-                    Result          = 'SUCCESS'
-                    Action          = 'CREATING'
-                    Object          = 'GROUP'
-                    Name            = $CurGroup.Name
-                    Email           = $CurGroup.Email
-                    Message         = 'SUCCESS'
-                    ExtendedMessage = 'SUCCESS'
+                    Identity = $CurGroup.Email
+                }
 
-                } | Export-Csv -Path $CsvLogPath -NoTypeInformation -Append
+                if ($CurGroup.includeInGlobalAddressList) {
 
-                Write-HostLog -Message "Creating`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status "Success"
+                    $SetHash['HiddenFromAddressListsEnabled'] = -not [bool]::Parse($CurGroup.includeInGlobalAddressList)
+                }
+
+                # messageModerationLevel (A moderator approves messages sent to recipient before delivered)
+
+                if ($CurGroup.messageModerationLevel -eq 'MODERATE_ALL_MESSAGES') {
+
+                    ########################
+                    #
+                    # Owners --> ModeratedBy
+                    #
+                    ########################
+
+                    $ModeratedBy = [System.Collections.Generic.Hashset[string]]::new()
+
+                    $CurGroup.Owners -split '|' | ForEach-Object {
+
+                        if ($MUHash.Contains($_)) {
+
+                            $ModeratedBy.Add($_) > $null
+                        }
+                        else {
+
+                            [PSCustomObject]@{
+                                Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
+                                Result          = 'FAILED'
+                                Action          = 'FINDING_OWNER_FOR_MODERATEDBY'
+                                Object          = 'GROUP'
+                                Name            = $CurGroup.Name
+                                Email           = $CurGroup.Email
+                                Message         = $_
+                                ExtendedMessage = 'FAILED'
+                            }
+                        }
+                    }
+                    $CurGroup.Managers -split '|' | ForEach-Object {
+
+                        if ($MUHash.Contains($_)) {
+
+                            $ModeratedBy.Add($_) > $null
+                        }
+                        else {
+
+                            [PSCustomObject]@{
+                                Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
+                                Result          = 'FAILED'
+                                Action          = 'FINDING_MANAGER_FOR_MODERATEDBY'
+                                Object          = 'GROUP'
+                                Name            = $CurGroup.Name
+                                Email           = $CurGroup.Email
+                                Message         = $_
+                                ExtendedMessage = 'FAILED'
+                            }
+                        }
+                    }
+                }
+
+                switch ($CurGroup.messageModerationLevel) {
+                    'MODERATE_NONE' { $SetHash['ModerationEnabled'] = $false }
+                    'MODERATE_ALL_MESSAGES' {
+                        $SetHash['ModerationEnabled'] = $true
+                        $SetHash['ModeratedBy'] = $ModeratedBy
+                    }
+                    'MODERATE_NON_MEMBERS' {
+                        $SetHash['ModerationEnabled'] = $true
+                        $SetHash['BypassModerationFromSendersOrMembers'] = $CurGroup.Email
+
+                    }
+                }
+
+                switch ($CurGroup.sendMessageDenyNotification) {
+                    'TRUE' { $SetHash['SendModerationNotifications'] = 'ALWAYS' }
+                    'FALSE' { $SetHash['SendModerationNotifications'] = 'NEVER' }
+                    Default { $SetHash['SendModerationNotifications'] = 'NEVER' }
+                }
+
+                # whoCanPostMessage (who can email the DL)
+                switch ($CurGroup.whoCanPostMessage) {
+                    'ANYONE_CAN_POST' { $SetHash['RequireSenderAuthenticationEnabled'] = $false }
+                    'ALL_IN_DOMAIN_CAN_POST' { $SetHash['RequireSenderAuthenticationEnabled'] = $true }
+                    'ALL_MANAGERS_CAN_POST' {
+                        $SetHash['RequireSenderAuthenticationEnabled'] = $true
+                        $SetHash['AcceptMessagesOnlyFromSendersOrMembers'] = $ManagedBy
+                    }
+                    'ALL_MEMBERS_CAN_POST' {
+                        $SetHash['RequireSenderAuthenticationEnabled'] = $true
+                        $SetHash['AcceptMessagesOnlyFromSendersOrMembers'] = $CurGroup.Email
+                    }
+
+                }
+
+                # Create a splat with only parameters with values for New-DistributionGroup
+
+                $NewSplat = @{ }
+
+                foreach ($Key in $NewHash.keys) {
+
+                    if ($NewHash.item($Key) -ne $null) {
+
+                        $NewSplat.add($Key, $($NewHash.item($Key)))
+                    }
+                }
+                if ($SecurityGroup) {
+
+                    $NewSplat['Type'] = 'Security'
+                }
+
+                # Create a splat with only parameters with values for Set-DistributionGroup
+
+                $SetSplat = @{ }
+
+                foreach ($Key in $SetHash.keys) {
+                    if ($SetHash.item($Key) -ne $null) {
+
+                        $SetSplat.add($Key, $($SetHash.item($Key)))
+                    }
+                }
 
                 try {
 
-                    Set-DistributionGroup @SetSplat -ErrorAction Stop -WarningAction SilentlyContinue
+                    $NewDL = New-DistributionGroup @NewSplat -ErrorAction Stop
 
                     [PSCustomObject]@{
-
                         Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                         Result          = 'SUCCESS'
-                        Action          = 'SETTING'
+                        Action          = 'CREATING'
                         Object          = 'GROUP'
                         Name            = $CurGroup.Name
                         Email           = $CurGroup.Email
                         Message         = 'SUCCESS'
                         ExtendedMessage = 'SUCCESS'
+                    }
 
-                    } | Export-Csv -Path $CsvLogPath -NoTypeInformation -Append
+                    Write-HostLog -Message "Creating`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status "Success"
 
-                    Write-HostLog -Message "Setting`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status "Success"
+                    try {
 
+                        Set-DistributionGroup @SetSplat -ErrorAction Stop -WarningAction SilentlyContinue
+
+                        [PSCustomObject]@{
+                            Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
+                            Result          = 'SUCCESS'
+                            Action          = 'SETTING'
+                            Object          = 'GROUP'
+                            Name            = $CurGroup.Name
+                            Email           = $CurGroup.Email
+                            Message         = 'SUCCESS'
+                            ExtendedMessage = 'SUCCESS'
+                        }
+
+                        Write-HostLog -Message "Setting`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status "Success"
+
+                    }
+                    catch {
+
+                        $Failure = $_.CategoryInfo.Reason
+                        [PSCustomObject]@{
+                            Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
+                            Result          = 'FAILURE'
+                            Action          = 'SETTING'
+                            Object          = 'GROUP'
+                            Name            = $CurGroup.Name
+                            Email           = $CurGroup.Email
+                            Message         = $Failure
+                            ExtendedMessage = $_.Exception.Message
+                        }
+
+                        Write-HostLog -Message "Setting`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status "Failed"
+
+                    }
                 }
                 catch {
-                    $Failure = $_.CategoryInfo.Reason
-                    [PSCustomObject]@{
 
+                    $Failure = $_.CategoryInfo.Reason
+
+                    if ($_ -match 'The email address') {
+
+                        $Failure = "The email address $($CurGroup.Email) isn't correct"
+                    }
+
+                    if ($_ -match 'is already managed by recipient') {
+
+                        $Failure = 'DL already managed by recipient'
+                    }
+                    [PSCustomObject]@{
                         Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                         Result          = 'FAILURE'
-                        Action          = 'SETTING'
+                        Action          = 'CREATING'
                         Object          = 'GROUP'
                         Name            = $CurGroup.Name
                         Email           = $CurGroup.Email
                         Message         = $Failure
                         ExtendedMessage = $_.Exception.Message
 
-                    } | Export-Csv -Path $CsvLogPath -NoTypeInformation -Append
+                    }
 
-                    Write-HostLog -Message "Setting`t$($NewDL.Name)`t$($NewDL.PrimarySmtpAddress)" -Status "Failed"
+                    Write-HostLog -Message "Creating`t$($CurGroup.Name)`t$Failure" -Status "Failed"
 
                 }
-            }
-            catch {
-                $Failure = $_.CategoryInfo.Reason
-                if ($_ -match 'The email address') {
-                    $Failure = "The email address $($CurGroup.Email) isn't correct"
-                }
-
-                if ($_ -match 'is already managed by recipient') {
-                    $Failure = 'DL already managed by recipient'
-                }
-                [PSCustomObject]@{
-                    Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
-                    Result          = 'FAILURE'
-                    Action          = 'CREATING'
-                    Object          = 'GROUP'
-                    Name            = $CurGroup.Name
-                    Email           = $CurGroup.Email
-                    Message         = $Failure
-                    ExtendedMessage = $_.Exception.Message
-
-                } | Export-Csv -Path $CsvLogPath -NoTypeInformation -Append
-
-                Write-HostLog -Message "Creating`t$($CurGroup.Name)`t$Failure" -Status "Failed"
-
             }
         }
     }
-    End {
-
+    end {
+        Write-Host "Complete"
     }
 }
