@@ -60,7 +60,7 @@ function Remove-PSGGroupCalendarOwnersAndHide {
 
         [Parameter(Mandatory)]
         [ValidateScript( { Test-Path $_ })]
-        $CalendarPermissionFilePath
+        $AllCalendarACLFilePath
 
     )
 
@@ -68,146 +68,152 @@ function Remove-PSGGroupCalendarOwnersAndHide {
 
     $PrimaryList = Import-Csv $PrimaryOwnerFilePath
 
-    foreach ($Primary in $PrimaryList) {
+    $PermissionList = Import-Csv $AllCalendarACLFilePath
 
-        if ($Primary.PrimaryOwnerEmail -like "*@*") {
+    if ($PermissionList -and $PrimaryList) {
 
-            $PrimaryHash[$Primary.CalendarEmail] = $Primary.PrimaryOwnerEmail
+        foreach ($Primary in $PrimaryList) {
+
+            if ($Primary.PrimaryOwnerEmail -like "*@*") {
+
+                $PrimaryHash[$Primary.CalendarEmail] = $Primary.PrimaryOwnerEmail
+            }
         }
-    }
 
-    $PermissionList = Import-Csv $CalendarPermissionFilePath
+        foreach ($Permission in $PermissionList) {
 
-    foreach ($Permission in $PermissionList) {
+            Write-Host "$($Permission.CalendarEmail) ROLE: $($Permission.AccessRole)" -foregroundcolor Cyan
 
-        Write-Host "$($Permission.CalendarEmail) ROLE: $($Permission.AccessRole)" -foregroundcolor Cyan
+            if ($Permission.CalendarEmail -like "*@*.calendar.google.com" -and $Permission.AccessRole -eq 'Owner') {
 
-        if ($Permission.CalendarEmail -like "*@*.calendar.google.com" -and $Permission.AccessRole -eq 'Owner') {
+                Write-Host "OneOwner: $($PrimaryHash[$Permission.CalendarEmail])" -foregroundcolor Cyan
+                Write-Host "AssignedUser: $($Permission.AssignedUser)" -foregroundcolor Cyan
 
-            Write-Host "OneOwner: $($PrimaryHash[$Permission.CalendarEmail])" -foregroundcolor Cyan
-            Write-Host "AssignedUser: $($Permission.AssignedUser)" -foregroundcolor Cyan
-
-            if ($PrimaryHash[$Permission.CalendarEmail] -and ($PrimaryHash[$Permission.CalendarEmail] -ne $Permission.AssignedUser)) {
-
-                try {
-
-                    $ACL = $null
-                    $ACL = Get-GSCalendarAcl -CalendarId $Permission.CalendarEmail | Where-Object {
-                        ($_.ID).split(':')[1] -eq $Permission.AssignedUser
-                    }
-
-                    $null = $ACL | Remove-GSCalendarAcl -ErrorAction 'Stop' -Confirm:$false
-
-                    Write-Host "Removed $($Permission.AssignedUser) as owner from Calendar $($Permission.CalendarEmail)" -ForegroundColor Green
-
-                    [PSCustomObject]@{
-                        CalendarEmail = $Permission.CalendarEmail
-                        CalendarName  = $Permission.CalendarName
-                        RemovedUser   = $Permission.AssignedUser
-                        AccessRole    = $Permission.AccessRole
-                        Step          = 'REMOVEASOWNER'
-                        Result        = 'SUCCESS'
-                        Log           = 'SUCCESS'
-                    }
+                if ($PrimaryHash[$Permission.CalendarEmail] -and ($PrimaryHash[$Permission.CalendarEmail] -ne $Permission.AssignedUser)) {
 
                     try {
 
-                        $NewSplat = @{
-                            CalendarId  = $Permission.CalendarEmail
-                            Role        = 'writer'
-                            Value       = $Permission.AssignedUser
-                            Type        = 'user'
-                            ErrorAction = 'Stop'
+                        $ACL = $null
+                        $ACL = Get-GSCalendarAcl -CalendarId $Permission.CalendarEmail | Where-Object {
+                            ($_.ID).split(':')[1] -eq $Permission.AssignedUser
                         }
 
-                        $null = New-GSCalendarAcl @NewSplat
+                        $null = $ACL | Remove-GSCalendarAcl -ErrorAction 'Stop' -Confirm:$false
 
-                        Write-Host "Added $($Permission.AssignedUser) as Editor to Calendar $($Permission.CalendarEmail)" -ForegroundColor Green
+                        Write-Host "Removed $($Permission.AssignedUser) as owner from Calendar $($Permission.CalendarEmail)" -ForegroundColor Green
 
                         [PSCustomObject]@{
                             CalendarEmail = $Permission.CalendarEmail
                             CalendarName  = $Permission.CalendarName
                             RemovedUser   = $Permission.AssignedUser
                             AccessRole    = $Permission.AccessRole
-                            Step          = 'ADDASEDITOR'
+                            Step          = 'REMOVEASOWNER'
                             Result        = 'SUCCESS'
                             Log           = 'SUCCESS'
-
                         }
 
                         try {
 
-                            $UpSplat = @{
-                                User        = $Permission.AssignedUser
+                            $NewSplat = @{
                                 CalendarId  = $Permission.CalendarEmail
-                                Hidden      = $true
+                                Role        = 'writer'
+                                Value       = $Permission.AssignedUser
+                                Type        = 'user'
                                 ErrorAction = 'Stop'
                             }
 
-                            $null = Update-GSCalendarSubscription @UpSplat
+                            $null = New-GSCalendarAcl @NewSplat
 
-                            Write-Host "Hidden from user $($Permission.AssignedUser) the Calendar $($Permission.CalendarEmail)" -ForegroundColor Green
+                            Write-Host "Added $($Permission.AssignedUser) as Editor to Calendar $($Permission.CalendarEmail)" -ForegroundColor Green
 
                             [PSCustomObject]@{
                                 CalendarEmail = $Permission.CalendarEmail
                                 CalendarName  = $Permission.CalendarName
                                 RemovedUser   = $Permission.AssignedUser
                                 AccessRole    = $Permission.AccessRole
-                                Step          = 'HIDEFROMUSER'
+                                Step          = 'ADDASEDITOR'
                                 Result        = 'SUCCESS'
                                 Log           = 'SUCCESS'
+
                             }
 
+                            try {
+
+                                $UpSplat = @{
+                                    User        = $Permission.AssignedUser
+                                    CalendarId  = $Permission.CalendarEmail
+                                    Hidden      = $true
+                                    ErrorAction = 'Stop'
+                                }
+
+                                $null = Update-GSCalendarSubscription @UpSplat
+
+                                Write-Host "Hidden from user $($Permission.AssignedUser) the Calendar $($Permission.CalendarEmail)" -ForegroundColor Green
+
+                                [PSCustomObject]@{
+                                    CalendarEmail = $Permission.CalendarEmail
+                                    CalendarName  = $Permission.CalendarName
+                                    RemovedUser   = $Permission.AssignedUser
+                                    AccessRole    = $Permission.AccessRole
+                                    Step          = 'HIDEFROMUSER'
+                                    Result        = 'SUCCESS'
+                                    Log           = 'SUCCESS'
+                                }
+
+                            }
+                            catch {
+
+                                Write-Host "Failed to hide from user $($Permission.AssignedUser) the Calendar $($Permission.CalendarEmail)" -ForegroundColor Red
+
+                                [PSCustomObject]@{
+                                    CalendarEmail = $Permission.CalendarEmail
+                                    CalendarName  = $Permission.CalendarName
+                                    RemovedUser   = $Permission.AssignedUser
+                                    AccessRole    = $Permission.AccessRole
+                                    Step          = 'HIDEFROMUSER'
+                                    Result        = 'FAILED'
+                                    Log           = $_.Exception.Message
+                                }
+
+                            }
                         }
                         catch {
 
-                            Write-Host "Failed to hide from user $($Permission.AssignedUser) the Calendar $($Permission.CalendarEmail)" -ForegroundColor Red
+                            Write-Host "Failed to add $($Permission.AssignedUser) as Editor to Calendar $($Permission.CalendarEmail)" -ForegroundColor Red
 
                             [PSCustomObject]@{
                                 CalendarEmail = $Permission.CalendarEmail
                                 CalendarName  = $Permission.CalendarName
                                 RemovedUser   = $Permission.AssignedUser
                                 AccessRole    = $Permission.AccessRole
-                                Step          = 'HIDEFROMUSER'
+                                Step          = 'ADDASEDITOR'
                                 Result        = 'FAILED'
                                 Log           = $_.Exception.Message
                             }
 
                         }
+
                     }
                     catch {
 
-                        Write-Host "Failed to add $($Permission.AssignedUser) as Editor to Calendar $($Permission.CalendarEmail)" -ForegroundColor Red
+                        Write-Host "Failed to remove $($Permission.AssignedUser) as owner from Calendar $($Permission.CalendarEmail)" -ForegroundColor Red
 
                         [PSCustomObject]@{
                             CalendarEmail = $Permission.CalendarEmail
                             CalendarName  = $Permission.CalendarName
                             RemovedUser   = $Permission.AssignedUser
                             AccessRole    = $Permission.AccessRole
-                            Step          = 'ADDASEDITOR'
+                            Step          = 'REMOVEASOWNER'
                             Result        = 'FAILED'
                             Log           = $_.Exception.Message
                         }
 
                     }
-
-                }
-                catch {
-
-                    Write-Host "Failed to remove $($Permission.AssignedUser) as owner from Calendar $($Permission.CalendarEmail)" -ForegroundColor Red
-
-                    [PSCustomObject]@{
-                        CalendarEmail = $Permission.CalendarEmail
-                        CalendarName  = $Permission.CalendarName
-                        RemovedUser   = $Permission.AssignedUser
-                        AccessRole    = $Permission.AccessRole
-                        Step          = 'REMOVEASOWNER'
-                        Result        = 'FAILED'
-                        Log           = $_.Exception.Message
-                    }
-
                 }
             }
         }
+    }
+    else {
+        Write-Host "Missing an import file" -ForegroundColor Red
     }
 }
