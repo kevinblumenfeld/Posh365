@@ -117,7 +117,7 @@ function Import-GoogleToEXOGroup {
                             Object          = 'GROUP'
                             Name            = $CurGroup.Name
                             Email           = $CurGroup.Email
-                            Message         = $_
+                            Message         = if ($_) { $_ } else { 'NO_DATA' }
                             ExtendedMessage = 'FAILED'
                         }
                     }
@@ -147,7 +147,7 @@ function Import-GoogleToEXOGroup {
                             Object          = 'GROUP'
                             Name            = $CurGroup.Name
                             Email           = $CurGroup.Email
-                            Message         = $_
+                            Message         = if ($_) { $_ } else { 'NO_DATA' }
                             ExtendedMessage = 'FAILED'
                         }
                     }
@@ -259,7 +259,7 @@ function Import-GoogleToEXOGroup {
                                 Object          = 'GROUP'
                                 Name            = $CurGroup.Name
                                 Email           = $CurGroup.Email
-                                Message         = $_
+                                Message         = if ($_) { $_ } else { 'NO_DATA' }
                                 ExtendedMessage = 'FAILED'
                             }
                         }
@@ -279,7 +279,7 @@ function Import-GoogleToEXOGroup {
                                 Object          = 'GROUP'
                                 Name            = $CurGroup.Name
                                 Email           = $CurGroup.Email
-                                Message         = $_
+                                Message         = if ($_) { $_ } else { 'NO_DATA' }
                                 ExtendedMessage = 'FAILED'
                             }
                         }
