@@ -80,7 +80,10 @@ function Import-GoogleToEXOGroup {
 
         foreach ($MailUser in $MailUserList) {
 
-            $MUHash.Add($MailUser.PrimarySmtpAddress) > $null
+            foreach ($Proxy in $MailUser.ProxyAddresses) {
+
+                $MUHash.Add($Proxy) > $null
+            }
         }
 
     }
