@@ -7,9 +7,6 @@ function Import-GoogleToEXOGroup {
     .DESCRIPTION
     Import CSV of Google Groups into Office 365 as Distribution Groups
 
-    .PARAMETER CsvLogPath
-    The full path and file name of the log ex. c:\scripts\AddGroupsLog.csv (use csv for best results)
-
     .PARAMETER Group
     Google Group(s) and respective attributes
 
@@ -431,8 +428,5 @@ function Import-GoogleToEXOGroup {
             }
 
         }
-    }
-    end {
-        Write-Host "Complete"
     }
 }

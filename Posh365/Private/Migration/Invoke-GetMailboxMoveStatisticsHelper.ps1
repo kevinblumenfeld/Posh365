@@ -14,6 +14,10 @@ Function Invoke-GetMailboxMoveStatisticsHelper {
         $RemoveAndRestart,
 
         [Parameter()]
+        [switch]
+        $Remove,
+
+        [Parameter()]
         [string]
         $UploadToSharePointURL,
 
@@ -99,10 +103,12 @@ Function Invoke-GetMailboxMoveStatisticsHelper {
         }
         return
     }
-    if (-not $RemoveAndRestart) {
-        $MoveList | Invoke-GetMailboxMoveStatistics | Out-GridView -Title "Statistics of mailbox moves"
+    if ($RemoveAndRestart -or $Remove ) {
+
+        $MoveList | Invoke-GetMailboxMoveStatistics
     }
     else {
-        $MoveList | Invoke-GetMailboxMoveStatistics
+
+        $MoveList | Invoke-GetMailboxMoveStatistics | Out-GridView -Title "Statistics of mailbox moves"
     }
 }

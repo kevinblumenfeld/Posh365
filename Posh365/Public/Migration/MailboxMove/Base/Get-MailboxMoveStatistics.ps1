@@ -48,6 +48,10 @@ Function Get-MailboxMoveStatistics {
         [switch]
         $RemoveAndRestart,
 
+        [Parameter(ParameterSetName = 'RandR')]
+        [switch]
+        $Remove,
+
         [Parameter(ParameterSetName = 'SharePoint')]
         [string]
         $UploadToSharePointURL,
@@ -59,8 +63,8 @@ Function Get-MailboxMoveStatistics {
     if ($UploadToSharePointURL) {
         Invoke-GetMailboxMoveStatisticsHelper -IncludeCompleted:$true -UploadToSharePointURL $UploadToSharePointURL -ShowAllStats:$ShowAllStats
     }
-    elseif ($RemoveAndRestart) {
-        Invoke-GetMailboxMoveStatisticsHelper -IncludeCompleted:$IncludeCompleted -RemoveAndRestart:$RemoveAndRestart
+    elseif ($RemoveAndRestart -or $Remove) {
+        Invoke-GetMailboxMoveStatisticsHelper -IncludeCompleted:$IncludeCompleted -RemoveAndRestart:$RemoveAndRestart -Remove:$Remove
     }
     else {
         Invoke-GetMailboxMoveStatisticsHelper -IncludeCompleted:$IncludeCompleted

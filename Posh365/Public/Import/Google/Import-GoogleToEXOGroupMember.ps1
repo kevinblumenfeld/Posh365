@@ -7,14 +7,11 @@ function Import-GoogleToEXOGroupMember {
     .DESCRIPTION
     Import CSV of Google Group Members into Office 365 as Distribution Groups
 
-    .PARAMETER LogPath
-    The full path and file name of the log ex. c:\scripts\AddMembersLog.csv (use csv for best results)
-
     .PARAMETER Group
     Google Group(s) and respective attributes (most importantly a column of "Members")
 
     .EXAMPLE
-    Import-Csv C:\scripts\GoogleGroups.csv | Import-GoogleToEXOGroupMember -LogPath C:\Scripts\EXOGroupMemberResults.csv
+    Import-Csv C:\scripts\GoogleGroups.csv | Import-GoogleToEXOGroupMember
 
     .NOTES
 
@@ -23,75 +20,81 @@ function Import-GoogleToEXOGroupMember {
     [CmdletBinding()]
     Param
     (
-        [Parameter(Mandatory)]
-        $LogPath,
 
         [Parameter(Mandatory, ValueFromPipeline)]
-        $Group
+        $GroupList
 
     )
     Begin {
 
     }
     Process {
-        ForEach ($CurGroup in $Group) {
-            if ($CurGroup.Members) {
-                $Member = $CurGroup.Members -split " "
-                foreach ($CurMember in $Member) {
+        ForEach ($Group in $GroupList) {
+
+            if ($Group.Members) {
+
+                $MemberList = $Group.Members.Split('|')
+
+                foreach ($Member in $MemberList) {
 
                     $MemberSplat = @{
-                        Identity                        = $CurGroup.Email
-                        Member                          = $CurMember
+                        Identity                        = $Group.Email
+                        Member                          = $Member
                         BypassSecurityGroupManagerCheck = $True
                     }
 
                     try {
+
                         Add-DistributionGroupMember @MemberSplat -ErrorAction Stop
+
                         [PSCustomObject]@{
                             Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                             Result          = 'SUCCESS'
                             Action          = 'ADDING'
                             Object          = 'MEMBER'
-                            Member          = $CurMember
-                            Name            = $CurGroup.Name
-                            Email           = $CurGroup.Email
+                            Member          = $Member
+                            Name            = $Group.Name
+                            Email           = $Group.Email
                             Message         = 'SUCCESS'
                             ExtendedMessage = 'SUCCESS'
 
-                        } | Export-Csv -Path $LogPath -NoTypeInformation -Append
-                        Write-HostLog -Message "Adding to Group`t$($CurGroup.Name) Member`t$($CurMember)" -Status "Success"
+                        }
+
+                        Write-HostLog -Message "Adding to Group`t$($Group.Name) Member`t$($Member)" -Status "Success"
                     }
                     catch {
+
                         $Failure = $_.CategoryInfo.Reason
+
                         if ($_ -match 'already a member') {
-                            $Failure = "$CurMember is already member of $($CurGroup.Name)"
+
+                            $Failure = "$Member is already member of $($Group.Name)"
                         }
 
                         if ($_ -match "Couldn't find object") {
-                            $Failure = "Member $CurMember could not be found to add to $($CurGroup.Name)"
+
+                            $Failure = "Member $Member could not be found to add to $($Group.Name)"
                         }
                         if ($_ -match "The operation couldn't be performed because object") {
-                            $Failure = "Group $($CurGroup.Name) could not be found"
+
+                            $Failure = "Group $($Group.Name) could not be found"
                         }
                         [PSCustomObject]@{
                             Time            = (Get-Date).ToString("yyyy/MM/dd HH:mm:ss")
                             Result          = 'FAILURE'
                             Action          = 'ADDING'
                             Object          = 'MEMBER'
-                            Member          = $CurMember
-                            Name            = $CurGroup.Name
-                            Email           = $CurGroup.Email
+                            Member          = $Member
+                            Name            = $Group.Name
+                            Email           = $Group.Email
                             Message         = $Failure
                             ExtendedMessage = $_.Exception.Message
 
-                        } | Export-Csv -Path $LogPath -NoTypeInformation -Append
-                        Write-HostLog -Message "Adding to Group`t$($CurGroup.Name)Member`t$CurMember`t$Failure" -Status "Failed"
+                        }
+                        Write-HostLog -Message "Adding to Group`t$($Group.Name)Member`t$Member`t$Failure" -Status "Failed"
                     }
                 }
             }
         }
-    }
-    End {
-
     }
 }
