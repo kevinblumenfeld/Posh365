@@ -71,7 +71,10 @@ function Import-GoogleToEXOGroup {
 
         [Parameter()]
         [ValidateSet('MemberJoinRestrictionTo_Closed', 'MemberJoinRestrictionTo_ApprovalRequired', 'MemberJoinRestrictionTo_Open')]
-        [string] $NONE_CAN_ADD_members_Overrides
+        [string] $NONE_CAN_ADD_members_Overrides,
+
+        [Parameter()]
+        [switch] $AddOnPremSamAccountName
     )
     begin {
         $MUHash = [System.Collections.Generic.Hashset[string]]::new()
@@ -206,6 +209,9 @@ function Import-GoogleToEXOGroup {
                 MemberJoinRestriction   = $MemberJoinRestriction
                 MemberDepartRestriction = $MemberDepartRestriction
                 Notes                   = $CurGroup.Description
+            }
+            if ($AddOnPremSamAccountName) {
+                $NewHash['SamAccountName'] = ($CurGroup.Email).Split('@')[0]
             }
 
             if ($ManagedBy.count -ge 1) {
