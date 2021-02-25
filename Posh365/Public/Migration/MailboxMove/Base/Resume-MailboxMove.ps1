@@ -23,7 +23,7 @@ Function Resume-MailboxMove {
         $DontAutoComplete
     )
 
-    $UserChoice = Get-MailboxMoveStatistics -PassThruData | Out-GridView -PassThru -Title 'Choose Mailboxes to Resume'
+    $UserChoice = Get-MailboxMoveStatistics -PassThruData | Out-GridView -PassThru -Title 'Choose Mailbox Move(s) to Resume'
     if ($UserChoice) {
         Invoke-ResumeMailboxMove -UserChoice $UserChoice -DontAutoComplete:$DontAutoComplete | Out-GridView -Title "Results of Resume Mailbox Move"
     }

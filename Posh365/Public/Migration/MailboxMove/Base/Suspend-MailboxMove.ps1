@@ -16,7 +16,7 @@ function Suspend-MailboxMove {
     param
     (    )
 
-    $UserChoice = Get-MailboxMoveStatistics -PassThruData | Out-GridView -PassThru -Title 'Choose Mailboxes to Suspend'
+    $UserChoice = Get-MailboxMoveStatistics -PassThruData | Out-GridView -PassThru -Title 'Choose Mailbox Move(s) to Suspend'
     if ($UserChoice) {
         Invoke-SuspendMailboxMove -UserChoice $UserChoice | Out-GridView -Title "Results of Suspend Mailbox Move"
     }
