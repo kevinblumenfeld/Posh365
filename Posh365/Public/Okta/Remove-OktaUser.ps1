@@ -11,7 +11,7 @@ function Remove-OktaUser {
             - If you do not have a list of IDs of the Deactivated users, you cannot query for them via the API, Okta has not exposed it
             - In a pinch you could use F12 when loading https://YourOktaTenant.okta.com/admin/users  ## I USED FIREFOX (BELOW) ##
                 - The following GET will be displayed https://YourOktaTenant.okta.com/api/internal/people?filter=EVERYONE
-                - Right click it and Select COPY > COPY RESPONSE HEADERS
+                - Right click it and Select COPY > COPY RESPONSE
                 - You will then be able to use:
 
                 Get-Clipboard | ConvertFrom-Json|Select -expand personlist | ? {$_.status -eq 'Deactivated'} | % {Remove-OktaUser -Id $_.id}
@@ -31,7 +31,7 @@ function Remove-OktaUser {
             - If you do not have a list of IDs of the Deactivated users, you cannot query for them via the API, Okta has not exposed it
             - In a pinch you could use F12 when loading https://YourOktaTenant.okta.com/admin/users  ## I USED FIREFOX (BELOW) ##
                 - The following GET will be displayed https://YourOktaTenant.okta.com/api/internal/people?filter=EVERYONE
-                - Right click it and Select COPY > COPY RESPONSE HEADERS
+                - Right click it and Select COPY > COPY RESPONSE
                 - You will then be able to use:
 
                 Get-Clipboard | ConvertFrom-Json|Select -expand personlist | ? {$_.status -eq 'Deactivated'} | % {Remove-OktaUser -Id $_.id}
