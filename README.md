@@ -40,6 +40,14 @@ Connect-Cloud -Tenant Contoso -Compliance
 Connect-Cloud -Tenant Contoso -DeleteCreds #Deletes locally encrypted creds only
 ```
 
+**New-ExoCBAConnection** Create reusable Exchange Online Certificate Based Authentication (CBA) connections
+
+```powershell
+New-ExoCBAConnection -Tenant Contoso
+Connect-Cloud -Tenant Contoso -EXOCBA
+```
+![Exchange_Online_Certificate_Based_Authentication_Function](https://user-images.githubusercontent.com/28877715/112916577-d5d37580-90ce-11eb-9f8a-698199c28f95.gif)
+
 **Connect-CloudMFA** Same as Connect-Cloud but includes built-in password manager GUI
 
 ```powershell
@@ -67,21 +75,21 @@ Get-DiscoveryOffice365 -Tenant Contoso -Verbose
 
 ><sub>**First time running this?** Let's install PowerShellGet2:</sub>
 
-<sub>1. Run: Connect-Cloud -Tenant Contoso -EXO2</sub>  
-<sub>2. Sign in as Global Admin & restart powershell when prompted</sub>  
-<sub>3. Run: Get-DiscoveryOffice365 -Tenant Contoso -Verbose</sub>  
+<sub>1. Run: Connect-Cloud -Tenant Contoso -EXO2</sub>
+<sub>2. Sign in as Global Admin & restart powershell when prompted</sub>
+<sub>3. Run: Get-DiscoveryOffice365 -Tenant Contoso -Verbose</sub>
 
 ### `Discover On-Premises`
 > <sub>Requires RSAT</sub>
 ```powershell
 Get-DiscoveryOnPrem -Verbose
 ```
-<sub>1. Run: Get-Discovery -Verbose</sub>  
-<sub>2. Enter name of Exchange Server when prompted</sub>  
-<sub>3. Click link for Batches, copy/paste code on-premises</sub>  
-<sub>4. Click link for Permissions, copy/paste code on-premises</sub>  
-<sub>5. Add both documents to the root of SharePoint > Documents</sub>  
-<sub>6. Add BATCH01 to BatchName column in Batches.xlsx for pilot</sub>  
+<sub>1. Run: Get-Discovery -Verbose</sub>
+<sub>2. Enter name of Exchange Server when prompted</sub>
+<sub>3. Click link for Batches, copy/paste code on-premises</sub>
+<sub>4. Click link for Permissions, copy/paste code on-premises</sub>
+<sub>5. Add both documents to the root of SharePoint > Documents</sub>
+<sub>6. Add BATCH01 to BatchName column in Batches.xlsx for pilot</sub>
 
 
 | Document to add to SharePoint | Paste code on-premises (not EMS) |
