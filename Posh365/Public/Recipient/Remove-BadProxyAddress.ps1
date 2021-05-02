@@ -41,6 +41,15 @@ function Remove-BadProxyAddress {
 
     $trimmed | Export-Csv c:\scripts\BadProxies.csv -notypeinformation
 
+
+    ########
+    Also if you need to disable the  email address policies for all recipients:
+
+    Get-Mailbox -resultsize Unlimited | Set-Mailbox -EmailAddressPolicyEnabled:$false
+    Get-DistributionGroup -resultsize Unlimited | Set-DistributionGroup -EmailAddressPolicyEnabled:$false
+    Get-MailContact -resultsize Unlimited | Set-MailContact -EmailAddressPolicyEnabled:$false
+    ########
+
     #>
 
     [CmdletBinding()]
