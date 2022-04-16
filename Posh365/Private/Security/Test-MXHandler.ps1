@@ -45,6 +45,9 @@ function Test-MXHandler {
         '*securence*' { $determination = "Securence" }
         '*us-west*.sophos.com' { $determination = "Sophos (US West)" }
         '*us-east*.sophos.com' { $determination = "Sophos (US East)" }
+        '*.mailbox.org' { $determination = "Mailbox.Org (Germany)" }
+        '*.uberspace.de' { $determination = "Uberspace (Germany)" }
+        '*.expurgate.de' { $determination = "Cyren/eXpurgate (Germany)" }
         "*$($domainData.SOA.Name)" { $determination = "Self-Hosted" }
         "" { $determination = "NO MX RECORD FOUND" }
 
